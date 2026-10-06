@@ -38,6 +38,7 @@ class _OperatingPoint:
     tire_states: TireStates
     lateral_capacity_n: float
     rear_drive_capacity_n: float
+    driven_drive_capacity_n: float
     speed_limited_drive_force_n: float
     cornering_drag_force_n: float
     resistance_force_n: float
@@ -89,6 +90,7 @@ class Vehicle:
     envelope_limited_motor_torque_nm: float = field(init=False, default=0.0)
     requested_drive_force_n: float = field(init=False, default=0.0)
     rear_drive_capacity_n: float = field(init=False, default=0.0)
+    driven_drive_capacity_n: float = field(init=False, default=0.0)
     speed_limited_drive_force_n: float = field(init=False, default=0.0)
     current_drive_force_n: float = field(init=False, default=0.0)
     current_friction_braking_force_n: float = field(init=False, default=0.0)
@@ -254,6 +256,7 @@ class Vehicle:
         self.envelope_limited_motor_torque_nm = 0.0
         self.requested_drive_force_n = 0.0
         self.rear_drive_capacity_n = 0.0
+        self.driven_drive_capacity_n = 0.0
         self.speed_limited_drive_force_n = 0.0
         self.current_drive_force_n = 0.0
         self.current_friction_braking_force_n = 0.0
@@ -432,6 +435,7 @@ class Vehicle:
                     rear_brake_force_request_n,
                     distance_step_m / timestep_s,
                     timestep_s,
+                    drive_axle=self.drivetrain.driven_axle,
                 )
                 cornering_drag_force_n = (
                     self.cornering_drag_coefficient
@@ -470,6 +474,7 @@ class Vehicle:
                         rear_brake_force_request_n,
                         distance_step_m / timestep_s,
                         timestep_s,
+                        drive_axle=self.drivetrain.driven_axle,
                     )
                 force_balance_acceleration_mps2 = (
                     tire_states.longitudinal_force_n - resistance_force_n
@@ -482,6 +487,11 @@ class Vehicle:
                     rear_drive_capacity_n=max(
                         tire_states.rear_longitudinal_capacity_n
                         - tire_states.rear_braking_force_n,
+                        0.0,
+                    ),
+                    driven_drive_capacity_n=max(
+                        tire_states.driven_longitudinal_capacity_n
+                        - tire_states.driven_braking_force_n,
                         0.0,
                     ),
                     speed_limited_drive_force_n=speed_limited_drive_force_n,
@@ -560,6 +570,7 @@ class Vehicle:
         lateral_force_n = abs(tire_states.lateral_force_n)
         lateral_capacity_n = operating_values.lateral_capacity_n
         rear_drive_capacity_n = operating_values.rear_drive_capacity_n
+        driven_drive_capacity_n = operating_values.driven_drive_capacity_n
         speed_limited_drive_force_n = operating_values.speed_limited_drive_force_n
         cornering_drag_force_n = operating_values.cornering_drag_force_n
         resistance_force_n = operating_values.resistance_force_n
@@ -603,7 +614,6 @@ class Vehicle:
             self.x_m += distance_step_m * cos(initial_heading_rad)
             self.y_m += distance_step_m * sin(initial_heading_rad)
 
-        average_speed_mps = 0.5 * (initial_speed_mps + final_speed_mps)
         wheel_surface_speed_mps = tire_states.driven_wheel_surface_speed_mps
         actual_motor_torque_nm = self.drivetrain.motor_torque_for_wheel_force_nm(
             drive_force_n
@@ -649,9 +659,10 @@ class Vehicle:
         self.speed_mps = final_speed_mps
         self.heading_rad = final_heading_rad
         self.longitudinal_acceleration_mps2 = longitudinal_acceleration_mps2
-        self.lateral_acceleration_mps2 = (
-            average_speed_mps**2 * effective_curvature_per_m
-        )
+        # The path-force solve uses entry speed for each spatial cell. Retain
+        # its solved tire force as the cell's lateral acceleration so the
+        # reported value satisfies F_y = m * a_y exactly.
+        self.lateral_acceleration_mps2 = tire_states.lateral_force_n / self.mass_kg
         self.curvature_per_m = effective_curvature_per_m
         self.current_controls = controls
         self.requested_curvature_per_m = requested_curvature_per_m
@@ -662,6 +673,7 @@ class Vehicle:
         self.envelope_limited_motor_torque_nm = applied_motor_torque_nm
         self.requested_drive_force_n = requested_drive_force_n
         self.rear_drive_capacity_n = rear_drive_capacity_n
+        self.driven_drive_capacity_n = driven_drive_capacity_n
         self.speed_limited_drive_force_n = speed_limited_drive_force_n
         self.current_drive_force_n = drive_force_n
         self.current_friction_braking_force_n = friction_braking_force_n
@@ -705,6 +717,7 @@ class Vehicle:
                 ),
                 "vehicle.requested_drive_force_n": self.requested_drive_force_n,
                 "vehicle.rear_drive_capacity_n": self.rear_drive_capacity_n,
+                "vehicle.driven_drive_capacity_n": self.driven_drive_capacity_n,
                 "vehicle.speed_limited_drive_force_n": (
                     self.speed_limited_drive_force_n
                 ),

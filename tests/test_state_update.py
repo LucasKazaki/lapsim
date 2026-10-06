@@ -12,7 +12,9 @@ class VehicleStateUpdateTests(TestCase):
         vehicle = Vehicle()
 
         self.assertTrue(isclose(vehicle.mass_kg, 285.7631931))
-        self.assertEqual(vehicle.aero.drag_coefficient, 2.4)
+        # The current reference area is larger than the legacy fit area; Cd
+        # was reduced so the physical CdA remains unchanged.
+        self.assertAlmostEqual(vehicle.aero.drag_coefficient, 1.6048838348388528)
         self.assertEqual(vehicle.drivetrain.chain_drive.efficiency, 0.80)
         self.assertEqual(vehicle.drivetrain.motor.rotor_inertia_kgm2, 0.02521)
         self.assertEqual(vehicle.cornering_drag_coefficient, 0.036)
@@ -76,6 +78,11 @@ class VehicleStateUpdateTests(TestCase):
         self.assertGreater(vehicle.heading_rad, 0.0)
         self.assertGreater(vehicle.y_m, 0.0)
         self.assertGreater(vehicle.lateral_acceleration_mps2, 0.0)
+        self.assertAlmostEqual(
+            vehicle.lateral_acceleration_mps2,
+            vehicle.current_lateral_force_n / vehicle.mass_kg,
+            places=10,
+        )
 
     def test_distance_step_is_accumulated_and_timestep_is_internal(self) -> None:
         vehicle = Vehicle(initial_speed_mps=10.0)

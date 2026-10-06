@@ -40,6 +40,25 @@ main classes for concise imports.
   corrected-IMU versus recorded-control replay on map-defined straights.
 - [Endurance torque-profile optimizer](docs/endurance_optimizer.md): reusable
   track/vehicle architecture, Michigan 2026 scoring, sweeps, and limitations.
+- [LapSim desktop app](docs/simulator_desktop.md): editable vehicle setup,
+  top-down course navigation, lap outputs, and model assumptions.
+
+## LapSim desktop app
+
+Install the project in its virtual environment and launch the native Windows
+application:
+
+```powershell
+.venv\Scripts\python.exe -m pip install -e .
+.venv\Scripts\python.exe -m lapsim.ui
+```
+
+Or double-click `launch_lapsim.cmd` in the repository folder. The app loads the
+team endurance course, offers editable 2026 Prius LE benchmark inputs, and runs
+a one-lap simulation through the existing vehicle, tire, path-constraint, and
+endurance models. The solver defaults to 1 m cells; set it to 0.5 m to use the
+course data's full station resolution. The 2026–27 Formula SAE setup remains a
+separate future configuration until its specifications are confirmed.
 
 ## Basic use
 

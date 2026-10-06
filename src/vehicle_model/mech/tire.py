@@ -3,6 +3,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from math import copysign, exp, isfinite, sqrt
+from typing import Literal
 
 from utils.units import inches_to_meters, pounds_force_to_newtons
 
@@ -64,6 +65,7 @@ class TireStates:
     front_right: TireState = field(default_factory=TireState)
     rear_left: TireState = field(default_factory=TireState)
     rear_right: TireState = field(default_factory=TireState)
+    driven_axle: Literal["front", "rear", "all"] = "rear"
 
     @property
     def all(self) -> tuple[TireState, TireState, TireState, TireState]:
@@ -114,12 +116,24 @@ class TireStates:
         return self._sum(self.rear, "longitudinal_capacity_n")
 
     @property
+    def driven_longitudinal_capacity_n(self) -> float:
+        driven = self.all if self.driven_axle == "all" else getattr(self, self.driven_axle)
+        return self._sum(driven, "longitudinal_capacity_n")
+
+    @property
+    def driven_braking_force_n(self) -> float:
+        driven = self.all if self.driven_axle == "all" else getattr(self, self.driven_axle)
+        return self._sum(driven, "braking_force_n")
+
+    @property
     def driven_wheel_surface_speed_mps(self) -> float:
-        return 0.5 * sum(state.wheel_surface_speed_mps for state in self.rear)
+        driven = self.all if self.driven_axle == "all" else getattr(self, self.driven_axle)
+        return sum(state.wheel_surface_speed_mps for state in driven) / len(driven)
 
     @property
     def driven_slip_ratio(self) -> float:
-        return 0.5 * sum(state.slip_ratio for state in self.rear)
+        driven = self.all if self.driven_axle == "all" else getattr(self, self.driven_axle)
+        return sum(state.slip_ratio for state in driven) / len(driven)
 
 
 @dataclass(slots=True)
@@ -432,6 +446,8 @@ class Tire:
         rear_brake_force_request_n: float,
         vehicle_speed_mps: float,
         timestep_s: float,
+        *,
+        drive_axle: Literal["front", "rear", "all"] = "rear",
     ) -> TireStates:
         """Solve all four contact patches without mutating tire state."""
 
@@ -444,6 +460,8 @@ class Tire:
             raise ValueError("tire force requests and vehicle speed cannot be negative")
         if timestep_s <= 0.0:
             raise ValueError("timestep_s must be positive")
+        if drive_axle not in {"front", "rear", "all"}:
+            raise ValueError("drive_axle must be 'front', 'rear', or 'all'")
 
         lateral_forces_n = self.lateral_forces_n(
             normal_loads_n, total_lateral_force_n
@@ -466,29 +484,28 @@ class Tire:
                 brake_requests_n, capacities_n, strict=True
             )
         )
-        rear_drive_capacities_n = tuple(
-            max(capacity_n - brake_force_n, 0.0)
-            for capacity_n, brake_force_n in zip(
-                capacities_n[2:], braking_forces_n[2:], strict=True
-            )
+        driven_indices = (
+            (0, 1)
+            if drive_axle == "front"
+            else (2, 3)
+            if drive_axle == "rear"
+            else (0, 1, 2, 3)
         )
-        total_rear_drive_capacity_n = sum(rear_drive_capacities_n)
-        # Preserve the endurance baseline's ideal limited-slip assumption by
-        # biasing rear drive force toward the contact patch with available grip.
-        rear_drive_forces_n = (
-            tuple(
-                min(
-                    drive_force_request_n
-                    * capacity_n
-                    / total_rear_drive_capacity_n,
+        driven_capacities_n = tuple(
+            max(capacities_n[index] - braking_forces_n[index], 0.0)
+            for index in driven_indices
+        )
+        total_driven_capacity_n = sum(driven_capacities_n)
+        drive_forces = [0.0] * 4
+        if total_driven_capacity_n > 0.0:
+            for index, capacity_n in zip(
+                driven_indices, driven_capacities_n, strict=True
+            ):
+                drive_forces[index] = min(
+                    drive_force_request_n * capacity_n / total_driven_capacity_n,
                     capacity_n,
                 )
-                for capacity_n in rear_drive_capacities_n
-            )
-            if total_rear_drive_capacity_n > 0.0
-            else (0.0, 0.0)
-        )
-        drive_forces_n = (0.0, 0.0) + rear_drive_forces_n
+        drive_forces_n = tuple(drive_forces)
 
         states = []
         for load_n, lateral_n, capacity_n, drive_n, brake_n, previous in zip(
@@ -520,7 +537,7 @@ class Tire:
                     wheel_surface_speed_mps=vehicle_speed_mps * (1.0 + slip_ratio),
                 )
             )
-        return TireStates(vehicle_speed_mps, *states)
+        return TireStates(vehicle_speed_mps, *states, driven_axle=drive_axle)
 
     def _longitudinal_response(
         self,

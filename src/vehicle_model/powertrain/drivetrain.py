@@ -1,6 +1,7 @@
 """Powertrain coordination and wheel-force conversions."""
 
 from dataclasses import dataclass, field
+from typing import Literal
 
 from utils.units import (
     miles_per_hour_to_meters_per_second,
@@ -70,6 +71,7 @@ class Drivetrain:
     tire: TireModel = field(default_factory=Tire)
     driven_wheel_inertia_kgm2: float = DEFAULT_DRIVEN_WHEEL_INERTIA_KGM2
     configured_speed_limit_mps: float | None = DEFAULT_SPEED_LIMIT_MPS
+    driven_axle: Literal["front", "rear", "all"] = "rear"
     current_wheel_force_n: float = field(init=False, default=0.0)
 
     def __post_init__(self) -> None:
@@ -92,6 +94,8 @@ class Drivetrain:
             and self.configured_speed_limit_mps <= 0
         ):
             raise ValueError("configured_speed_limit_mps must be positive or None")
+        if self.driven_axle not in {"front", "rear", "all"}:
+            raise ValueError("driven_axle must be 'front', 'rear', or 'all'")
 
     @property
     def components(self) -> tuple[ComponentModel, ...]:

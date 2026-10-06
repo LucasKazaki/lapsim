@@ -1,0 +1,70 @@
+# LapSim desktop app
+
+LapSim is a native Windows desktop application built with Tkinter and
+Matplotlib. It calls the repository's existing vehicle, tire, path-constraint,
+and endurance simulation code directly. The interface uses only black and
+white, with a dark-mode switch that reverses those colors.
+
+## Launch
+
+From the repository folder, double-click `launch_lapsim.cmd`, or run:
+
+```powershell
+.venv\Scripts\python.exe -m pip install -e .
+.venv\Scripts\python.exe -m lapsim.ui
+```
+
+In VS Code, select **LapSim desktop app** from the Run and Debug menu. The
+calculation runs in a worker thread so the window remains responsive.
+
+## Inputs and outputs
+
+The editable inputs are vehicle mass, net system power, wheelbase, tire radius,
+constant tire friction coefficient, drag area (`CdA`), speed limit, driver
+request, and solver cell length. Invalid or non-finite values are rejected
+before a run begins. The default solver cell is 1 m; 0.5 m uses the source
+course's full station resolution. Coarser cells run faster but can change the
+lap result because they smooth curvature over longer distances.
+
+The numeric outputs are lap time, peak speed, average speed, distance, net
+equivalent-pack energy, and peak lateral acceleration in g. A speed-versus-
+distance plot and a top-down course map are shown beside them. In the map,
+left-drag pans, the mouse wheel zooms around the cursor, and **Fit course**
+restores the full view.
+
+The team course file is a 989 m fused GNSS/corrected-IMU recording registered
+to an earlier official centerline. It is not a surveyed ground-truth path or a
+confirmed 2026–27 competition layout. Its source stores centerline geometry,
+not course-width measurements.
+
+## Model assumptions
+
+The initial vehicle is a 2026 Toyota Prius LE FWD benchmark. Published Toyota
+values seed its combined-system power rating, curb mass, overall dimensions,
+wheelbase, and tire size. Since Toyota does not publish a single motor torque
+curve for the hybrid system, the benchmark converts net system power into an
+idealized one-motor FWD power envelope. This is not a calibrated Prius hybrid
+model. The battery, tire grip, drag area, and some chassis values are modeling
+assumptions; pack energy is therefore an equivalent-model output.
+
+The core drivetrain supports front, rear, or all driven tires. The Prius
+benchmark uses front drive. The upcoming FSAE vehicle should be entered as a
+separate setup after its mass, geometry, motor, inverter, battery, tires, and
+aero data are confirmed. Do not infer its motor count or electrical layout
+from the Prius preset.
+
+## Numerical method
+
+For every distance cell, the existing vehicle model solves the longitudinal
+force balance including aero drag, rolling resistance, tire force limits, and
+equivalent rotating mass. Cell time is calculated from constant-acceleration
+kinematics. The path solver first finds tire-limited corner speeds, then
+performs cyclic backward braking passes. The endurance controller reduces
+drive torque or brakes to stay below those path-speed ceilings.
+
+The solver grid resamples curvature by a distance-weighted mean. This
+preserves the integrated signed curvature over each solver cell and over the
+lap; x/y coordinates are interpolated at cell boundaries. The grid spacing
+still affects how the path model resolves short features, so compare 0.5 m and
+1 m runs when numerical resolution matters. The Prius benchmark is for
+software demonstration and input checking, not engineering sign-off.
