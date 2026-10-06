@@ -63,7 +63,12 @@ class EnduranceRunConfig:
 
 @dataclass(frozen=True, slots=True)
 class EnduranceRunResult:
-    """Performance summary with optional full component-owned telemetry."""
+    """Performance summary with optional full component-owned telemetry.
+
+    Failed-run time, speed, and SOC retain the attempted vehicle state for
+    compatibility. ``accepted_*`` separately identify the last cell that
+    passed the path and kinematic gates; failure indices are zero based.
+    """
 
     completed_laps: int
     driving_time_s: float
@@ -74,6 +79,13 @@ class EnduranceRunResult:
     telemetry: Telemetry | None
     starting_speed_mps: float | None = None
     ending_speed_mps: float | None = None
+    accepted_time_s: float | None = None
+    accepted_distance_m: float | None = None
+    accepted_speed_mps: float | None = None
+    accepted_state_of_charge: float | None = None
+    failed_lap_index: int | None = None
+    failed_cell_index: int | None = None
+    failed_cell_update_completed: bool | None = None
 
     @property
     def completed(self) -> bool:
@@ -483,6 +495,10 @@ class EnduranceSimulator:
             else config.starting_speed_mps
         )
         starting_speed_mps = vehicle.speed_mps
+        accepted_time_s = vehicle.time_s
+        accepted_distance_m = vehicle.distance_m
+        accepted_speed_mps = vehicle.speed_mps
+        accepted_state_of_charge = vehicle.battery.state_of_charge
 
         recorder = TelemetryRecorder() if record_telemetry else None
         energy_j = 0.0
@@ -494,6 +510,7 @@ class EnduranceSimulator:
 
         for lap_index in range(config.laps):
             for cell_index, cell_length_m in enumerate(cell_lengths_m):
+                cell_update_completed = False
                 next_cell_index = (cell_index + 1) % track.cell_count
                 curvature_per_m = track.curvature_per_m[cell_index]
                 target_speed_mps = constraints.braking_speed_ceiling_mps[
@@ -560,6 +577,7 @@ class EnduranceSimulator:
                 except ValueError as error:
                     failure_reason = f"vehicle stalled on the endurance path: {error}"
                     break
+                cell_update_completed = True
                 timestep_s = vehicle.time_s - time_before_step_s
                 if timestep_s <= 0.0:
                     failure_reason = "vehicle stalled on the endurance path"
@@ -654,9 +672,10 @@ class EnduranceSimulator:
                             path_brake_pressure_limited
                         )
                     recorder.record(snapshot, timestep_s=timestep_s)
-                if vehicle.battery.state_of_charge <= 0.0:
-                    failure_reason = "battery state of charge depleted"
-                    break
+                accepted_time_s = vehicle.time_s
+                accepted_distance_m = vehicle.distance_m
+                accepted_speed_mps = vehicle.speed_mps
+                accepted_state_of_charge = vehicle.battery.state_of_charge
                 if progress_callback is not None:
                     progress_callback(LapProgressSnapshot(
                         lap_index=lap_index,
@@ -685,6 +704,9 @@ class EnduranceSimulator:
                         ),
                         battery_power_w=vehicle.battery.current_power_w,
                     ))
+                if vehicle.battery.state_of_charge <= 0.0:
+                    failure_reason = "battery state of charge depleted"
+                    break
 
             if failure_reason is not None:
                 break
@@ -703,6 +725,15 @@ class EnduranceSimulator:
             telemetry=telemetry,
             starting_speed_mps=starting_speed_mps,
             ending_speed_mps=vehicle.speed_mps,
+            accepted_time_s=accepted_time_s,
+            accepted_distance_m=accepted_distance_m,
+            accepted_speed_mps=accepted_speed_mps,
+            accepted_state_of_charge=accepted_state_of_charge,
+            failed_lap_index=lap_index if failure_reason is not None else None,
+            failed_cell_index=cell_index if failure_reason is not None else None,
+            failed_cell_update_completed=(
+                cell_update_completed if failure_reason is not None else None
+            ),
         )
 
 __all__ = [

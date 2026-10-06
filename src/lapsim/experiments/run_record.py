@@ -411,6 +411,56 @@ def _result_payload(result: EnduranceRunResult) -> dict[str, Any]:
             if not isfinite(value) or value < 0.0:
                 raise ValueError(f"{name} must be finite and nonnegative")
             summary[name] = value
+    accepted_names = (
+        "accepted_time_s", "accepted_distance_m", "accepted_speed_mps",
+        "accepted_state_of_charge",
+    )
+    accepted_values = tuple(getattr(result, name, None) for name in accepted_names)
+    if any(value is None for value in accepted_values):
+        if not all(value is None for value in accepted_values):
+            raise ValueError("accepted-prefix values must be supplied together")
+    else:
+        for name, value in zip(accepted_names, accepted_values, strict=True):
+            if isinstance(value, bool) or not isfinite(value) or value < 0.0:
+                raise ValueError(f"{name} must be finite and nonnegative")
+            summary[name] = value
+        if summary["accepted_state_of_charge"] > 1.0:
+            raise ValueError("accepted_state_of_charge must be in [0, 1]")
+        if summary["accepted_time_s"] > result.driving_time_s + 1e-9:
+            raise ValueError("accepted_time_s cannot exceed driving_time_s")
+        if result.completed:
+            if abs(summary["accepted_time_s"] - result.driving_time_s) > 1e-8:
+                raise ValueError("completed accepted_time_s must equal driving_time_s")
+            if (
+                result.ending_speed_mps is not None
+                and abs(summary["accepted_speed_mps"] - result.ending_speed_mps) > 1e-8
+            ):
+                raise ValueError("completed accepted_speed_mps must equal ending_speed_mps")
+            if abs(
+                summary["accepted_state_of_charge"] - result.final_state_of_charge
+            ) > 1e-8:
+                raise ValueError(
+                    "completed accepted_state_of_charge must equal final_state_of_charge"
+                )
+    failed_lap = getattr(result, "failed_lap_index", None)
+    failed_cell = getattr(result, "failed_cell_index", None)
+    failed_update = getattr(result, "failed_cell_update_completed", None)
+    failure_fields = (failed_lap, failed_cell, failed_update)
+    if any(value is None for value in failure_fields):
+        if not all(value is None for value in failure_fields):
+            raise ValueError("failure location and update status must be supplied together")
+    elif result.completed:
+        raise ValueError("completed result cannot contain failure location")
+    if failed_lap is not None:
+        for name, value in (("failed_lap_index", failed_lap),
+                            ("failed_cell_index", failed_cell)):
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"{name} must be a nonnegative integer")
+            summary[name] = value
+    if failed_update is not None:
+        if not isinstance(failed_update, bool):
+            raise ValueError("failed_cell_update_completed must be a boolean")
+        summary["failed_cell_update_completed"] = failed_update
     if result.seam_speed_delta_mps is not None:
         summary["seam_speed_delta_mps"] = result.seam_speed_delta_mps
     return summary
@@ -451,6 +501,27 @@ def capture_lap_run(
     run_settings = settings.to_dict()
     summary = _result_payload(result)
     telemetry = _trace_payload(result)
+    if telemetry["sample_count"] and "accepted_time_s" in summary:
+        for field_name, samples_name in (
+            ("accepted_time_s", "sample_time_s"),
+            ("accepted_distance_m", "sample_distance_m"),
+        ):
+            if abs(summary[field_name] - telemetry[samples_name][-1]) > 1e-8:
+                raise ValueError(
+                    f"{field_name} must match the last accepted telemetry sample"
+                )
+        for field_name, channel_name in (
+            ("accepted_speed_mps", "vehicle.speed_mps"),
+            ("accepted_state_of_charge", "battery.state_of_charge"),
+        ):
+            channel = telemetry["channels"].get(channel_name)
+            if (
+                channel is not None and channel["values"][-1] is not None
+                and abs(summary[field_name] - channel["values"][-1]) > 1e-8
+            ):
+                raise ValueError(
+                    f"{field_name} must match the last accepted telemetry sample"
+                )
     warnings = list(manifest.limitations)
     if manifest.code_commit is None:
         warnings.append("Source commit was unavailable for this run.")
@@ -458,6 +529,16 @@ def capture_lap_run(
         warnings.append("The source checkout had uncommitted changes; the commit alone cannot reproduce it.")
     if telemetry["sample_count"] == 0:
         warnings.append("No synchronized telemetry samples were recorded.")
+    if (
+        result.failure_reason is not None
+        and summary.get("accepted_time_s") is not None
+        and result.driving_time_s > summary["accepted_time_s"] + 1e-9
+    ):
+        warnings.append(
+            "The failed cell advanced the vehicle before rejection; result "
+            "time, speed, and SOC describe that attempt, while accepted-prefix "
+            "fields and telemetry describe only checked cells."
+        )
     if any(channel["unit"] is None for channel in telemetry["channels"].values()):
         warnings.append("Some telemetry channels have unspecified units.")
     payload = {

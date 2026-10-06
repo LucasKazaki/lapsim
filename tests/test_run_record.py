@@ -345,6 +345,71 @@ class RunRecordTests(unittest.TestCase):
         self.assertEqual(payload["result"]["completed_laps"], 0)
         self.assertEqual(payload["telemetry"]["status"], "not_recorded")
 
+    def test_failed_run_record_separates_checked_prefix_from_attempted_state(self) -> None:
+        failed = EnduranceRunResult(
+            completed_laps=0,
+            driving_time_s=0.8,
+            lap_times_s=(),
+            pack_energy_kwh=0.0001,
+            final_state_of_charge=0.89,
+            failure_reason="supplied controls exceeded the path ceiling",
+            telemetry=Telemetry({
+                "vehicle.time_s": (0.5,),
+                "vehicle.distance_m": (1.0,),
+                "vehicle.speed_mps": (2.0,),
+            }),
+            ending_speed_mps=3.0,
+            accepted_time_s=0.5,
+            accepted_distance_m=1.0,
+            accepted_speed_mps=2.0,
+            accepted_state_of_charge=0.9,
+            failed_lap_index=0,
+            failed_cell_index=1,
+            failed_cell_update_completed=True,
+        )
+        payload = capture_lap_run(
+            failed, self.manifest, self.settings, actual_vehicle=self.vehicle,
+        ).to_dict()
+        saved = payload["result"]
+        self.assertEqual(saved["driving_time_s"], 0.8)
+        self.assertEqual(saved["accepted_time_s"], 0.5)
+        self.assertEqual(saved["accepted_distance_m"], 1.0)
+        self.assertEqual(saved["accepted_speed_mps"], 2.0)
+        self.assertEqual(saved["accepted_state_of_charge"], 0.9)
+        self.assertEqual(saved["failed_lap_index"], 0)
+        self.assertEqual(saved["failed_cell_index"], 1)
+        self.assertTrue(saved["failed_cell_update_completed"])
+        self.assertEqual(payload["telemetry"]["sample_count"], 1)
+        self.assertTrue(any(
+            "advanced the vehicle" in warning
+            for warning in payload["validity"]["warnings"]
+        ))
+        with self.assertRaisesRegex(ValueError, "accepted_time_s must match"):
+            capture_lap_run(
+                replace(failed, accepted_time_s=0.4),
+                self.manifest, self.settings, actual_vehicle=self.vehicle,
+            )
+        with self.assertRaisesRegex(ValueError, "accepted_speed_mps must match"):
+            capture_lap_run(
+                replace(failed, accepted_speed_mps=2.1),
+                self.manifest, self.settings, actual_vehicle=self.vehicle,
+            )
+        with self.assertRaisesRegex(ValueError, "failure location and update status"):
+            capture_lap_run(
+                replace(failed, failed_cell_update_completed=None),
+                self.manifest, self.settings, actual_vehicle=self.vehicle,
+            )
+        with self.assertRaisesRegex(ValueError, "cannot contain failure location"):
+            capture_lap_run(
+                replace(
+                    failed, completed_laps=1, lap_times_s=(0.8,),
+                    failure_reason=None, accepted_time_s=0.8,
+                    accepted_speed_mps=3.0,
+                    accepted_state_of_charge=0.89,
+                ),
+                self.manifest, self.settings, actual_vehicle=self.vehicle,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

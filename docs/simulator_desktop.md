@@ -178,8 +178,9 @@ show their signed difference and allow **Compare path numbers** for time,
 distance, speed, equivalent energy, and lateral acceleration. That window
 names the selected course, as does the two-car comparison window, so an open
 comparison retains its source label after the main course selection changes.
-A failed run
-returned by the solver is saved for diagnosis.
+A failed run returned by the solver is saved for diagnosis. Its record labels
+the last checked cell's time, distance, speed, and SOC separately from the
+vehicle state after an attempted rejected cell; partial times cannot be ranked.
 
 This AI mode rebuilds arc length and curvature from the selected course's x/y
 geometry. On the default fused course, ordinary centerline mode uses its

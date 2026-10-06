@@ -29,6 +29,9 @@ It is a deterministic, offline path planner. It minimizes a geometric curvature-
   new course. An imported v1 course still has assumed AI width and no surveyed
   cone boundary. Its saved run separates source bundle/geometry hashes from
   the actual solver-grid hash; see the [bundle format](course_bundle_format.md).
+- If showing a failed run record, read its `accepted_*` fields alongside the
+  attempted terminal state and failed lap/cell index. The attempted state can
+  be one rejected cell ahead of saved telemetry and is not a lap result.
 
 ## Data to request from the team
 

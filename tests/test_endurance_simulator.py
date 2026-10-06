@@ -95,6 +95,14 @@ class EnduranceSimulatorTests(TestCase):
                 assert result.telemetry is not None
                 self.assertEqual(result.telemetry.sample_count, 0)
                 self.assertEqual(progress, [])
+                self.assertEqual(result.accepted_time_s, 0.0)
+                self.assertEqual(result.accepted_distance_m, 0.0)
+                self.assertEqual(result.accepted_speed_mps, 5.0)
+                self.assertEqual(result.accepted_state_of_charge, 1.0)
+                self.assertEqual(result.failed_lap_index, 0)
+                self.assertEqual(result.failed_cell_index, 0)
+                self.assertTrue(result.failed_cell_update_completed)
+                self.assertGreater(result.driving_time_s, result.accepted_time_s)
 
     def test_small_persistent_steering_bias_is_rejected(self) -> None:
         track = small_closed_track()
@@ -118,6 +126,74 @@ class EnduranceSimulatorTests(TestCase):
         self.assertIsNotNone(result.telemetry)
         assert result.telemetry is not None
         self.assertEqual(result.telemetry.sample_count, 0)
+
+    def test_later_rejected_cell_reports_the_last_accepted_prefix(self) -> None:
+        track = small_closed_track()
+        vehicle = Vehicle()
+        constraints = PathConstraintSolver().solve(track, vehicle)
+        correct_angle = atan(vehicle.chassis.wheelbase_m / 25.0)
+
+        class WrongSteeringOnSecondCell:
+            def controls_at(self, lap_distance_m: float) -> Controls:
+                return Controls(
+                    motor_torque_request_nm=5.0,
+                    steering_angle_rad=(
+                        correct_angle if lap_distance_m < track.distance_m[1] else 0.0
+                    ),
+                )
+
+        progress = []
+        result = EnduranceSimulator().run(
+            vehicle, constraints, WrongSteeringOnSecondCell(),
+            EnduranceRunConfig(laps=1, starting_speed_mps=5.0),
+            record_telemetry=True, progress_callback=progress.append,
+        )
+
+        self.assertFalse(result.completed)
+        self.assertIn("supplied steering did not follow", result.failure_reason)
+        self.assertEqual((result.failed_lap_index, result.failed_cell_index), (0, 1))
+        self.assertTrue(result.failed_cell_update_completed)
+        assert result.telemetry is not None
+        self.assertEqual(result.telemetry.sample_count, 1)
+        self.assertEqual(len(progress), 1)
+        self.assertEqual(result.accepted_time_s, result.telemetry["vehicle.time_s"][-1])
+        self.assertEqual(result.accepted_distance_m, result.telemetry["vehicle.distance_m"][-1])
+        self.assertEqual(result.accepted_speed_mps, result.telemetry["vehicle.speed_mps"][-1])
+        self.assertEqual(
+            result.accepted_state_of_charge,
+            result.telemetry["battery.state_of_charge"][-1],
+        )
+        self.assertGreater(result.driving_time_s, result.accepted_time_s)
+        self.assertGreater(vehicle.distance_m, result.accepted_distance_m)
+
+    def test_soc_depletion_cell_is_recorded_and_reported_as_accepted(self) -> None:
+        track = small_closed_track()
+        vehicle = Vehicle()
+        vehicle.battery.initial_state_of_charge = 0.0
+        constraints = PathConstraintSolver().solve(track, vehicle)
+        controls = ConstantControlsProfile(Controls(
+            steering_angle_rad=atan(vehicle.chassis.wheelbase_m / 25.0),
+        ))
+        progress = []
+
+        result = EnduranceSimulator().run(
+            vehicle, constraints, controls,
+            EnduranceRunConfig(laps=1, starting_speed_mps=5.0),
+            record_telemetry=True, progress_callback=progress.append,
+        )
+
+        self.assertFalse(result.completed)
+        self.assertEqual(result.failure_reason, "battery state of charge depleted")
+        self.assertEqual((result.failed_lap_index, result.failed_cell_index), (0, 0))
+        self.assertTrue(result.failed_cell_update_completed)
+        assert result.telemetry is not None
+        self.assertEqual(result.telemetry.sample_count, 1)
+        self.assertEqual(len(progress), 1)
+        self.assertEqual(result.accepted_time_s, result.driving_time_s)
+        self.assertEqual(result.accepted_distance_m, track.distance_m[1])
+        self.assertEqual(result.accepted_speed_mps, result.ending_speed_mps)
+        self.assertEqual(result.accepted_state_of_charge, 0.0)
+        self.assertEqual(progress[-1].elapsed_time_s, result.accepted_time_s)
 
     def test_direct_controls_must_achieve_prescribed_curvature(self) -> None:
         track = small_closed_track()
@@ -180,6 +256,13 @@ class EnduranceSimulatorTests(TestCase):
         self.assertEqual(observed.starting_speed_mps, 8.0)
         self.assertEqual(observed.ending_speed_mps, vehicle.speed_mps)
         self.assertIsNone(observed.seam_speed_delta_mps)
+        self.assertEqual(observed.accepted_time_s, observed.driving_time_s)
+        self.assertAlmostEqual(observed.accepted_distance_m, 2.0 * track.length_m)
+        self.assertEqual(observed.accepted_speed_mps, observed.ending_speed_mps)
+        self.assertEqual(observed.accepted_state_of_charge, observed.final_state_of_charge)
+        self.assertIsNone(observed.failed_lap_index)
+        self.assertIsNone(observed.failed_cell_index)
+        self.assertIsNone(observed.failed_cell_update_completed)
         self.assertEqual(len(progress), 2 * track.cell_count)
         self.assertIsInstance(progress[0], LapProgressSnapshot)
         self.assertEqual(lightweight_progress, progress)
@@ -545,3 +628,9 @@ class EnduranceSimulatorTests(TestCase):
         self.assertIsNone(result.seam_speed_delta_mps)
         self.assertEqual(vehicle.distance_m, 0.0)
         self.assertEqual(progress, [])
+        self.assertEqual(result.accepted_time_s, 0.0)
+        self.assertEqual(result.accepted_distance_m, 0.0)
+        self.assertEqual(result.accepted_speed_mps, requested_speed_mps)
+        self.assertEqual(result.accepted_state_of_charge, 1.0)
+        self.assertEqual((result.failed_lap_index, result.failed_cell_index), (0, 0))
+        self.assertFalse(result.failed_cell_update_completed)
