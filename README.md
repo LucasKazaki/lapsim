@@ -42,6 +42,8 @@ main classes for concise imports.
   track/vehicle architecture, Michigan 2026 scoring, sweeps, and limitations.
 - [LapSim desktop app](docs/simulator_desktop.md): editable vehicle setup,
   top-down course navigation, lap outputs, and model assumptions.
+- [Source-backed vehicle profiles](docs/source_vehicle_profiles.md): local
+  engineering registry, profile adapter, provenance, and headless commands.
 
 ## LapSim desktop app
 
@@ -54,11 +56,11 @@ application:
 ```
 
 Or double-click `launch_lapsim.cmd` in the repository folder. The app loads the
-team endurance course, offers editable 2026 Prius LE benchmark inputs, and runs
-a one-lap simulation through the existing vehicle, tire, path-constraint, and
-endurance models. The solver defaults to 1 m cells; set it to 0.5 m to use the
-course data's full station resolution. The 2026–27 Formula SAE setup remains a
-separate future configuration until its specifications are confirmed.
+team endurance course, offers editable 2026 Prius LE benchmark inputs, saved
+local car profiles, source-backed TREV5 working scenarios when the external
+data package is present, and a two-car lap comparison. The solver defaults to
+1 m cells; set it to 0.5 m to use the course data's full station resolution.
+See the [desktop guide](docs/simulator_desktop.md) for data and model limits.
 
 ## Basic use
 

@@ -47,7 +47,7 @@ class _OperatingPoint:
 
 @dataclass(slots=True)
 class Vehicle:
-    """Parameters for the initial rear-wheel-drive TR21-based vehicle model."""
+    """Vehicle parameters, component state, and distance-domain force balance."""
 
     mass_kg: float = DEFAULT_MASS_KG
     tire: TireModel = field(default_factory=Tire)
@@ -95,6 +95,8 @@ class Vehicle:
     current_drive_force_n: float = field(init=False, default=0.0)
     current_friction_braking_force_n: float = field(init=False, default=0.0)
     current_regenerative_braking_force_n: float = field(init=False, default=0.0)
+    current_front_regenerative_braking_force_n: float = field(init=False, default=0.0)
+    current_rear_regenerative_braking_force_n: float = field(init=False, default=0.0)
     current_regenerative_power_w: float = field(init=False, default=0.0)
     maximum_friction_braking_force_n: float = field(init=False, default=0.0)
     current_rolling_resistance_force_n: float = field(init=False, default=0.0)
@@ -163,8 +165,8 @@ class Vehicle:
             "air_density_kgpm3": self.air_density_kgpm3,
         }
         for name, value in positive_parameters.items():
-            if value <= 0:
-                raise ValueError(f"{name} must be positive")
+            if not isfinite(value) or value <= 0:
+                raise ValueError(f"{name} must be finite and positive")
 
         nonnegative_parameters = {
             "rolling_resistance_coefficient": self.rolling_resistance_coefficient,
@@ -172,8 +174,8 @@ class Vehicle:
             "initial_speed_mps": self.initial_speed_mps,
         }
         for name, value in nonnegative_parameters.items():
-            if value < 0:
-                raise ValueError(f"{name} cannot be negative")
+            if not isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be finite and nonnegative")
 
     @property
     def components(self) -> tuple[ComponentModel, ...]:
@@ -261,6 +263,8 @@ class Vehicle:
         self.current_drive_force_n = 0.0
         self.current_friction_braking_force_n = 0.0
         self.current_regenerative_braking_force_n = 0.0
+        self.current_front_regenerative_braking_force_n = 0.0
+        self.current_rear_regenerative_braking_force_n = 0.0
         self.current_regenerative_power_w = 0.0
         self.maximum_friction_braking_force_n = 0.0
         self.current_rolling_resistance_force_n = 0.0
@@ -278,7 +282,7 @@ class Vehicle:
         )
 
     def maximum_regenerative_brake_force_n(self, vehicle_speed_mps: float) -> float:
-        """Return rear-axle regen capacity from motor, pack, and speed limits.
+        """Return driven-axle regen capacity from motor, pack, and speed limits.
 
         Tire grip and the driver's requested deceleration are applied separately.
         The baseline assumes the propulsion efficiencies are symmetric in the
@@ -314,7 +318,7 @@ class Vehicle:
         regenerative_brake_force_n: float,
         wheel_surface_speed_mps: float,
     ) -> float:
-        """Return nonnegative pack-charge power recovered from rear braking."""
+        """Return nonnegative pack-charge power recovered from wheel braking."""
 
         if regenerative_brake_force_n < 0.0:
             raise ValueError("regenerative_brake_force_n cannot be negative")
@@ -373,13 +377,35 @@ class Vehicle:
             controls.rear_brake_pressure_psi,
             self.tire.rolling_radius_m,
         )
-        front_brake_force_request_n = front_friction_brake_force_request_n
-        rear_brake_force_request_n = (
-            rear_friction_brake_force_request_n
-            + controls.rear_regenerative_brake_force_request_n
+        front_regenerative_brake_request_n = (
+            controls.front_regenerative_brake_force_request_n
         )
-        total_brake_force_request_n = (
-            front_brake_force_request_n + rear_brake_force_request_n
+        rear_regenerative_brake_request_n = (
+            controls.rear_regenerative_brake_force_request_n
+        )
+        if front_regenerative_brake_request_n and self.drivetrain.driven_axle == "rear":
+            raise ValueError("front regenerative braking requires front drive")
+        if rear_regenerative_brake_request_n and self.drivetrain.driven_axle == "front":
+            raise ValueError("rear regenerative braking requires rear drive")
+        total_regenerative_request_n = (
+            front_regenerative_brake_request_n + rear_regenerative_brake_request_n
+        )
+        maximum_regenerative_brake_force_n = (
+            self.maximum_regenerative_brake_force_n(initial_speed_mps)
+        )
+        if total_regenerative_request_n > maximum_regenerative_brake_force_n:
+            scale = maximum_regenerative_brake_force_n / total_regenerative_request_n
+            front_regenerative_brake_request_n *= scale
+            rear_regenerative_brake_request_n *= scale
+        front_brake_force_request_n = (
+            front_friction_brake_force_request_n + front_regenerative_brake_request_n
+        )
+        rear_brake_force_request_n = (
+            rear_friction_brake_force_request_n + rear_regenerative_brake_request_n
+        )
+        total_friction_brake_force_request_n = (
+            front_friction_brake_force_request_n
+            + rear_friction_brake_force_request_n
         )
 
         def operating_point(timestep_s: float) -> _OperatingPoint:
@@ -427,16 +453,55 @@ class Vehicle:
                         lateral_loads_and_capacity(lateral_force_n)
                     )
                 signed_lateral_force_n = curvature_sign * lateral_force_n
-                tire_states = self.tire.calculate_forces(
-                    tire_normal_loads,
-                    signed_lateral_force_n,
-                    requested_drive_force_n,
-                    front_brake_force_request_n,
-                    rear_brake_force_request_n,
-                    distance_step_m / timestep_s,
-                    timestep_s,
-                    drive_axle=self.drivetrain.driven_axle,
-                )
+
+                def tire_states_for_drive_request(drive_request_n: float) -> TireStates:
+                    return self.tire.calculate_forces(
+                        tire_normal_loads,
+                        signed_lateral_force_n,
+                        drive_request_n,
+                        front_brake_force_request_n,
+                        rear_brake_force_request_n,
+                        distance_step_m / timestep_s,
+                        timestep_s,
+                        drive_axle=self.drivetrain.driven_axle,
+                    )
+
+                def motor_envelope_excess_n(states: TireStates) -> float:
+                    motor_speed_rpm = self.drivetrain.motor_speed_rpm(
+                        states.driven_wheel_surface_speed_mps
+                    )
+                    available_torque_nm = (
+                        self.drivetrain.available_motor_torque_at_speed_rpm(
+                            motor_speed_rpm,
+                            self.battery,
+                        )
+                    )
+                    return (
+                        states.drive_force_n
+                        - self.drivetrain.wheel_force_from_motor_torque_n(
+                            available_torque_nm
+                        )
+                    )
+
+                tire_states = tire_states_for_drive_request(requested_drive_force_n)
+                if motor_envelope_excess_n(tire_states) > 1e-6:
+                    envelope_limited_force_n = brentq(
+                        lambda request_n: motor_envelope_excess_n(
+                            tire_states_for_drive_request(request_n)
+                        ),
+                        0.0,
+                        requested_drive_force_n,
+                        xtol=1e-6,
+                    )
+                    tire_states = tire_states_for_drive_request(
+                        envelope_limited_force_n
+                    )
+                    if motor_envelope_excess_n(tire_states) > 1e-6:
+                        # The RPM cutoff is discontinuous. Stay just below
+                        # it if the numerical root landed on its high side.
+                        tire_states = tire_states_for_drive_request(
+                            envelope_limited_force_n * (1.0 - 1e-6)
+                        )
                 cornering_drag_force_n = (
                     self.cornering_drag_coefficient
                     * lateral_force_n**2
@@ -465,16 +530,9 @@ class Vehicle:
                     + tire_states.braking_force_n
                     + resistance_force_n
                 )
-                if speed_limited_drive_force_n < requested_drive_force_n:
-                    tire_states = self.tire.calculate_forces(
-                        tire_normal_loads,
-                        signed_lateral_force_n,
-                        speed_limited_drive_force_n,
-                        front_brake_force_request_n,
-                        rear_brake_force_request_n,
-                        distance_step_m / timestep_s,
-                        timestep_s,
-                        drive_axle=self.drivetrain.driven_axle,
+                if speed_limited_drive_force_n < tire_states.drive_force_n:
+                    tire_states = tire_states_for_drive_request(
+                        speed_limited_drive_force_n
                     )
                 force_balance_acceleration_mps2 = (
                     tire_states.longitudinal_force_n - resistance_force_n
@@ -579,9 +637,19 @@ class Vehicle:
         )
         tire_normal_loads = operating_values.normal_loads_n
         drive_force_n = tire_states.drive_force_n
-        regenerative_braking_force_n = min(
-            controls.rear_regenerative_brake_force_request_n,
-            tire_states.rear_braking_force_n,
+        front_regenerative_tire_forces_n = tuple(
+            min(front_regenerative_brake_request_n / 2.0, state.braking_force_n)
+            for state in tire_states.front
+        )
+        rear_regenerative_tire_forces_n = tuple(
+            min(rear_regenerative_brake_request_n / 2.0, state.braking_force_n)
+            for state in tire_states.rear
+        )
+        front_regenerative_braking_force_n = sum(front_regenerative_tire_forces_n)
+        rear_regenerative_braking_force_n = sum(rear_regenerative_tire_forces_n)
+        regenerative_braking_force_n = (
+            front_regenerative_braking_force_n
+            + rear_regenerative_braking_force_n
         )
         friction_braking_force_n = max(
             tire_states.braking_force_n - regenerative_braking_force_n,
@@ -624,9 +692,21 @@ class Vehicle:
             wheel_surface_speed_mps,
             self.battery,
         )
+        regenerative_wheel_power_w = sum(
+            force_n * state.wheel_surface_speed_mps
+            for force_n, state in zip(
+                front_regenerative_tire_forces_n + rear_regenerative_tire_forces_n,
+                tire_states.all,
+                strict=True,
+            )
+        )
         regenerative_power_w = self.regenerative_battery_power_w(
             regenerative_braking_force_n,
-            wheel_surface_speed_mps,
+            (
+                regenerative_wheel_power_w / regenerative_braking_force_n
+                if regenerative_braking_force_n > 0.0
+                else 0.0
+            ),
         )
         net_battery_power_w = propulsion_battery_power_w - regenerative_power_w
         self.battery.update_state(net_battery_power_w, timestep_s)
@@ -638,18 +718,22 @@ class Vehicle:
             propulsion_battery_power_w,
         )
         self.brakes.update_state(
-            total_brake_force_request_n,
+            total_friction_brake_force_request_n,
             friction_braking_force_n,
             timestep_s,
             front_pressure_psi=controls.front_brake_pressure_psi,
             rear_pressure_psi=controls.rear_brake_pressure_psi,
-            front_friction_force_n=tire_states.front_braking_force_n,
+            front_friction_force_n=(
+                tire_states.front_braking_force_n
+                - front_regenerative_braking_force_n
+            ),
             rear_friction_force_n=max(
-                tire_states.rear_braking_force_n - regenerative_braking_force_n,
+                tire_states.rear_braking_force_n
+                - rear_regenerative_braking_force_n,
                 0.0,
             ),
-            front_force_request_n=front_brake_force_request_n,
-            rear_force_request_n=rear_brake_force_request_n,
+            front_force_request_n=front_friction_brake_force_request_n,
+            rear_force_request_n=rear_friction_brake_force_request_n,
         )
         self.suspension.update_state(tire_normal_loads, timestep_s)
         self.tire.update_state(tire_states, timestep_s)
@@ -678,6 +762,12 @@ class Vehicle:
         self.current_drive_force_n = drive_force_n
         self.current_friction_braking_force_n = friction_braking_force_n
         self.current_regenerative_braking_force_n = regenerative_braking_force_n
+        self.current_front_regenerative_braking_force_n = (
+            front_regenerative_braking_force_n
+        )
+        self.current_rear_regenerative_braking_force_n = (
+            rear_regenerative_braking_force_n
+        )
         self.current_regenerative_power_w = regenerative_power_w
         self.maximum_friction_braking_force_n = tire_states.longitudinal_capacity_n
         self.current_rolling_resistance_force_n = rolling_force_n
@@ -728,6 +818,12 @@ class Vehicle:
                 "vehicle.regenerative_braking_force_n": (
                     self.current_regenerative_braking_force_n
                 ),
+                "vehicle.front_regenerative_braking_force_n": (
+                    self.current_front_regenerative_braking_force_n
+                ),
+                "vehicle.rear_regenerative_braking_force_n": (
+                    self.current_rear_regenerative_braking_force_n
+                ),
                 "vehicle.regenerative_power_w": self.current_regenerative_power_w,
                 "vehicle.maximum_friction_braking_force_n": (
                     self.maximum_friction_braking_force_n
@@ -745,6 +841,9 @@ class Vehicle:
                 ),
                 "controls.rear_brake_pressure_psi": (
                     self.current_controls.rear_brake_pressure_psi
+                ),
+                "controls.front_regenerative_brake_force_request_n": (
+                    self.current_controls.front_regenerative_brake_force_request_n
                 ),
                 "controls.rear_regenerative_brake_force_request_n": (
                     self.current_controls.rear_regenerative_brake_force_request_n

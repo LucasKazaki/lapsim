@@ -355,15 +355,20 @@ class Brakes:
 
         aero_forces = vehicle.aero_forces_n(
             speed_mps,
-            speed_mps**2 * abs(curvature_per_m),
+            speed_mps**2 * curvature_per_m,
             air_density_kgpm3,
             curvature_per_m=curvature_per_m,
         )
         total_normal_force_n = vehicle.mass_kg * gravity_mps2 + aero_forces.downforce_n
         drag_force_n = aero_forces.drag_n
         rolling_force_n = vehicle.rolling_resistance_coefficient * total_normal_force_n
+        front_request_n, rear_request_n = self.axle_force_requests_from_pressures_n(
+            self.maximum_pressure_psi,
+            self.maximum_pressure_psi,
+            vehicle.tire.rolling_radius_m,
+        )
 
-        total_lateral_force_n = vehicle.mass_kg * speed_mps**2 * abs(curvature_per_m)
+        total_lateral_force_n = vehicle.mass_kg * speed_mps**2 * curvature_per_m
         def braking_residual(deceleration_mps2: float) -> float:
             tire_normal_loads = vehicle.suspension.tire_normal_loads_n(
                 vehicle.mass_kg,
@@ -371,14 +376,15 @@ class Brakes:
                 aero_forces,
                 vehicle.chassis,
                 longitudinal_acceleration_mps2=-deceleration_mps2,
-                lateral_acceleration_mps2=(speed_mps**2 * abs(curvature_per_m)),
+                lateral_acceleration_mps2=(speed_mps**2 * curvature_per_m),
             )
             tire_lateral_forces_n = vehicle.tire.lateral_forces_n(
                 tire_normal_loads, total_lateral_force_n
             )
-            braking_force_n = sum(
+            capacities_n = tuple(
                 vehicle.tire.combined_longitudinal_force_capacity_n(
-                    normal_load_n, lateral_force_n
+                    normal_load_n,
+                    lateral_force_n,
                 )
                 for normal_load_n, lateral_force_n in zip(
                     tire_normal_loads.all_n,
@@ -386,8 +392,30 @@ class Brakes:
                     strict=True,
                 )
             )
+            braking_force_n = sum(
+                min(request_n, capacity_n)
+                for request_n, capacity_n in zip(
+                    (
+                        front_request_n / 2.0,
+                        front_request_n / 2.0,
+                        rear_request_n / 2.0,
+                        rear_request_n / 2.0,
+                    ),
+                    capacities_n,
+                    strict=True,
+                )
+            )
+            achieved_lateral_force_n = sum(tire_lateral_forces_n.all_n)
+            cornering_drag_force_n = (
+                vehicle.cornering_drag_coefficient
+                * achieved_lateral_force_n**2
+                / total_normal_force_n
+            )
             force_limited_deceleration_mps2 = (
-                braking_force_n + drag_force_n + rolling_force_n
+                braking_force_n
+                + drag_force_n
+                + rolling_force_n
+                + cornering_drag_force_n
             ) / vehicle.effective_longitudinal_mass_kg
             return deceleration_mps2 - force_limited_deceleration_mps2
 
@@ -395,11 +423,15 @@ class Brakes:
             vehicle.tire.maximum_longitudinal_coefficient * total_normal_force_n
         )
         upper_deceleration_mps2 = (
-            maximum_tire_force_n + drag_force_n + rolling_force_n
+            min(maximum_tire_force_n, front_request_n + rear_request_n)
+            + drag_force_n
+            + rolling_force_n
+            + vehicle.cornering_drag_coefficient
+            * total_lateral_force_n**2
+            / total_normal_force_n
         ) / vehicle.effective_longitudinal_mass_kg
-        # The ideal constant-mu solution can land exactly on this analytical
-        # bound. Give Brent a small strict bracket so floating-point roundoff
-        # cannot leave both residual endpoints on the same side of zero.
+        # A constant-mu, pressure-limited solution can land exactly on this
+        # bound. Give Brent a strict bracket despite floating-point roundoff.
         upper_deceleration_mps2 = (
             1.01 * upper_deceleration_mps2 + self.solver_tolerance_mps2
         )

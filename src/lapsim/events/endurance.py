@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import atan, isfinite
+from math import atan, copysign, isfinite
 
 from vehicle_model.mech.brakes import DEFAULT_MAXIMUM_BRAKE_PRESSURE_PSI
 from vehicle_model.vehicle import Vehicle
@@ -135,10 +135,12 @@ class EnduranceSimulator:
         lateral_force_n: float,
         curvature_per_m: float,
         maximum_regenerative_brake_force_n: float = 0.0,
-    ) -> tuple[float, float, float]:
-        """Allocate friction and maximum-priority rear regen without losing grip."""
+    ) -> tuple[float, float, float, float]:
+        """Allocate friction and driven-axle regen within contact-patch grip."""
 
-        lateral_acceleration_mps2 = lateral_force_n / vehicle.mass_kg
+        lateral_acceleration_mps2 = (
+            copysign(lateral_force_n, curvature_per_m) / vehicle.mass_kg
+        )
         aero_forces = vehicle.aero_forces_n(
             vehicle.speed_mps,
             lateral_acceleration_mps2,
@@ -163,26 +165,55 @@ class EnduranceSimulator:
                 strict=True,
             )
         )
-        # Hydraulic and rear-regen requests are split equally left/right by the
-        # tire model.  Use the weaker contact patch on each axle so this
-        # controller does not assume it can transfer unused inside-tire demand
-        # to the more heavily loaded outside tire while cornering.
+        # Axle requests are split equally left/right by the tire model. Use
+        # the weaker contact patch so unused grip on the outside tire is not
+        # silently transferred to the inside tire while cornering.
         front_capacity_n = 2.0 * min(tire_capacities_n[:2])
         rear_capacity_n = 2.0 * min(tire_capacities_n[2:])
         total_capacity_n = front_capacity_n + rear_capacity_n
         allocated_force_n = min(brake_force_request_n, total_capacity_n)
         tire_capacity_saturated = brake_force_request_n >= total_capacity_n - 1e-9
-        regenerative_force_n = min(
-            maximum_regenerative_brake_force_n,
-            allocated_force_n,
-            rear_capacity_n,
+        driven_axle = vehicle.drivetrain.driven_axle
+        if driven_axle == "front":
+            front_regenerative_force_n = min(
+                maximum_regenerative_brake_force_n,
+                allocated_force_n,
+                front_capacity_n,
+            )
+            rear_regenerative_force_n = 0.0
+        elif driven_axle == "rear":
+            front_regenerative_force_n = 0.0
+            rear_regenerative_force_n = min(
+                maximum_regenerative_brake_force_n,
+                allocated_force_n,
+                rear_capacity_n,
+            )
+        else:
+            regenerative_force_n = min(
+                maximum_regenerative_brake_force_n,
+                allocated_force_n,
+            )
+            front_regenerative_force_n = (
+                regenerative_force_n * front_capacity_n / total_capacity_n
+                if total_capacity_n > 0.0
+                else 0.0
+            )
+            rear_regenerative_force_n = (
+                regenerative_force_n - front_regenerative_force_n
+            )
+        friction_force_n = (
+            allocated_force_n
+            - front_regenerative_force_n
+            - rear_regenerative_force_n
         )
-        friction_force_n = allocated_force_n - regenerative_force_n
-        rear_friction_capacity_n = rear_capacity_n - regenerative_force_n
+        front_friction_capacity_n = (
+            front_capacity_n - front_regenerative_force_n
+        )
+        rear_friction_capacity_n = rear_capacity_n - rear_regenerative_force_n
         front_fraction = vehicle.brakes.front_brake_force_fraction
         front_force_n = min(
             friction_force_n * front_fraction,
-            front_capacity_n,
+            front_friction_capacity_n,
         )
         rear_force_n = min(
             friction_force_n * (1.0 - front_fraction),
@@ -190,7 +221,7 @@ class EnduranceSimulator:
         )
         remaining_force_n = friction_force_n - front_force_n - rear_force_n
         if remaining_force_n > 0.0:
-            front_headroom_n = front_capacity_n - front_force_n
+            front_headroom_n = front_friction_capacity_n - front_force_n
             rear_headroom_n = rear_friction_capacity_n - rear_force_n
             total_headroom_n = front_headroom_n + rear_headroom_n
             if total_headroom_n > 0.0:
@@ -218,7 +249,12 @@ class EnduranceSimulator:
             # tire capacity; the tire model remains the physical force limit.
             front_pressure_psi = vehicle.brakes.maximum_pressure_psi
             rear_pressure_psi = vehicle.brakes.maximum_pressure_psi
-        return front_pressure_psi, rear_pressure_psi, regenerative_force_n
+        return (
+            front_pressure_psi,
+            rear_pressure_psi,
+            front_regenerative_force_n,
+            rear_regenerative_force_n,
+        )
 
     def _torque_profile_controls(
         self,
@@ -276,7 +312,8 @@ class EnduranceSimulator:
             (
                 front_pressure_psi,
                 rear_pressure_psi,
-                regenerative_brake_force_request_n,
+                front_regenerative_brake_force_request_n,
+                rear_regenerative_brake_force_request_n,
             ) = self._brake_controls_for_target_force(
                 vehicle,
                 brake_force_request_n=brake_force_request_n,
@@ -316,7 +353,8 @@ class EnduranceSimulator:
             )
             front_pressure_psi = 0.0
             rear_pressure_psi = 0.0
-            regenerative_brake_force_request_n = 0.0
+            front_regenerative_brake_force_request_n = 0.0
+            rear_regenerative_brake_force_request_n = 0.0
 
         torque_limited = motor_torque_request_nm < profile_torque_nm - 1e-9
         return (
@@ -324,8 +362,11 @@ class EnduranceSimulator:
                 motor_torque_request_nm=motor_torque_request_nm,
                 front_brake_pressure_psi=front_pressure_psi,
                 rear_brake_pressure_psi=rear_pressure_psi,
+                front_regenerative_brake_force_request_n=(
+                    front_regenerative_brake_force_request_n
+                ),
                 rear_regenerative_brake_force_request_n=(
-                    regenerative_brake_force_request_n
+                    rear_regenerative_brake_force_request_n
                 ),
                 steering_angle_rad=atan(
                     curvature_per_m * vehicle.chassis.wheelbase_m

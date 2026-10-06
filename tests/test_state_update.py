@@ -1,6 +1,6 @@
 """Tests for distance-domain vehicle state updates."""
 
-from math import isclose
+from math import isclose, pi
 from unittest import TestCase
 
 from lapsim import Controls
@@ -139,6 +139,9 @@ class VehicleStateUpdateTests(TestCase):
 
     def test_independent_axle_and_regen_brake_requests_are_retained(self) -> None:
         vehicle = Vehicle(initial_speed_mps=10.0)
+        vehicle.battery.initial_state_of_charge = 0.5
+        vehicle.battery.max_charge_power_w = 80_000.0
+        vehicle.reset_state()
         front_pressure_psi, rear_pressure_psi = (
             vehicle.brakes.axle_pressures_for_force_requests_psi(
                 400.0,
@@ -156,9 +159,101 @@ class VehicleStateUpdateTests(TestCase):
             0.01,
         )
 
-        self.assertEqual(vehicle.brakes.current_force_request_n, 700.0)
+        self.assertEqual(vehicle.brakes.current_force_request_n, 600.0)
         self.assertEqual(vehicle.brakes.current_front_force_request_n, 400.0)
-        self.assertEqual(vehicle.brakes.current_rear_force_request_n, 300.0)
+        self.assertEqual(vehicle.brakes.current_rear_force_request_n, 200.0)
+        self.assertAlmostEqual(vehicle.current_regenerative_braking_force_n, 100.0)
+        self.assertAlmostEqual(vehicle.tire.current_states.braking_force_n, 700.0)
+
+    def test_front_drive_regen_uses_front_tire_forces_and_wheel_power(self) -> None:
+        vehicle = Vehicle(initial_speed_mps=10.0)
+        vehicle.drivetrain.driven_axle = "front"
+        vehicle.battery.initial_state_of_charge = 0.5
+        vehicle.battery.max_charge_power_w = 80_000.0
+        vehicle.reset_state()
+
+        vehicle.update_state(
+            Controls(front_regenerative_brake_force_request_n=500.0),
+            0.1,
+        )
+
+        states = vehicle.tire.current_states
+        self.assertAlmostEqual(
+            vehicle.current_front_regenerative_braking_force_n,
+            states.front_braking_force_n,
+        )
+        self.assertEqual(vehicle.current_rear_regenerative_braking_force_n, 0.0)
+        self.assertEqual(vehicle.brakes.current_force_request_n, 0.0)
+        self.assertAlmostEqual(
+            vehicle.current_regenerative_power_w,
+            sum(
+                state.braking_force_n * state.wheel_surface_speed_mps
+                for state in states.front
+            )
+            * vehicle.regenerative_efficiency,
+        )
+        self.assertAlmostEqual(
+            vehicle.effective_longitudinal_mass_kg
+            * vehicle.longitudinal_acceleration_mps2,
+            states.longitudinal_force_n - vehicle.current_resistance_force_n,
+        )
+        self.assertLess(vehicle.battery.current_power_w, 0.0)
+
+    def test_motor_power_uses_slipping_wheel_speed_without_hidden_pack_clipping(
+        self,
+    ) -> None:
+        vehicle = Vehicle(initial_speed_mps=25.0)
+        vehicle.update_state(Controls(motor_torque_request_nm=1.0e6), 0.1)
+
+        motor = vehicle.drivetrain.motor
+        motor_speed_rad_s = motor.current_speed_rpm * 2.0 * pi / 60.0
+        motor_mechanical_power_w = motor.current_torque_nm * motor_speed_rad_s
+        pack_power_for_delivered_torque_w = (
+            motor_mechanical_power_w
+            / motor.efficiency
+            / vehicle.drivetrain.inverter.efficiency
+        )
+        self.assertAlmostEqual(
+            vehicle.battery.current_power_w,
+            pack_power_for_delivered_torque_w,
+            delta=1e-5,
+        )
+        self.assertLessEqual(
+            motor.current_torque_nm,
+            motor.torque_limit_nm(motor.current_speed_rpm) + 1e-8,
+        )
+        self.assertGreater(vehicle.tire.current_states.driven_slip_ratio, 0.0)
+
+        near_rpm_limit = Vehicle(initial_speed_mps=42.5)
+        near_rpm_limit.update_state(
+            Controls(motor_torque_request_nm=1.0e6),
+            0.1,
+        )
+        self.assertGreater(near_rpm_limit.drivetrain.current_motor_torque_nm, 0.0)
+        self.assertLess(
+            near_rpm_limit.drivetrain.current_motor_speed_rpm,
+            near_rpm_limit.drivetrain.motor.max_speed_rpm,
+        )
+
+    def test_regen_cannot_brake_with_full_battery_or_unpowered_axle(self) -> None:
+        full_battery_vehicle = Vehicle(initial_speed_mps=10.0)
+        full_battery_vehicle.update_state(
+            Controls(rear_regenerative_brake_force_request_n=500.0),
+            0.1,
+        )
+        self.assertEqual(
+            full_battery_vehicle.current_regenerative_braking_force_n,
+            0.0,
+        )
+        self.assertEqual(full_battery_vehicle.tire.current_states.braking_force_n, 0.0)
+
+        front_drive_vehicle = Vehicle(initial_speed_mps=10.0)
+        front_drive_vehicle.drivetrain.driven_axle = "front"
+        with self.assertRaisesRegex(ValueError, "requires rear drive"):
+            front_drive_vehicle.update_state(
+                Controls(rear_regenerative_brake_force_request_n=100.0),
+                0.1,
+            )
 
     def test_regen_returns_energy_to_charge_enabled_battery(self) -> None:
         vehicle = Vehicle(initial_speed_mps=10.0)

@@ -71,7 +71,7 @@ class BrakeParameterTests(TestCase):
         self.assertEqual(tire.longitudinal_coefficient(1_000.0), 1.8)
         self.assertEqual(tire.lateral_coefficient(500.0), 1.8)
 
-    def test_constant_mu_braking_solver_has_strict_root_bracket(self) -> None:
+    def test_constant_mu_braking_is_limited_by_hydraulic_force(self) -> None:
         vehicle = Vehicle(tire=Tire(constant_friction_coefficient=1.8))
 
         deceleration_mps2 = vehicle.brakes.maximum_deceleration_mps2(
@@ -82,4 +82,19 @@ class BrakeParameterTests(TestCase):
             air_density_kgpm3=vehicle.air_density_kgpm3,
         )
 
-        self.assertGreater(deceleration_mps2, vehicle.gravity_mps2)
+        front_force_n, rear_force_n = (
+            vehicle.brakes.axle_force_requests_from_pressures_n(
+                vehicle.brakes.maximum_pressure_psi,
+                vehicle.brakes.maximum_pressure_psi,
+                vehicle.tire.rolling_radius_m,
+            )
+        )
+        aero = vehicle.aero_forces_n(20.0)
+        expected_deceleration_mps2 = (
+            front_force_n
+            + rear_force_n
+            + aero.drag_n
+            + vehicle.rolling_resistance_coefficient
+            * (vehicle.mass_kg * vehicle.gravity_mps2 + aero.downforce_n)
+        ) / vehicle.effective_longitudinal_mass_kg
+        self.assertAlmostEqual(deceleration_mps2, expected_deceleration_mps2)

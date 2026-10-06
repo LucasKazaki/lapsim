@@ -92,12 +92,18 @@ def run_one_lap(
         maximum_passes=120,
         maximum_entry_iterations=20,
         steady_state_iterations=24,
+        gravity_mps2=vehicle.gravity_mps2,
+        air_density_kgpm3=vehicle.air_density_kgpm3,
         maximum_brake_pressure_psi=vehicle.brakes.maximum_pressure_psi,
     ).solve(track, vehicle)
     return EnduranceSimulator().run(
         vehicle,
         constraints,
         profile,
-        EnduranceRunConfig(laps=1, path_speed_tolerance_mps=0.06),
+        EnduranceRunConfig(
+            laps=1,
+            path_speed_tolerance_mps=0.06,
+            maximum_brake_pressure_psi=vehicle.brakes.maximum_pressure_psi,
+        ),
         record_telemetry=True,
     )

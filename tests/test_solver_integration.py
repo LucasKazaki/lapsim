@@ -9,6 +9,57 @@ from vehicle_model import Vehicle
 
 
 class SolverIntegrationTests(TestCase):
+    def test_corner_exit_force_stays_within_driven_tires_combined_grip(self) -> None:
+        speed_mps = 8.0
+        curvature_per_m = 0.06
+        for driven_axle, indices in (
+            ("front", (0, 1)),
+            ("rear", (2, 3)),
+            ("all", (0, 1, 2, 3)),
+        ):
+            with self.subTest(driven_axle=driven_axle):
+                vehicle = Vehicle()
+                vehicle.drivetrain.driven_axle = driven_axle
+                solver = LapTimeSolver(vehicle)
+                acceleration_mps2 = solver._forward_acceleration_mps2(
+                    speed_mps,
+                    curvature_per_m,
+                )
+                drag_and_cornering_n, rolling_n, _ = (
+                    solver._resistance_and_downforce(speed_mps, curvature_per_m)
+                )
+                inferred_drive_force_n = (
+                    vehicle.effective_longitudinal_mass_kg * acceleration_mps2
+                    + drag_and_cornering_n
+                    + rolling_n
+                )
+                lateral_acceleration_mps2 = speed_mps**2 * curvature_per_m
+                aero = vehicle.aero_forces_n(
+                    speed_mps,
+                    lateral_acceleration_mps2,
+                    curvature_per_m=curvature_per_m,
+                )
+                normal_loads = vehicle.suspension.tire_normal_loads_n(
+                    vehicle.mass_kg,
+                    vehicle.gravity_mps2,
+                    aero,
+                    vehicle.chassis,
+                    longitudinal_acceleration_mps2=acceleration_mps2,
+                    lateral_acceleration_mps2=lateral_acceleration_mps2,
+                )
+                lateral_forces = vehicle.tire.lateral_forces_n(
+                    normal_loads,
+                    vehicle.mass_kg * lateral_acceleration_mps2,
+                )
+                driven_grip_n = sum(
+                    vehicle.tire.combined_longitudinal_force_capacity_n(
+                        normal_loads.all_n[index],
+                        lateral_forces.all_n[index],
+                    )
+                    for index in indices
+                )
+                self.assertLessEqual(inferred_drive_force_n, driven_grip_n + 0.01)
+
     def test_minimum_time_profile_runs_with_composed_vehicle(self) -> None:
         quarter_turn = Curve(radius_m=10.0, span_rad=pi / 2.0)
         track = Track.from_segments(

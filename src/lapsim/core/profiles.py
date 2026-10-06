@@ -71,6 +71,10 @@ class PiecewiseLinearControlsProfile:
                 lower.rear_brake_pressure_psi,
                 upper.rear_brake_pressure_psi,
             ),
+            front_regenerative_brake_force_request_n=blend(
+                lower.front_regenerative_brake_force_request_n,
+                upper.front_regenerative_brake_force_request_n,
+            ),
             rear_regenerative_brake_force_request_n=blend(
                 lower.rear_regenerative_brake_force_request_n,
                 upper.rear_regenerative_brake_force_request_n,

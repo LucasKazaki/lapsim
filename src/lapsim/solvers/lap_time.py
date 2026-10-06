@@ -208,32 +208,23 @@ class LapTimeSolver:
         speed_mps: float,
         curvature_per_m: float,
     ) -> float:
+        lateral_acceleration_mps2 = speed_mps**2 * curvature_per_m
         drag_force_n, rolling_force_n, _ = self._resistance_and_downforce(
             speed_mps,
             curvature_per_m,
         )
         aero_forces = self.vehicle.aero_forces_n(
             speed_mps,
-            speed_mps**2 * abs(curvature_per_m),
+            lateral_acceleration_mps2,
             self.air_density_kgpm3,
             curvature_per_m=curvature_per_m,
-        )
-        tire_normal_loads = self.vehicle.suspension.tire_normal_loads_n(
-            self.vehicle.mass_kg,
-            self.gravity_mps2,
-            aero_forces,
-            self.vehicle.chassis,
-            lateral_acceleration_mps2=(speed_mps**2 * abs(curvature_per_m)),
         )
         motor_force_n = self.vehicle.drivetrain.available_wheel_force_n(
             speed_mps,
             self.vehicle.battery,
         )
-        combined_tire_force_n = self._combined_longitudinal_tire_force_n(
-            speed_mps,
-            curvature_per_m,
-            tire_normal_loads.all_n,
-        )
+        lateral_force_n = self.vehicle.mass_kg * lateral_acceleration_mps2
+        driven_axle = self.vehicle.drivetrain.driven_axle
 
         acceleration_mps2 = 0.0
         for _ in range(LOAD_TRANSFER_SOLVER_ITERATIONS):
@@ -243,58 +234,34 @@ class LapTimeSolver:
                 aero_forces,
                 self.vehicle.chassis,
                 longitudinal_acceleration_mps2=acceleration_mps2,
-                lateral_acceleration_mps2=(speed_mps**2 * abs(curvature_per_m)),
+                lateral_acceleration_mps2=lateral_acceleration_mps2,
             )
-            rear_traction_force_n = self._tire_force_capacity_n(
-                tire_normal_loads.rear_n,
-                lateral=False,
+            tire_lateral_forces_n = self.vehicle.tire.lateral_forces_n(
+                tire_normal_loads,
+                lateral_force_n,
+            )
+            driven_indices = (
+                (0, 1)
+                if driven_axle == "front"
+                else (2, 3)
+                if driven_axle == "rear"
+                else (0, 1, 2, 3)
+            )
+            driven_traction_force_n = sum(
+                self.vehicle.tire.combined_longitudinal_force_capacity_n(
+                    tire_normal_loads.all_n[index],
+                    tire_lateral_forces_n.all_n[index],
+                )
+                for index in driven_indices
             )
             drive_force_n = min(
                 motor_force_n,
-                rear_traction_force_n,
-                combined_tire_force_n,
+                driven_traction_force_n,
             )
             acceleration_mps2 = (
                 drive_force_n - drag_force_n - rolling_force_n
             ) / self.vehicle.effective_longitudinal_mass_kg
         return acceleration_mps2
-
-    def _combined_longitudinal_tire_force_n(
-        self,
-        speed_mps: float,
-        curvature_per_m: float,
-        tire_normal_loads_n: Sequence[float],
-    ) -> float:
-        lateral_force_n = self.vehicle.mass_kg * speed_mps**2 * abs(curvature_per_m)
-        lateral_force_limit_n = self._tire_force_capacity_n(
-            tire_normal_loads_n,
-            lateral=True,
-        )
-        if lateral_force_limit_n <= 0:
-            return 0.0
-        lateral_utilization = min(1.0, lateral_force_n / lateral_force_limit_n)
-        remaining_longitudinal_fraction = sqrt(max(0.0, 1.0 - lateral_utilization**2))
-        longitudinal_force_limit_n = self._tire_force_capacity_n(
-            tire_normal_loads_n,
-            lateral=False,
-        )
-        return longitudinal_force_limit_n * remaining_longitudinal_fraction
-
-    def _tire_force_capacity_n(
-        self,
-        tire_normal_loads_n: Sequence[float],
-        *,
-        lateral: bool,
-    ) -> float:
-        if lateral:
-            return sum(
-                self.vehicle.tire.lateral_force_capacity_n(normal_load_n)
-                for normal_load_n in tire_normal_loads_n
-            )
-        return sum(
-            self.vehicle.tire.longitudinal_force_capacity_n(normal_load_n)
-            for normal_load_n in tire_normal_loads_n
-        )
 
     def _resistance_and_downforce(
         self,

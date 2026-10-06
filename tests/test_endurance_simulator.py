@@ -267,6 +267,35 @@ class EnduranceSimulatorTests(TestCase):
             )
         )
 
+    def test_brake_controller_routes_regen_to_driven_axle(self) -> None:
+        for driven_axle in ("front", "rear", "all"):
+            with self.subTest(driven_axle=driven_axle):
+                vehicle = Vehicle(initial_speed_mps=10.0)
+                vehicle.drivetrain.driven_axle = driven_axle
+                (
+                    _front_pressure_psi,
+                    _rear_pressure_psi,
+                    front_regen_n,
+                    rear_regen_n,
+                ) = EnduranceSimulator._brake_controls_for_target_force(
+                    vehicle,
+                    brake_force_request_n=1_000.0,
+                    target_acceleration_mps2=-3.0,
+                    lateral_force_n=0.0,
+                    curvature_per_m=0.0,
+                    maximum_regenerative_brake_force_n=1_000.0,
+                )
+                if driven_axle == "front":
+                    self.assertGreater(front_regen_n, 0.0)
+                    self.assertEqual(rear_regen_n, 0.0)
+                elif driven_axle == "rear":
+                    self.assertEqual(front_regen_n, 0.0)
+                    self.assertGreater(rear_regen_n, 0.0)
+                else:
+                    self.assertGreater(front_regen_n, 0.0)
+                    self.assertGreater(rear_regen_n, 0.0)
+                self.assertAlmostEqual(front_regen_n + rear_regen_n, 1_000.0)
+
     def test_default_brake_pressure_limit_is_300_psi(self) -> None:
         self.assertEqual(EnduranceRunConfig().maximum_brake_pressure_psi, 300.0)
         self.assertEqual(PathConstraintSolver().maximum_brake_pressure_psi, 300.0)
