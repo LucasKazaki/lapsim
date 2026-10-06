@@ -7,6 +7,8 @@ from math import pi
 
 import pytest
 
+from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.courses.track import Curve, Track
 from lapsim.ui.course_catalog import (
     COURSE_OPTIONS,
     DEFAULT_COURSE_ID,
@@ -84,6 +86,18 @@ def test_synthetic_solver_grid_keeps_exact_arcs(requested_maximum_m: float) -> N
         assert solver is source
     else:
         assert solver.cell_count > source.cell_count
+        solver_by_station = {
+            station: (x_m, y_m)
+            for station, x_m, y_m in zip(
+                solver.distance_m, solver.x_m, solver.y_m, strict=True,
+            )
+        }
+        assert all(
+            solver_by_station[station] == pytest.approx((x_m, y_m))
+            for station, x_m, y_m in zip(
+                source.distance_m, source.x_m, source.y_m, strict=True,
+            )
+        )
 
 
 def test_fused_solver_grid_still_uses_recorded_curvature() -> None:
@@ -95,6 +109,21 @@ def test_fused_solver_grid_still_uses_recorded_curvature() -> None:
     )
 
 
+def test_synthetic_solver_route_rejects_mislabeled_source() -> None:
+    fused = load_course(DEFAULT_COURSE_ID)
+    with pytest.raises(ValueError, match="does not match the catalog"):
+        solver_track_for_course(SYNTHETIC_DEMO_COURSE_ID, fused, 1.0)
+    coherent_circle = SpatialTrack.from_track(
+        Track.from_segments([Curve(10.0, 2.0 * pi)]),
+        maximum_cell_length_m=0.5,
+    )
+    coherent_circle.validate_coherent_arcs()
+    with pytest.raises(ValueError, match="does not match the catalog"):
+        solver_track_for_course(SYNTHETIC_DEMO_COURSE_ID, coherent_circle, 0.25)
+    with pytest.raises(ValueError, match="does not match the catalog"):
+        solver_track_for_course(DEFAULT_COURSE_ID, coherent_circle, 1.0)
+
+
 @pytest.mark.parametrize("bad_step", [True, 0.0, -1.0, float("nan"), 1e-6])
 def test_solver_grid_rejects_invalid_or_excessive_work(bad_step: float) -> None:
     source = load_course(SYNTHETIC_DEMO_COURSE_ID)
@@ -102,11 +131,11 @@ def test_solver_grid_rejects_invalid_or_excessive_work(bad_step: float) -> None:
         solver_track_for_course(SYNTHETIC_DEMO_COURSE_ID, source, bad_step)
 
 
-def test_synthetic_segment_rounding_cannot_bypass_compute_cap() -> None:
+def test_synthetic_source_cell_subdivision_cannot_bypass_compute_cap() -> None:
     source = load_course(SYNTHETIC_DEMO_COURSE_ID)
     assert source.length_m / 0.0391 < 5000
     assert solver_cell_count_for_course(
         SYNTHETIC_DEMO_COURSE_ID, source, 0.0391,
-    ) == 5004
+    ) == 5096
     with pytest.raises(ValueError, match="5000-cell compute cap"):
         solver_track_for_course(SYNTHETIC_DEMO_COURSE_ID, source, 0.0391)

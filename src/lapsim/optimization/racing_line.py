@@ -820,6 +820,49 @@ def _audit_curvature_path(
     )
 
 
+def _adaptive_fourth_strength(
+    baseline_time_s: float | None,
+    baseline_audit: CurvaturePathAudit | None,
+    full_trial: RacingLineTrial,
+    half_trial: RacingLineTrial,
+    minimum_gain_s: float,
+) -> float:
+    """Choose one bounded car-specific probe after the first three paths.
+
+    A convex quadratic through the eligible times at strengths 0, 0.5, and
+    1 estimates an interior minimum. The finite grid keeps the fourth probe
+    away from those already timed and makes the budget deterministic. If the
+    three path audits and model times cannot support an interior estimate,
+    retain the established three-quarter probe.
+    """
+
+    fallback = 0.75
+    if (
+        baseline_time_s is None
+        or baseline_audit is None or not baseline_audit.valid
+        or full_trial.lap_time_s is None
+        or full_trial.path_audit is None or not full_trial.path_audit.valid
+        or half_trial.lap_time_s is None
+        or half_trial.path_audit is None or not half_trial.path_audit.valid
+    ):
+        return fallback
+
+    full_time_s = full_trial.lap_time_s
+    half_time_s = half_trial.lap_time_s
+    # A bracketed minimum must stand clear of the existing numerical tie
+    # margin on both sides before a parabolic estimate is useful.
+    if min(baseline_time_s, full_time_s) - half_time_s <= minimum_gain_s:
+        return fallback
+    curvature_s = baseline_time_s - 2.0 * half_time_s + full_time_s
+    if curvature_s <= 0.0:
+        return fallback
+    vertex = 0.5 + (baseline_time_s - full_time_s) / (4.0 * curvature_s)
+    if not isfinite(vertex) or not 0.0 < vertex < 1.0:
+        return fallback
+    strengths = (0.25, 0.375, 0.625, 0.75, 0.875)
+    return min(strengths, key=lambda strength: (abs(strength - vertex), strength))
+
+
 def compare_lines_with_lap_model(
     vehicle: object,
     plan: RacingLinePlan,
@@ -832,8 +875,10 @@ def compare_lines_with_lap_model(
     """Evaluate a candidate and its baseline with the same lap physics.
 
     The vehicle is copied before each run because a lap mutates pack and
-    chassis state. The full geometric candidate and validated half- and
-    three-quarter-offset paths are tried. The default evaluates one lap per path; opt-in
+    chassis state. The full geometric candidate and a validated half-offset
+    path are tried first. One bounded fourth strength is chosen from their
+    eligible car-specific times, or defaults to three-quarter offset. The
+    default evaluates one lap per path; opt-in
     ``speed_periodic`` permits one dry seam-speed probe plus one final lap per
     path, at a fixed initial vehicle/pack state. This checks speed at the
     closed-course seam, not full-state periodicity. A candidate is selected
@@ -999,9 +1044,17 @@ def compare_lines_with_lap_model(
         # Scaling a valid spline offset toward zero preserves every convex
         # lateral corridor bound. Each intermediate x/y geometry still needs
         # its own fold, self-intersection, and modeled-arc clearance checks.
-        # Three-quarter strength recovers useful clearance-limited lines when
-        # the full path fails but the half path leaves room on the course.
-        for strength, phase in ((0.5, "half"), (0.75, "three_quarter")):
+        # The fourth strength is selected after the half trial so it may use
+        # this car's eligible model times without adding another physics pass.
+        for trial_index in range(2):
+            if trial_index == 0:
+                strength, phase = 0.5, "half"
+            else:
+                strength = _adaptive_fourth_strength(
+                    baseline_time, baseline_path_audit,
+                    trials[0], trials[1], minimum_selection_gain_s,
+                )
+                phase = "three_quarter" if strength == 0.75 else "adaptive"
             try:
                 trial_track = _scaled_candidate_track(plan, strength)
             except ValueError as error:

@@ -178,7 +178,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         selected = RunRecord.load(selected_path).to_dict()
         planning = selected["settings"]["path_planning"]
         assert planning["mode"] == "experimental_racing_line"
-        assert planning["algorithm"].endswith("v4_sampled_arc_clearance")
+        assert planning["algorithm"].endswith("v5_adaptive_strength")
         assert planning["selected_mode"] == "no_comparable_path"
         assert planning["diagnostic_only"] is True
         assert planning["rank_status"] == "invalid_processed_baseline"
@@ -305,6 +305,17 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         )
         assert planning["source_course_id"] == SYNTHETIC_DEMO_COURSE_ID
         assert planning["synthetic_course"] is True
+        assert planning["algorithm"].endswith("v5_adaptive_strength")
+        assert planning["fourth_strength_policy"] == (
+            "eligible_quadratic_grid_v1_fallback_0.75"
+        )
+        counterpart_id = planning["comparison_counterpart_run_id"]
+        counterpart = RunRecord.load(tmp_path / f"{counterpart_id}.json").to_dict()
+        counterpart_planning = counterpart["settings"]["path_planning"]
+        assert counterpart_planning["algorithm"] == planning["algorithm"]
+        assert counterpart_planning["fourth_strength_policy"] == (
+            planning["fourth_strength_policy"]
+        )
         assert planning["comparison_is_valid"] is True
         assert planning["diagnostic_only"] is False
         assert planning["selected_mode"] == "candidate"

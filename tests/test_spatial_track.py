@@ -1,6 +1,6 @@
 """Tests for generic vehicle-independent spatial tracks."""
 
-from math import pi
+from math import hypot, pi, sqrt
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
@@ -123,6 +123,8 @@ class SpatialTrackTests(TestCase):
         self.assertAlmostEqual(audit.curvature_minus_xy_turn_rad, 0.0)
         self.assertAlmostEqual(audit.curvature_integrated_closure_gap_m, 0.0)
         self.assertGreater(audit.maximum_arc_chord_mismatch_m, 0.9)
+        with self.assertRaisesRegex(ValueError, "cell 0 arc chord mismatch"):
+            square.validate_coherent_arcs()
 
     def test_geometry_audit_preserves_clockwise_turn_sign(self) -> None:
         clockwise = SpatialTrack.from_track(
@@ -201,6 +203,145 @@ class SpatialTrackTests(TestCase):
         self.assertAlmostEqual(
             later_zero_chord.curvature_integrated_closure_gap_m, 3.0
         )
+
+    def test_coherent_arc_gate_and_refinement_accept_analytic_courses(self) -> None:
+        courses = (
+            SpatialTrack.from_track(
+                Track.from_segments([Curve(10.0, 2.0 * pi)]),
+                maximum_cell_length_m=0.5,
+            ),
+            SpatialTrack.from_track(
+                Track.from_segments([
+                    Straight(40.0), Curve(12.0, pi / 2.0),
+                    Straight(20.0), Curve(12.0, pi / 2.0),
+                    Straight(40.0), Curve(12.0, pi / 2.0),
+                    Straight(20.0), Curve(12.0, pi / 2.0),
+                ]),
+                maximum_cell_length_m=0.5,
+            ),
+        )
+        for source in courses:
+            with self.subTest(source_length_m=source.length_m):
+                source.validate_coherent_arcs()
+                self.assertIs(source.refine_arcs(1.0), source)
+                refined = source.refine_arcs(0.2)
+                refined.validate_coherent_arcs()
+                self.assertTrue(refined.closed)
+                self.assertLessEqual(max(refined.cell_length_m), 0.2 + 1e-12)
+                self.assertGreater(refined.cell_count, source.cell_count)
+                for index, station_m in enumerate(source.distance_m):
+                    refined_index = refined.distance_m.index(station_m)
+                    self.assertEqual(refined.x_m[refined_index], source.x_m[index])
+                    self.assertEqual(refined.y_m[refined_index], source.y_m[index])
+                    if index < source.cell_count:
+                        next_index = refined.distance_m.index(source.distance_m[index + 1])
+                        self.assertTrue(all(
+                            value == source.curvature_per_m[index]
+                            for value in refined.curvature_per_m[refined_index:next_index]
+                        ))
+
+        circle, _ = courses
+        refined_circle = circle.refine_arcs(0.2)
+        fraction = refined_circle.distance_m[1] / circle.distance_m[1]
+        linear_x = circle.x_m[0] + fraction * (circle.x_m[1] - circle.x_m[0])
+        linear_y = circle.y_m[0] + fraction * (circle.y_m[1] - circle.y_m[0])
+        self.assertGreater(
+            hypot(refined_circle.x_m[1] - linear_x, refined_circle.y_m[1] - linear_y),
+            1e-5,
+        )
+
+    def test_coherent_arc_gate_rejects_closed_endpoint_mismatch(self) -> None:
+        circle = SpatialTrack.from_track(
+            Track.from_segments([Curve(10.0, 2.0 * pi)]),
+            maximum_cell_length_m=1.0,
+        )
+        displaced = SpatialTrack(
+            distance_m=circle.distance_m,
+            x_m=(*circle.x_m[:-1], circle.x_m[-1] + 0.01),
+            y_m=circle.y_m,
+            curvature_per_m=circle.curvature_per_m,
+        )
+        with self.assertRaisesRegex(ValueError, "closed endpoint mismatch"):
+            displaced.validate_coherent_arcs()
+
+    def test_coherent_arc_gate_rejects_local_error_with_passing_lap_totals(self) -> None:
+        radius_m = 10.0
+        chord_m = sqrt(2.0) * radius_m
+        rise_m = sqrt(3.0) * chord_m / 2.0
+        cell_length_m = pi * radius_m / 2.0
+        rhombus = SpatialTrack(
+            distance_m=tuple(index * cell_length_m for index in range(5)),
+            x_m=(0.0, chord_m, 1.5 * chord_m, 0.5 * chord_m, 0.0),
+            y_m=(0.0, 0.0, rise_m, rise_m, 0.0),
+            curvature_per_m=(1.0 / radius_m,) * 4,
+        )
+        audit = rhombus.geometry_audit()
+        self.assertLess(audit.maximum_arc_chord_mismatch_m, 1e-12)
+        self.assertLess(abs(audit.curvature_minus_xy_turn_rad), 1e-12)
+        self.assertLess(audit.curvature_integrated_closure_gap_m, 1e-12)
+        with self.assertRaisesRegex(ValueError, "cell 1 arc vector endpoint mismatch"):
+            rhombus.validate_coherent_arcs()
+
+    def test_coherent_arc_gate_rejects_accumulated_position_drift(self) -> None:
+        drifted = SpatialTrack(
+            distance_m=tuple(float(index) for index in range(21)),
+            x_m=tuple(index * (1.0 + 2e-7) for index in range(21)),
+            y_m=(0.0,) * 21,
+            curvature_per_m=(0.0,) * 20,
+            closed=False,
+        )
+        with self.assertRaisesRegex(ValueError, "cell 5 cumulative position drift"):
+            drifted.validate_coherent_arcs()
+
+    def test_coherent_arc_gate_rejects_heading_seam(self) -> None:
+        kinked_seam = SpatialTrack.from_track(
+            Track.from_segments([
+                Curve(3.0, pi / 2.0),
+                Curve(1.0, pi / 2.0),
+                Curve(2.0, pi / 2.0),
+                Straight(2.0),
+            ]),
+            maximum_cell_length_m=0.2,
+            close_geometry=False,
+        )
+        self.assertLess(kinked_seam.geometry_audit().endpoint_separation_m, 1e-12)
+        with self.assertRaisesRegex(ValueError, "heading seam mismatch"):
+            kinked_seam.validate_coherent_arcs()
+
+    def test_coarse_exact_semicircles_do_not_alias_heading_gate(self) -> None:
+        circle = SpatialTrack(
+            distance_m=(0.0, pi, 2.0 * pi),
+            x_m=(1.0, -1.0, 1.0),
+            y_m=(0.0, 0.0, 0.0),
+            curvature_per_m=(1.0, 1.0),
+        )
+        circle.validate_coherent_arcs()
+        refined = circle.refine_arcs(0.25)
+        refined.validate_coherent_arcs()
+        self.assertEqual(refined.x_m[refined.distance_m.index(pi)], -1.0)
+        self.assertEqual(refined.y_m[refined.distance_m.index(pi)], 0.0)
+
+    def test_coherent_arc_gate_rejects_shipped_fused_course(self) -> None:
+        source = Path(__file__).resolve().parents[1]
+        fused = SpatialTrack.from_csv(
+            source / "analysis/data/track/gnss_imu_endurance_track.csv"
+        )
+        with self.assertRaisesRegex(ValueError, "closed endpoint mismatch"):
+            fused.validate_coherent_arcs()
+        with self.assertRaisesRegex(ValueError, "closed endpoint mismatch"):
+            fused.refine_arcs(0.25)
+
+    def test_refine_arcs_rejects_bad_step_and_excessive_cells(self) -> None:
+        circle = SpatialTrack.from_track(
+            Track.from_segments([Curve(10.0, 2.0 * pi)]),
+            maximum_cell_length_m=1.0,
+        )
+        for bad_step in (True, 0.0, -1.0, float("nan"), float("inf")):
+            with self.subTest(bad_step=bad_step):
+                with self.assertRaisesRegex(ValueError, "finite and positive"):
+                    circle.refine_arcs(bad_step)
+        with self.assertRaisesRegex(ValueError, "100000-cell compute cap"):
+            circle.refine_arcs(1e-6)
 
     def test_can_convert_cells_to_legacy_segment_track(self) -> None:
         spatial = SpatialTrack(

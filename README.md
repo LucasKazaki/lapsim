@@ -79,16 +79,24 @@ studies. Completed and interrupted lap runs save local JSON records of inputs
 and telemetry. The centerline solver defaults to a requested maximum 1 m step.
 The fused course is resampled to that step; the synthetic course retains its
 exact generated arc cells (at most 0.5 m) when the request is 0.5 m or larger.
-Requests finer than the longest synthetic source cell regenerate the analytic
-arcs, subject to a 5,000-cell guard that counts the actual generated segments.
+For a finer request, the desktop strictly validates the synthetic source's
+station, x/y, and constant-curvature geometry, then subdivides each source
+cell into analytic straight or circular subarcs. Every original station and
+endpoint remains on the solver grid. A 5,000-cell guard counts the resulting
+subdivisions. This is a check of the numerical solver representation, not a
+survey or evidence of measured course boundaries.
 See the [desktop guide](docs/simulator_desktop.md) for data and model limits.
 
 The **Driving path** control defaults to the ordinary centerline solver and
 does no path optimization. Its optional **AI racing line (experimental)** mode
 uses an assumed track half-width, vehicle width, and margin to propose one
 smooth line and compare it with a geometric centerline using the same car and
-physics solver. It also tests half-offset and three-quarter-offset lines from
-the same geometric proposal. Each of at most four paths receives one dry
+physics solver. The baseline (strength 0), full offset (1), and
+half offset (0.5) run first. If all three paths have eligible audits and times,
+and half beats both endpoints by more than 0.05 s, a convex quadratic through
+those times chooses the nearest safeguarded fourth strength from 0.25, 0.375,
+0.625, 0.75, or 0.875. Otherwise the fourth strength is 0.75. Each of at most
+four paths receives one dry
 speed-seam pass and one recorded pass, for at most eight lap-model passes. A
 completed lap is eligible for a path comparison only when its start
 and finish speeds agree within 0.005 m/s and a sampled integration of its
@@ -111,7 +119,8 @@ benchmark at torque request 0.8, a current speed-periodic model run gave
 **16.885573 s** on the eligible geometric baseline, **15.624285 s** on an
 eligible half-offset path, and **15.007724 s** on an eligible three-quarter
 path. The full-offset trial completed in **14.457921 s** but failed sampled
-clearance by **0.040636 m**, so the three-quarter path was selected with a
+clearance by **0.040636 m**. That failed audit makes the fourth strength fall
+back to 0.75, so the three-quarter path was selected with a
 **1.877848 s** modeled lead under the 0.05 s rule. This is a synthetic software
 demonstration, not a surveyed Formula SAE course or a validated team-car gain.
 
@@ -136,7 +145,10 @@ the geometric baseline and best tested AI path after a completed AI run,
 without running physics again. AI trials save linked primary/displayed and
 counterpart run records when both paths return runs, including diagnostic
 records that must not be ranked. Records identify the selected source course
-by ID; AI metadata also marks a synthetic course explicitly. Candidate-only
+by ID; AI metadata also marks a synthetic course explicitly and records the
+fourth-strength policy and every tested `candidate_trials[].offset_strength`.
+Read those values rather than assuming the fourth path always uses 0.75.
+Candidate-only
 displays with a failed baseline are marked diagnostic. Completed v2 lap records
 can be checked on demand with the programmatic `replay_lap_record()` API: it
 reruns their recorded cell controls on the saved solver grid and reports

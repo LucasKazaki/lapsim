@@ -104,14 +104,20 @@ def solver_cell_count_for_course(
     if source_track.length_m / maximum_cell_length_m > 5000:
         raise ValueError("requested solver grid exceeds the 5000-cell compute cap")
     if course_id == SYNTHETIC_DEMO_COURSE_ID:
+        if source_track != _synthetic_demo_track(0.5):
+            raise ValueError("Synthetic course source does not match the catalog")
         if maximum_cell_length_m >= max(source_track.cell_length_m) - 1e-10:
             return source_track.cell_count
-        return (
-            2 * ceil(40.0 / maximum_cell_length_m)
-            + 2 * ceil(20.0 / maximum_cell_length_m)
-            + 4 * ceil((6.0 * pi) / maximum_cell_length_m)
+        # Refinement keeps the source's analytic straight/arc boundaries.
+        # Count their subdivisions, rather than rebuilding larger segments
+        # with a different rounding of their cell boundaries.
+        return sum(
+            ceil(length_m / maximum_cell_length_m)
+            for length_m in source_track.cell_length_m
         )
     if course_id == DEFAULT_COURSE_ID:
+        if source_track != load_team_endurance_track():
+            raise ValueError("Fused course source does not match the catalog")
         return ceil(source_track.length_m / maximum_cell_length_m)
     raise ValueError(f"Unknown course ID: {course_id!r}")
 
@@ -122,8 +128,8 @@ def solver_track_for_course(
     """Retain exact synthetic arcs; resample only the fused recorded course.
 
     A user step is a maximum, so the 0.5 m synthetic source may stay finer.
-    A finer requested step rebuilds the analytic straights and circular arcs
-    rather than averaging curvature and linearly interpolating their x/y.
+    A finer requested step subdivides the verified analytic source arcs,
+    preserving their stations and curvature instead of averaging across them.
     """
 
     if solver_cell_count_for_course(
@@ -131,9 +137,10 @@ def solver_track_for_course(
     ) > 5000:
         raise ValueError("requested solver grid exceeds the 5000-cell compute cap")
     if course_id == SYNTHETIC_DEMO_COURSE_ID:
+        source_track.validate_coherent_arcs()
         if maximum_cell_length_m >= max(source_track.cell_length_m) - 1e-10:
             return source_track
-        return _synthetic_demo_track(maximum_cell_length_m)
+        return source_track.refine_arcs(maximum_cell_length_m)
     if course_id == DEFAULT_COURSE_ID:
         return resample_track(source_track, maximum_cell_length_m)
     raise ValueError(f"Unknown course ID: {course_id!r}")

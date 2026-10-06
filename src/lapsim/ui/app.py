@@ -424,7 +424,8 @@ class LapSimDesktop:
             text=("AI mode uses a deterministic path optimizer and an assumed "
                   "uniform corridor. No measured course widths are available. "
                   "It uses a 2 m path grid and up to four paths, with two "
-                  "speed-seam passes per path. "
+                  "speed-seam passes per path. Its fourth path can follow "
+                  "the selected car's eligible lap times. "
                   "Its rebuilt x/y course has different lap times from the "
                   "default source-curvature course. Solver step above applies "
                   "to centerline mode. Synthetic straights/arcs retain their "
@@ -1794,7 +1795,7 @@ class LapSimDesktop:
         if ai_assumptions is not None:
             self._path_comparison = None
             self.ai_result_text.set(
-                "Evaluating geometric centerline, full, half, and three-quarter lines…"
+                "Evaluating geometric centerline, full, half, and adaptive lines…"
             )
             if self.ai_compare_button is not None:
                 self.ai_compare_button.configure(state="disabled")
@@ -1943,6 +1944,7 @@ class LapSimDesktop:
                         "full": "Full AI line",
                         "half": "Half AI line",
                         "three_quarter": "Three-quarter AI line",
+                        "adaptive": "Car-adaptive AI line",
                     }.get(phase, phase)
                     self._queue_live_progress(
                         profile_name, label, phase_track, snapshot
@@ -2008,7 +2010,8 @@ class LapSimDesktop:
             )
             path_planning = {
                 "mode": "experimental_racing_line",
-                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v4_sampled_arc_clearance",
+                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v5_adaptive_strength",
+                "fourth_strength_policy": "eligible_quadratic_grid_v1_fallback_0.75",
                 "record_role": "selected_result",
                 "source_course_id": self.course_spec.course_id,
                 "source_course_label": self.course_spec.label,
@@ -2133,6 +2136,7 @@ class LapSimDesktop:
                     path_planning={
                         "mode": "experimental_racing_line",
                         "algorithm": path_planning["algorithm"],
+                        "fourth_strength_policy": path_planning["fourth_strength_policy"],
                         "record_role": "comparison_counterpart",
                         "source_course_id": self.course_spec.course_id,
                         "source_course_label": self.course_spec.label,

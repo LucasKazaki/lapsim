@@ -48,15 +48,19 @@ Driver request applies to every run; **Max solver step** applies to standard
 centerline runs. AI mode builds its separate nominal 2 m geometric grid.
 Invalid or non-finite values are rejected before a run begins, and requests
 producing more than 5,000 actual cells are refused. For the synthetic course,
-the guard counts cells in each straight and arc separately. The default
+the guard counts subdivisions of each original straight or arc cell. The default
 requested maximum is 1 m. The fused course is resampled at the requested
 maximum, which may average
 curvature across original cell boundaries and change lap time. The synthetic
 course keeps its exact generated straight/circular-arc cells (at most 0.5 m)
 for any request at least as large as its longest source cell. A finer request
-regenerates those analytic segments instead of averaging their curvature or
-linearly interpolating their x/y geometry. A coarser request therefore does
-not reduce the synthetic course's solver-cell count.
+first strictly validates the source station, x/y, and constant-curvature
+geometry, then subdivides each original cell into analytic straight or
+circular subarcs. It keeps every source station and endpoint, without
+averaging curvature or interpolating interior x/y along the old chord. A
+coarser request therefore does not reduce the synthetic course's solver-cell
+count. This gate checks a numerical solver representation; it does not establish
+a surveyed track or measured left/right boundaries.
 
 The numeric outputs are lap time, peak speed, average speed, distance, net
 equivalent-pack energy, peak lateral acceleration in g, and lap entry/exit
@@ -78,7 +82,9 @@ prepass. As the physics solver accepts cells, Driver view shows its latest
 elapsed time, station, speed, and lateral acceleration on a driver-centered
 top-down view of that run's **solver-grid reference x/y**. The desktop keeps only the newest update and draws
 at roughly 10 updates per second, so it does not slow the solver to real time.
-AI mode labels geometric baseline, full, half, and three-quarter lines separately. Its
+AI mode labels geometric baseline, full, half, and its fourth line separately;
+that fourth line is labeled three-quarter on fallback or car-adaptive when a
+different strength is selected. Its
 dry seam-speed probe sends no live updates; Driver view shows accepted cells
 from the final recorded pass for each path.
 Rejected cells are not shown as completed movement. After a completed lap,
@@ -114,14 +120,19 @@ switching back restores the default recorded course's scenario inputs. The
 app has no measured boundaries and does not infer
 vehicle body width from the car profile. A deterministic, bounded planner
 proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
-torque request through a newly derived geometric centerline and full-, half-,
-and three-quarter-offset candidates. For each path it makes one dry
+torque request through a newly derived geometric centerline, then full- and
+half-offset candidates. If all three paths have eligible audits and times,
+and half beats both endpoints by more than **0.05 s**, a convex quadratic
+through their times estimates an interior best strength. The fourth path uses
+the nearest safeguarded choice from **0.25, 0.375, 0.625, 0.75, 0.875**;
+otherwise it falls back to **0.75**. This is a bounded probe for the selected
+car, not a learned or closed-loop controller. For each path it makes one dry
 seam-speed probe and one final recorded lap, starting each from the same fresh
 initial car and pack state. The final pass starts at the probe's exit speed;
 its finish-minus-start speed must be within **0.005 m/s**. This is at most eight
 full physics passes across four paths. Pack charge and other states need not
-match at the seam. Evaluating three strengths can catch an interior line that
-is faster than the full path in the modeled time calculation.
+match at the seam. The fourth path has the same modeled-path and speed-seam
+eligibility requirements as every other path.
 
 Before a time can be compared, the app integrates each solver path's saved
 constant-curvature cells and samples **four positions per modeled cell**, plus
@@ -171,6 +182,8 @@ width and 0.3 m margin, baseline/full/half/three-quarter laps complete in
 sampled usable-corridor excess is **0.095506/0.908195/0.501981/0.705117 m** and the
 position seam misses by roughly **0.75–0.77 m**. No AI path is selected from
 those runs. This does not change the ordinary centerline calculation.
+The failed baseline audit makes the fourth strength fall back to 0.75 in this
+example; its completed time remains diagnostic.
 
 For a controlled AI demonstration, choose **Synthetic loop · AI demo**, the
 Prius benchmark, torque request **0.8**, and its initial assumed ±3 m
@@ -181,6 +194,7 @@ candidate. Those three sampled modeled-path audits passed; the full-offset
 trial completed in **14.4579210447 s** but failed sampled clearance by
 **0.0406357247 m**. The three-quarter path was selected on a
 **1.8778484355 s** modeled lead with **191.104159 m** path length. The
+failed full-offset audit made the fourth strength fall back to **0.75**. The
 comparison took about **2.48 s** on this machine. These are synthetic model
 numbers, not surveyed-course or team-car performance. An on-demand fixed-path
 `SpatialTrack.refine(1.0)` probe gave **16.882064565 s** baseline,
@@ -193,7 +207,12 @@ grid convergence.
 The primary AI run record includes every tested offset strength and its
 reported eligible or diagnostic result, audit status, and exact saved solver
 geometry and telemetry, including the explicit starting speed of its final
-pass. When a second physics trial returned a run, the app also saves one
+pass. Its `settings.path_planning.algorithm` ends in `v5_adaptive_strength`;
+`fourth_strength_policy` names the bounded quadratic grid and 0.75 fallback.
+Read `candidate_trials[].offset_strength`, sampled audit, and eligible versus
+diagnostic time for the actual fourth probe; its position in the trial list
+does not imply a fixed 0.75 strength or an eligible result. When a second
+physics trial returned a run, the app also saves one
 linked counterpart with its own geometry and telemetry; the primary record
 names its ID and role. A third trial may have only its summary saved. For an
 audit-failed default course, the primary record is flagged diagnostic, and
@@ -322,7 +341,9 @@ programmatic `track.refine(maximum_cell_length_m)` instead splits each original
 cell, retains every old boundary and its piecewise-constant curvature, and
 interpolates interior x/y points along the old chord. It preserves track
 length, each original cell's signed turn, and its length-weighted squared
-curvature, with a 100,000-cell safety cap. It does not change the desktop's
+curvature, with a 100,000-cell safety cap. This chord-linear QA method remains
+unchanged; it does not perform the synthetic course's analytic subarc
+subdivision or certify geometric consistency. It does not change the desktop's
 default grid or repair an inconsistent source map. Grid spacing still affects
 the speed-envelope and cell integration, so resolution checks remain
 necessary. The Prius benchmark is for software demonstration and input

@@ -597,12 +597,67 @@ def test_vehicle_model_selects_half_strength_if_full_line_is_slower(
     assert comparison.baseline_time_s == 100.0
     assert comparison.candidate_time_s == 98.0
     assert comparison.candidate_strength == 0.5
-    assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5, 0.75)
+    assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5, 0.375)
     assert tuple(trial.lap_time_s for trial in comparison.trials) == (102.0, 98.0, 98.0)
     assert comparison.candidate_track is calls[2]
     assert comparison.selected_mode == "candidate"
     assert comparison.selected_track is calls[2]
     assert comparison.selected_run is comparison.candidate_run
+
+
+def test_fourth_strength_adapts_to_car_times_with_four_path_budget(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    plan = _adaptive_plan
+    baseline_xy = np.r_[plan.baseline_track.x_m, plan.baseline_track.y_m]
+    full_offset_xy = np.r_[plan.candidate_track.x_m, plan.candidate_track.y_m] - baseline_xy
+    full_offset_norm2 = float(np.dot(full_offset_xy, full_offset_xy))
+    calls = []
+
+    def strength_of(track):
+        if track is plan.baseline_track:
+            return 0.0
+        if track is plan.candidate_track:
+            return 1.0
+        offset_xy = np.r_[track.x_m, track.y_m] - baseline_xy
+        return float(np.dot(offset_xy, full_offset_xy) / full_offset_norm2)
+
+    def fake_periodic(vehicle, track, **kwargs):
+        strength = strength_of(track)
+        calls.append((vehicle.optimum, strength, kwargs["maximum_lap_passes"]))
+        if "progress_callback" in kwargs:
+            kwargs["progress_callback"](object())
+        run = SimpleNamespace(
+            completed=True,
+            driving_time_s=100.0 + 8.0 * (strength - vehicle.optimum) ** 2,
+            failure_reason=None,
+        )
+        return SimpleNamespace(run=run, converged=True, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_speed_periodic_lap", fake_periodic)
+    for optimum, expected_fourth in ((0.3, 0.25), (0.65, 0.625)):
+        phases = []
+        comparison = compare_lines_with_lap_model(
+            SimpleNamespace(optimum=optimum), plan,
+            torque_request_fraction=0.7, speed_periodic=True,
+            progress_callback=lambda phase, track, snapshot: phases.append(phase),
+        )
+        car_calls = [item for item in calls if item[0] == optimum]
+        assert len(car_calls) == 4
+        assert [item[1] for item in car_calls] == pytest.approx(
+            (0.0, 1.0, 0.5, expected_fourth)
+        )
+        assert all(item[2] == 2 for item in car_calls)
+        assert phases == ["baseline", "full", "half", "adaptive"]
+        assert tuple(trial.strength for trial in comparison.trials) == (
+            1.0, 0.5, expected_fourth,
+        )
+        assert comparison.trials[2].path_audit is not None
+        assert comparison.trials[2].path_audit.valid
+        assert comparison.candidate_strength == expected_fourth
+        assert comparison.candidate_time_s < comparison.trials[1].lap_time_s
+        assert comparison.selected_run is comparison.candidate_run
+    assert len(calls) == 8  # four paths per car, at most two full-model passes each
 
 
 def test_full_strength_win_is_retained_after_interior_trials(_adaptive_plan, monkeypatch) -> None:
@@ -777,7 +832,7 @@ def test_opt_in_speed_periodic_rejects_nonconverged_trials_but_keeps_runs(
     assert comparison.selected_mode == "candidate"
 
 
-def test_faster_three_quarter_run_needs_speed_seam_convergence(
+def test_faster_adaptive_run_needs_speed_seam_convergence(
     _adaptive_plan, monkeypatch,
 ) -> None:
     calls = []
@@ -794,7 +849,7 @@ def test_faster_three_quarter_run_needs_speed_seam_convergence(
         converged = len(calls) < 4
         return SimpleNamespace(
             run=run, converged=converged,
-            failure_reason=None if converged else "three-quarter seam not periodic",
+            failure_reason=None if converged else "adaptive seam not periodic",
         )
 
     monkeypatch.setattr("lapsim.ui.simulation.run_speed_periodic_lap", fake_periodic)
@@ -806,7 +861,7 @@ def test_faster_three_quarter_run_needs_speed_seam_convergence(
     assert len(calls) == 4
     assert comparison.trials[2].lap_time_s is None
     assert comparison.trials[2].diagnostic_lap_time_s == 90.0
-    assert comparison.trials[2].error == "three-quarter seam not periodic"
+    assert comparison.trials[2].error == "adaptive seam not periodic"
     assert comparison.candidate_strength == 0.5
     assert comparison.candidate_time_s == 98.0
     assert comparison.candidate_track is calls[2]
@@ -966,7 +1021,7 @@ def test_progress_callback_identifies_phase_and_exact_trial_track(
         progress_callback=lambda phase, track, snapshot: received.append((phase, track, snapshot)),
     )
     assert tuple(phase for phase, _, _ in received) == (
-        "baseline", "full", "half", "three_quarter",
+        "baseline", "full", "half", "adaptive",
     )
     for (track, snapshot), (_, callback_track, callback_snapshot) in zip(
         emitted, received, strict=True,

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from math import atan2, ceil, copysign, cos, fsum, hypot, isfinite, sin
+from math import atan2, ceil, copysign, cos, fsum, hypot, isfinite, pi, remainder, sin
+from numbers import Real
 from os import PathLike
 from pathlib import Path
 import csv
@@ -13,6 +14,15 @@ from .track import Curve, Straight, Track
 
 
 _MAX_REFINED_CELL_COUNT = 100_000
+
+
+def _sinc(value: float) -> float:
+    """Return sin(value) / value without losing precision near zero."""
+
+    if abs(value) < 1e-6:
+        squared = value * value
+        return 1.0 - squared / 6.0 + squared * squared / 120.0
+    return sin(value) / value
 
 
 @dataclass(frozen=True, slots=True)
@@ -165,6 +175,199 @@ class SpatialTrack:
             curvature_per_m=tuple(curvature_per_m),
             closed=self.closed,
         )
+
+    def validate_coherent_arcs(
+        self,
+        *,
+        position_tolerance_m: float = 1e-6,
+        heading_tolerance_rad: float = 1e-6,
+    ) -> None:
+        """Require saved points to follow the prescribed circular solver arcs.
+
+        The first chord fixes the starting arc heading. Every subsequent cell
+        must reach its saved endpoint using its station length and curvature;
+        accumulated position and the heading at a closed seam are checked
+        separately. Polygon chord winding is not a gate: a valid coarse arc
+        can turn by pi inside one cell while its chord aliases that turn.
+        This is a numerical geometry gate, not a survey or road boundary
+        certification. The legacy fused course deliberately fails it.
+        """
+
+        for name, tolerance in (
+            ("position_tolerance_m", position_tolerance_m),
+            ("heading_tolerance_rad", heading_tolerance_rad),
+        ):
+            if (
+                isinstance(tolerance, bool)
+                or not isinstance(tolerance, Real)
+                or not isfinite(tolerance)
+                or tolerance <= 0.0
+            ):
+                raise ValueError(f"{name} must be finite and positive")
+
+        if self.closed:
+            endpoint_gap_m = hypot(
+                self.x_m[-1] - self.x_m[0], self.y_m[-1] - self.y_m[0]
+            )
+            if endpoint_gap_m > position_tolerance_m:
+                raise ValueError(
+                    "closed endpoint mismatch: "
+                    f"{endpoint_gap_m:.9g} m exceeds {position_tolerance_m:g} m"
+                )
+
+        first_dx = self.x_m[1] - self.x_m[0]
+        first_dy = self.y_m[1] - self.y_m[0]
+        if hypot(first_dx, first_dy) == 0.0:
+            raise ValueError("cell 0 has a zero chord; starting heading is undefined")
+        first_half_turn = 0.5 * self.curvature_per_m[0] * self.cell_length_m[0]
+        if not isfinite(first_half_turn):
+            raise ValueError("cell 0 has a nonfinite prescribed turn")
+        first_arc_chord_m = self.cell_length_m[0] * _sinc(first_half_turn)
+        if not isfinite(first_arc_chord_m) or first_arc_chord_m == 0.0:
+            raise ValueError("cell 0 has an undefined arc-chord heading")
+        heading_rad = (
+            atan2(first_dy, first_dx)
+            - first_half_turn
+            - (pi if first_arc_chord_m < 0.0 else 0.0)
+        )
+
+        integrated_x_m = self.x_m[0]
+        integrated_y_m = self.y_m[0]
+        for index, (length_m, curvature) in enumerate(
+            zip(self.cell_length_m, self.curvature_per_m, strict=True)
+        ):
+            observed_dx = self.x_m[index + 1] - self.x_m[index]
+            observed_dy = self.y_m[index + 1] - self.y_m[index]
+            observed_chord_m = hypot(observed_dx, observed_dy)
+            if observed_chord_m == 0.0:
+                raise ValueError(f"cell {index} has a zero chord")
+            half_turn = 0.5 * curvature * length_m
+            if not isfinite(half_turn):
+                raise ValueError(f"cell {index} has a nonfinite prescribed turn")
+            arc_chord_m = length_m * _sinc(half_turn)
+            if not isfinite(arc_chord_m):
+                raise ValueError(f"cell {index} has a nonfinite arc chord")
+            chord_gap_m = abs(observed_chord_m - abs(arc_chord_m))
+            if chord_gap_m > position_tolerance_m:
+                raise ValueError(
+                    f"cell {index} arc chord mismatch: {chord_gap_m:.9g} m "
+                    f"exceeds {position_tolerance_m:g} m"
+                )
+            midpoint_heading = heading_rad + half_turn
+            expected_dx = arc_chord_m * cos(midpoint_heading)
+            expected_dy = arc_chord_m * sin(midpoint_heading)
+            vector_gap_m = hypot(
+                observed_dx - expected_dx, observed_dy - expected_dy
+            )
+            if vector_gap_m > position_tolerance_m:
+                raise ValueError(
+                    f"cell {index} arc vector endpoint mismatch: "
+                    f"{vector_gap_m:.9g} m exceeds {position_tolerance_m:g} m"
+                )
+            integrated_x_m += expected_dx
+            integrated_y_m += expected_dy
+            position_drift_m = hypot(
+                integrated_x_m - self.x_m[index + 1],
+                integrated_y_m - self.y_m[index + 1],
+            )
+            if position_drift_m > position_tolerance_m:
+                raise ValueError(
+                    f"cell {index} cumulative position drift: "
+                    f"{position_drift_m:.9g} m exceeds {position_tolerance_m:g} m"
+                )
+            heading_rad += 2.0 * half_turn
+
+        if self.closed:
+            signed_turn_rad = fsum(
+                curvature * length_m
+                for length_m, curvature in zip(
+                    self.cell_length_m, self.curvature_per_m, strict=True
+                )
+            )
+            heading_gap_rad = abs(remainder(signed_turn_rad, 2.0 * pi))
+            if heading_gap_rad > heading_tolerance_rad:
+                raise ValueError(
+                    "heading seam mismatch: "
+                    f"{heading_gap_rad:.9g} rad exceeds {heading_tolerance_rad:g} rad"
+                )
+
+    def refine_arcs(self, maximum_cell_length_m: float) -> "SpatialTrack":
+        """Split a coherent track into exact constant-curvature subarcs.
+
+        Original stations, point coordinates, and cell curvatures are retained.
+        Interior x/y points are integrated analytically from each source arc,
+        unlike :meth:`refine`, which interpolates its plotted chords.
+        """
+
+        self.validate_coherent_arcs()
+        if (
+            isinstance(maximum_cell_length_m, bool)
+            or not isinstance(maximum_cell_length_m, Real)
+            or not isfinite(maximum_cell_length_m)
+            or maximum_cell_length_m <= 0.0
+        ):
+            raise ValueError("maximum_cell_length_m must be finite and positive")
+
+        subdivision_counts: list[int] = []
+        total_cells = 0
+        cell_lengths_m = self.cell_length_m
+        for length_m in cell_lengths_m:
+            ratio = length_m / maximum_cell_length_m
+            remaining = _MAX_REFINED_CELL_COUNT - total_cells
+            if not isfinite(ratio) or ratio > remaining:
+                raise ValueError("refined track exceeds the 100000-cell compute cap")
+            count = ceil(ratio)
+            total_cells += count
+            subdivision_counts.append(count)
+        if all(count == 1 for count in subdivision_counts):
+            return self
+
+        first_dx = self.x_m[1] - self.x_m[0]
+        first_dy = self.y_m[1] - self.y_m[0]
+        first_half_turn = 0.5 * self.curvature_per_m[0] * cell_lengths_m[0]
+        first_arc_chord_m = cell_lengths_m[0] * _sinc(first_half_turn)
+        heading_rad = (
+            atan2(first_dy, first_dx)
+            - first_half_turn
+            - (pi if first_arc_chord_m < 0.0 else 0.0)
+        )
+        distance_m = [self.distance_m[0]]
+        x_m = [self.x_m[0]]
+        y_m = [self.y_m[0]]
+        curvature_per_m: list[float] = []
+        for index, (length_m, curvature, count) in enumerate(
+            zip(cell_lengths_m, self.curvature_per_m, subdivision_counts, strict=True)
+        ):
+            lower_m = self.distance_m[index]
+            for subdivision in range(1, count):
+                fraction = subdivision / count
+                partial_length_m = fraction * length_m
+                partial_half_turn = 0.5 * curvature * partial_length_m
+                partial_chord_m = partial_length_m * _sinc(partial_half_turn)
+                distance_m.append(lower_m + partial_length_m)
+                x_m.append(
+                    self.x_m[index]
+                    + partial_chord_m * cos(heading_rad + partial_half_turn)
+                )
+                y_m.append(
+                    self.y_m[index]
+                    + partial_chord_m * sin(heading_rad + partial_half_turn)
+                )
+            distance_m.append(self.distance_m[index + 1])
+            x_m.append(self.x_m[index + 1])
+            y_m.append(self.y_m[index + 1])
+            curvature_per_m.extend((curvature,) * count)
+            heading_rad += curvature * length_m
+
+        refined = SpatialTrack(
+            distance_m=tuple(distance_m),
+            x_m=tuple(x_m),
+            y_m=tuple(y_m),
+            curvature_per_m=tuple(curvature_per_m),
+            closed=self.closed,
+        )
+        refined.validate_coherent_arcs()
+        return refined
 
     def geometry_audit(self) -> TrackGeometryAudit:
         """Compare plotted x/y with solver distance and prescribed curvature.
