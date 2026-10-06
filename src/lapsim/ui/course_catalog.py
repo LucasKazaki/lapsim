@@ -1,8 +1,8 @@
 """Explicit desktop course choices and their data provenance.
 
-The shipped fused endurance course remains the default. The optional rounded
-rectangle is a synthetic calculation example, not a surveyed Racing Terps
-course or a source of measured track boundaries.
+The shipped fused endurance course remains the default. Both optional analytic
+courses are synthetic calculation examples, not surveyed Racing Terps courses
+or sources of measured track boundaries.
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ class CourseSpec:
 
 DEFAULT_COURSE_ID = "team_endurance_fused_gnss_imu"
 SYNTHETIC_DEMO_COURSE_ID = "synthetic_rounded_rectangle_v1"
+SYNTHETIC_FSAE_COURSE_ID = "synthetic_fsae_endurance_style_v1"
 IMPORTED_COURSE_PREFIX = "imported:"
 MAX_SAVED_COURSE_FILES = 64
 
@@ -69,6 +70,22 @@ COURSE_OPTIONS: tuple[CourseSpec, ...] = (
         default_ai_vehicle_width_m=1.8,
         default_ai_margin_m=0.2,
     ),
+    CourseSpec(
+        course_id=SYNTHETIC_FSAE_COURSE_ID,
+        label="Synthetic FSAE-style · practice",
+        description=(
+            "Analytic 817.08 m closed practice lap inspired by the 2027 "
+            "Formula SAE endurance layout guidance: 60 m and 45 m straights "
+            "with alternating 15 m radius turns. The starting ±3.0 m AI "
+            "half-width is a user-editable assumption. No surveyed course or "
+            "cone boundaries, passing zones, official event layout, or claim "
+            "of rule compliance."
+        ),
+        synthetic=True,
+        default_ai_half_width_m=3.0,
+        default_ai_vehicle_width_m=1.8,
+        default_ai_margin_m=0.2,
+    ),
 )
 
 
@@ -85,6 +102,25 @@ def _synthetic_demo_track(maximum_cell_length_m: float) -> SpatialTrack:
     )
 
 
+def _synthetic_fsae_track(maximum_cell_length_m: float) -> SpatialTrack:
+    # Four copies each turn 90 degrees; rotational symmetry closes the lap.
+    # The left/right pair forms a chicane, followed by a quarter-turn left corner.
+    # This is an analytic practice shape, not a competition course survey.
+    motif = (
+        Straight(60.0),
+        Curve(radius_m=15.0, span_rad=pi / 6.0),
+        Straight(45.0),
+        Curve(radius_m=15.0, span_rad=-pi / 6.0),
+        Straight(60.0),
+        Curve(radius_m=15.0, span_rad=pi / 2.0),
+    )
+    return SpatialTrack.from_track(
+        Track.from_segments(motif * 4),
+        maximum_cell_length_m=maximum_cell_length_m,
+        close_geometry=False,
+    )
+
+
 def load_course(course_id: str = DEFAULT_COURSE_ID) -> SpatialTrack:
     """Load one named course without silently substituting another source."""
 
@@ -92,6 +128,8 @@ def load_course(course_id: str = DEFAULT_COURSE_ID) -> SpatialTrack:
         return load_team_endurance_track()
     if course_id == SYNTHETIC_DEMO_COURSE_ID:
         return _synthetic_demo_track(0.5)
+    if course_id == SYNTHETIC_FSAE_COURSE_ID:
+        return _synthetic_fsae_track(0.5)
     raise ValueError(f"Unknown course ID: {course_id!r}")
 
 
@@ -223,6 +261,26 @@ def course_source_metadata(
             "coordinate_frame": "analytic_local_cartesian_xy_m",
         })
         return common
+    if spec.course_id == SYNTHETIC_FSAE_COURSE_ID:
+        if source_track != _synthetic_fsae_track(0.5):
+            raise ValueError("Synthetic course source does not match the catalog")
+        common.update({
+            "source_kind": "synthetic",
+            "revision": "generator_v1",
+            "bundle_id": None,
+            "bundle_sha256": None,
+            "bundle_hash_scope": None,
+            "source_generator": "lapsim.ui.course_catalog._synthetic_fsae_track",
+            "coordinate_frame": "analytic_local_cartesian_xy_m",
+            "design_reference": (
+                "2027 Formula SAE Rules v1.0, D.12.2.2; layout inspiration only"
+            ),
+            "design_reference_url": (
+                "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?"
+                "DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38"
+            ),
+        })
+        return common
     raise ValueError(f"Unknown course ID: {spec.course_id!r}")
 
 
@@ -240,8 +298,8 @@ def solver_cell_count_for_course(
         raise ValueError("maximum_cell_length_m must be finite and positive")
     if source_track.length_m / maximum_cell_length_m > 5000:
         raise ValueError("requested solver grid exceeds the 5000-cell compute cap")
-    if course_id == SYNTHETIC_DEMO_COURSE_ID:
-        if source_track != _synthetic_demo_track(0.5):
+    if course_id in (SYNTHETIC_DEMO_COURSE_ID, SYNTHETIC_FSAE_COURSE_ID):
+        if source_track != load_course(course_id):
             raise ValueError("Synthetic course source does not match the catalog")
         if maximum_cell_length_m >= max(source_track.cell_length_m) - 1e-10:
             return source_track.cell_count
@@ -281,7 +339,7 @@ def solver_track_for_course(
         course_id, source_track, maximum_cell_length_m,
     ) > 5000:
         raise ValueError("requested solver grid exceeds the 5000-cell compute cap")
-    if course_id == SYNTHETIC_DEMO_COURSE_ID:
+    if course_id in (SYNTHETIC_DEMO_COURSE_ID, SYNTHETIC_FSAE_COURSE_ID):
         source_track.validate_coherent_arcs()
         if maximum_cell_length_m >= max(source_track.cell_length_m) - 1e-10:
             return source_track
@@ -299,7 +357,8 @@ def solver_track_for_course(
 __all__ = [
     "CourseSpec", "COURSE_OPTIONS", "DEFAULT_COURSE_ID", "IMPORTED_COURSE_PREFIX",
     "MAX_SAVED_COURSE_FILES", "load_imported_course_catalog",
-    "SYNTHETIC_DEMO_COURSE_ID", "load_course", "imported_course_spec",
+    "SYNTHETIC_DEMO_COURSE_ID", "SYNTHETIC_FSAE_COURSE_ID",
+    "load_course", "imported_course_spec",
     "course_source_metadata",
     "solver_cell_count_for_course",
     "solver_track_for_course",

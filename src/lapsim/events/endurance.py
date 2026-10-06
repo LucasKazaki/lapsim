@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
-from math import atan, copysign, isfinite
+from copy import deepcopy
+from dataclasses import dataclass, replace
+from math import atan, copysign, isfinite, sqrt
+
+from scipy.optimize import brentq
 
 from vehicle_model.mech.brakes import DEFAULT_MAXIMUM_BRAKE_PRESSURE_PSI
 from vehicle_model.vehicle import Vehicle
@@ -473,6 +476,244 @@ class EnduranceSimulator:
             brake_pressure_limited,
         )
 
+    @staticmethod
+    def _exit_tire_force_tolerance_n(vehicle: Vehicle) -> float:
+        """Allow small force-solve roundoff without hiding a grip deficit."""
+
+        return max(1.0, 0.001 * vehicle.mass_kg * vehicle.gravity_mps2)
+
+    def _cap_drive_for_exit_tire_capacity(
+        self,
+        *,
+        vehicle: Vehicle,
+        controls: Controls,
+        cell_length_m: float,
+        curvature_per_m: float,
+    ) -> tuple[Controls, bool]:
+        """Keep an automatic curved-cell request feasible at its exit speed.
+
+        The force solve samples the cell entry. Preview only accelerating
+        curved cells, then reduce the held motor request if its exit would
+        exceed combined tire grip. The original vehicle is updated once with
+        the chosen controls by ``run`` below.
+        """
+
+        if abs(curvature_per_m) <= 1e-15 or controls.motor_torque_request_nm <= 0.0:
+            return controls, False
+
+        original_torque_nm = controls.motor_torque_request_nm
+        entry_resistance_n, _ = self._path_resistance_and_lateral_force_n(
+            vehicle,
+            speed_mps=vehicle.speed_mps,
+            curvature_per_m=curvature_per_m,
+        )
+
+        def estimated_exit_margin_n(torque_nm: float) -> float:
+            """Cheap upper-speed estimate before any full cell preview."""
+
+            drive_request_n = vehicle.drivetrain.wheel_force_from_motor_torque_n(
+                torque_nm
+            )
+            estimated_acceleration_mps2 = (
+                drive_request_n - entry_resistance_n
+            ) / vehicle.effective_longitudinal_mass_kg
+            exit_speed_mps = sqrt(max(
+                vehicle.speed_mps**2
+                + 2.0 * estimated_acceleration_mps2 * cell_length_m,
+                0.0,
+            ))
+            lateral_acceleration_mps2 = exit_speed_mps**2 * curvature_per_m
+            aero_forces = vehicle.aero_forces_n(
+                exit_speed_mps,
+                lateral_acceleration_mps2,
+                curvature_per_m=curvature_per_m,
+            )
+            required_lateral_n = (
+                vehicle.mass_kg * abs(lateral_acceleration_mps2)
+            )
+            driven_axle = vehicle.drivetrain.driven_axle
+            axle_indices = (
+                (0, 1) if driven_axle == "front" else
+                (2, 3) if driven_axle == "rear" else (0, 1, 2, 3)
+            )
+            margins_n = []
+            entry_lateral_acceleration_mps2 = (
+                vehicle.speed_mps**2 * curvature_per_m
+            )
+            entry_aero_forces = vehicle.aero_forces_n(
+                vehicle.speed_mps,
+                entry_lateral_acceleration_mps2,
+                curvature_per_m=curvature_per_m,
+            )
+            for assumed_acceleration_mps2 in (
+                0.0, estimated_acceleration_mps2
+            ):
+                entry_loads_n = vehicle.suspension.tire_normal_loads_n(
+                    vehicle.mass_kg,
+                    vehicle.gravity_mps2,
+                    entry_aero_forces,
+                    vehicle.chassis,
+                    longitudinal_acceleration_mps2=assumed_acceleration_mps2,
+                    lateral_acceleration_mps2=entry_lateral_acceleration_mps2,
+                )
+                entry_lateral_forces_n = vehicle.tire.lateral_forces_n(
+                    entry_loads_n,
+                    vehicle.mass_kg * entry_lateral_acceleration_mps2,
+                )
+                entry_longitudinal_capacities_n = tuple(
+                    vehicle.tire.combined_longitudinal_force_capacity_n(
+                        load_n, lateral_n,
+                    )
+                    for load_n, lateral_n in zip(
+                        entry_loads_n.all_n,
+                        entry_lateral_forces_n.all_n,
+                        strict=True,
+                    )
+                )
+                loads_n = vehicle.suspension.tire_normal_loads_n(
+                    vehicle.mass_kg,
+                    vehicle.gravity_mps2,
+                    aero_forces,
+                    vehicle.chassis,
+                    longitudinal_acceleration_mps2=assumed_acceleration_mps2,
+                    lateral_acceleration_mps2=lateral_acceleration_mps2,
+                )
+                lateral_capacity_n = sum(
+                    vehicle.tire.lateral_force_capacity_n(load_n)
+                    for load_n in loads_n.all_n
+                )
+                lateral_forces_n = vehicle.tire.lateral_forces_n(
+                    loads_n,
+                    vehicle.mass_kg * lateral_acceleration_mps2,
+                )
+                exit_longitudinal_capacities_n = tuple(
+                    vehicle.tire.combined_longitudinal_force_capacity_n(
+                        load_n, lateral_n,
+                    )
+                    for load_n, lateral_n in zip(
+                        loads_n.all_n,
+                        lateral_forces_n.all_n,
+                        strict=True,
+                    )
+                )
+                driven_entry_capacity_n = sum(
+                    entry_longitudinal_capacities_n[index]
+                    for index in axle_indices
+                )
+                if driven_entry_capacity_n > 0.0:
+                    wheel_margins_n = (
+                        exit_longitudinal_capacities_n[index]
+                        - drive_request_n
+                        * entry_longitudinal_capacities_n[index]
+                        / driven_entry_capacity_n
+                        for index in axle_indices
+                    )
+                    margins_n.append(min(
+                        lateral_capacity_n - required_lateral_n,
+                        *wheel_margins_n,
+                    ))
+                else:
+                    margins_n.append(-drive_request_n)
+            return min(margins_n)
+
+        tolerance_n = self._exit_tire_force_tolerance_n(vehicle)
+        estimate_buffer_n = max(4.0 * tolerance_n, 0.01 * vehicle.mass_kg * vehicle.gravity_mps2)
+        try:
+            requested_estimate_n = estimated_exit_margin_n(original_torque_nm)
+        except (ValueError, OverflowError):
+            # An upper-speed estimate can leave a component's supported
+            # operating region even when the actual grip-limited step cannot.
+            requested_estimate_n = float("-inf")
+        if isfinite(requested_estimate_n) and requested_estimate_n >= estimate_buffer_n:
+            return controls, False
+
+        def preview_margin_n(torque_nm: float) -> float | None:
+            candidate = deepcopy(vehicle)
+            preview_controls = replace(controls, motor_torque_request_nm=torque_nm)
+            try:
+                candidate.update_state(preview_controls, cell_length_m)
+                margin_n = candidate.exit_combined_tire_force_margin_n(
+                    curvature_per_m
+                )
+            except ValueError:
+                return None
+            return margin_n if isfinite(margin_n) else None
+
+        # The cheap estimate deliberately ignores entry tire and motor limits.
+        # It may therefore warn about a request that the full vehicle model
+        # finds feasible. Check that request before committing a lower torque.
+        original_margin_n = preview_margin_n(original_torque_nm)
+        if original_margin_n is not None and original_margin_n >= -tolerance_n:
+            return controls, False
+
+        try:
+            estimated_coast_margin_n = estimated_exit_margin_n(0.0)
+        except (ValueError, OverflowError):
+            estimated_coast_margin_n = float("-inf")
+        if isfinite(estimated_coast_margin_n) and estimated_coast_margin_n >= estimate_buffer_n:
+            lower_torque_nm = 0.0
+            upper_torque_nm = original_torque_nm
+            for _ in range(15):
+                candidate_torque_nm = 0.5 * (lower_torque_nm + upper_torque_nm)
+                try:
+                    candidate_margin_n = estimated_exit_margin_n(candidate_torque_nm)
+                except (ValueError, OverflowError):
+                    candidate_margin_n = float("-inf")
+                if isfinite(candidate_margin_n) and candidate_margin_n >= estimate_buffer_n:
+                    lower_torque_nm = candidate_torque_nm
+                else:
+                    upper_torque_nm = candidate_torque_nm
+            controls = replace(
+                controls, motor_torque_request_nm=lower_torque_nm
+            )
+
+        requested_torque_nm = controls.motor_torque_request_nm
+        requested_margin_n = (
+            original_margin_n
+            if requested_torque_nm == original_torque_nm
+            else preview_margin_n(requested_torque_nm)
+        )
+        if requested_margin_n is None or requested_margin_n >= -tolerance_n:
+            return controls, requested_torque_nm < original_torque_nm - 1e-9
+
+        coast_margin_n = preview_margin_n(0.0)
+        if coast_margin_n is None or coast_margin_n < tolerance_n:
+            # Even coasting needs another control action; the post-step gate
+            # will keep this cell out of a completed result.
+            return replace(controls, motor_torque_request_nm=0.0), True
+
+        def margin_residual_n(torque_nm: float) -> float:
+            margin_n = preview_margin_n(torque_nm)
+            return margin_n - tolerance_n if margin_n is not None else -1e9
+
+        root_torque_nm = brentq(
+            margin_residual_n,
+            0.0,
+            requested_torque_nm,
+            xtol=0.01,
+            rtol=1e-4,
+            maxiter=20,
+        )
+        # Stay on the known feasible side of the root. The final preview
+        # catches a discontinuous motor or pack envelope before commitment.
+        selected_torque_nm = max(
+            root_torque_nm - max(0.05, 0.001 * requested_torque_nm),
+            0.0,
+        )
+        selected_margin_n = preview_margin_n(selected_torque_nm)
+        if selected_margin_n is None or selected_margin_n < -tolerance_n:
+            lower_torque_nm = 0.0
+            upper_torque_nm = selected_torque_nm
+            for _ in range(8):
+                candidate_torque_nm = 0.5 * (lower_torque_nm + upper_torque_nm)
+                candidate_margin_n = preview_margin_n(candidate_torque_nm)
+                if candidate_margin_n is not None and candidate_margin_n >= tolerance_n:
+                    lower_torque_nm = candidate_torque_nm
+                else:
+                    upper_torque_nm = candidate_torque_nm
+            selected_torque_nm = lower_torque_nm
+        return replace(controls, motor_torque_request_nm=selected_torque_nm), True
+
     def run(
         self,
         vehicle: Vehicle,
@@ -571,6 +812,15 @@ class EnduranceSimulator:
                             config.regenerative_braking_soc_threshold
                         ),
                     )
+                    controls, exit_tire_limited = (
+                        self._cap_drive_for_exit_tire_capacity(
+                            vehicle=vehicle,
+                            controls=controls,
+                            cell_length_m=cell_length_m,
+                            curvature_per_m=curvature_per_m,
+                        )
+                    )
+                    path_torque_limited |= exit_tire_limited
                 time_before_step_s = vehicle.time_s
                 try:
                     vehicle.update_state(controls, cell_length_m)
@@ -632,6 +882,30 @@ class EnduranceSimulator:
                         f"rear pressure {controls.rear_brake_pressure_psi:.2f} psi"
                     )
                     break
+                if abs(curvature_per_m) > 1e-15:
+                    try:
+                        exit_tire_margin_n = (
+                            vehicle.exit_combined_tire_force_margin_n(curvature_per_m)
+                        )
+                    except ValueError as error:
+                        failure_reason = (
+                            "cannot evaluate combined tire force at the exit of "
+                            f"lap {lap_index + 1}, cell {cell_index}: {error}"
+                        )
+                        break
+                    if not isfinite(exit_tire_margin_n):
+                        failure_reason = (
+                            "nonfinite combined tire force at the exit of "
+                            f"lap {lap_index + 1}, cell {cell_index}"
+                        )
+                        break
+                    if exit_tire_margin_n < -self._exit_tire_force_tolerance_n(vehicle):
+                        failure_reason = (
+                            "supplied controls exceeded combined tire force at "
+                            f"the exit of lap {lap_index + 1}, cell {cell_index}: "
+                            f"force margin {exit_tire_margin_n:.6f} N"
+                        )
+                        break
                 if vehicle.time_s > config.maximum_driving_time_s:
                     failure_reason = "maximum configured driving time exceeded"
                     break

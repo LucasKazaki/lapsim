@@ -27,7 +27,7 @@ present because the default course is stored in its `analysis/data` folder.
 The calculation runs in a worker thread so the window remains responsive.
 To repeat the full software checks on Windows, run
 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\check_all.ps1`
-from this checkout after setup. It runs test files in separate small groups to
+from this checkout after setup. It runs each test file in a separate process to
 limit peak memory use.
 
 ## Inputs and outputs
@@ -36,12 +36,17 @@ The **Course** menu starts at **Fused GNSS/IMU · default**, the shipped team
 endurance recording. **Synthetic loop · AI demo** selects a separate
 195.398224 m rounded rectangle made from two 40 m and two 20 m straights and
 four 12 m radius quarter-circle arcs, stored in at most 0.5 m source cells.
+**Synthetic FSAE-style · practice** selects a separate analytic 817.079633 m
+loop with 60 m and 45 m straights and alternating 15 m radius bends. Its
+general scale and turn variety are inspired by [2027 Formula SAE Rules v1.0,
+D.12.2.2](https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38).
 Changing courses clears previous output boxes and Driver view replays so
 results from different tracks are not mistaken for a matched comparison.
 Course selection does not change the driving mode: **Centerline (default)**
-continues to run without the AI planner. The synthetic loop is a calculation
-example, not a surveyed Formula SAE course or a measured team track. Both
-course choices lack surveyed left/right boundaries.
+continues to run without the AI planner. Both synthetic courses are calculation
+examples. The practice loop is not an official layout or a rule-compliance
+claim; it has no surveyed centerline, cones, widths, or passing zones. All
+three built-in course choices lack surveyed left/right boundaries.
 
 **Import course…** accepts a versioned, internally coherent closed course
 bundle. Its source arcs are validated before selection, and its local copy
@@ -77,12 +82,12 @@ the original 100% grip. Editing a run input or changing the selected profile
 clears displayed outputs and playback so prior numbers cannot be read as the
 new setup.
 Invalid or non-finite values are rejected before a run begins, and requests
-producing more than 5,000 actual cells are refused. For the synthetic course,
+producing more than 5,000 actual cells are refused. For either synthetic course,
 the guard counts subdivisions of each original straight or arc cell. The default
 requested maximum is 1 m. The fused course is resampled at the requested
 maximum, which may average
 curvature across original cell boundaries and change lap time. The synthetic
-course keeps its exact generated straight/circular-arc cells (at most 0.5 m)
+courses keep their exact generated straight/circular-arc cells (at most 0.5 m)
 for any request at least as large as its longest source cell. An imported
 coherent course follows the same retain-or-subdivide policy. A finer request
 first strictly validates the source station, x/y, and constant-curvature
@@ -108,9 +113,14 @@ left-drag pans, the mouse wheel zooms around the cursor, and **Fit course**
 restores the full view.
 
 The right side has **Analysis**, **Driver view**, and **Timed sessions · WIP**
-tabs. Analysis remains the startup view. When a lap starts, the view first
-labels path and speed-limit preparation; no motion is implied during that
-prepass. As the physics solver accepts cells, Driver view shows its latest
+tabs. Analysis remains the startup view. When a lap starts, Driver view first
+fits a static, labeled source-course map with its start marked while path and
+speed-limit preparation runs. AI dry seam-speed passes also return to this
+static preview after the preceding trial finishes; a pause of more than half
+a second between accepted cells does the same. The last accepted numeric
+values remain visible. No vehicle pose or motion
+is implied during those periods. As the physics solver accepts cells, Driver
+view switches to the active trial's exact solver-grid path and shows its latest
 elapsed time, station, speed, and lateral acceleration on a driver-centered
 top-down view of that run's **solver-grid reference x/y**. The desktop keeps only the newest update and draws
 at roughly 10 updates per second, so it does not slow the solver to real time.
@@ -159,7 +169,7 @@ driving.
 The **Driving path** menu defaults to **Centerline (default)**. This uses the
 selected course's original curvature and runs no path search. Choose **AI racing line
 (experimental)** to supply an *assumed* uniform half-width, vehicle width,
-and safety margin. On the synthetic course, the boxes initially show an
+and safety margin. On either synthetic course, the boxes initially show an
 *assumed* ±3 m half-width, 1.8 m vehicle width, and 0.2 m safety margin;
 switching back restores the default recorded course's scenario inputs. The
 app has no measured boundaries and does not infer
@@ -234,10 +244,10 @@ the objective, validation checks, and local benchmark results.
 
 For the default fused course's assumed ±2 m Prius case with desktop torque
 request 100% (model fraction 1.0), 1.78308 m car width, and 0.3 m margin, baseline/full/half/three-quarter laps complete in
-**87.618366/87.377773/87.403816/87.3655968872 s**, but all four are starred diagnostics:
+**88.2468936756/88.0083862976/88.0305817762/87.9983373607 s** under the current exit-force check, but all four are starred diagnostics:
 observed usable-corridor excess is **0.095506/0.908195/0.501981/0.705117 m** and the
 position seam misses by roughly **0.75–0.77 m**. No AI path is selected from
-those runs. This does not change the ordinary centerline calculation.
+those runs. Ordinary centerline remains the default driving mode; the exit-force check applies to it too.
 The failed baseline audit makes the fourth strength fall back to 0.75 in this
 example; its completed time remains diagnostic.
 
@@ -245,15 +255,16 @@ For a controlled AI demonstration, choose **Synthetic loop · AI demo**, the
 Prius benchmark, desktop torque request **80% (enter 80; model fraction 0.8)**, and its initial assumed ±3 m
 half-width, 1.8 m vehicle width, and 0.2 m margin. Leave assumed uniform road
 grip at **100%** for the stated numbers. The current speed-periodic
-model comparison produced an eligible **16.8855728415 s** geometric baseline,
-**15.6249368146 s** half-offset, and **14.5566299045 s** 0.95-offset
+model comparison produced an eligible **16.9498498135 s** geometric baseline,
+**15.6919244487 s** half-offset, and **14.6176615029 s** 0.95-offset
 candidate. Those three continuous scalar audits passed; the full-offset
 path failed at an evaluated point by **0.0406357308 m** and was skipped before
 physics. It therefore has no time, saved run, or replay. The 0.95 path has a
 conservative certified clearance lower bound of **0.05339622659 m** and was
-selected on a **2.3289429370 s** modeled lead. These are synthetic model
+selected on a **2.3321883106 s** modeled lead. These are synthetic model
 numbers, not surveyed-course or team-car performance. An on-demand fixed-path
-`SpatialTrack.refine(1.0)` probe made before the continuous certificate gave
+`SpatialTrack.refine(1.0)` probe made before the continuous certificate and
+exit-speed combined-grip gate gave
 **16.882064565 s** baseline,
 **15.000468902 s** old 0.75 offset, and **14.551839123 s** selected 0.95
 offset; all completed and closed speed. The 0.95 line retained about
@@ -409,7 +420,7 @@ cell, retains every old boundary and its piecewise-constant curvature, and
 interpolates interior x/y points along the old chord. It preserves track
 length, each original cell's signed turn, and its length-weighted squared
 curvature, with a 100,000-cell safety cap. This chord-linear QA method remains
-unchanged; it does not perform the synthetic course's analytic subarc
+unchanged; it does not perform either synthetic course's analytic subarc
 subdivision or certify geometric consistency. It does not change the desktop's
 default grid or repair an inconsistent source map. Grid spacing still affects
 the speed-envelope and cell integration, so resolution checks remain

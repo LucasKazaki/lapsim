@@ -366,7 +366,7 @@ def test_speed_periodic_prius_selects_stronger_feasible_path() -> None:
     assert comparison.trials[2].path_audit.continuous_clearance_certified
     assert comparison.trials[2].path_audit.minimum_corridor_slack_m > 0.02
     assert comparison.trials[2].path_audit.minimum_corridor_slack_m < 0.06
-    assert comparison.candidate_time_s == pytest.approx(14.556630, abs=0.002)
+    assert comparison.candidate_time_s == pytest.approx(14.617662, abs=0.002)
     near_boundary_audit = _audit_curvature_path(
         _scaled_candidate_track(plan, 0.975), plan.baseline_track,
         plan.source_station_m, corridor,

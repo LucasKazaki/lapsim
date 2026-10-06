@@ -15,6 +15,7 @@ from lapsim.ui.course_catalog import (
     DEFAULT_COURSE_ID,
     IMPORTED_COURSE_PREFIX,
     SYNTHETIC_DEMO_COURSE_ID,
+    SYNTHETIC_FSAE_COURSE_ID,
     course_source_metadata,
     imported_course_spec,
     load_course,
@@ -26,9 +27,10 @@ from lapsim.ui.course_catalog import (
 def test_course_options_keep_fused_source_as_explicit_default() -> None:
     assert tuple(option.course_id for option in COURSE_OPTIONS) == (
         DEFAULT_COURSE_ID, SYNTHETIC_DEMO_COURSE_ID,
+        SYNTHETIC_FSAE_COURSE_ID,
     )
     assert len({option.label for option in COURSE_OPTIONS}) == len(COURSE_OPTIONS)
-    source, demo = COURSE_OPTIONS
+    source, demo, practice = COURSE_OPTIONS
     assert not source.synthetic
     assert "GNSS/IMU" in source.label
     assert "not one geometrically consistent path" in source.description
@@ -41,6 +43,14 @@ def test_course_options_keep_fused_source_as_explicit_default() -> None:
             source.default_ai_margin_m) == (2.0, 1.8, 0.2)
     assert (demo.default_ai_half_width_m, demo.default_ai_vehicle_width_m,
             demo.default_ai_margin_m) == (3.0, 1.8, 0.2)
+    assert practice.synthetic
+    assert "Synthetic FSAE-style" in practice.label
+    assert "user-editable assumption" in practice.description
+    assert "No surveyed course or cone boundaries" in practice.description
+    assert "or claim of rule compliance" in practice.description
+    assert (practice.default_ai_half_width_m,
+            practice.default_ai_vehicle_width_m,
+            practice.default_ai_margin_m) == (3.0, 1.8, 0.2)
     with pytest.raises(FrozenInstanceError):
         demo.label = "Measured course"  # type: ignore[misc]
 
@@ -69,20 +79,42 @@ def test_synthetic_demo_is_closed_coherent_segment_course() -> None:
     assert audit.maximum_arc_chord_mismatch_m < 1e-7
 
 
+def test_fsae_style_practice_course_is_analytic_closed_and_bidirectional() -> None:
+    track = load_course(SYNTHETIC_FSAE_COURSE_ID)
+    assert track.closed
+    assert track.length_m == pytest.approx(660.0 + 50.0 * pi)
+    assert track.cell_count == 1640
+    assert max(track.cell_length_m) <= 0.5 + 1e-12
+    assert set(round(value, 12) for value in track.curvature_per_m) == {
+        0.0, round(1.0 / 15.0, 12), round(-1.0 / 15.0, 12),
+    }
+    track.validate_coherent_arcs()
+    audit = track.geometry_audit()
+    assert audit.endpoint_separation_m < 1e-7
+    assert audit.curvature_signed_turn_rad == pytest.approx(2.0 * pi)
+    assert audit.curvature_integrated_closure_gap_m < 1e-7
+    assert audit.maximum_arc_chord_mismatch_m < 1e-7
+
+
 def test_unknown_course_id_is_not_silently_replaced() -> None:
     with pytest.raises(ValueError, match="Unknown course ID"):
         load_course("made-up-course")
 
 
+@pytest.mark.parametrize("course_id", [
+    SYNTHETIC_DEMO_COURSE_ID, SYNTHETIC_FSAE_COURSE_ID,
+])
 @pytest.mark.parametrize("requested_maximum_m", [0.25, 0.5, 5.0, 10.0])
-def test_synthetic_solver_grid_keeps_exact_arcs(requested_maximum_m: float) -> None:
-    source = load_course(SYNTHETIC_DEMO_COURSE_ID)
+def test_synthetic_solver_grid_keeps_exact_arcs(
+    course_id: str, requested_maximum_m: float,
+) -> None:
+    source = load_course(course_id)
     solver = solver_track_for_course(
-        SYNTHETIC_DEMO_COURSE_ID, source, requested_maximum_m,
+        course_id, source, requested_maximum_m,
     )
     assert max(solver.cell_length_m) <= min(requested_maximum_m, 0.5) + 1e-12
     assert solver.cell_count == solver_cell_count_for_course(
-        SYNTHETIC_DEMO_COURSE_ID, source, requested_maximum_m,
+        course_id, source, requested_maximum_m,
     )
     assert solver.geometry_audit().curvature_integrated_closure_gap_m < 1e-7
     assert solver.geometry_audit().maximum_arc_chord_mismatch_m < 1e-7
@@ -125,6 +157,8 @@ def test_synthetic_solver_route_rejects_mislabeled_source() -> None:
     with pytest.raises(ValueError, match="does not match the catalog"):
         solver_track_for_course(SYNTHETIC_DEMO_COURSE_ID, coherent_circle, 0.25)
     with pytest.raises(ValueError, match="does not match the catalog"):
+        solver_track_for_course(SYNTHETIC_FSAE_COURSE_ID, coherent_circle, 0.25)
+    with pytest.raises(ValueError, match="does not match the catalog"):
         solver_track_for_course(DEFAULT_COURSE_ID, coherent_circle, 1.0)
 
 
@@ -135,14 +169,20 @@ def test_solver_grid_rejects_invalid_or_excessive_work(bad_step: float) -> None:
         solver_track_for_course(SYNTHETIC_DEMO_COURSE_ID, source, bad_step)
 
 
-def test_synthetic_source_cell_subdivision_cannot_bypass_compute_cap() -> None:
-    source = load_course(SYNTHETIC_DEMO_COURSE_ID)
-    assert source.length_m / 0.0391 < 5000
+@pytest.mark.parametrize("course_id,maximum_m,expected_cells", [
+    (SYNTHETIC_DEMO_COURSE_ID, 0.0391, 5096),
+    (SYNTHETIC_FSAE_COURSE_ID, 0.165, 6240),
+])
+def test_synthetic_source_cell_subdivision_cannot_bypass_compute_cap(
+    course_id: str, maximum_m: float, expected_cells: int,
+) -> None:
+    source = load_course(course_id)
+    assert source.length_m / maximum_m < 5000
     assert solver_cell_count_for_course(
-        SYNTHETIC_DEMO_COURSE_ID, source, 0.0391,
-    ) == 5096
+        course_id, source, maximum_m,
+    ) == expected_cells
     with pytest.raises(ValueError, match="5000-cell compute cap"):
-        solver_track_for_course(SYNTHETIC_DEMO_COURSE_ID, source, 0.0391)
+        solver_track_for_course(course_id, source, maximum_m)
 
 
 def test_imported_course_uses_coherent_arc_refinement_only() -> None:
@@ -163,7 +203,7 @@ def test_imported_course_uses_coherent_arc_refinement_only() -> None:
 
 
 def test_source_metadata_separates_import_bundle_and_solver_geometry() -> None:
-    fused_spec, demo_spec = COURSE_OPTIONS
+    fused_spec, demo_spec, practice_spec = COURSE_OPTIONS
     fused = course_source_metadata(fused_spec, load_course())
     assert fused["revision"] == "legacy_unversioned"
     assert fused["bundle_sha256"] is None
@@ -172,6 +212,16 @@ def test_source_metadata_separates_import_bundle_and_solver_geometry() -> None:
     demo = course_source_metadata(demo_spec, load_course(SYNTHETIC_DEMO_COURSE_ID))
     assert demo["source_kind"] == "synthetic"
     assert demo["boundary_status"] == "absent"
+    practice = course_source_metadata(
+        practice_spec, load_course(SYNTHETIC_FSAE_COURSE_ID),
+    )
+    assert practice["source_kind"] == "synthetic"
+    assert practice["boundary_status"] == "absent"
+    assert practice["source_generator"].endswith("_synthetic_fsae_track")
+    assert "layout inspiration only" in practice["design_reference"]
+    assert practice["source_geometry_sha256"] == course_geometry_sha256(
+        load_course(SYNTHETIC_FSAE_COURSE_ID)
+    )
 
     track = SpatialTrack.from_track(
         Track.from_segments([Curve(10.0, 2.0 * pi)]),

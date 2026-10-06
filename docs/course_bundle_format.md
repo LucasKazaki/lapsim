@@ -6,6 +6,19 @@ Python. The ordinary **Centerline (default)** mode remains the default after an
 import. An imported course is also available to car comparisons and the
 optional experimental racing-line planner.
 
+The built-in **Synthetic FSAE-style · practice** option is a separate analytic
+example and needs no import. Its 817.079633 m closed centerline repeats four
+copies of 60 m straight, 30° left turn at 15 m radius, 45 m straight, 30° right
+turn at 15 m radius, 60 m straight, and 90° left turn at 15 m radius. Four
+quarter turns close the path without adjusting its plotted coordinates; all
+source cells are at most 0.5 m. The design draws on [2027 Formula SAE Rules
+v1.0, D.12.2.2](https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38)
+for its general scale and variety of turns. It is not an official event layout
+or a claim of rule compliance: there is no surveyed centerline, cone boundary,
+passing zone, or measured width. The desktop's starting ±3 m AI half-width is
+an editable scenario assumption. Saved runs label its source as synthetic and
+record the generator and source geometry hash.
+
 ## Prepare a source CSV
 
 A v1 bundle represents one closed lap as exact, piecewise constant-curvature

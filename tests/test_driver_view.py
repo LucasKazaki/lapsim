@@ -10,7 +10,7 @@ import pytest
 
 from lapsim.core.telemetry import Telemetry
 from lapsim.courses.spatial_track import SpatialTrack
-from lapsim.events.endurance import EnduranceRunResult
+from lapsim.events.endurance import EnduranceRunResult, LapProgressSnapshot
 from lapsim.ui.driver_view import DriverCellDecision, DriverPlayback
 
 
@@ -202,6 +202,19 @@ def test_local_path_is_car_fixed_and_open_course_does_not_wrap() -> None:
     assert start_samples[1] == pytest.approx((0.0, 5.0))
 
 
+def test_open_view_includes_car_station_and_visible_course_ends() -> None:
+    playback = DriverPlayback(straight_map(), lap_channels())
+    frame = playback.frame_at(0.025)
+    samples = playback.local_path_m(
+        frame, behind_m=16.0, ahead_m=64.0, spacing_m=0.75,
+    )
+
+    assert frame.distance_m == pytest.approx(0.25)
+    assert samples[0] == pytest.approx((0.0, -0.25))
+    assert any(sample == pytest.approx((0.0, 0.0)) for sample in samples)
+    assert samples[-1] == pytest.approx((0.0, 19.75))
+
+
 def test_closed_view_samples_wrap_continuously_across_finish() -> None:
     track = SpatialTrack(
         distance_m=(0.0, 10.0, 20.0, 30.0, 40.0),
@@ -332,6 +345,75 @@ def test_desktop_tabs_and_playback_smoke() -> None:
         assert app._driver_playback_time_s > 1.0
         app._switch_tab("Timed sessions · WIP")
         assert not app._driver_playing
+    finally:
+        root.destroy()
+
+
+def test_static_source_preview_switches_to_exact_live_path() -> None:
+    import tkinter as tk
+
+    from lapsim.ui.app import LapSimDesktop
+
+    try:
+        root = tk.Tk()
+    except tk.TclError:
+        pytest.skip("Tk display unavailable")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app.run_in_progress = True
+        app._begin_live_calculation("Preview car")
+        canvas = app.driver_canvas
+        assert canvas is not None
+        assert canvas.find_withtag("driver_preview_path")
+        assert not canvas.find_withtag("driver_live_path")
+        assert all(value.get() == "—" for value in app.driver_values.values())
+
+        solver_track = straight_map()
+        first = LapProgressSnapshot(
+            lap_index=0, cell_index=0, cell_count=2,
+            elapsed_time_s=1.0, lap_station_m=10.0,
+            total_distance_m=10.0, speed_mps=10.0,
+            lateral_acceleration_mps2=0.0,
+        )
+        app._queue_live_progress("Preview car", "Geometric centerline", solver_track, first)
+        app._poll_live_progress()
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is solver_track
+        assert canvas.find_withtag("driver_live_path")
+        assert not canvas.find_withtag("driver_preview_path")
+        first_serial = app._driver_live_update_serial
+        app._show_driver_preview_after_phase(
+            first_serial, "Preview car", "Geometric centerline",
+            phase_complete=False,
+        )
+        assert canvas.find_withtag("driver_preview_path")
+        assert "last accepted" in app.driver_run_label.get()
+
+        last = LapProgressSnapshot(
+            lap_index=0, cell_index=1, cell_count=2,
+            elapsed_time_s=2.0, lap_station_m=20.0,
+            total_distance_m=20.0, speed_mps=10.0,
+            lateral_acceleration_mps2=0.0,
+        )
+        app._queue_live_progress("Preview car", "Geometric centerline", solver_track, last)
+        app._poll_live_progress()
+        assert canvas.find_withtag("driver_live_path")
+        phase_serial = app._driver_live_update_serial
+        app._show_driver_preview_after_phase(
+            phase_serial, "Preview car", "Geometric centerline",
+        )
+        assert canvas.find_withtag("driver_preview_path")
+        assert not canvas.find_withtag("driver_live_path")
+        assert "complete" in app.driver_run_label.get()
+
+        app._queue_live_progress("Preview car", "Half AI line", solver_track, first)
+        app._poll_live_progress()
+        app._show_driver_preview_after_phase(
+            phase_serial, "Preview car", "Geometric centerline",
+        )
+        assert canvas.find_withtag("driver_live_path")
+        assert not canvas.find_withtag("driver_preview_path")
     finally:
         root.destroy()
 

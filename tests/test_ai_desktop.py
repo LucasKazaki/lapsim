@@ -271,8 +271,8 @@ def test_assumed_grip_reaches_every_ai_trial_record(tmp_path: Path) -> None:
         assert comparison.trials
         assert comparison.rank_status == "candidate_selected"
         assert comparison.candidate_strength == 0.95
-        assert comparison.baseline_time_s == pytest.approx(19.733799, abs=0.002)
-        assert comparison.candidate_time_s == pytest.approx(17.035638, abs=0.002)
+        assert comparison.baseline_time_s == pytest.approx(19.843762, abs=0.002)
+        assert comparison.candidate_time_s == pytest.approx(17.140844, abs=0.002)
         records = [RunRecord.load(path).to_dict() for path in tmp_path.glob("*.json")]
         assert len(records) >= 2
         for record in records:
@@ -368,8 +368,8 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         assert comparison.rank_status == "invalid_processed_baseline"
         assert comparison.baseline_time_s is None
         assert comparison.candidate_time_s is None
-        assert comparison.baseline_diagnostic_time_s == pytest.approx(87.618366, abs=0.001)
-        assert comparison.candidate_diagnostic_time_s == pytest.approx(87.365597, abs=0.001)
+        assert comparison.baseline_diagnostic_time_s == pytest.approx(88.246894, abs=0.001)
+        assert comparison.candidate_diagnostic_time_s == pytest.approx(87.998337, abs=0.001)
         assert comparison.candidate_strength == 0.75
         assert comparison.baseline_path_audit is not None
         assert comparison.baseline_path_audit.maximum_corridor_excess_m > 0.09
@@ -523,8 +523,8 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert payload[3] == "candidate"
         assert comparison.rank_status == "candidate_selected"
         assert comparison.candidate_strength == 0.95
-        assert comparison.baseline_time_s == pytest.approx(16.885573, abs=0.002)
-        assert comparison.candidate_time_s == pytest.approx(14.556630, abs=0.002)
+        assert comparison.baseline_time_s == pytest.approx(16.949850, abs=0.002)
+        assert comparison.candidate_time_s == pytest.approx(14.617662, abs=0.002)
         assert comparison.baseline_path_audit is not None
         assert comparison.baseline_path_audit.valid
         assert comparison.candidate_path_audit is not None
@@ -533,7 +533,9 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert app.ai_compare_button is not None
         assert app.ai_compare_button["state"] == "normal"
         assert app.ai_output_values["difference"]["text"].startswith("-")
-        assert app.ai_result_text.get().startswith("SYNTHETIC AI DEMO.")
+        assert app.ai_result_text.get().startswith(
+            "SYNTHETIC COURSE: Synthetic loop · AI demo."
+        )
         assert "Faster AI path selected" in app.ai_result_text.get()
         assert "default lap uses different source curvature" not in app.ai_result_text.get()
         assert app.driver_playback is not None

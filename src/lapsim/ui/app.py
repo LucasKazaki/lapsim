@@ -11,7 +11,7 @@ import time
 import tkinter as tk
 from dataclasses import asdict, replace
 from tkinter import filedialog, messagebox, simpledialog
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -237,10 +237,14 @@ class LapSimDesktop:
         self._driver_playback_time_s = 0.0
         self._driver_last_clock_s = 0.0
         self._driver_after_id: str | None = None
+        self._owned_after_ids: set[str] = set()
+        self._closed = False
         self._driver_updating_scale = False
         self._driver_look_ahead_m = 80.0
         self._driver_live_mode = False
         self._driver_stream_active = False
+        self._driver_preview_track: Any = None
+        self._driver_live_update_serial = 0
         self._pending_input_invalidation = False
         self._result_generation = 0
         self._active_run_input_signature: tuple[str, ...] | None = None
@@ -249,9 +253,47 @@ class LapSimDesktop:
         self._select_profile("prius_2026_le")
         self._apply_theme()
         self._watch_run_inputs()
-        self.root.after(100, self._poll_result)
+        self.root.bind("<Destroy>", self._on_root_destroy, add="+")
+        self._schedule_after(100, self._poll_result)
         if self.course_load_warnings:
-            self.root.after(150, self._show_course_load_warnings)
+            self._schedule_after(150, self._show_course_load_warnings)
+
+    def _schedule_after(
+        self, delay_ms: int | None, callback: Callable[[], None],
+    ) -> str | None:
+        """Own a Tk callback so closing this window retires it."""
+
+        if self._closed:
+            return None
+        after_id: str | None = None
+
+        def invoke() -> None:
+            if after_id is not None:
+                self._owned_after_ids.discard(after_id)
+            if not self._closed:
+                callback()
+
+        if delay_ms is None:
+            after_id = self.root.after_idle(invoke)
+        else:
+            after_id = self.root.after(delay_ms, invoke)
+        self._owned_after_ids.add(after_id)
+        return after_id
+
+    def _on_root_destroy(self, event: tk.Event) -> None:
+        if event.widget is not self.root or self._closed:
+            return
+        self._closed = True
+        self._driver_playing = False
+        self._driver_after_id = None
+        self._pending_input_invalidation = False
+        for after_id in tuple(self._owned_after_ids):
+            try:
+                self.root.after_cancel(after_id)
+            except tk.TclError:
+                # Tk may already have retired a callback during destruction.
+                pass
+        self._owned_after_ids.clear()
 
     def _show_course_load_warnings(self) -> None:
         count = len(self.course_load_warnings)
@@ -791,6 +833,8 @@ class LapSimDesktop:
         self.driver_decision_title.set("Solved cell values")
         self._driver_live_mode = False
         self._driver_stream_active = False
+        self._driver_preview_track = None
+        self._driver_live_update_serial += 1
         self._driver_playback_time_s = 0.0
         self.driver_progress_var.set(0.0)
         self.driver_progress.configure(state="disabled")
@@ -1274,6 +1318,8 @@ class LapSimDesktop:
         self.driver_decision_title.set("Solved cell values")
         self._driver_live_mode = False
         self._driver_stream_active = False
+        self._driver_preview_track = None
+        self._driver_live_update_serial += 1
         self._driver_playback_time_s = 0.0
         try:
             if result.telemetry is None:
@@ -1362,6 +1408,7 @@ class LapSimDesktop:
         self._driver_playing = False
         if self._driver_after_id is not None:
             self.root.after_cancel(self._driver_after_id)
+            self._owned_after_ids.discard(self._driver_after_id)
             self._driver_after_id = None
         if self.driver_play_button is not None:
             self.driver_play_button.configure(text="Play")
@@ -1382,7 +1429,7 @@ class LapSimDesktop:
         if self._driver_playback_time_s >= self.driver_playback.duration_s:
             self._pause_driver_playback()
         else:
-            self._driver_after_id = self.root.after(50, self._driver_tick)
+            self._driver_after_id = self._schedule_after(50, self._driver_tick)
 
     def _reset_driver_playback(self) -> None:
         self._pause_driver_playback()
@@ -1451,6 +1498,11 @@ class LapSimDesktop:
         canvas.delete("all")
         width = max(canvas.winfo_width(), 200)
         height = max(canvas.winfo_height(), 200)
+        if self._driver_live_mode and self._driver_preview_track is not None:
+            self._draw_driver_static_preview(
+                canvas, self._driver_preview_track, width, height, foreground,
+            )
+            return
         playback = self.driver_playback
         if playback is None:
             canvas.create_text(
@@ -1477,7 +1529,10 @@ class LapSimDesktop:
         for right_m, forward_m in samples:
             coords.extend((origin_x + right_m * scale, origin_y - forward_m * scale))
         if len(coords) >= 4:
-            canvas.create_line(*coords, fill=foreground, width=2, smooth=False)
+            canvas.create_line(
+                *coords, fill=foreground, width=2, smooth=False,
+                tags=("driver_live_path",),
+            )
         # The triangular marker stays fixed; the displayed course rotates.
         canvas.create_polygon(
             origin_x, origin_y - 13,
@@ -1500,6 +1555,52 @@ class LapSimDesktop:
         canvas.create_text(
             12, height - 12,
             text=f"Look-ahead {ahead_m:.0f} m · wheel to zoom",
+            anchor="sw", fill=foreground, font=("Consolas", 9),
+        )
+
+    def _draw_driver_static_preview(
+        self, canvas: tk.Canvas, track: Any, width: int, height: int,
+        foreground: str,
+    ) -> None:
+        """Fit the source map while no accepted solver cell is being shown."""
+
+        x_m = np.asarray(track.x_m, dtype=float)
+        y_m = np.asarray(track.y_m, dtype=float)
+        if x_m.size > 1500:
+            indices = np.linspace(0, x_m.size - 1, 1500, dtype=int)
+            x_m = x_m[indices]
+            y_m = y_m[indices]
+        x_center = 0.5 * (float(np.min(x_m)) + float(np.max(x_m)))
+        y_center = 0.5 * (float(np.min(y_m)) + float(np.max(y_m)))
+        x_span = float(np.max(x_m) - np.min(x_m))
+        y_span = float(np.max(y_m) - np.min(y_m))
+        scale = min(
+            (width - 60.0) / max(x_span, 1.0),
+            (height - 90.0) / max(y_span, 1.0),
+        )
+        coords: list[float] = []
+        for x, y in zip(x_m, y_m, strict=True):
+            coords.extend((
+                width / 2.0 + (float(x) - x_center) * scale,
+                height / 2.0 - (float(y) - y_center) * scale,
+            ))
+        if len(coords) >= 4:
+            canvas.create_line(
+                *coords, fill=foreground, width=2, smooth=False,
+                tags=("driver_preview_path",),
+            )
+        start_x, start_y = coords[:2]
+        canvas.create_oval(
+            start_x - 4, start_y - 4, start_x + 4, start_y + 4,
+            outline=foreground, width=2, tags=("driver_preview_start",),
+        )
+        canvas.create_text(
+            12, 12, text="STATIC SOURCE COURSE · NO VEHICLE POSE",
+            anchor="nw", fill=foreground, font=FONT_BOLD,
+        )
+        canvas.create_text(
+            12, height - 12,
+            text="Start marked · waiting for accepted model cells",
             anchor="sw", fill=foreground, font=("Consolas", 9),
         )
 
@@ -1780,7 +1881,7 @@ class LapSimDesktop:
         # One idle callback observes the final values after a profile or
         # course selector has populated several StringVars programmatically.
         generation = self._result_generation
-        self.root.after_idle(
+        self._schedule_after(None,
             lambda: self._invalidate_stale_result(expected_generation=generation)
         )
 
@@ -1935,6 +2036,8 @@ class LapSimDesktop:
         self._driver_playback_time_s = 0.0
         self._driver_live_mode = True
         self._driver_stream_active = True
+        self._driver_preview_track = self.track
+        self._driver_live_update_serial += 1
         self.driver_progress_var.set(0.0)
         for value in self.driver_values.values():
             value.set("—")
@@ -1995,6 +2098,9 @@ class LapSimDesktop:
             # worker or turn an incomplete lap into a displayed solution.
             return
         self.driver_playback = playback
+        self._driver_preview_track = None
+        self._driver_live_update_serial += 1
+        update_serial = self._driver_live_update_serial
         self._live_decision = DriverCellDecision(**{
             key: getattr(snapshot, key, None)
             for key, _title, _scale, _format in DRIVER_CELL_BOXES
@@ -2005,6 +2111,33 @@ class LapSimDesktop:
             f"{snapshot.cell_index + 1}/{snapshot.cell_count} · reference path"
         )
         self._render_driver_frame()
+        phase_complete = snapshot.cell_index + 1 == snapshot.cell_count
+        # A completed AI trial may start a dry seam-speed pass.  A longer
+        # interval without accepted cells may also mean slow or failed model
+        # work; in either case do not leave a stale car-fixed frame on screen.
+        self._schedule_after(
+            100 if phase_complete else 500,
+            lambda: self._show_driver_preview_after_phase(
+                update_serial, name, phase, phase_complete=phase_complete,
+            ),
+        )
+
+    def _show_driver_preview_after_phase(
+        self, update_serial: int, name: str, phase: str,
+        *, phase_complete: bool = True,
+    ) -> None:
+        if (
+            not self.run_in_progress or not self._driver_live_mode
+            or update_serial != self._driver_live_update_serial
+        ):
+            return
+        self._driver_preview_track = self.track
+        self.driver_run_label.set(
+            f"{name} · {phase} complete · model work continuing"
+            if phase_complete else
+            f"{name} · last accepted {phase} step · waiting for model"
+        )
+        self._draw_driver_view()
 
     def _vehicle_for_profile(
         self, profile_id: str, setup: VehicleSetup | None
@@ -2679,7 +2812,7 @@ class LapSimDesktop:
         try:
             kind, payload, error = self.result_queue.get_nowait()
         except queue.Empty:
-            self.root.after(100, self._poll_result)
+            self._schedule_after(100, self._poll_result)
             return
 
         self._result_generation += 1
@@ -2694,10 +2827,12 @@ class LapSimDesktop:
             self.status_text.set(
                 "Inputs changed during calculation · saved run is not displayed; run again"
             )
-            self.root.after(100, self._poll_result)
+            self._schedule_after(100, self._poll_result)
             return
         if self._driver_live_mode:
             self._driver_stream_active = False
+            self._driver_preview_track = None
+            self._driver_live_update_serial += 1
             if self.driver_playback is None:
                 self.driver_run_label.set("No accepted model step · calculation ended")
             else:
@@ -2861,7 +2996,8 @@ class LapSimDesktop:
                 if not self.course_spec.synthetic else ""
             )
             self.ai_result_text.set(
-                ("SYNTHETIC AI DEMO. " if self.course_spec.synthetic else "")
+                (f"SYNTHETIC COURSE: {self.course_spec.label}. "
+                 if self.course_spec.synthetic else "")
                 + f"{selection} Assumed ±{half_width_m:g} m corridor, "
                 f"{vehicle_width_m:g} m car, {margin_m:g} m margin. "
                 f"Assumed uniform road grip {road_grip_multiplier * 100:g}%. "
@@ -2993,7 +3129,7 @@ class LapSimDesktop:
                 f"assumed grip {road_grip_multiplier * 100:g}% · "
                 f"saved A {run_ids[0][:10]}, B {run_ids[1][:10]}"
             )
-        self.root.after(100, self._poll_result)
+        self._schedule_after(100, self._poll_result)
 
     def _show_result(self, result: Any, *, track_length_m: float | None = None) -> None:
         summary = summarize_lap(

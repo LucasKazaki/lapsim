@@ -261,11 +261,21 @@ class DriverPlayback:
         ):
             raise ValueError("Playback view ranges and spacing must be finite and positive")
         offsets = np.arange(-behind_m, ahead_m + spacing_m * 0.5, spacing_m)
+        # A fixed sampling grid need not pass through the car.  Include its
+        # station so the displayed line always reaches the fixed marker.
+        offsets = np.unique(np.concatenate((offsets, [0.0])))
         if not self.track.closed:
             offsets = offsets[
                 (frame.distance_m + offsets >= 0)
                 & (frame.distance_m + offsets <= self.track.length_m)
             ]
+            # Preserve the visible ends of an open course even when neither
+            # happens to lie on the sampling grid.
+            offsets = np.unique(np.concatenate((
+                offsets,
+                [max(-behind_m, -frame.distance_m),
+                 min(ahead_m, self.track.length_m - frame.distance_m)],
+            )))
         stations = frame.distance_m + offsets
         if self.track.closed:
             stations = np.where(

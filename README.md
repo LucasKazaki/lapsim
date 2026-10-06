@@ -88,8 +88,8 @@ opening a console-free window. A later startup error is shown in a message box
 and saved under `%LOCALAPPDATA%\LapSim\logs\desktop_startup.log`. The app runs
 from this source checkout because the default course is stored here; it is not
 a standalone EXE. The app defaults
-to the fused team endurance course and has an explicit **Course** menu for an
-optional synthetic rounded-rectangle calculation example. **Import course…**
+to the fused team endurance course and has an explicit **Course** menu for
+synthetic rounded-rectangle and FSAE-style practice courses. **Import course…**
 adds a validated, versioned course prepared from a coherent CSV and preserves
 it in the local course catalog across launches; see the
 [course-bundle guide](docs/course_bundle_format.md). It offers editable
@@ -157,14 +157,27 @@ arcs, stored in 0.5 m source cells. Its default AI inputs are an *assumed*
 benchmark at model torque fraction 0.8 (enter 80 in the desktop's percent box)
 and assumed road grip 100%, a current
 speed-periodic model run gave
-**16.885573 s** on the eligible geometric baseline, **15.624937 s** on an
-eligible half-offset path, and **14.556630 s** on the selected 0.95-offset
+**16.949850 s** on the eligible geometric baseline, **15.691924 s** on an
+eligible half-offset path, and **14.617662 s** on the selected 0.95-offset
 path. The full-offset path failed clearance at an evaluated point by **0.040636 m**
 and was skipped before the lap calculation; it has no modeled time or replay.
 The fourth path passed its continuous scalar audit with a conservative
-0.053396 m lower bound on modeled clearance and had a **2.328943 s** lead under
+0.053396 m lower bound on modeled clearance and had a **2.331539 s** lead under
 the 0.05 s rule. This is a synthetic software
 demonstration, not a surveyed Formula SAE course or a validated team-car gain.
+
+**Synthetic FSAE-style · practice** is a separate 817.079633 m analytic lap
+inspired by the [2027 Formula SAE endurance layout guidance](https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38).
+It repeats 60 m and 45 m straights with alternating 15 m radius bends, and
+its exact straight/circular-arc source geometry closes without map correction.
+The starting ±3 m AI half-width is an editable assumption. It has no surveyed
+cones, measured boundaries, passing zones, or official event layout, and its
+computed times are not competition predictions. The fused team recording
+remains the startup course and **Centerline** remains the default driving path.
+With the built-in Prius and 80% torque request on this analytic course, the
+optional AI comparison selected a 0.975-offset path at **59.859115 s** against
+its eligible processed baseline at **60.154777 s**. The **0.295661 s** modeled
+lead is a software scenario result under the assumed corridor.
 
 The default recorded course has no surveyed widths, and its x/y map does not agree
 with its stored solver curvature. The Analysis tab reports 3.657937 rad of
@@ -178,7 +191,7 @@ shipped course with an assumed ±2 m corridor, 1.78308 m car width, and 0.3 m
 margin, completed Prius baseline and
 offset laps currently fail the path audit; displayed starred times
 are diagnostic only, the time difference is blank, and there is no selected
-AI winner. The ordinary centerline mode is unchanged. AI-mode eligible times,
+AI winner. Ordinary centerline remains the default driving mode; the new exit-force check also applies to its physics. AI-mode eligible times,
 when available on a coherent course, should be compared only with the AI-mode
 geometric baseline, not the ordinary centerline lap. The **Driver view** shows accepted solver-step progress on a reference
 path, then plays back numeric telemetry against the exact solver-grid x/y saved with that run. Cell model boxes show each accepted cell's torque and brake requests, achieved forces, acceleration, signed battery power, and next-entry speed ceiling. This applies to ordinary centerline and car-comparison runs as well as AI paths; the separate top-down course plot continues to show the source map. The displayed position and map heading are not an integrated vehicle pose, and the fused course's x/y still disagrees with its physics curvature. Its **Replay

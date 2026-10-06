@@ -86,6 +86,7 @@ class Vehicle:
     requested_lateral_force_n: float = field(init=False, default=0.0)
     lateral_force_capacity_n: float = field(init=False, default=0.0)
     current_lateral_force_n: float = field(init=False, default=0.0)
+    current_tire_states: TireStates = field(init=False, default_factory=TireStates)
     available_motor_torque_nm: float = field(init=False, default=0.0)
     envelope_limited_motor_torque_nm: float = field(init=False, default=0.0)
     requested_drive_force_n: float = field(init=False, default=0.0)
@@ -254,6 +255,7 @@ class Vehicle:
         self.requested_lateral_force_n = 0.0
         self.lateral_force_capacity_n = 0.0
         self.current_lateral_force_n = 0.0
+        self.current_tire_states = TireStates()
         self.available_motor_torque_nm = 0.0
         self.envelope_limited_motor_torque_nm = 0.0
         self.requested_drive_force_n = 0.0
@@ -330,6 +332,58 @@ class Vehicle:
             * self.regenerative_efficiency
         )
         return self.battery.limit_charge_power_w(requested_charge_power_w)
+
+    def exit_combined_tire_force_margin_n(self, curvature_per_m: float) -> float:
+        """Check the held cell forces against tire grip at the exit speed.
+
+        The spatial force solve uses entry speed. An accelerating curved cell
+        can therefore leave with more lateral demand than its held drive force
+        can share under the tire's own combined-force law. Recompute normal
+        loads and lateral allocation at the exit, retaining the longitudinal
+        force and acceleration solved for this cell. A negative margin means
+        that the constant-force cell extrapolation exceeded tire capacity.
+        """
+
+        if not isfinite(curvature_per_m):
+            raise ValueError("curvature_per_m must be finite")
+        lateral_acceleration_mps2 = self.speed_mps**2 * curvature_per_m
+        aero_forces = self.aero_forces_n(
+            self.speed_mps,
+            lateral_acceleration_mps2,
+            curvature_per_m=curvature_per_m,
+        )
+        normal_loads_n = self.suspension.tire_normal_loads_n(
+            self.mass_kg,
+            self.gravity_mps2,
+            aero_forces,
+            self.chassis,
+            longitudinal_acceleration_mps2=self.longitudinal_acceleration_mps2,
+            lateral_acceleration_mps2=lateral_acceleration_mps2,
+        )
+        requested_lateral_force_n = (
+            self.mass_kg * abs(lateral_acceleration_mps2)
+        )
+        lateral_capacities_n = tuple(
+            self.tire.lateral_force_capacity_n(load_n)
+            for load_n in normal_loads_n.all_n
+        )
+        lateral_margin_n = sum(lateral_capacities_n) - requested_lateral_force_n
+        lateral_forces_n = self.tire.lateral_forces_n(
+            normal_loads_n,
+            self.mass_kg * lateral_acceleration_mps2,
+        )
+        longitudinal_margins_n = (
+            self.tire.combined_longitudinal_force_capacity_n(load_n, lateral_n)
+            - state.drive_force_n
+            - state.braking_force_n
+            for load_n, lateral_n, state in zip(
+                normal_loads_n.all_n,
+                lateral_forces_n.all_n,
+                self.current_tire_states.all,
+                strict=True,
+            )
+        )
+        return min(lateral_margin_n, *longitudinal_margins_n)
 
     def update_state(self, controls: Controls, distance_step_m: float) -> None:
         """Advance exactly one positive spatial cell.
@@ -753,6 +807,7 @@ class Vehicle:
         self.requested_lateral_force_n = requested_lateral_force_n
         self.lateral_force_capacity_n = lateral_capacity_n
         self.current_lateral_force_n = tire_states.lateral_force_n
+        self.current_tire_states = tire_states
         self.available_motor_torque_nm = available_motor_torque_nm
         self.envelope_limited_motor_torque_nm = applied_motor_torque_nm
         self.requested_drive_force_n = requested_drive_force_n
