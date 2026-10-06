@@ -78,6 +78,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup_lapsim.ps1
 .venv\Scripts\python.exe -m lapsim.ui
 ```
 
+Run the complete repository checks with
+`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\check_all.ps1`.
+The setup installs pytest; the checker runs every test file in small, separate
+processes to fit a memory-limited Windows machine.
+
 The launcher checks Python, Tk, app imports, and the bundled course before
 opening a console-free window. A later startup error is shown in a message box
 and saved under `%LOCALAPPDATA%\LapSim\logs\desktop_startup.log`. The app runs
@@ -112,14 +117,17 @@ does no path optimization. Its optional **AI racing line (experimental)** mode
 uses an assumed track half-width, vehicle width, and margin to propose one
 smooth line and compare it with a geometric centerline using the same car and
 physics solver. The baseline (strength 0), full offset (1), and
-half offset (0.5) run first. If all three paths have eligible audits and times,
+half offset (0.5) are checked first. A failed candidate clearance audit
+skips its physics pass when the geometric baseline is valid. If all three
+paths have eligible audits and times,
 and half beats both endpoints by more than 0.05 s, a convex quadratic through
 those times chooses the nearest safeguarded fourth strength from 0.25, 0.375,
 0.625, 0.75, or 0.875. If full offset fails its sampled audit but eligible half
 offset clearly beats the baseline, a short geometry-only search tries a stronger
 fourth offset with at least 0.02 m of additional **sampled** clearance. In other
-cases the fourth strength is 0.75. Each of at most four paths receives one dry
-speed-seam pass and one recorded pass, for at most eight lap-model passes. A
+cases the fourth strength is 0.75. Each path admitted to physics receives one
+dry speed-seam pass and one recorded pass, for at most eight lap-model passes
+across four paths. A
 completed lap is eligible for a path comparison only when its start
 and finish speeds agree within 0.005 m/s and a sampled integration of its
 prescribed curvature passes the assumed clearance and position-closure
@@ -137,11 +145,13 @@ The optional **Synthetic loop · AI demo** course is a 195.398224 m rounded rect
 two 40 m and two 20 m straights joined by four 12 m radius quarter-circle
 arcs, stored in 0.5 m source cells. Its default AI inputs are an *assumed*
 ±3 m corridor, 1.8 m vehicle width, and 0.2 m safety margin. With the Prius
-benchmark at torque request 0.8, a current speed-periodic model run gave
+benchmark at model torque fraction 0.8 (enter 80% in the desktop), a current
+speed-periodic model run gave
 **16.885573 s** on the eligible geometric baseline, **15.624285 s** on an
 eligible half-offset path, and **14.556611 s** on the selected 0.95-offset
-path. The full-offset trial completed in **14.457921 s** but failed sampled
-clearance by **0.040636 m**. The fourth path passed its sampled audit with
+path. The full-offset path failed sampled clearance by **0.040636 m**
+and was skipped before the lap calculation; it has no modeled time or replay.
+The fourth path passed its sampled audit with
 0.053411 m of additional modeled clearance and had a **2.328961 s** lead under
 the 0.05 s rule. This is a synthetic software
 demonstration, not a surveyed Formula SAE course or a validated team-car gain.
@@ -163,8 +173,8 @@ when available on a coherent course, should be compared only with the AI-mode
 geometric baseline, not the ordinary centerline lap. The **Driver view** shows accepted solver-step progress on a reference
 path, then plays back numeric telemetry against the exact solver-grid x/y saved with that run. Cell model boxes show each accepted cell's torque and brake requests, achieved forces, acceleration, signed battery power, and next-entry speed ceiling. This applies to ordinary centerline and car-comparison runs as well as AI paths; the separate top-down course plot continues to show the source map. The displayed position and map heading are not an integrated vehicle pose, and the fused course's x/y still disagrees with its physics curvature. Its **Replay
 lap** menu switches between A and B after a two-car comparison, or among
-the completed geometric baseline, full, half, and fourth AI trials after an
-AI run, without running physics again. Each completed AI trial has a
+the completed AI trials after an AI run, without running physics again.
+A geometry-rejected trial has no replay. Each completed AI trial has a
 content-identified local run record with its own telemetry and exact solver
 geometry. The primary record links to the other trial IDs; its own selected
 trial is identified as `selected_result`. Diagnostic runs remain available

@@ -168,8 +168,17 @@ def test_imported_coherent_course_ai_trials_save_and_replay(
             comparison = payload[5]
             assert comparison.rank_status == "candidate_selected"
             assert len(comparison.trials) == 3
-            assert all(trial.run is not None and trial.run.completed
-                       for trial in comparison.trials)
+            completed_trials = [
+                trial for trial in comparison.trials
+                if trial.run is not None and trial.run.completed
+            ]
+            skipped_trials = [
+                trial for trial in comparison.trials if trial.run is None
+            ]
+            assert len(completed_trials) == 2
+            assert len(skipped_trials) == 1
+            assert skipped_trials[0].path_audit is not None
+            assert not skipped_trials[0].path_audit.valid
             app._set_busy(True)
             app.result_queue.put((kind, payload, error))
             app._poll_result()
@@ -188,7 +197,7 @@ def test_imported_coherent_course_ai_trials_save_and_replay(
             )
             assert source["bundle_sha256"] == bundle.bundle_sha256
             assert source["source_geometry_sha256"] == bundle.geometry_sha256
-            assert len(list(run_dir.glob("*.json"))) == 4
+            assert len(list(run_dir.glob("*.json"))) == 3
             assert planning["baseline_record"]["run_id"] is not None
             assert sum(row["record_role"] == "selected_result"
                        for row in planning["candidate_trials"]) == 1
@@ -197,7 +206,11 @@ def test_imported_coherent_course_ai_trials_save_and_replay(
                 assert record["settings"]["track"]["source_course"] == source
                 assert replay_lap_record(path).model_agreement
             for row in planning["candidate_trials"]:
-                if row["record_role"] != "selected_result":
+                if row["record_role"] == "no_run":
+                    assert row["run_id"] is None
+                    assert row["model_run_completed"] is None
+                    assert "Model run skipped" in row["error"]
+                elif row["record_role"] != "selected_result":
                     assert (run_dir / f"{row['run_id']}.json").exists()
         finally:
             root.destroy()

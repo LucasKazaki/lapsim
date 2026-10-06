@@ -70,8 +70,8 @@ try {
         }
     }
 
-    Write-Host "Installing LapSim and its required packages..."
-    & $venvPython -m pip install -e .
+    Write-Host "Installing LapSim and its required packages and test tool..."
+    & $venvPython -m pip install -e ".[dev]"
     if ($LASTEXITCODE -ne 0) {
         throw "Package installation failed. Check the pip error above and internet access."
     }

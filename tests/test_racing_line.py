@@ -305,9 +305,12 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
     assert comparison.baseline_path_audit.valid
     assert comparison.trials[0].path_audit is not None
     assert not comparison.trials[0].path_audit.valid
-    assert comparison.trials[0].diagnostic_lap_time_s is not None
+    assert comparison.trials[0].diagnostic_lap_time_s is None
+    assert comparison.trials[0].run is None
+    assert "Model run skipped" in comparison.trials[0].error
     assert comparison.trials[0].lap_time_s is None
     assert comparison.trials[0].path_audit.maximum_corridor_excess_m > 0.03
+    assert all(phase != "full" for phase, _track, _snapshot in progress)
     assert comparison.trials[1].path_audit is not None
     assert comparison.trials[1].path_audit.valid
     assert comparison.trials[2].path_audit is not None
@@ -351,7 +354,9 @@ def test_speed_periodic_prius_selects_stronger_feasible_path() -> None:
     assert comparison.selected_run is comparison.candidate_run
     assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5, 0.95)
     assert comparison.trials[0].lap_time_s is None
-    assert comparison.trials[0].diagnostic_lap_time_s is not None
+    assert comparison.trials[0].diagnostic_lap_time_s is None
+    assert comparison.trials[0].run is None
+    assert "Model run skipped" in comparison.trials[0].error
     assert comparison.trials[0].path_audit is not None
     assert not comparison.trials[0].path_audit.valid
     assert comparison.trials[2].path_audit is comparison.candidate_path_audit

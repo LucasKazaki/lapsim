@@ -944,8 +944,11 @@ def compare_lines_with_lap_model(
     larger than ``minimum_selection_gain_s``. A planner-created path is also
     screened by a sampled integration of the curvature that the vehicle model
     follows. The screen checks the declared clearance around the processed
-    reference, but is not a continuous swept-body certificate. Failed screens
-    leave actual physics times/runs as diagnostics, never selectable times.
+    reference, but is not a continuous swept-body certificate. When the
+    processed baseline is valid, a failed candidate screen skips that
+    candidate's expensive model run; its trial retains the geometric error.
+    If the baseline itself fails, all trial model runs remain diagnostic so
+    the source-course mismatch can still be inspected.
     The selection margin is not a certified discretization error bound.
     Errors remain explicit.
     With a callback, accepted-cell snapshots carry a phase label and the exact
@@ -1065,6 +1068,20 @@ def compare_lines_with_lap_model(
         return result, None, result.failure_reason or "Lap did not complete with a finite positive time"
 
     baseline_path_audit, baseline_path_error = audit_trial(plan.baseline_track)
+
+    def run_ai_trial(
+        track: SpatialTrack, phase: str, path_audit: CurvaturePathAudit | None,
+    ) -> tuple[EnduranceRunResult | None, float | None, str | None]:
+        # A failed sampled path cannot become selectable by running physics.
+        # Preserve diagnostic runs when the processed baseline also fails,
+        # because those runs expose the source-course mismatch.
+        if (
+            baseline_path_error is None
+            and path_audit is not None and not path_audit.valid
+        ):
+            return None, None, "Model run skipped after failed sampled path audit"
+        return run_trial(track, phase)
+
     baseline_run, baseline_model_time, baseline_run_error = run_trial(
         plan.baseline_track, "baseline"
     )
@@ -1080,8 +1097,8 @@ def compare_lines_with_lap_model(
     )
     if plan.status == "candidate":
         full_audit, full_path_error = audit_trial(plan.candidate_track)
-        full_run, full_model_time, full_run_error = run_trial(
-            plan.candidate_track, "full"
+        full_run, full_model_time, full_run_error = run_ai_trial(
+            plan.candidate_track, "full", full_audit,
         )
         full_diagnostic_time = completed_diagnostic_time(full_run)
         full_time = (
@@ -1125,8 +1142,8 @@ def compare_lines_with_lap_model(
                 trials.append(RacingLineTrial(strength, None, None, f"Geometry: {error}"))
                 continue
             trial_audit, trial_path_error = audit_trial(trial_track)
-            trial_run, trial_model_time, trial_run_error = run_trial(
-                trial_track, phase,
+            trial_run, trial_model_time, trial_run_error = run_ai_trial(
+                trial_track, phase, trial_audit,
             )
             trial_diagnostic_time = completed_diagnostic_time(trial_run)
             trial_time = (

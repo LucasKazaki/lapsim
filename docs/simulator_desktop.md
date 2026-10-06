@@ -25,6 +25,10 @@ then select **LapSim desktop app** from Run and Debug; the checked-in launch
 configuration uses this checkout's `.venv`. The source checkout must remain
 present because the default course is stored in its `analysis/data` folder.
 The calculation runs in a worker thread so the window remains responsive.
+To repeat the full software checks on Windows, run
+`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\check_all.ps1`
+from this checkout after setup. It runs test files in separate small groups to
+limit peak memory use.
 
 ## Inputs and outputs
 
@@ -108,9 +112,10 @@ from the final recorded pass for each path.
 Rejected cells are not shown as completed movement. After a completed lap,
 the app starts a 1× replay with Play/Pause, Start, time scrub, playback rate,
 and wheel zoom. **Replay lap** lets you switch between A and B after a
-completed two-car comparison, or among the completed geometric baseline,
-full, half, and fourth AI trials. Runs that failed the modeled-path audit
-are labeled **diagnostic**. Each choice uses that run's
+completed two-car comparison, or among completed AI trials. A candidate
+rejected by the sampled path audit when the processed baseline is valid has no
+model run or replay. Completed runs that failed the modeled-path audit because
+the baseline is invalid are labeled **diagnostic**. Each choice uses that run's
 recorded telemetry and exact saved solver-grid x/y. This includes ordinary
 centerline laps and both cars in a profile comparison, so completed playback
 uses the same reference geometry as live progress. Switching
@@ -150,8 +155,9 @@ switching back restores the default recorded course's scenario inputs. The
 app has no measured boundaries and does not infer
 vehicle body width from the car profile. A deterministic, bounded planner
 proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
-torque request through a newly derived geometric centerline, then full- and
-half-offset candidates. If all three paths have eligible audits and times,
+torque request through a newly derived geometric centerline, then checks
+full- and half-offset candidates. When the centerline audit is valid, a
+candidate failing its sampled path audit is skipped before physics. If all three paths have eligible audits and times,
 and half beats both endpoints by more than **0.05 s**, a convex quadratic
 through their times estimates an interior best strength. The fourth path uses
 the nearest safeguarded choice from **0.25, 0.375, 0.625, 0.75, 0.875**;
@@ -159,8 +165,8 @@ if full offset fails its sampled path audit while eligible half offset clearly
 beats the baseline, a short geometry-only screen instead tries stronger
 offsets and requires at least **0.02 m** of extra sampled clearance beyond the
 entered vehicle width and margin. Other cases fall back to **0.75**. This is a bounded probe for the selected
-car, not a learned or closed-loop controller. For each path it makes one dry
-seam-speed probe and one final recorded lap, starting each from the same fresh
+car, not a learned or closed-loop controller. For each path admitted to physics it makes one dry seam-speed probe and one
+final recorded lap, starting each from the same fresh
 initial car and pack state. The final pass starts at the probe's exit speed;
 its finish-minus-start speed must be within **0.005 m/s**. This is at most eight
 full physics passes across four paths. Pack charge and other states need not
@@ -220,13 +226,13 @@ The failed baseline audit makes the fourth strength fall back to 0.75 in this
 example; its completed time remains diagnostic.
 
 For a controlled AI demonstration, choose **Synthetic loop · AI demo**, the
-Prius benchmark, torque request **0.8**, and its initial assumed ±3 m
+Prius benchmark, desktop torque request **80% (enter 80; model fraction 0.8)**, and its initial assumed ±3 m
 half-width, 1.8 m vehicle width, and 0.2 m margin. The current speed-periodic
 model comparison produced an eligible **16.8855728415 s** geometric baseline,
 **15.6242848232 s** half-offset, and **14.5566114677 s** 0.95-offset
 candidate. Those three sampled modeled-path audits passed; the full-offset
-trial completed in **14.4579210447 s** but failed sampled clearance by
-**0.0406357247 m**. The 0.95 path passed with **0.053411 m** of additional
+path failed sampled clearance by **0.0406357247 m** and was skipped before
+physics. It therefore has no time, saved run, or replay. The 0.95 path passed with **0.053411 m** of additional
 sampled clearance and was selected on a **2.3289613738 s** modeled lead. These are synthetic model
 numbers, not surveyed-course or team-car performance. An on-demand fixed-path
 `SpatialTrack.refine(1.0)` probe gave **16.882064565 s** baseline,
@@ -249,8 +255,10 @@ recorded telemetry, and final-pass start speed. The primary record's
 `baseline_record` and `candidate_trials[]` entries identify the selected
 record as `selected_result` and link other saved runs by `run_id`. The
 existing `comparison_counterpart_run_id` still points to the comparison
-counterpart. At most four path records are saved per AI comparison; an
-interrupted extra trial keeps its error summary without a replayable record.
+counterpart. At most four path records are saved per AI comparison. A geometry-screened
+trial has its audit and skip reason in the primary record but no model run ID;
+an interrupted extra trial likewise keeps its error summary without a
+replayable record.
 For an audit-failed default course, the primary record is flagged diagnostic,
 and no record represents a selected winner. A candidate-only display after
 the baseline fails is also marked `diagnostic_only`, even if that candidate

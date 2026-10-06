@@ -6,6 +6,7 @@ from dataclasses import replace
 from math import pi
 from pathlib import Path
 import tkinter as tk
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
@@ -112,6 +113,55 @@ def test_live_view_clears_old_numbers_and_distinguishes_empty_failure() -> None:
             app._poll_result()
         assert app.driver_run_label.get().startswith("Last accepted step · ")
         assert app.driver_values["speed"].get() == "14.4"
+    finally:
+        root.destroy()
+
+
+@pytest.mark.parametrize(
+    ("previous_kind", "next_kind"),
+    (("single", "comparison"), ("comparison", "single")),
+)
+def test_new_calculation_clears_previous_analysis_trace_even_if_it_fails(
+    previous_kind: str, next_kind: str,
+) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        old = SimpleNamespace(telemetry={
+            "vehicle.distance_m": (0.0, 1.0),
+            "vehicle.speed_mps": (1.0, 2.0),
+        })
+        app._last_result = old
+        if previous_kind == "comparison":
+            app._comparison_results = (("Old A", old), ("Old B", old))
+        app._selected_path_track = app.track
+        app._path_comparison = (object(), object(), (2.0, 1.8, 0.2))
+        app.ai_compare_button.configure(state="normal")
+        app._draw_plots()
+        assert len(app.speed_ax.lines) == (2 if previous_kind == "comparison" else 1)
+
+        with patch("lapsim.ui.app.threading.Thread"):
+            if next_kind == "comparison":
+                app._start_comparison()
+            else:
+                app._start_run()
+        assert app.run_in_progress
+        assert app._last_result is None
+        assert app._comparison_results is None
+        assert app._selected_path_track is None
+        assert app._path_comparison is None
+        assert app.ai_compare_button["state"] == "disabled"
+        assert not app.speed_ax.lines
+
+        app.result_queue.put((next_kind, None, RuntimeError("new run failed")))
+        with patch("lapsim.ui.app.messagebox.showerror"):
+            app._poll_result()
+        assert not app.speed_ax.lines
+        assert app.status_text.get() == "Calculation failed: new run failed"
     finally:
         root.destroy()
 
@@ -341,13 +391,19 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert app.driver_playback.track is comparison.candidate_track
         assert app.driver_replay_menu is not None
         assert app.driver_replay_menu["state"] == "normal"
+        replay_labels = app.driver_replay_menu["menu"].entrycget
+        replay_menu = app.driver_replay_menu["menu"]
+        assert all(
+            "AI offset 1x" not in replay_labels(index, "label")
+            for index in range(replay_menu.index("end") + 1)
+        )
         app._select_driver_replay("AI offset 0.5x")
         assert app.driver_playback is not None
         assert app.driver_playback.track is comparison.trials[1].track
         assert "Synthetic loop" in app.course_ax.get_title(loc="left")
 
         records = list(tmp_path.glob("*.json"))
-        assert len(records) == 4
+        assert len(records) == 3
         primary_path = tmp_path / f"{payload[7]}.json"
         primary = RunRecord.load(primary_path).to_dict()
         planning = primary["settings"]["path_planning"]
@@ -380,6 +436,13 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert planning["baseline_record"]["record_role"] == "comparison_counterpart"
         for trial, trial_row in zip(comparison.trials, planning["candidate_trials"], strict=True):
             assert trial_row["offset_strength"] == trial.strength
+            if trial.run is None:
+                assert trial_row["run_id"] is None
+                assert trial_row["record_role"] == "no_run"
+                assert trial_row["model_run_completed"] is None
+                assert trial_row["diagnostic_lap_time_s"] is None
+                assert "Model run skipped" in trial_row["error"]
+                continue
             if trial.run is comparison.candidate_run:
                 assert trial_row["record_role"] == "selected_result"
                 assert trial_row["run_id"] is None
@@ -423,11 +486,13 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         def interrupted_full_trial(*args, **kwargs):
             modeled = real_compare(*args, **kwargs)
             full = modeled.trials[0]
-            assert full.run is not None
+            assert full.run is None
+            half = modeled.trials[1]
+            assert half.run is not None
             interrupted = replace(
                 full,
                 run=replace(
-                    full.run, completed_laps=0,
+                    half.run, completed_laps=0,
                     failure_reason="Synthetic interrupted probe",
                 ),
                 diagnostic_lap_time_s=None,

@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from math import atan, isfinite
+from numbers import Real
 
 from scipy.optimize import brentq
 
@@ -45,6 +46,8 @@ class PathSpeedConstraints:
 class PathConstraintSolver:
     """Precompute torque-profile-independent path speed ceilings."""
 
+    _CYCLIC_SEAM_SAFETY_TOLERANCE_MPS = 1e-6
+
     def __init__(
         self,
         *,
@@ -56,8 +59,13 @@ class PathConstraintSolver:
         air_density_kgpm3: float = STANDARD_AIR_DENSITY_KGPM3,
         maximum_brake_pressure_psi: float | None = DEFAULT_MAXIMUM_BRAKE_PRESSURE_PSI,
     ) -> None:
-        if convergence_tolerance_mps <= 0:
-            raise ValueError("convergence_tolerance_mps must be positive")
+        if (
+            isinstance(convergence_tolerance_mps, bool)
+            or not isinstance(convergence_tolerance_mps, Real)
+            or not isfinite(convergence_tolerance_mps)
+            or convergence_tolerance_mps <= 0.0
+        ):
+            raise ValueError("convergence_tolerance_mps must be finite and positive")
         if maximum_passes <= 0:
             raise ValueError("maximum_passes must be positive")
         if maximum_entry_iterations <= 0:
@@ -118,12 +126,28 @@ class PathConstraintSolver:
                 )
                 ceilings[cell_index] = new_speed_mps
             if largest_change_mps < self.convergence_tolerance_mps:
-                return PathSpeedConstraints(
-                    track=track,
-                    local_corner_speed_mps=tuple(local_limits),
-                    braking_speed_ceiling_mps=tuple(ceilings),
-                    passes=pass_number,
+                # The descending sweep updates every cell using its already
+                # updated successor, except the last cell, which reads cell 0
+                # before cell 0 is updated. A loose convergence tolerance must
+                # not certify that stale seam value as a feasible brake entry.
+                last_index = track.cell_count - 1
+                seam_entry_mps = self._maximum_entry_speed_mps(
+                    vehicle=vehicle,
+                    next_speed_mps=ceilings[0],
+                    local_speed_limit_mps=local_limits[last_index],
+                    curvature_per_m=track.curvature_per_m[last_index],
+                    cell_length_m=cell_lengths[last_index],
                 )
+                if (
+                    ceilings[last_index]
+                    <= seam_entry_mps + self._CYCLIC_SEAM_SAFETY_TOLERANCE_MPS
+                ):
+                    return PathSpeedConstraints(
+                        track=track,
+                        local_corner_speed_mps=tuple(local_limits),
+                        braking_speed_ceiling_mps=tuple(ceilings),
+                        passes=pass_number,
+                    )
 
         raise RuntimeError(
             f"Cyclic braking ceiling did not converge after {self.maximum_passes} passes"

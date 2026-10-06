@@ -1811,9 +1811,16 @@ class LapSimDesktop:
         self._on_driving_mode_change()
 
     def _begin_live_calculation(self, name: str) -> None:
-        """Clear the old replay before accepted model cells arrive."""
+        """Clear old results before accepted model cells arrive."""
 
         self.progress_queue = queue.Queue(maxsize=1)
+        self._last_result = None
+        self._comparison_results = None
+        self._selected_path_track = None
+        self._path_comparison = None
+        if self.ai_compare_button is not None:
+            self.ai_compare_button.configure(state="disabled")
+        self._draw_plots(preserve_course_view=True)
         self._set_driver_replay_options({}, selected="—")
         self._pause_driver_playback()
         self.driver_playback = None
