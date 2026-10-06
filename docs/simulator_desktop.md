@@ -90,9 +90,9 @@ from the final recorded pass for each path.
 Rejected cells are not shown as completed movement. After a completed lap,
 the app starts a 1× replay with Play/Pause, Start, time scrub, playback rate,
 and wheel zoom. **Replay lap** lets you switch between A and B after a
-completed two-car comparison, or between completed geometric baseline and
-best tested AI path runs, including runs labeled **diagnostic** after a failed
-modeled-path audit. Each choice uses that run's
+completed two-car comparison, or among the completed geometric baseline,
+full, half, and fourth AI trials. Runs that failed the modeled-path audit
+are labeled **diagnostic**. Each choice uses that run's
 recorded telemetry and exact saved solver-grid x/y. This includes ordinary
 centerline laps and both cars in a profile comparison, so completed playback
 uses the same reference geometry as live progress. Switching
@@ -205,18 +205,22 @@ This is a timing-sensitivity probe, not a new eligible comparison or proof of
 grid convergence.
 
 The primary AI run record includes every tested offset strength and its
-reported eligible or diagnostic result, audit status, and exact saved solver
-geometry and telemetry, including the explicit starting speed of its final
-pass. Its `settings.path_planning.algorithm` ends in `v5_adaptive_strength`;
+reported eligible or diagnostic result and audit status. It stores its own
+exact solver geometry and telemetry, including the explicit starting speed of
+its final pass. Its `settings.path_planning.algorithm` ends in `v5_adaptive_strength`;
 `fourth_strength_policy` names the bounded quadratic grid and 0.75 fallback.
 Read `candidate_trials[].offset_strength`, sampled audit, and eligible versus
 diagnostic time for the actual fourth probe; its position in the trial list
-does not imply a fixed 0.75 strength or an eligible result. When a second
-physics trial returned a run, the app also saves one
-linked counterpart with its own geometry and telemetry; the primary record
-names its ID and role. A third trial may have only its summary saved. For an
-audit-failed default course, the primary record is flagged diagnostic, and
-neither record represents a selected winner. A candidate-only display after
+does not imply a fixed 0.75 strength or an eligible result. Every completed
+AI trial has its own content-identified record with exact solver geometry,
+recorded telemetry, and final-pass start speed. The primary record's
+`baseline_record` and `candidate_trials[]` entries identify the selected
+record as `selected_result` and link other saved runs by `run_id`. The
+existing `comparison_counterpart_run_id` still points to the comparison
+counterpart. At most four path records are saved per AI comparison; an
+interrupted extra trial keeps its error summary without a replayable record.
+For an audit-failed default course, the primary record is flagged diagnostic,
+and no record represents a selected winner. A candidate-only display after
 the baseline fails is also marked `diagnostic_only`, even if that candidate
 itself completed. Each record identifies the selected source course by ID;
 AI path-planning metadata additionally saves the source label, description,

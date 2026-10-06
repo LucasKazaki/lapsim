@@ -9,6 +9,31 @@ from vehicle_model import Vehicle
 
 
 class SolverIntegrationTests(TestCase):
+    def test_corner_exit_respects_current_cell_speed_limit(self) -> None:
+        track = Track.from_segments(
+            [Curve(radius_m=10.0, span_rad=pi / 2.0), Straight(length_m=50.0)]
+            * 4
+        )
+        vehicle = Vehicle()
+        speed_limits = SpeedLimitSolver(vehicle, max_step_m=10.0).solve(track)
+
+        lap = LapTimeSolver(vehicle).solve(speed_limits, starting_speed_mps=8.0)
+
+        corner_exit_indices = [
+            index
+            for index, curvature_per_m in enumerate(speed_limits.curvature_per_m)
+            if curvature_per_m != 0.0
+            and index + 1 < len(speed_limits.curvature_per_m)
+            and speed_limits.curvature_per_m[index + 1] == 0.0
+        ]
+        self.assertEqual(len(corner_exit_indices), 4)
+        for index in corner_exit_indices:
+            with self.subTest(cell_index=index):
+                self.assertLessEqual(
+                    lap.speed_mps[index + 1],
+                    speed_limits.speed_limit_mps[index] + 1e-9,
+                )
+
     def test_corner_exit_force_stays_within_driven_tires_combined_grip(self) -> None:
         speed_mps = 8.0
         curvature_per_m = 0.06

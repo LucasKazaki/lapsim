@@ -338,7 +338,7 @@ def test_driver_replay_switches_comparison_cars_and_ai_paths_without_rerunning()
         with patch.object(app, "_show_result"):
             app._poll_result()
         assert app.driver_replay_menu["state"] == "normal"
-        assert app.driver_replay_var.get() == "Best tested AI path"
+        assert app.driver_replay_var.get() == "Best tested AI path · 0.5x offset"
         assert app.driver_playback is not None
         assert app.driver_playback.track is candidate_track
         replay_menu.invoke(0)
@@ -382,5 +382,36 @@ def test_driver_replay_switches_comparison_cars_and_ai_paths_without_rerunning()
         assert app.driver_playback is not None
         assert app.driver_playback.track is candidate_track
         assert app.driver_playback.speeds[-1] == pytest.approx(10.01)
+
+        # A completed candidate cannot be called an eligible replay when
+        # the baseline failed and no time gain can be established.
+        half_candidate = result_for(candidate_track, 11.0)
+        failed_baseline_comparison = SimpleNamespace(
+            baseline_time_s=None,
+            candidate_time_s=candidate.driving_time_s,
+            baseline_run=None, candidate_run=candidate,
+            candidate_track=candidate_track, candidate_strength=1.0,
+            rank_status="no_comparison", selection_margin_s=0.05,
+            baseline_diagnostic_time_s=None,
+            candidate_diagnostic_time_s=candidate.driving_time_s,
+            baseline_path_audit=None, candidate_path_audit=None,
+            trials=(SimpleNamespace(
+                strength=0.5, run=half_candidate, track=candidate_track,
+                lap_time_s=half_candidate.driving_time_s,
+            ),),
+        )
+        app.result_queue.put((
+            "ai_single",
+            ("AI car", candidate, candidate_track, "candidate_only_baseline_failed",
+             plan, failed_baseline_comparison, (2.0, 1.8, 0.2), "e" * 64),
+            None,
+        ))
+        with patch.object(app, "_show_result"):
+            app._poll_result()
+        assert app.driver_replay_var.get() == (
+            "Best tested AI path · 1x offset · diagnostic"
+        )
+        assert "AI offset 0.5x · diagnostic" in app._driver_replay_runs
+        assert app._comparison_results is None
     finally:
         root.destroy()

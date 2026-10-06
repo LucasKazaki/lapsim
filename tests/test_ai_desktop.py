@@ -173,7 +173,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         assert sum(isinstance(child, tk.Toplevel) for child in root.winfo_children()) == before_windows
 
         records = list(tmp_path.glob("*.json"))
-        assert len(records) == 2
+        assert len(records) == 4
         selected_path = tmp_path / f"{payload[7]}.json"
         selected = RunRecord.load(selected_path).to_dict()
         planning = selected["settings"]["path_planning"]
@@ -199,6 +199,22 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         assert len(planning["candidate_trials"]) == 3
         assert all(trial["sampled_path_audit"]["valid"] is False
                    for trial in planning["candidate_trials"])
+        assert planning["trial_record_manifest_version"] == 1
+        assert planning["baseline_record"]["record_role"] == "selected_result"
+        for trial, trial_row in zip(comparison.trials, planning["candidate_trials"], strict=True):
+            assert trial_row["offset_strength"] == trial.strength
+            assert trial_row["record_role"] in ("comparison_counterpart", "candidate_trial")
+            trial_path = tmp_path / f"{trial_row['run_id']}.json"
+            assert trial_path.exists()
+            saved_trial = RunRecord.load(trial_path).to_dict()
+            saved_planning = saved_trial["settings"]["path_planning"]
+            assert saved_planning["comparison_rank_status"] == comparison.rank_status
+            assert saved_planning["diagnostic_only"] is True
+            assert saved_planning["comparable_with_baseline"] is False
+            assert saved_trial["settings"]["track"]["length_m"] == pytest.approx(
+                trial.track.length_m
+            )
+            assert replay_lap_record(trial_path).model_agreement
         assert selected["settings"]["track"]["length_m"] == pytest.approx(
             plan.baseline_track.length_m
         )
@@ -216,11 +232,14 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         )
         assert replay_lap_record(selected_path).model_agreement
         assert replay_lap_record(counterpart_path).model_agreement
-        app._select_driver_replay("Best tested AI path · diagnostic")
+        app._select_driver_replay("Best tested AI path · 0.75x offset · diagnostic")
         assert app.driver_playback is not None
         assert app.driver_playback.track.length_m == pytest.approx(
             comparison.candidate_track.length_m
         )
+        app._select_driver_replay("AI offset 1x · diagnostic")
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is comparison.trials[0].track
     finally:
         root.destroy()
 
@@ -293,10 +312,13 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert app.driver_playback.track is comparison.candidate_track
         assert app.driver_replay_menu is not None
         assert app.driver_replay_menu["state"] == "normal"
+        app._select_driver_replay("AI offset 0.5x")
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is comparison.trials[1].track
         assert "Synthetic loop" in app.course_ax.get_title(loc="left")
 
         records = list(tmp_path.glob("*.json"))
-        assert len(records) == 2
+        assert len(records) == 4
         primary_path = tmp_path / f"{payload[7]}.json"
         primary = RunRecord.load(primary_path).to_dict()
         planning = primary["settings"]["path_planning"]
@@ -320,6 +342,29 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert planning["diagnostic_only"] is False
         assert planning["selected_mode"] == "candidate"
         assert planning["selected_offset_strength"] == 0.75
+        assert planning["trial_record_manifest_version"] == 1
+        assert planning["baseline_record"]["run_id"] == counterpart_id
+        assert planning["baseline_record"]["record_role"] == "comparison_counterpart"
+        for trial, trial_row in zip(comparison.trials, planning["candidate_trials"], strict=True):
+            assert trial_row["offset_strength"] == trial.strength
+            if trial.run is comparison.candidate_run:
+                assert trial_row["record_role"] == "selected_result"
+                assert trial_row["run_id"] is None
+                continue
+            assert trial_row["record_role"] == "candidate_trial"
+            trial_path = tmp_path / f"{trial_row['run_id']}.json"
+            assert trial_path.exists()
+            saved_trial = RunRecord.load(trial_path).to_dict()
+            saved_planning = saved_trial["settings"]["path_planning"]
+            assert saved_planning["comparison_rank_status"] == comparison.rank_status
+            assert saved_planning["diagnostic_only"] == (trial.lap_time_s is None)
+            assert saved_planning["comparable_with_baseline"] == (
+                trial.lap_time_s is not None
+            )
+            assert saved_trial["settings"]["track"]["length_m"] == pytest.approx(
+                trial.track.length_m
+            )
+            assert replay_lap_record(trial_path).model_agreement
         assert planning["processed_baseline_geometry_audit"][
             "curvature_integrated_closure_gap_m"
         ] < 0.01
@@ -334,6 +379,55 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert "Course: Synthetic loop · AI demo" in popup_text
         assert "synthetic course demonstrates" in popup_text
         assert "source x/y map and recorded curvature disagree" not in popup_text
+
+        # An interrupted extra trial retains its failure summary, while the
+        # completed baseline and other offsets still have linked records.
+        from lapsim.optimization import racing_line
+
+        real_compare = racing_line.compare_lines_with_lap_model
+
+        def interrupted_full_trial(*args, **kwargs):
+            modeled = real_compare(*args, **kwargs)
+            full = modeled.trials[0]
+            assert full.run is not None
+            interrupted = replace(
+                full,
+                run=replace(
+                    full.run, completed_laps=0,
+                    failure_reason="Synthetic interrupted probe",
+                ),
+                diagnostic_lap_time_s=None,
+                error="Synthetic interrupted probe",
+            )
+            return replace(modeled, trials=(interrupted, *modeled.trials[1:]))
+
+        incomplete_dir = tmp_path / "incomplete_trial"
+        with patch.object(
+            racing_line, "compare_lines_with_lap_model",
+            side_effect=interrupted_full_trial,
+        ), patch("lapsim.ui.app.default_run_directory", return_value=incomplete_dir):
+            app._calculate_ai_single(
+                "prius_2026_le", "Prius synthetic incomplete trial",
+                VehicleSetup(torque_request_fraction=0.8), 1.0, 0.8,
+                (3.0, 1.8, 0.2),
+            )
+            interrupted_kind, interrupted_payload, interrupted_error = (
+                app.result_queue.get_nowait()
+            )
+        assert interrupted_kind == "ai_single"
+        assert interrupted_error is None
+        assert len(list(incomplete_dir.glob("*.json"))) == 3
+        interrupted_primary = RunRecord.load(
+            incomplete_dir / f"{interrupted_payload[7]}.json"
+        ).to_dict()
+        interrupted_planning = interrupted_primary["settings"]["path_planning"]
+        assert interrupted_planning["candidate_trials"][0]["run_id"] is None
+        assert interrupted_planning["candidate_trials"][0]["record_role"] == (
+            "unsaved_incomplete"
+        )
+        assert interrupted_planning["candidate_trials"][0]["model_run_completed"] is False
+        assert (incomplete_dir / f"{interrupted_planning['baseline_record']['run_id']}.json").exists()
+        assert (incomplete_dir / f"{interrupted_planning['candidate_trials'][1]['run_id']}.json").exists()
         app._select_course(COURSE_OPTIONS[0].label)
         assert app.course_spec.course_id != SYNTHETIC_DEMO_COURSE_ID
         assert "Course: Synthetic loop · AI demo" in " ".join(

@@ -140,16 +140,17 @@ AI winner. The ordinary centerline mode is unchanged. AI-mode eligible times,
 when available on a coherent course, should be compared only with the AI-mode
 geometric baseline, not the ordinary centerline lap. The **Driver view** shows accepted solver-step progress on a reference
 path, then plays back numeric telemetry against the exact solver-grid x/y saved with that run. This applies to ordinary centerline and car-comparison runs as well as AI paths; the separate top-down course plot continues to show the source map. The displayed position and map heading are not an integrated vehicle pose, and the fused course's x/y still disagrees with its physics curvature. Its **Replay
-lap** menu switches between A and B after a two-car comparison, or between
-the geometric baseline and best tested AI path after a completed AI run,
-without running physics again. AI trials save linked primary/displayed and
-counterpart run records when both paths return runs, including diagnostic
-records that must not be ranked. Records identify the selected source course
-by ID; AI metadata also marks a synthetic course explicitly and records the
-fourth-strength policy and every tested `candidate_trials[].offset_strength`.
+lap** menu switches between A and B after a two-car comparison, or among
+the completed geometric baseline, full, half, and fourth AI trials after an
+AI run, without running physics again. Each completed AI trial has a
+content-identified local run record with its own telemetry and exact solver
+geometry. The primary record links to the other trial IDs; its own selected
+trial is identified as `selected_result`. Diagnostic runs remain available
+for inspection but must not be ranked. Records identify the selected source
+course by ID; AI metadata also marks a synthetic course explicitly and records
+the fourth-strength policy and every tested `candidate_trials[].offset_strength`.
 Read those values rather than assuming the fourth path always uses 0.75.
-Candidate-only
-displays with a failed baseline are marked diagnostic. Completed v2 lap records
+Candidate-only displays with a failed baseline are marked diagnostic. Completed v2 lap records
 can be checked on demand with the programmatic `replay_lap_record()` API: it
 reruns their recorded cell controls on the saved solver grid and reports
 numerical agreement. The lap model also checks both requested and achieved

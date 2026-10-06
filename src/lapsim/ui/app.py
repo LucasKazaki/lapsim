@@ -2124,48 +2124,163 @@ class LapSimDesktop:
                 counterpart_track = plan.baseline_track
                 counterpart_role = "geometric_centerline"
                 counterpart_strength = 0.0
-            counterpart_run_id = None
-            if counterpart_run is not None and counterpart_run is not selected_run:
-                counterpart_run_id = self._save_run_record(
-                    result=counterpart_run, vehicle=vehicle, manifest=manifest,
-                    solver_track=counterpart_track, profile_id=profile_id,
+            # Keep every returned trial on its exact solver grid. Save the
+            # selected run last so its content-addressed record can link to
+            # the other records without a self-referential content hash.
+            saved_trial_ids: dict[int, str] = {}
+
+            def save_other_path(
+                result: Any, track: Any, *, role: str, strength: float,
+                audit: Any, eligible_time_s: float | None,
+                diagnostic_time_s: float | None, trial_error: str | None,
+            ) -> str | None:
+                if result is None or result is selected_run or track is None:
+                    return None
+                if not result.completed and result is not counterpart_run:
+                    # An aborted extra probe may have no accepted-cell trace.
+                    # Keep its failure in candidate_trials, not a replay file.
+                    return None
+                existing = saved_trial_ids.get(id(result))
+                if existing is not None:
+                    return existing
+                record_role = (
+                    "comparison_counterpart"
+                    if result is counterpart_run else role
+                )
+                saved_id = self._save_run_record(
+                    result=result, vehicle=vehicle, manifest=manifest,
+                    solver_track=track, profile_id=profile_id,
                     profile_name=profile_name, setup=setup,
-                    step_m=max(counterpart_track.cell_length_m),
+                    step_m=max(track.cell_length_m),
                     torque_fraction=torque_fraction,
                     track_id=ai_track_id,
                     path_planning={
                         "mode": "experimental_racing_line",
                         "algorithm": path_planning["algorithm"],
                         "fourth_strength_policy": path_planning["fourth_strength_policy"],
-                        "record_role": "comparison_counterpart",
+                        "record_role": record_role,
                         "source_course_id": self.course_spec.course_id,
                         "source_course_label": self.course_spec.label,
                         "source_course_description": self.course_spec.description,
                         "synthetic_course": self.course_spec.synthetic,
-                        "comparison_role": counterpart_role,
-                        "offset_strength": counterpart_strength,
+                        "comparison_role": role,
+                        "offset_strength": strength,
                         "lap_start_policy": path_planning["lap_start_policy"],
                         "speed_seam_tolerance_mps": path_planning["speed_seam_tolerance_mps"],
                         "maximum_lap_passes_per_trial": path_planning["maximum_lap_passes_per_trial"],
                         "rank_status": comparison.rank_status,
+                        "comparison_rank_status": comparison.rank_status,
+                        "eligible_lap_time_s": eligible_time_s,
+                        "diagnostic_lap_time_s": diagnostic_time_s,
+                        "trial_error": trial_error,
+                        "comparable_with_baseline": (
+                            eligible_time_s is not None
+                            and comparison.baseline_time_s is not None
+                        ),
+                        "diagnostic_only": (
+                            eligible_time_s is None
+                            or comparison.baseline_time_s is None
+                        ),
                         "selection_margin_s": comparison.selection_margin_s,
                         "sampled_path_audit": (
-                            asdict(comparison.baseline_path_audit)
-                            if counterpart_track is plan.baseline_track
-                            and comparison.baseline_path_audit is not None
-                            else asdict(comparison.candidate_path_audit)
-                            if comparison.candidate_path_audit is not None
-                            else None
+                            asdict(audit) if audit is not None else None
                         ),
                         "source_geometry_sha256": source_hash,
                         "source_geometry_audit": asdict(self.course_geometry_audit),
                         "solver_geometry_audit": asdict(
-                            counterpart_track.geometry_audit()
+                            track.geometry_audit()
                         ),
                         "corridor": path_planning["corridor"],
                     },
-                    starting_speed_mps=counterpart_run.starting_speed_mps,
+                    starting_speed_mps=result.starting_speed_mps,
                 )
+                saved_trial_ids[id(result)] = saved_id
+                return saved_id
+
+            counterpart_trial = next(
+                (trial for trial in comparison.trials
+                 if trial.run is counterpart_run and counterpart_run is not None),
+                None,
+            )
+            if counterpart_track is plan.baseline_track:
+                counterpart_audit = comparison.baseline_path_audit
+                counterpart_eligible_time = comparison.baseline_time_s
+                counterpart_diagnostic_time = comparison.baseline_diagnostic_time_s
+                counterpart_error = comparison.baseline_error
+            else:
+                counterpart_audit = comparison.candidate_path_audit
+                counterpart_eligible_time = (
+                    counterpart_trial.lap_time_s
+                    if counterpart_trial is not None else comparison.candidate_time_s
+                )
+                counterpart_diagnostic_time = (
+                    counterpart_trial.diagnostic_lap_time_s
+                    if counterpart_trial is not None
+                    else comparison.candidate_diagnostic_time_s
+                )
+                counterpart_error = (
+                    counterpart_trial.error
+                    if counterpart_trial is not None else comparison.candidate_error
+                )
+            counterpart_run_id = save_other_path(
+                counterpart_run, counterpart_track, role=counterpart_role,
+                strength=counterpart_strength,
+                audit=counterpart_audit,
+                eligible_time_s=counterpart_eligible_time,
+                diagnostic_time_s=counterpart_diagnostic_time,
+                trial_error=counterpart_error,
+            )
+            for trial, trial_row in zip(
+                comparison.trials, path_planning["candidate_trials"], strict=True,
+            ):
+                trial_run = getattr(trial, "run", None)
+                trial_track = getattr(trial, "track", None)
+                trial_id = save_other_path(
+                    trial_run, trial_track, role="candidate_trial",
+                    strength=trial.strength, audit=trial.path_audit,
+                    eligible_time_s=trial.lap_time_s,
+                    diagnostic_time_s=trial.diagnostic_lap_time_s,
+                    trial_error=trial.error,
+                )
+                trial_row["run_id"] = trial_id
+                if trial_run is selected_run:
+                    trial_row["record_role"] = "selected_result"
+                elif trial_run is counterpart_run and trial_run is not None:
+                    trial_row["record_role"] = "comparison_counterpart"
+                elif trial_id is not None:
+                    trial_row["record_role"] = "candidate_trial"
+                elif trial_run is not None:
+                    trial_row["record_role"] = "unsaved_incomplete"
+                else:
+                    trial_row["record_role"] = "no_run"
+                trial_row["model_run_completed"] = (
+                    trial_run.completed if trial_run is not None else None
+                )
+            baseline_run_id = save_other_path(
+                comparison.baseline_run, plan.baseline_track,
+                role="geometric_centerline", strength=0.0,
+                audit=comparison.baseline_path_audit,
+                eligible_time_s=comparison.baseline_time_s,
+                diagnostic_time_s=comparison.baseline_diagnostic_time_s,
+                trial_error=comparison.baseline_error,
+            )
+            if comparison.baseline_run is selected_run:
+                baseline_record_role = "selected_result"
+            elif comparison.baseline_run is counterpart_run and counterpart_run is not None:
+                baseline_record_role = "comparison_counterpart"
+            elif comparison.baseline_run is None:
+                baseline_record_role = "no_run"
+            else:
+                baseline_record_role = "geometric_centerline"
+            path_planning["baseline_record"] = {
+                "run_id": baseline_run_id,
+                "record_role": baseline_record_role,
+                "model_run_completed": (
+                    comparison.baseline_run.completed
+                    if comparison.baseline_run is not None else None
+                ),
+            }
+            path_planning["trial_record_manifest_version"] = 1
             path_planning["comparison_counterpart_run_id"] = counterpart_run_id
             path_planning["comparison_counterpart_role"] = (
                 counterpart_role if counterpart_run_id is not None else None
@@ -2462,10 +2577,16 @@ class LapSimDesktop:
                     "Geometric centerline" if comparison.baseline_time_s is not None
                     else "Geometric centerline · diagnostic"
                 )
-                candidate_replay_label = (
-                    "Best tested AI path" if comparison.candidate_time_s is not None
-                    else "Best tested AI path · diagnostic"
-                )
+                candidate_replay_label = "Best tested AI path"
+                if comparison.candidate_strength is not None:
+                    candidate_replay_label += (
+                        f" · {comparison.candidate_strength:g}x offset"
+                    )
+                if (
+                    comparison.baseline_time_s is None
+                    or comparison.candidate_time_s is None
+                ):
+                    candidate_replay_label += " · diagnostic"
                 if comparison.baseline_run is not None and comparison.baseline_run.completed:
                     replay_options[baseline_replay_label] = (
                         profile_name, comparison.baseline_run,
@@ -2475,6 +2596,21 @@ class LapSimDesktop:
                     replay_options[candidate_replay_label] = (
                         profile_name, comparison.candidate_run,
                         candidate_replay_label, comparison.candidate_track,
+                    )
+                for trial in comparison.trials:
+                    trial_run = getattr(trial, "run", None)
+                    trial_track = getattr(trial, "track", None)
+                    if (
+                        trial_run is None or not trial_run.completed
+                        or trial_track is None
+                        or trial_run is comparison.candidate_run
+                    ):
+                        continue
+                    trial_label = f"AI offset {trial.strength:g}x"
+                    if comparison.baseline_time_s is None or trial.lap_time_s is None:
+                        trial_label += " · diagnostic"
+                    replay_options[trial_label] = (
+                        profile_name, trial_run, trial_label, trial_track,
                     )
                 self._set_driver_replay_options(
                     replay_options,

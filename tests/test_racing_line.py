@@ -827,6 +827,8 @@ def test_opt_in_speed_periodic_rejects_nonconverged_trials_but_keeps_runs(
     assert comparison.baseline_time_s == 100.0
     assert comparison.trials[0].lap_time_s is None
     assert comparison.trials[0].error == "seam delta +0.050 m/s"
+    assert comparison.trials[0].track is plan.candidate_track
+    assert comparison.trials[0].run is not None
     assert comparison.candidate_time_s == 99.0
     assert comparison.candidate_strength == 0.5
     assert comparison.selected_mode == "candidate"
@@ -867,6 +869,10 @@ def test_faster_adaptive_run_needs_speed_seam_convergence(
     assert comparison.candidate_track is calls[2]
     assert comparison.candidate_run is runs[2]
     assert comparison.selected_run is runs[2]
+    assert all(
+        trial.track is calls[index] and trial.run is runs[index]
+        for index, trial in enumerate(comparison.trials, start=1)
+    )
 
 
 def test_opt_in_speed_periodic_requires_converged_baseline_for_selection(
@@ -981,9 +987,14 @@ def test_half_strength_can_recover_from_failed_full_lap(_adaptive_plan, monkeypa
 
 def test_failed_trials_have_no_fictitious_time(_adaptive_plan, monkeypatch) -> None:
     plan = _adaptive_plan
+    calls = []
+    runs = []
 
     def fake_lap(vehicle, track, *, torque_request_fraction):
-        return SimpleNamespace(completed=False, driving_time_s=0.0, failure_reason="stalled")
+        calls.append(track)
+        run = SimpleNamespace(completed=False, driving_time_s=0.0, failure_reason="stalled")
+        runs.append(run)
+        return run
 
     monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
     comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
@@ -994,6 +1005,10 @@ def test_failed_trials_have_no_fictitious_time(_adaptive_plan, monkeypatch) -> N
     assert comparison.selected_run is None
     assert comparison.candidate_run is not None
     assert len(comparison.trials) == 3
+    assert all(
+        trial.track is calls[index] and trial.run is runs[index]
+        for index, trial in enumerate(comparison.trials, start=1)
+    )
     assert "1x: stalled" in comparison.candidate_error
     assert "0.5x: stalled" in comparison.candidate_error
     assert "0.75x: stalled" in comparison.candidate_error

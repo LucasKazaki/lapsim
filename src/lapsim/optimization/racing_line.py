@@ -16,7 +16,7 @@ the proposed path with this repository's actual vehicle-dependent lap model.
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from math import atan2, ceil, hypot, isfinite, pi
 from numbers import Real
 from time import perf_counter
@@ -143,6 +143,8 @@ class CurvaturePathAudit:
 class RacingLineComparison:
     """Full-model timings for a centerline and bounded candidate trials.
 
+    ``trials`` retains each attempted path and returned model run so callers
+    can inspect or save every result without repeating the physics solve.
     ``candidate_*`` refers to the fastest eligible nonzero-strength trial,
     not necessarily the full-strength geometric proposal. If no candidate is
     eligible, its run/track retain a completed diagnostic trial when available.
@@ -178,7 +180,7 @@ class RacingLineComparison:
 
 @dataclass(frozen=True, slots=True)
 class RacingLineTrial:
-    """One nonzero lateral-offset strength checked with the lap model."""
+    """One nonzero lateral-offset strength and its exact evaluated path/run."""
 
     strength: float
     path_length_m: float | None
@@ -186,6 +188,8 @@ class RacingLineTrial:
     error: str | None
     path_audit: CurvaturePathAudit | None = None
     diagnostic_lap_time_s: float | None = None
+    track: SpatialTrack | None = field(default=None, repr=False, compare=False)
+    run: EnduranceRunResult | None = field(default=None, repr=False, compare=False)
 
 
 def _periodic_cubic_basis_at(
@@ -1036,7 +1040,7 @@ def compare_lines_with_lap_model(
         )
         trials.append(RacingLineTrial(
             1.0, plan.candidate_track.length_m, full_time, full_error,
-            full_audit, full_diagnostic_time,
+            full_audit, full_diagnostic_time, plan.candidate_track, full_run,
         ))
         candidate_run, candidate_time, candidate_error = full_run, full_time, full_error
         candidate_path_audit = full_audit
@@ -1075,7 +1079,7 @@ def compare_lines_with_lap_model(
             )
             trials.append(RacingLineTrial(
                 strength, trial_track.length_m, trial_time, trial_error,
-                trial_audit, trial_diagnostic_time,
+                trial_audit, trial_diagnostic_time, trial_track, trial_run,
             ))
             if trial_time is not None and (candidate_time is None or trial_time < candidate_time):
                 candidate_track, candidate_run = trial_track, trial_run

@@ -115,6 +115,7 @@ class LapTimeSolver:
                 )
                 new_speed_mps = min(
                     speeds[cell_index + 1],
+                    speed_limit_map.speed_limit_mps[cell_index],
                     speed_limit_map.speed_limit_mps[cell_index + 1],
                     reachable_speed_mps,
                 )
