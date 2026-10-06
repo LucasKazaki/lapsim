@@ -240,15 +240,24 @@ capture, and comparison report remain unavailable.
 
 The optional pose preview uses `optimization/pose_driver.py` and the separate
 time-domain four-wheel model. A rear-axle pure-pursuit controller steers toward
-a lookahead point on the coherent synthetic loop, with bounded speed, control
-steps, integration work, and an assumed ±3 m corridor. Its default target is
-**80 m of progress**, not a complete lap. Driver view shows its actual
-simulated planar x/y and heading during calculation and can replay it, labeled
+a lookahead point on the coherent synthetic loop. Its speed controller samples
+future path curvature and declared road grip, then reduces the speed target
+early enough to request braking before an assumed low-grip bend. Preview
+distance and sample count, control steps, and integration work are bounded;
+the ±3 m corridor is assumed. In **Timed sessions · WIP**, choose **Uniform
+base grip (1.0×)** or **Assumed bend patch (0.3×)** before running. The optional
+patch occupies synthetic world x 36–55 m and y −3–16 m, and is not measured
+road data. Its default target is **80 m of progress**, not a complete lap.
+Driver view shows its actual simulated planar x/y and heading during
+calculation and can replay it, labeled
 **synthetic four-wheel pose experiment**. Its elapsed time is a pose-model
 duration, not the engineering
 lap time shown by the default solver. The run retains issued controls and
 states in memory for `replay_pose_driver()` to check numerical agreement at
 declared state tolerances, as well as recorded pose samples and stop status.
+This preview uses the fixed 300 kg synthetic four-wheel car and does not use
+the selected Prius/TREV profile or change the default centerline lap. The
+speed planner is a bounded heuristic, not a tire-force feasibility proof.
 It is not a validated team-car controller, surveyed-boundary check, saved
 full session, or ghost comparison.
 

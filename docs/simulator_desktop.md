@@ -337,10 +337,19 @@ synthetic flag, and exact source-geometry hash. These records do not provide a
 full ghost/session replay.
 
 The **Timed sessions · WIP** tab has an enabled **Run 80 m synthetic pose
-preview** button; **Start timed session** remains disabled. The preview runs
-the separate time-domain four-wheel car on the coherent
-synthetic loop using rear-axle pure-pursuit steering, a short curvature/grip
-speed preview, and bounded drive/brake requests. The preview is limited by
+preview** button and a **Road condition** selector; **Start timed session**
+remains disabled. **Uniform base grip (1.0×)** is the initial choice. **Assumed
+bend patch (0.3×)** adds one world-fixed rectangle on the first synthetic
+bend, x 36–55 m and y −3–16 m, with a local friction multiplier of 0.3. The
+preview runs the separate time-domain four-wheel car on the coherent
+synthetic loop using rear-axle pure-pursuit steering, a bounded future
+curvature/road-grip speed target, and bounded drive/brake requests. The
+controller samples reference-path grip ahead of the car so it can request
+braking before the assumed patch. Both choices are synthetic sensitivity
+scenarios; neither is a measured dry/wet tire or road map. The chosen scenario
+is frozen for the worker and identified in its live status and replay. Changing
+the selector clears only an old pose preview, not an ordinary lap replay. The
+pose preview is limited by
 target progress, simulated time, control-step count, and internal integration
 steps. It opens Driver view immediately and shows the latest simulated planar
 x/y and heading while solving, then plays the complete trace. This differs
@@ -354,7 +363,11 @@ number boxes then show recorded steering, rear-wheel drive, and front-wheel brak
 requests too. The default ±3 m corridor, 1.8 m vehicle width, and 0.2 m
 margin are assumptions. The sampled body-rectangle check covers the span
 between axle lines under that corridor, with no surveyed boundary, overhang,
-or between-sample swept-area certificate. A full interactive session, ghost,
+or between-sample swept-area certificate. The future-speed calculation is a
+planning heuristic, not a tire-force or clearance certificate. This WIP
+preview always uses the fixed 300 kg synthetic four-wheel car and does not
+use the selected Prius/TREV profile or feed the default centerline lap. A full
+interactive session, ghost,
 versioned controller/vehicle capture, and linked comparison report remain
 future work. The standalone main-lap record replay below is also separate.
 

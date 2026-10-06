@@ -6,7 +6,7 @@ Run with a Python interpreter that has ReportLab installed.
 
 from __future__ import annotations
 
-from html import escape
+from html import escape, unescape
 from pathlib import Path
 import re
 
@@ -111,6 +111,14 @@ STYLES = {
 
 def _inline(value: str) -> str:
     text = escape(value, quote=False)
+    text = re.sub(
+        r"\[([^\]]+)\]\((https?://[^)]+)\)",
+        lambda match: (
+            f'<link href="{escape(unescape(match.group(2)), quote=True)}" '
+            f'color="black" underline="1">{match.group(1)}</link>'
+        ),
+        text,
+    )
     text = re.sub(
         r"`([^`]+)`",
         lambda match: f'<font name="Consolas" size="8">{match.group(1)}</font>',

@@ -156,7 +156,7 @@ def test_lost_local_projection_keeps_trace_aligned(monkeypatch):
 
 def test_local_grip_changes_closed_loop_commands():
     low_grip = PlanarEnvironment(road=PlanarRoad(patches=(
-        RectangularGripPatch(30.0, 55.0, -5.0, 15.0, 0.3),
+        RectangularGripPatch(36.0, 55.0, -3.0, 16.0, 0.3),
     )))
     run = run_pose_driver(
         environment=low_grip,
@@ -165,26 +165,109 @@ def test_local_grip_changes_closed_loop_commands():
     assert run.completed
     assert run.road_valid
     assert min(sample.local_grip_multiplier for sample in run.samples) == 0.3
-    assert any(sum(control.brake_torques_nm) > 0.0
-               for control in run.controls[150:])
+    assert run.minimum_assumed_boundary_slack_m > 0.0
+    first_brake = next(
+        sample.progress_m for sample, control in zip(run.samples, run.controls)
+        if sum(control.brake_torques_nm) > 0.0
+    )
+    first_contact = next(
+        sample.progress_m for sample in run.samples
+        if sample.local_grip_multiplier < 1.0
+    )
+    assert first_brake < first_contact - 1.0
     assert replay_pose_driver(run).passed
 
     # Hold pose and speed fixed to isolate the controller's response to the
     # upcoming bend under the lower observed wheel-contact grip.
     state = PlanarState(
-        x_m=34.0, y_m=0.0, u_mps=5.5,
+        x_m=33.0, y_m=0.0, u_mps=5.5,
         wheel_speeds_rad_s=(27.5,) * 4,
     )
-    projection = pose_driver._project_local(run.track, 34.0, 0.0, 34.0, 12.0)
-    base_controls, _ = pose_driver._controller(
+    projection = pose_driver._project_local(run.track, 33.0, 0.0, 33.0, 12.0)
+    base_controls, base_grip = pose_driver._controller(
         run.track, run.vehicle_config, PlanarEnvironment(), run.settings,
         state, projection,
     )
-    patch_controls, _ = pose_driver._controller(
+    patch_controls, patch_grip = pose_driver._controller(
         run.track, run.vehicle_config, low_grip, run.settings,
         state, projection,
     )
+    assert base_grip == patch_grip == 1.0
     assert sum(patch_controls.brake_torques_nm) > sum(base_controls.brake_torques_nm)
+
+
+def test_local_projection_preserves_seam_and_large_window_results(segment_run):
+    track = segment_run.track
+
+    def full_scan(x_m, y_m, previous_station_m, window_m):
+        nearest = None
+        for index in range(track.cell_count):
+            center_m = 0.5 * (track.distance_m[index] + track.distance_m[index + 1])
+            lap_shift_m = round((previous_station_m - center_m) / track.length_m) * track.length_m
+            if abs(center_m + lap_shift_m - previous_station_m) > window_m:
+                continue
+            dx = track.x_m[index + 1] - track.x_m[index]
+            dy = track.y_m[index + 1] - track.y_m[index]
+            norm_sq = dx * dx + dy * dy
+            if norm_sq <= 0.0:
+                continue
+            fraction = min(1.0, max(0.0,
+                ((x_m - track.x_m[index]) * dx +
+                 (y_m - track.y_m[index]) * dy) / norm_sq,
+            ))
+            px = track.x_m[index] + fraction * dx
+            py = track.y_m[index] + fraction * dy
+            distance_sq = (x_m - px)**2 + (y_m - py)**2
+            if nearest is None or distance_sq < nearest[0]:
+                nearest = (distance_sq,
+                           track.distance_m[index] + fraction *
+                           (track.distance_m[index + 1] - track.distance_m[index]) +
+                           lap_shift_m)
+        return nearest
+
+    for previous_station_m, window_m in (
+        (0.05, 12.0), (track.length_m - 0.05, 12.0),
+        (track.length_m + 0.05, 12.0),
+        (25.0, track.length_m / 2.0 + 1.0),
+    ):
+        x_m, y_m = pose_driver._path_point(track, previous_station_m + 0.2)
+        found = pose_driver._project_local(
+            track, x_m + 0.1, y_m + 0.2, previous_station_m, window_m,
+        )
+        expected = full_scan(x_m + 0.1, y_m + 0.2,
+                             previous_station_m, window_m)
+        assert expected is not None
+        assert found.station_m == pytest.approx(expected[1], abs=1e-10)
+
+
+def test_speed_preview_is_bounded_and_rejects_zero_chord(segment_run):
+    run = segment_run
+    options = replace(
+        PoseDriverSettings(), lookahead_base_m=1e308,
+        lookahead_seconds=1e308,
+    )
+    state = run.states[0]
+    projection = pose_driver._project_local(
+        run.track, state.x_m, state.y_m, 0.0, options.local_projection_window_m,
+    )
+    controls, grip = pose_driver._controller(
+        run.track, run.vehicle_config, run.environment,
+        options, state, projection,
+    )
+    assert grip == 1.0
+    assert abs(controls.steering_angles_rad[0]) <= options.maximum_steering_rad
+
+    malformed = replace(run.track,
+        x_m=run.track.x_m[:10] + (run.track.x_m[9],) + run.track.x_m[11:],
+        y_m=run.track.y_m[:10] + (run.track.y_m[9],) + run.track.y_m[11:],
+    )
+    with pytest.raises(ValueError, match="zero chord"):
+        run_pose_driver(malformed)
+    with pytest.raises(ValueError, match="invalid preview-path tangent"):
+        pose_driver._preview_speed_target(
+            malformed, run.vehicle_config, run.environment, run.settings,
+            0.0, 4.5, 1.0,
+        )
 
 
 def test_pose_playback_uses_recorded_vehicle_pose(segment_run):

@@ -7,8 +7,9 @@ The corridor is an explicit numerical assumption, not a surveyed boundary.
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from dataclasses import dataclass
-from math import atan2, ceil, cos, hypot, isfinite, pi, remainder, sin, sqrt
+from math import atan2, ceil, cos, floor, hypot, isfinite, pi, remainder, sin, sqrt
 from typing import Callable
 
 from lapsim.courses.spatial_track import SpatialTrack
@@ -26,6 +27,9 @@ from lapsim.ui.course_catalog import SYNTHETIC_DEMO_COURSE_ID, load_course
 
 
 POSE_MODEL_LABEL = "Synthetic four-wheel pose experiment"
+_MAX_SPEED_PREVIEW_M = 60.0
+_MAX_SPEED_PREVIEW_SAMPLES = 120
+_MAX_STEERING_LOOKAHEAD_M = 30.0
 
 
 def synthetic_pose_vehicle() -> PlanarVehicleConfig:
@@ -200,8 +204,6 @@ def _path_point(track: SpatialTrack, station_m: float) -> tuple[float, float]:
     station_m %= track.length_m
     # The course grid is at most 0.5 m in the supplied synthetic case.
     # Linear chords are a reference geometry approximation, not road edges.
-    from bisect import bisect_right
-
     i = min(bisect_right(track.distance_m, station_m) - 1, track.cell_count - 1)
     fraction = ((station_m - track.distance_m[i]) /
                 (track.distance_m[i + 1] - track.distance_m[i]))
@@ -218,7 +220,26 @@ def _project_local(
     best_distance_sq = float("inf")
     best: _Projection | None = None
     length_m = track.length_m
-    for i in range(track.cell_count):
+    if window_m >= length_m / 2.0:
+        candidate_cells = range(track.cell_count)
+    else:
+        # Station and cell boundaries are sorted. Visit only cells whose
+        # centers could fall inside the local window, including a wrap at the
+        # start/finish seam. Sorting preserves the full scan's tie ordering.
+        lower_m = previous_station_m - window_m
+        upper_m = previous_station_m + window_m
+        candidate_indices: set[int] = set()
+        for lap in range(floor(lower_m / length_m), floor(upper_m / length_m) + 1):
+            interval_lower_m = max(0.0, lower_m - lap * length_m)
+            interval_upper_m = min(length_m, upper_m - lap * length_m)
+            if interval_lower_m > interval_upper_m:
+                continue
+            first = max(0, bisect_right(track.distance_m, interval_lower_m) - 1)
+            last = min(track.cell_count,
+                       bisect_right(track.distance_m, interval_upper_m))
+            candidate_indices.update(range(first, last))
+        candidate_cells = sorted(candidate_indices)
+    for i in candidate_cells:
         center_station = 0.5 * (track.distance_m[i] + track.distance_m[i + 1])
         lap_shift = round((previous_station_m - center_station) / length_m) * length_m
         if abs(center_station + lap_shift - previous_station_m) > window_m:
@@ -249,19 +270,80 @@ def _project_local(
     return best
 
 
-def _preview_curvature(track: SpatialTrack, station_m: float, ahead_m: float) -> float:
-    """Conservative sampled bend strength within the short speed preview."""
+def _preview_speed_target(
+    track: SpatialTrack, config: PlanarVehicleConfig,
+    environment: PlanarEnvironment, settings: PoseDriverSettings,
+    station_m: float, speed_mps: float, current_grip: float,
+) -> float:
+    """Sample path grip/curvature and approach each bend before reaching it.
 
-    from bisect import bisect_right
+    This is a deliberately bounded speed-control heuristic, not a tire-force
+    feasibility proof. Future wheel centers are placed on the reference-path
+    tangent; the actual four-wheel state may follow a different trajectory.
+    """
 
-    count = max(2, ceil(ahead_m / 0.5))
-    peak = 0.0
+    # A half-lap limit avoids looking through a full circuit to the same bend.
+    # The fixed 60 m / 120-interval ceiling bounds work even for extreme but
+    # finite user speed and lookahead settings. Narrower patches can be missed
+    # by the 0.5 m-or-finer sampling, so this is no road-clearance certificate.
+    horizon_m = min(_MAX_SPEED_PREVIEW_M, track.length_m / 2.0)
+    count = max(2, min(_MAX_SPEED_PREVIEW_SAMPLES, ceil(horizon_m / 0.5)))
+    wheel_positions = config.wheel_positions_m
+    samples: list[tuple[float, float, float]] = []
+    minimum_grip = current_grip
     for index in range(count + 1):
-        sample_station = (station_m + ahead_m * index / count) % track.length_m
-        cell = min(bisect_right(track.distance_m, sample_station) - 1,
+        distance_ahead_m = horizon_m * index / count
+        sample_station_m = (station_m + distance_ahead_m) % track.length_m
+        cell = min(bisect_right(track.distance_m, sample_station_m) - 1,
                    track.cell_count - 1)
-        peak = max(peak, abs(track.curvature_per_m[cell]))
-    return peak
+        fraction = ((sample_station_m - track.distance_m[cell]) /
+                    (track.distance_m[cell + 1] - track.distance_m[cell]))
+        dx = track.x_m[cell + 1] - track.x_m[cell]
+        dy = track.y_m[cell + 1] - track.y_m[cell]
+        x_m = track.x_m[cell] + fraction * dx
+        y_m = track.y_m[cell] + fraction * dy
+        tangent_norm = hypot(dx, dy)
+        if not isfinite(tangent_norm) or tangent_norm <= 0.0:
+            raise ValueError(f"cell {cell} has an invalid preview-path tangent")
+        tangent_cos = dx / tangent_norm
+        tangent_sin = dy / tangent_norm
+        road_points = ((x_m, y_m), *(
+            (x_m + tangent_cos * body_x - tangent_sin * body_y,
+             y_m + tangent_sin * body_x + tangent_cos * body_y)
+            for body_x, body_y in wheel_positions
+        ))
+        # Invalid future road data must not be mistaken for trustworthy base
+        # pavement grip. A zero preview grip asks for maximum caution there.
+        grip = min(
+            road_sample.friction_multiplier if road_sample.valid else 0.0
+            for road_sample in (environment.road.query(x, y) for x, y in road_points)
+        )
+        minimum_grip = min(minimum_grip, grip)
+        samples.append((distance_ahead_m, abs(track.curvature_per_m[cell]), grip))
+
+    # Reserve a fraction of the friction estimate for simultaneous steering
+    # and model error. Maximum wheel brake torque gives a separate upper bound
+    # on achievable straight-line deceleration. These are planning bounds,
+    # not a guarantee that the feedback gains attain the target exactly.
+    brake_deceleration_mps2 = min(
+        0.20 * config.tire_mu * minimum_grip * config.gravity_mps2,
+        4.0 * settings.maximum_wheel_brake_torque_nm /
+        (config.mass_kg * config.wheel_radius_m),
+    )
+    response_margin_m = 1.0 + 0.45 * speed_mps + config.cg_to_front_axle_m
+    target_speed_mps = settings.cruise_speed_mps
+    for distance_ahead_m, curvature_per_m, grip in samples:
+        lateral_acceleration_mps2 = min(
+            4.0, 0.35 * config.tire_mu * min(current_grip, grip) *
+            config.gravity_mps2,
+        )
+        corner_speed_sq = lateral_acceleration_mps2 / max(curvature_per_m, 1e-9)
+        usable_distance_m = max(0.0, distance_ahead_m - response_margin_m)
+        allowed_speed_mps = sqrt(
+            corner_speed_sq + 2.0 * brake_deceleration_mps2 * usable_distance_m
+        )
+        target_speed_mps = min(target_speed_mps, allowed_speed_mps)
+    return target_speed_mps
 
 
 def _wheel_world_positions(
@@ -330,7 +412,10 @@ def _controller(
     state: PlanarState, projection: _Projection,
 ) -> tuple[PlanarControls, float]:
     speed_mps = hypot(state.u_mps, state.v_mps)
-    lookahead_m = settings.lookahead_base_m + settings.lookahead_seconds * speed_mps
+    lookahead_m = min(
+        _MAX_STEERING_LOOKAHEAD_M, track.length_m / 2.0,
+        settings.lookahead_base_m + settings.lookahead_seconds * speed_mps,
+    )
     # Pure pursuit's kinematic curvature is defined at the rear axle. The
     # planar state is at the CG, so transform both the controller origin and
     # its local station before computing the target angle.
@@ -350,12 +435,10 @@ def _controller(
                    max(-settings.maximum_steering_rad, steering))
 
     grip = _conservative_local_grip(config, environment, state)
-    upcoming_curvature = _preview_curvature(track, rear_projection.station_m,
-                                             lookahead_m + 4.0)
-    available_lateral_mps2 = min(4.0, 0.35 * config.tire_mu * grip * config.gravity_mps2)
-    corner_speed = sqrt(max(0.0, available_lateral_mps2) /
-                        max(upcoming_curvature, 1e-9))
-    target_speed = min(settings.cruise_speed_mps, corner_speed)
+    target_speed = _preview_speed_target(
+        track, config, environment, settings, projection.station_m,
+        speed_mps, grip,
+    )
     speed_error = target_speed - speed_mps
     drive = min(settings.maximum_rear_drive_torque_nm,
                 max(0.0, settings.drive_gain_nm_per_mps * speed_error))

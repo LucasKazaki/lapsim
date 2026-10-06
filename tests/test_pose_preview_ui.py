@@ -10,11 +10,14 @@ import pytest
 
 from lapsim.dynamics.planar import PlanarState
 from lapsim.optimization.pose_driver import PoseDriverSample
-from lapsim.ui.app import LapSimDesktop, POSE_DRIVER_NOTE, REFERENCE_DRIVER_NOTE
+from lapsim.ui.app import (
+    LapSimDesktop, POSE_DRIVER_NOTE, POSE_SCENARIO_PATCH,
+    POSE_SCENARIO_UNIFORM, REFERENCE_DRIVER_NOTE,
+)
 from lapsim.ui.course_catalog import (
     COURSE_OPTIONS, SYNTHETIC_DEMO_COURSE_ID, load_course,
 )
-from lapsim.ui.pose_driver_playback import PoseDriverLivePlayback
+from lapsim.ui.pose_driver_playback import PoseDriverLivePlayback, PoseDriverPlayback
 
 
 def _desktop() -> tuple[tk.Tk, LapSimDesktop]:
@@ -36,10 +39,13 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         thread.return_value.start.assert_called_once()
         assert app.run_in_progress
         assert app.pose_preview_button.cget("state") == "disabled"
+        assert app.pose_scenario_menu.cget("state") == "disabled"
+        assert app.pose_scenario_var.get() == POSE_SCENARIO_UNIFORM
         assert app._displayed_run_records == ()
         assert app._active_tab == "Driver view"
         assert app.driver_playback is None
         assert "Synthetic pose model" in app.driver_run_label.get()
+        assert POSE_SCENARIO_UNIFORM in app.driver_run_label.get()
         assert app.driver_play_button.cget("state") == "disabled"
         assert app.driver_heading_title_label.cget("text") == "VEHICLE HEADING (°)"
 
@@ -83,7 +89,66 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         assert not app.run_in_progress
         assert app.pose_preview_button.cget("state") == "normal"
         assert "not an engineering lap time" in app.pose_preview_status.get()
+        assert POSE_SCENARIO_UNIFORM in app.pose_preview_status.get()
         assert app._displayed_run_records == ()
+    finally:
+        root.destroy()
+
+
+@pytest.mark.parametrize(
+    ("scenario", "expected_grip"),
+    [(POSE_SCENARIO_UNIFORM, 1.0), (POSE_SCENARIO_PATCH, 0.3)],
+)
+def test_pose_scenario_passes_selected_road_to_worker(
+    scenario: str, expected_grip: float,
+) -> None:
+    root, app = _desktop()
+    try:
+        with patch("lapsim.ui.app.run_pose_driver", return_value=object()) as driver:
+            app._calculate_pose_preview(scenario)
+        environment = driver.call_args.kwargs["environment"]
+        assert environment.road.query(40.0, 0.0).friction_multiplier == expected_grip
+        assert environment.road.query(20.0, 0.0).friction_multiplier == 1.0
+        if scenario == POSE_SCENARIO_PATCH:
+            patch_region = environment.road.patches[0]
+            assert (
+                patch_region.x_min_m, patch_region.x_max_m,
+                patch_region.y_min_m, patch_region.y_max_m,
+            ) == (36.0, 55.0, -3.0, 16.0)
+        assert app.result_queue.get_nowait()[0] == "pose_preview"
+    finally:
+        root.destroy()
+
+
+def test_pose_scenario_change_clears_only_old_pose_playback() -> None:
+    root, app = _desktop()
+    try:
+        reference_playback = object()
+        app.driver_playback = reference_playback
+        app.pose_scenario_var.set(POSE_SCENARIO_PATCH)
+        assert app.driver_playback is reference_playback
+        assert POSE_SCENARIO_PATCH in app.pose_preview_status.get()
+        with patch("lapsim.ui.app.threading.Thread") as thread:
+            app._start_pose_preview()
+        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_PATCH,)
+        assert POSE_SCENARIO_PATCH in app.driver_run_label.get()
+        assert app.pose_scenario_menu.cget("state") == "disabled"
+        app.pose_scenario_var.set(POSE_SCENARIO_UNIFORM)
+        assert app.pose_scenario_var.get() == POSE_SCENARIO_PATCH
+        app._set_busy(False)
+        app.driver_playback = object.__new__(PoseDriverPlayback)
+        app.driver_play_button.configure(state="normal")
+        app.driver_values["speed"].set("18.0")
+        app.pose_scenario_var.set(POSE_SCENARIO_UNIFORM)
+        assert app.driver_playback is None
+        assert app.driver_play_button.cget("state") == "disabled"
+        assert app.driver_values["speed"].get() == "—"
+        assert POSE_SCENARIO_UNIFORM in app.pose_preview_status.get()
+        assert "scenario changed" in app.driver_run_label.get()
+        tab = app.tab_panels["Timed sessions · WIP"]
+        labels = [child.cget("text") for child in tab.winfo_children()
+                  if isinstance(child, tk.Label)]
+        assert any("world x 36–55 m, y −3–16 m" in label for label in labels)
     finally:
         root.destroy()
 

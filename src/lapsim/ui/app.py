@@ -18,6 +18,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from lapsim.courses.course_bundle import CourseBundle
+from lapsim.dynamics.conditions import (
+    PlanarEnvironment, PlanarRoad, RectangularGripPatch,
+)
 from lapsim.dynamics.planar import PlanarState
 from lapsim.experiments import LapRunSettings, RunRecord, capture_lap_run, default_run_directory
 from lapsim.optimization.pose_driver import PoseDriverRun, PoseDriverSample, run_pose_driver
@@ -61,9 +64,24 @@ POSE_DRIVER_NOTE = (
     "integrated vehicle states. Time is only the 80 m pose-model duration. "
     "The reference line and 3 m half-width are assumed; no measured cones, "
     "full body overhang, battery, motor, or thermal model is included. "
+    "The optional assumed lower-grip patch covers synthetic world x 36–55 m "
+    "and y −3–16 m at 0.3× base grip. Neither condition uses measured dry or "
+    "wet-road calibration. "
     "The boxes show recorded pose controls and tracking values; endurance "
     "battery and force channels do not apply to this separate model."
 )
+POSE_SCENARIO_UNIFORM = "Uniform base grip (1.0×)"
+POSE_SCENARIO_PATCH = "Assumed bend patch (0.3×)"
+
+
+def _pose_preview_environment(scenario: str) -> PlanarEnvironment:
+    if scenario == POSE_SCENARIO_UNIFORM:
+        return PlanarEnvironment()
+    if scenario == POSE_SCENARIO_PATCH:
+        return PlanarEnvironment(road=PlanarRoad(patches=(
+            RectangularGripPatch(36.0, 55.0, -3.0, 16.0, 0.3),
+        )))
+    raise ValueError(f"Unknown synthetic pose scenario: {scenario!r}")
 
 
 def _course_geometry_warning(audit: Any) -> str | None:
@@ -337,6 +355,9 @@ class LapSimDesktop:
         self.pose_preview_status = tk.StringVar(value=(
             "Optional 80 m synthetic pose preview has not been run."
         ))
+        self.pose_scenario_var = tk.StringVar(value=POSE_SCENARIO_UNIFORM)
+        self.pose_scenario_menu: tk.OptionMenu | None = None
+        self._active_pose_scenario = POSE_SCENARIO_UNIFORM
         self.pose_preview_button: tk.Button | None = None
         self.driver_speed_var = tk.StringVar(value="1×")
         self.driver_progress_var = tk.DoubleVar(value=0.0)
@@ -372,6 +393,9 @@ class LapSimDesktop:
         self.saved_runs_button: tk.Button | None = None
         self._evidence_window: tk.Toplevel | None = None
         self._build_window()
+        self.pose_scenario_var.trace_add(
+            "write", lambda *_change: self._on_pose_scenario_change(),
+        )
         self._refresh_profile_menus()
         self._select_profile("prius_2026_le")
         self._apply_theme()
@@ -1607,16 +1631,65 @@ class LapSimDesktop:
             ),
             justify="left", anchor="w", wraplength=760, font=FONT,
         ).grid(row=6, column=0, sticky="ew", pady=(0, 9))
+        scenario_controls = tk.Frame(parent)
+        scenario_controls.grid(row=7, column=0, sticky="w", pady=(0, 4))
+        tk.Label(scenario_controls, text="Road condition").pack(
+            side="left", padx=(0, 6),
+        )
+        self.pose_scenario_menu = tk.OptionMenu(
+            scenario_controls, self.pose_scenario_var,
+            POSE_SCENARIO_UNIFORM, POSE_SCENARIO_PATCH,
+        )
+        self.pose_scenario_menu.configure(relief="raised", bd=1, font=FONT)
+        self.pose_scenario_menu.pack(side="left")
+        tk.Label(
+            parent,
+            text=("Optional assumed patch on the first synthetic bend: world "
+                  "x 36–55 m, y −3–16 m; road grip 0.3× the base. "
+                  "No measured dry or wet-road calibration."),
+            justify="left", anchor="w", wraplength=760,
+        ).grid(row=8, column=0, sticky="ew", pady=(0, 8))
         self.pose_preview_button = tk.Button(
             parent, text="Run 80 m synthetic pose preview",
             command=self._start_pose_preview,
             relief="raised", bd=1,
         )
-        self.pose_preview_button.grid(row=7, column=0, sticky="w")
+        self.pose_preview_button.grid(row=9, column=0, sticky="w")
         tk.Label(
             parent, textvariable=self.pose_preview_status,
             justify="left", anchor="w", wraplength=760, font=FONT,
-        ).grid(row=8, column=0, sticky="ew", pady=(8, 0))
+        ).grid(row=10, column=0, sticky="ew", pady=(8, 0))
+
+    def _on_pose_scenario_change(self) -> None:
+        if self.run_in_progress:
+            if self.pose_scenario_var.get() != self._active_pose_scenario:
+                self.pose_scenario_var.set(self._active_pose_scenario)
+            return
+        scenario = self.pose_scenario_var.get()
+        if scenario not in (POSE_SCENARIO_UNIFORM, POSE_SCENARIO_PATCH):
+            return
+        self.pose_preview_status.set(
+            f"Selected {scenario}; run the synthetic 80 m pose preview."
+        )
+        if not isinstance(self.driver_playback,
+                          (PoseDriverPlayback, PoseDriverLivePlayback)):
+            return
+        self._pause_driver_playback()
+        self.driver_playback = None
+        self._driver_live_mode = False
+        self._pose_live_mode = False
+        self._driver_stream_active = False
+        self._driver_playback_time_s = 0.0
+        self.driver_run_label.set(f"Synthetic pose scenario changed · {scenario}")
+        self.driver_progress_var.set(0.0)
+        self.driver_progress.configure(state="disabled")
+        if self.driver_play_button is not None:
+            self.driver_play_button.configure(state="disabled")
+        for value in self.driver_values.values():
+            value.set("—")
+        for value in self.driver_decision_values.values():
+            value.set("—")
+        self._draw_driver_view()
 
     def _set_driver_run(
         self, name: str, result: Any, *, driving_mode: str = "Centerline",
@@ -1689,7 +1762,7 @@ class LapSimDesktop:
         self.driver_decision_title.set("Pose model · recorded controls and tracking values")
         self.driver_playback = PoseDriverPlayback(run)
         self.driver_run_label.set(
-            f"Synthetic pose model · {run.status} · "
+            f"Synthetic pose model · {self._active_pose_scenario} · {run.status} · "
             f"{run.samples[-1].progress_m:.1f} m / {run.settings.target_progress_m:.0f} m"
         )
         if self.driver_play_button is not None:
@@ -1879,6 +1952,8 @@ class LapSimDesktop:
                        if self._driver_stream_active else
                        "No accepted model step is available")
                       if self._driver_live_mode else
+                      "Run the synthetic pose preview to view this road condition"
+                      if self.driver_note_var.get() == POSE_DRIVER_NOTE else
                       "Run a lap, then play its distance-aligned map view"),
                 fill=foreground, font=FONT, width=width - 30,
             )
@@ -2443,6 +2518,8 @@ class LapSimDesktop:
         self.run_button.configure(state=state)
         if self.pose_preview_button is not None:
             self.pose_preview_button.configure(state=state)
+        if self.pose_scenario_menu is not None:
+            self.pose_scenario_menu.configure(state=state)
         if self.saved_runs_button is not None:
             self.saved_runs_button.configure(
                 state="disabled" if busy or not self._displayed_run_records else "normal"
@@ -2678,6 +2755,10 @@ class LapSimDesktop:
 
         if self.run_in_progress:
             return
+        scenario = self.pose_scenario_var.get()
+        if scenario not in (POSE_SCENARIO_UNIFORM, POSE_SCENARIO_PATCH):
+            raise ValueError(f"Unknown synthetic pose scenario: {scenario!r}")
+        self._active_pose_scenario = scenario
         self.progress_queue = queue.Queue(maxsize=1)
         self.pose_progress_queue = queue.Queue(maxsize=1)
         self._set_busy(True)
@@ -2694,7 +2775,9 @@ class LapSimDesktop:
         self.driver_note_var.set(POSE_DRIVER_NOTE)
         self._set_driver_box_mode(pose=True)
         self.driver_decision_title.set("Live pose and tracking · controls after replay")
-        self.driver_run_label.set("Synthetic pose model · preparing 80 m preview")
+        self.driver_run_label.set(
+            f"Synthetic pose model · {scenario} · preparing 80 m preview"
+        )
         self.driver_progress_var.set(0.0)
         self.driver_progress.configure(state="disabled")
         if self.driver_play_button is not None:
@@ -2704,19 +2787,24 @@ class LapSimDesktop:
         for value in self.driver_decision_values.values():
             value.set("—")
         self._set_calculation_progress(
-            "indeterminate", "Synthetic pose preview · preparing four-wheel model",
+            "indeterminate",
+            f"Synthetic pose preview · {scenario} · preparing four-wheel model",
         )
         self.pose_preview_status.set(
-            "Running 80 m synthetic pose preview; engineering lap outputs are separate."
+            f"Running 80 m synthetic pose preview · {scenario}; "
+            "engineering lap outputs are separate."
         )
         self.run_started_at = time.perf_counter()
         self._switch_tab("Driver view")
         self._draw_driver_view()
-        threading.Thread(target=self._calculate_pose_preview, daemon=True).start()
+        threading.Thread(
+            target=self._calculate_pose_preview, args=(scenario,), daemon=True,
+        ).start()
 
-    def _calculate_pose_preview(self) -> None:
+    def _calculate_pose_preview(self, scenario: str) -> None:
         try:
             track = load_course(SYNTHETIC_DEMO_COURSE_ID)
+            environment = _pose_preview_environment(scenario)
 
             def on_progress(sample: PoseDriverSample, state: PlanarState) -> None:
                 latest = (track, sample, state)
@@ -2732,7 +2820,10 @@ class LapSimDesktop:
                     except queue.Full:
                         pass
 
-            run = run_pose_driver(track=track, progress_callback=on_progress)
+            run = run_pose_driver(
+                track=track, environment=environment,
+                progress_callback=on_progress,
+            )
             self.result_queue.put(("pose_preview", run, None))
         except Exception as error:
             self.result_queue.put(("pose_preview", None, error))
@@ -2751,14 +2842,16 @@ class LapSimDesktop:
         fraction = min(max(sample.progress_m / target_m, 0.0), 1.0)
         self._set_calculation_progress(
             "determinate",
-            f"Synthetic pose preview · {sample.progress_m:.1f}/{target_m:.0f} m "
+            f"Synthetic pose preview · {self._active_pose_scenario} · "
+            f"{sample.progress_m:.1f}/{target_m:.0f} m "
             f"({fraction:.0%} of target distance)",
             fraction=fraction,
         )
         self.driver_playback = PoseDriverLivePlayback(track, sample, state)
         self._driver_playback_time_s = sample.time_s
         self.driver_run_label.set(
-            f"Synthetic pose model · live · {sample.progress_m:.1f}/{target_m:.0f} m"
+            f"Synthetic pose model · {self._active_pose_scenario} · live · "
+            f"{sample.progress_m:.1f}/{target_m:.0f} m"
         )
         self._render_driver_frame()
 
@@ -3400,27 +3493,35 @@ class LapSimDesktop:
             if error is not None:
                 self._driver_live_mode = False
                 self.driver_playback = None
-                self.driver_run_label.set("Synthetic pose preview failed")
+                self.driver_run_label.set(
+                    f"Synthetic pose preview · {self._active_pose_scenario} · failed"
+                )
                 self._draw_driver_view()
                 self._set_calculation_progress(
-                    "stopped", "Synthetic pose preview stopped · see status",
+                    "stopped",
+                    f"Synthetic pose preview · {self._active_pose_scenario} · stopped",
                 )
-                self.pose_preview_status.set(f"Pose preview failed: {error}")
+                self.pose_preview_status.set(
+                    f"Pose preview · {self._active_pose_scenario} · failed: {error}"
+                )
                 self.status_text.set(f"Pose preview failed: {error}")
             else:
                 run: PoseDriverRun = payload
                 completed = run.completed
                 self._set_calculation_progress(
                     "complete" if completed else "stopped",
-                    ("Synthetic pose preview finished" if completed else
-                     f"Synthetic pose preview stopped: {run.status}"),
+                    (f"Synthetic pose preview · {self._active_pose_scenario} · finished"
+                     if completed else
+                     f"Synthetic pose preview · {self._active_pose_scenario} · "
+                     f"stopped: {run.status}"),
                     fraction=1.0 if completed else min(
                         max(run.samples[-1].progress_m / run.settings.target_progress_m,
                             0.0), 1.0,
                     ),
                 )
                 self.pose_preview_status.set(
-                    f"{run.status}: {run.samples[-1].progress_m:.1f} m in "
+                    f"{self._active_pose_scenario} · {run.status}: "
+                    f"{run.samples[-1].progress_m:.1f} m in "
                     f"{run.elapsed_pose_model_time_s:.2f} s pose-model time; "
                     f"maximum center error {run.maximum_absolute_cross_track_error_m:.2f} m; "
                     f"minimum assumed footprint slack "
@@ -3428,7 +3529,8 @@ class LapSimDesktop:
                     "This is not an engineering lap time."
                 )
                 self.status_text.set(
-                    f"Synthetic pose preview {run.status} · separate four-wheel model"
+                    f"Synthetic pose preview · {self._active_pose_scenario} · "
+                    f"{run.status} · separate four-wheel model"
                 )
                 if len(run.states) > 1:
                     self._activate_pose_preview(run)
@@ -3436,7 +3538,8 @@ class LapSimDesktop:
                     self._driver_live_mode = False
                     self.driver_playback = None
                     self.driver_run_label.set(
-                        f"Synthetic pose model · {run.status} · no driven step"
+                        f"Synthetic pose model · {self._active_pose_scenario} · "
+                        f"{run.status} · no driven step"
                     )
                     self._draw_driver_view()
             self._schedule_after(100, self._poll_result)
