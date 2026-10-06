@@ -67,6 +67,9 @@ class LapSimDesktop:
         self.result_queue: queue.Queue[tuple[str, Any, BaseException | None]] = (
             queue.Queue()
         )
+        self.progress_queue: queue.Queue[tuple[str, str, Any, Any]] = queue.Queue(
+            maxsize=1
+        )
         self.run_started_at = 0.0
         self.run_in_progress = False
         self.is_dark = tk.BooleanVar(value=False)
@@ -140,6 +143,9 @@ class LapSimDesktop:
         self._driver_after_id: str | None = None
         self._driver_updating_scale = False
         self._driver_look_ahead_m = 80.0
+        self._driver_live_mode = False
+        self._driver_stream_active = False
+        self._live_progress_activated = False
         self._build_window()
         self._refresh_profile_menus()
         self._select_profile("prius_2026_le")
@@ -975,6 +981,8 @@ class LapSimDesktop:
         """
 
         self._pause_driver_playback()
+        self._driver_live_mode = False
+        self._driver_stream_active = False
         self._driver_playback_time_s = 0.0
         try:
             if result.telemetry is None:
@@ -993,6 +1001,7 @@ class LapSimDesktop:
         self.driver_run_label.set(f"{driving_mode} · {name}")
         if self.driver_play_button is not None:
             self.driver_play_button.configure(state="normal")
+        self.driver_progress.configure(state="normal")
         self._render_driver_frame()
 
     def _activate_driver_playback(
@@ -1074,7 +1083,10 @@ class LapSimDesktop:
         if playback is None:
             return
         frame = playback.frame_at(self._driver_playback_time_s)
-        self.driver_values["time"].set(f"{frame.time_s:.2f} / {playback.duration_s:.2f}")
+        self.driver_values["time"].set(
+            f"{frame.time_s:.2f} elapsed" if self._driver_live_mode
+            else f"{frame.time_s:.2f} / {playback.duration_s:.2f}"
+        )
         self.driver_values["distance"].set(
             f"{frame.distance_m:.1f} / {playback.track.length_m:.1f}"
         )
@@ -1087,6 +1099,8 @@ class LapSimDesktop:
         )
         self._driver_updating_scale = True
         self.driver_progress_var.set(
+            1000.0 * frame.distance_m / playback.track.length_m
+            if self._driver_live_mode else
             1000.0 * frame.time_s / playback.duration_s
             if playback.duration_s > 0 else 0.0
         )
@@ -1106,7 +1120,11 @@ class LapSimDesktop:
         if playback is None:
             canvas.create_text(
                 width / 2, height / 2,
-                text="Run a lap, then play its distance-aligned map view",
+                text=(("Planning path and speed limits..."
+                       if self._driver_stream_active else
+                       "No accepted model step is available")
+                      if self._driver_live_mode else
+                      "Run a lap, then play its distance-aligned map view"),
                 fill=foreground, font=FONT, width=width - 30,
             )
             return
@@ -1137,7 +1155,11 @@ class LapSimDesktop:
             font=FONT_BOLD,
         )
         canvas.create_text(
-            width - 12, 12, text="MAP LINE ONLY", anchor="ne", fill=foreground,
+            width - 12, 12,
+            text=(("LIVE MODEL STEP" if self._driver_stream_active
+                   else "LAST ACCEPTED STEP") + " · REFERENCE PATH"
+                  if self._driver_live_mode else "MAP LINE ONLY"),
+            anchor="ne", fill=foreground,
             font=("Consolas", 9),
         )
         canvas.create_text(
@@ -1464,6 +1486,77 @@ class LapSimDesktop:
             )
         self._on_driving_mode_change()
 
+    def _begin_live_calculation(self, name: str) -> None:
+        """Clear the old replay before accepted model cells arrive."""
+
+        self.progress_queue = queue.Queue(maxsize=1)
+        self._pause_driver_playback()
+        self.driver_playback = None
+        self._driver_playback_time_s = 0.0
+        self._driver_live_mode = True
+        self._driver_stream_active = True
+        self._live_progress_activated = False
+        self.driver_run_label.set(f"Preparing {name} · path and speed limits")
+        if self.driver_play_button is not None:
+            self.driver_play_button.configure(state="disabled")
+        self.driver_progress.configure(state="disabled")
+        self._draw_driver_view()
+
+    def _queue_live_progress(
+        self, name: str, phase: str, track: Any, snapshot: Any,
+    ) -> None:
+        """Keep only the newest accepted cell when the UI draws more slowly."""
+
+        update = (name, phase, track, snapshot)
+        try:
+            self.progress_queue.put_nowait(update)
+        except queue.Full:
+            try:
+                self.progress_queue.get_nowait()
+            except queue.Empty:
+                pass
+            try:
+                self.progress_queue.put_nowait(update)
+            except queue.Full:
+                pass
+
+    def _poll_live_progress(self) -> None:
+        latest = None
+        while True:
+            try:
+                latest = self.progress_queue.get_nowait()
+            except queue.Empty:
+                break
+        if latest is None or not self.run_in_progress:
+            return
+        name, phase, track, snapshot = latest
+        try:
+            playback = DriverPlayback(
+                track,
+                {
+                    "vehicle.time_s": (snapshot.elapsed_time_s,),
+                    "vehicle.distance_m": (snapshot.lap_station_m,),
+                    "vehicle.speed_mps": (snapshot.speed_mps,),
+                    "vehicle.lateral_acceleration_mps2": (
+                        snapshot.lateral_acceleration_mps2,
+                    ),
+                },
+            )
+        except ValueError:
+            # A malformed progress snapshot must never interrupt the physics
+            # worker or turn an incomplete lap into a displayed solution.
+            return
+        self.driver_playback = playback
+        self._driver_playback_time_s = snapshot.elapsed_time_s
+        self.driver_run_label.set(
+            f"{name} · {phase} · accepted cell "
+            f"{snapshot.cell_index + 1}/{snapshot.cell_count} · reference path"
+        )
+        self._render_driver_frame()
+        if not self._live_progress_activated:
+            self._live_progress_activated = True
+            self._switch_tab("Driver view")
+
     def _vehicle_for_profile(
         self, profile_id: str, setup: VehicleSetup | None
     ) -> tuple[Any, Any]:
@@ -1530,6 +1623,7 @@ class LapSimDesktop:
             if self.ai_compare_button is not None:
                 self.ai_compare_button.configure(state="disabled")
         self._set_busy(True)
+        self._begin_live_calculation(profile_name)
         self.run_started_at = time.perf_counter()
         self.status_text.set(
             f"Calculating {profile_name}"
@@ -1564,6 +1658,7 @@ class LapSimDesktop:
             )
             plans.append((profile_id, self.profile_id_to_display[profile_id], setup))
         self._set_busy(True)
+        self._begin_live_calculation("Car comparison")
         self.run_started_at = time.perf_counter()
         self.status_text.set(
             f"Comparing two cars on the same course at {step_m:g} m spacing…"
@@ -1585,10 +1680,25 @@ class LapSimDesktop:
         try:
             solver_track = resample_track(self.track, maximum_cell_length_m=step_m)
             vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
+            last_progress_post_s = float("-inf")
+
+            def on_progress(snapshot: Any) -> None:
+                nonlocal last_progress_post_s
+                now = time.perf_counter()
+                if (
+                    now - last_progress_post_s >= 0.1
+                    or snapshot.cell_index + 1 == snapshot.cell_count
+                ):
+                    self._queue_live_progress(
+                        profile_name, "Centerline model", solver_track, snapshot
+                    )
+                    last_progress_post_s = now
+
             result = run_one_lap(
                 vehicle,
                 solver_track,
                 torque_request_fraction=torque_fraction,
+                progress_callback=on_progress,
             )
             if result.completed:
                 summarize_lap(result, self.track.length_m)
@@ -1633,8 +1743,32 @@ class LapSimDesktop:
             )
             planner = RacingLinePlanner()
             plan = planner.plan(self.track, corridor)
+            last_progress_post_s = float("-inf")
+            last_progress_phase = ""
+
+            def on_progress(phase: str, phase_track: Any, snapshot: Any) -> None:
+                nonlocal last_progress_post_s, last_progress_phase
+                now = time.perf_counter()
+                if phase != last_progress_phase:
+                    last_progress_post_s = float("-inf")
+                    last_progress_phase = phase
+                if (
+                    now - last_progress_post_s >= 0.1
+                    or snapshot.cell_index + 1 == snapshot.cell_count
+                ):
+                    label = {
+                        "baseline": "Geometric centerline",
+                        "full": "Full AI line",
+                        "half": "Half AI line",
+                    }.get(phase, phase)
+                    self._queue_live_progress(
+                        profile_name, label, phase_track, snapshot
+                    )
+                    last_progress_post_s = now
+
             comparison = compare_lines_with_lap_model(
                 vehicle, plan, torque_request_fraction=torque_fraction,
+                progress_callback=on_progress,
             )
             selected_mode = comparison.selected_mode
             selected_run = comparison.selected_run
@@ -1765,8 +1899,24 @@ class LapSimDesktop:
             run_ids = []
             for profile_id, name, setup in plans:
                 vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
+                last_progress_post_s = float("-inf")
+
+                def on_progress(snapshot: Any) -> None:
+                    nonlocal last_progress_post_s
+                    now = time.perf_counter()
+                    if (
+                        now - last_progress_post_s >= 0.1
+                        or snapshot.cell_index + 1 == snapshot.cell_count
+                    ):
+                        self._queue_live_progress(
+                            name, "Centerline comparison", solver_track, snapshot
+                        )
+                        last_progress_post_s = now
+
                 result = run_one_lap(
-                    vehicle, solver_track, torque_request_fraction=torque_fraction
+                    vehicle, solver_track,
+                    torque_request_fraction=torque_fraction,
+                    progress_callback=on_progress,
                 )
                 run_id = self._save_run_record(
                     result=result, vehicle=vehicle, manifest=manifest,
@@ -1790,6 +1940,7 @@ class LapSimDesktop:
             self.result_queue.put(("comparison", None, error))
 
     def _poll_result(self) -> None:
+        self._poll_live_progress()
         try:
             kind, payload, error = self.result_queue.get_nowait()
         except queue.Empty:
@@ -1797,6 +1948,12 @@ class LapSimDesktop:
             return
 
         self._set_busy(False)
+        if self._driver_live_mode:
+            self._driver_stream_active = False
+            self.driver_run_label.set(
+                f"Last accepted step · {self.driver_run_label.get()}"
+            )
+            self._draw_driver_view()
         elapsed_s = time.perf_counter() - self.run_started_at
         if error is not None:
             self.status_text.set(f"Calculation failed: {error}")

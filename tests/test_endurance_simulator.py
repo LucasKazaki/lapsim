@@ -1,14 +1,17 @@
 """End-to-end tests for prescribed-path stateful endurance simulation."""
 
+from dataclasses import FrozenInstanceError
 from math import atan, pi
 from unittest import TestCase
 
+from lapsim import LapProgressSnapshot
 from lapsim.core.controls import Controls
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Track
 from lapsim.events.endurance import EnduranceRunConfig, EnduranceSimulator
 from lapsim.optimization.torque_profile import UniformPeriodicTorqueParameterization
 from lapsim.solvers.path_constraints import PathConstraintSolver
+from lapsim.ui.simulation import run_one_lap
 from vehicle_model import Vehicle
 
 
@@ -42,6 +45,77 @@ class ConstantUnsafeControls:
 
 
 class EnduranceSimulatorTests(TestCase):
+    def test_progress_snapshots_match_accepted_cells_without_changing_result(self) -> None:
+        track = small_closed_track()
+        vehicle = Vehicle()
+        constraints = PathConstraintSolver().solve(track, vehicle)
+        config = EnduranceRunConfig(laps=2, starting_speed_mps=8.0)
+        progress = []
+
+        observed = EnduranceSimulator().run(
+            vehicle, constraints, ConstantDriverControls(), config,
+            record_telemetry=True, progress_callback=progress.append,
+        )
+        ordinary = EnduranceSimulator().run(
+            Vehicle(), constraints, ConstantDriverControls(), config,
+            record_telemetry=True,
+        )
+        lightweight_progress = []
+        lightweight = EnduranceSimulator().run(
+            Vehicle(), constraints, ConstantDriverControls(), config,
+            progress_callback=lightweight_progress.append,
+        )
+
+        self.assertTrue(observed.completed, observed.failure_reason)
+        self.assertEqual(observed.lap_times_s, ordinary.lap_times_s)
+        self.assertEqual(lightweight.lap_times_s, ordinary.lap_times_s)
+        self.assertIsNone(lightweight.telemetry)
+        self.assertEqual(observed.pack_energy_kwh, ordinary.pack_energy_kwh)
+        self.assertEqual(observed.telemetry, ordinary.telemetry)
+        self.assertEqual(len(progress), 2 * track.cell_count)
+        self.assertIsInstance(progress[0], LapProgressSnapshot)
+        self.assertEqual(lightweight_progress, progress)
+        assert observed.telemetry is not None
+        for index, snapshot in enumerate(progress):
+            lap_index, cell_index = divmod(index, track.cell_count)
+            self.assertEqual(snapshot.lap_index, lap_index)
+            self.assertEqual(snapshot.cell_index, cell_index)
+            self.assertEqual(snapshot.cell_count, track.cell_count)
+            self.assertEqual(snapshot.lap_station_m, track.distance_m[cell_index + 1])
+            self.assertAlmostEqual(
+                snapshot.total_distance_m,
+                lap_index * track.length_m + snapshot.lap_station_m,
+            )
+            self.assertEqual(
+                snapshot.elapsed_time_s,
+                observed.telemetry["vehicle.time_s"][index],
+            )
+            self.assertEqual(
+                snapshot.speed_mps,
+                observed.telemetry["vehicle.speed_mps"][index],
+            )
+            self.assertEqual(
+                snapshot.lateral_acceleration_mps2,
+                observed.telemetry["vehicle.lateral_acceleration_mps2"][index],
+            )
+        with self.assertRaises(FrozenInstanceError):
+            progress[0].speed_mps = 0.0
+
+    def test_desktop_run_forwards_optional_progress_callback(self) -> None:
+        track = small_closed_track()
+        progress = []
+
+        result = run_one_lap(
+            Vehicle(), track, torque_request_fraction=0.5,
+            progress_callback=progress.append,
+        )
+
+        self.assertTrue(result.completed, result.failure_reason)
+        self.assertEqual(len(progress), track.cell_count)
+        self.assertEqual(progress[-1].cell_index, track.cell_count - 1)
+        self.assertAlmostEqual(progress[-1].lap_station_m, track.length_m)
+        self.assertAlmostEqual(progress[-1].elapsed_time_s, result.driving_time_s)
+
     def test_preserves_battery_state_and_records_component_telemetry(self) -> None:
         track = small_closed_track()
         vehicle = Vehicle()
@@ -126,6 +200,7 @@ class EnduranceSimulatorTests(TestCase):
             passes=constraints.passes,
         )
         supplied_controls = ConstantUnsafeControls().controls_at(0.0)
+        progress = []
 
         result = EnduranceSimulator().run(
             vehicle,
@@ -134,6 +209,7 @@ class EnduranceSimulatorTests(TestCase):
             EnduranceRunConfig(
                 laps=1, starting_speed_mps=lower_ceiling_mps,
             ),
+            progress_callback=progress.append,
         )
 
         self.assertFalse(result.completed)
@@ -141,6 +217,7 @@ class EnduranceSimulatorTests(TestCase):
         assert result.failure_reason is not None
         self.assertIn("supplied controls exceeded the path ceiling", result.failure_reason)
         self.assertEqual(vehicle.current_controls, supplied_controls)
+        self.assertEqual(progress, [])
 
     def test_torque_profile_automatically_brakes_for_path_ceiling(self) -> None:
         track = SpatialTrack.from_cells(
@@ -305,14 +382,17 @@ class EnduranceSimulatorTests(TestCase):
         vehicle = Vehicle()
         constraints = PathConstraintSolver().solve(track, vehicle)
         requested_speed_mps = constraints.local_corner_speed_mps[0] + 1.0
+        progress = []
 
         result = EnduranceSimulator().run(
             vehicle,
             constraints,
             ConstantDriverControls(),
             EnduranceRunConfig(laps=1, starting_speed_mps=requested_speed_mps),
+            progress_callback=progress.append,
         )
 
         self.assertFalse(result.completed)
         self.assertAlmostEqual(vehicle.speed_mps, requested_speed_mps)
         self.assertEqual(vehicle.distance_m, 0.0)
+        self.assertEqual(progress, [])

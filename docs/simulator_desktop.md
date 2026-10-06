@@ -49,18 +49,22 @@ left-drag pans, the mouse wheel zooms around the cursor, and **Fit course**
 restores the full view.
 
 The right side has **Analysis**, **Driver view**, and **Timed sessions · WIP**
-tabs. Analysis remains the startup view. After a single completed lap, the
-app switches to Driver view and starts a 1× replay; Play/Pause, Start, time
-scrubbing, playback speed, and wheel zoom are available. The course rotates
-around a fixed car marker in a driver-centered top-down map. Numeric boxes
-show elapsed time, station, modeled speed and lateral acceleration, and map
-heading. The marker follows the distance-aligned x/y course visualization.
-The replay uses the solver's constant-acceleration cell relation to interpolate
-station and speed between recorded cell exits. The lap physics uses a separate
-recorded curvature channel, so the displayed map heading is not necessarily
-the heading solved by the force model. The lap solver does
-not simulate vehicle line tracking or a first-person camera. The playback is
-computed from the completed run; it is not a live physics integration.
+tabs. Analysis remains the startup view. When a lap starts, the view first
+labels path and speed-limit preparation; no motion is implied during that
+prepass. As the physics solver accepts cells, Driver view shows its latest
+elapsed time, station, speed, and lateral acceleration on a driver-centered
+top-down **reference map**. The desktop keeps only the newest update and draws
+at roughly 10 updates per second, so it does not slow the solver to real time.
+AI mode labels geometric baseline, full line, and optional half line separately.
+Rejected cells are not shown as completed movement. After a completed lap,
+the app starts a 1× replay with Play/Pause, Start, time scrub, playback rate,
+and wheel zoom. The course rotates around a fixed car marker. The replay uses
+the solver's constant-acceleration cell relation between recorded exits.
+The lap physics uses a separate curvature channel, so the displayed map
+heading is not necessarily the model's integrated heading. This is a live
+**accepted-step reference-path preview** followed by completed telemetry
+playback, not vehicle line tracking, a first-person camera, or interactive
+driving.
 
 ## Optional AI racing line
 

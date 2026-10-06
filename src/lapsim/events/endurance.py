@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from math import atan, copysign, isfinite
 
@@ -66,6 +67,26 @@ class EnduranceRunResult:
     @property
     def completed(self) -> bool:
         return self.failure_reason is None
+
+
+@dataclass(frozen=True, slots=True)
+class LapProgressSnapshot:
+    """Accepted-cell state for an optional low-cost observer.
+
+    Indices are zero based; ``lap_station_m`` is the cell exit on the current
+    lap, while ``total_distance_m`` and ``elapsed_time_s`` include prior laps.
+    The snapshot contains values only, so another thread can consume it
+    without reading mutable vehicle or telemetry state.
+    """
+
+    lap_index: int
+    cell_index: int
+    cell_count: int
+    elapsed_time_s: float
+    lap_station_m: float
+    total_distance_m: float
+    speed_mps: float
+    lateral_acceleration_mps2: float
 
 
 class EnduranceSimulator:
@@ -405,6 +426,7 @@ class EnduranceSimulator:
         config: EnduranceRunConfig,
         *,
         record_telemetry: bool = False,
+        progress_callback: Callable[[LapProgressSnapshot], None] | None = None,
     ) -> EnduranceRunResult:
         track = constraints.track
         if not track.closed:
@@ -552,6 +574,19 @@ class EnduranceSimulator:
                 if vehicle.battery.state_of_charge <= 0.0:
                     failure_reason = "battery state of charge depleted"
                     break
+                if progress_callback is not None:
+                    progress_callback(LapProgressSnapshot(
+                        lap_index=lap_index,
+                        cell_index=cell_index,
+                        cell_count=track.cell_count,
+                        elapsed_time_s=vehicle.time_s,
+                        lap_station_m=track.distance_m[cell_index + 1],
+                        total_distance_m=vehicle.distance_m,
+                        speed_mps=vehicle.speed_mps,
+                        lateral_acceleration_mps2=(
+                            vehicle.lateral_acceleration_mps2
+                        ),
+                    ))
 
             if failure_reason is not None:
                 break
@@ -570,4 +605,7 @@ class EnduranceSimulator:
             telemetry=telemetry,
         )
 
-__all__ = ["EnduranceRunConfig", "EnduranceRunResult", "EnduranceSimulator"]
+__all__ = [
+    "EnduranceRunConfig", "EnduranceRunResult", "EnduranceSimulator",
+    "LapProgressSnapshot",
+]

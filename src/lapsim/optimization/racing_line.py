@@ -19,13 +19,14 @@ from copy import deepcopy
 from dataclasses import dataclass
 from math import ceil, hypot, isfinite
 from time import perf_counter
+from typing import Callable
 
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import LinearConstraint, minimize
 
 from lapsim.courses.spatial_track import SpatialTrack
-from lapsim.events.endurance import EnduranceRunResult
+from lapsim.events.endurance import EnduranceRunResult, LapProgressSnapshot
 
 
 @dataclass(frozen=True, slots=True)
@@ -561,6 +562,7 @@ def compare_lines_with_lap_model(
     plan: RacingLinePlan,
     *,
     torque_request_fraction: float,
+    progress_callback: Callable[[str, SpatialTrack, LapProgressSnapshot], None] | None = None,
 ) -> RacingLineComparison:
     """Evaluate a candidate and its baseline with the unchanged lap physics.
 
@@ -570,6 +572,8 @@ def compare_lines_with_lap_model(
     baseline. Thus at most three full laps run, and the ordinary centerline
     path still avoids this module entirely. A candidate is selected only if
     both it and the baseline complete and it is faster. Errors remain explicit.
+    With a callback, accepted-cell snapshots carry a phase label and the exact
+    track being simulated; no callback keyword is passed in the default case.
     """
 
     from lapsim.ui.simulation import run_one_lap
@@ -585,21 +589,30 @@ def compare_lines_with_lap_model(
     baseline_error: str | None = None
     candidate_error: str | None = None
 
-    def run_trial(track: SpatialTrack) -> tuple[EnduranceRunResult | None, float | None, str | None]:
+    def run_trial(
+        track: SpatialTrack, phase: str,
+    ) -> tuple[EnduranceRunResult | None, float | None, str | None]:
         try:
-            result = run_one_lap(
-                deepcopy(vehicle), track,
-                torque_request_fraction=torque_request_fraction,
-            )
+            if progress_callback is None:
+                result = run_one_lap(
+                    deepcopy(vehicle), track,
+                    torque_request_fraction=torque_request_fraction,
+                )
+            else:
+                result = run_one_lap(
+                    deepcopy(vehicle), track,
+                    torque_request_fraction=torque_request_fraction,
+                    progress_callback=lambda snapshot: progress_callback(phase, track, snapshot),
+                )
         except (ValueError, RuntimeError, ArithmeticError, OverflowError) as error:
             return None, None, f"{type(error).__name__}: {error}"
         if result.completed and isfinite(result.driving_time_s) and result.driving_time_s > 0.0:
             return result, result.driving_time_s, None
         return result, None, result.failure_reason or "Lap did not complete with a finite positive time"
 
-    baseline_run, baseline_time, baseline_error = run_trial(plan.baseline_track)
+    baseline_run, baseline_time, baseline_error = run_trial(plan.baseline_track, "baseline")
     if plan.status == "candidate":
-        full_run, full_time, full_error = run_trial(plan.candidate_track)
+        full_run, full_time, full_error = run_trial(plan.candidate_track, "full")
         trials.append(RacingLineTrial(1.0, plan.candidate_track.length_m, full_time, full_error))
         candidate_run, candidate_time, candidate_error = full_run, full_time, full_error
         candidate_strength = 1.0 if full_time is not None else None
@@ -612,7 +625,7 @@ def compare_lines_with_lap_model(
             except ValueError as error:
                 trials.append(RacingLineTrial(0.5, None, None, f"Geometry: {error}"))
             else:
-                half_run, half_time, half_error = run_trial(half_track)
+                half_run, half_time, half_error = run_trial(half_track, "half")
                 trials.append(RacingLineTrial(0.5, half_track.length_m, half_time, half_error))
                 if half_time is not None and (candidate_time is None or half_time < candidate_time):
                     candidate_track, candidate_run = half_track, half_run

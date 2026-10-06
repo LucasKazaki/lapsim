@@ -86,8 +86,8 @@ only when both it and the baseline complete and it is faster. The packaged
 course has no surveyed widths, and its x/y map does not agree with its stored
 solver curvature; the Analysis tab displays the measured inconsistency. AI-mode times should be
 compared only with the AI-mode geometric baseline, not the ordinary centerline
-lap. The **Driver view** plays back the selected reference path and numeric
-telemetry after a lap calculation. **Timed sessions · WIP** is a disabled
+lap. The **Driver view** shows accepted solver-step progress on a reference
+path, then plays back numeric telemetry after a completed lap. **Timed sessions · WIP** is a disabled
 placeholder for a future ghost, complete control recording, and replay check.
 
 ## Basic use

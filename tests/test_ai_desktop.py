@@ -9,6 +9,7 @@ from unittest.mock import patch
 import pytest
 
 from lapsim.experiments import RunRecord
+from lapsim.events.endurance import LapProgressSnapshot
 from lapsim.ui.app import LapSimDesktop
 from lapsim.ui.presets import VehicleSetup
 
@@ -32,6 +33,24 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
             app._start_run()
             assert worker.call_args.kwargs["target"].__name__ == "_calculate_single"
             worker.return_value.start.assert_called_once()
+        for cell in range(3):
+            app._queue_live_progress(
+                "Prius live test", "Centerline model", app.track,
+                LapProgressSnapshot(
+                    lap_index=0, cell_index=cell, cell_count=app.track.cell_count,
+                    elapsed_time_s=float(cell + 1),
+                    lap_station_m=float((cell + 1) * 10),
+                    total_distance_m=float((cell + 1) * 10),
+                    speed_mps=10.0, lateral_acceleration_mps2=0.0,
+                ),
+            )
+        assert app.progress_queue.qsize() == 1
+        app._poll_live_progress()
+        assert app._active_tab == "Driver view"
+        assert app.driver_playback is not None
+        assert app.driver_playback.frame_at(3.0).distance_m == pytest.approx(30.0)
+        assert "accepted cell 3/" in app.driver_run_label.get()
+        assert app.driver_play_button["state"] == "disabled"
         app._set_busy(False)
         app.driving_mode_var.set("AI racing line (experimental)")
         app._on_driving_mode_change()
@@ -48,6 +67,14 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
             kind, payload, error = app.result_queue.get_nowait()
             assert error is None, error
             assert kind == "ai_single"
+            assert app.progress_queue.qsize() == 1
+            app._set_busy(True)
+            app._poll_live_progress()
+            assert "Full AI line" in app.driver_run_label.get()
+            assert app.driver_playback is not None
+            assert app.driver_playback.frame_at(
+                app.driver_playback.duration_s
+            ).distance_m == pytest.approx(payload[5].candidate_track.length_m)
             app.result_queue.put((kind, payload, error))
             app._poll_result()
             root.update()

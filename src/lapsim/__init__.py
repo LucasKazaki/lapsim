@@ -25,6 +25,7 @@ __all__ = [
     "EnduranceRunConfig",
     "EnduranceRunResult",
     "EnduranceSimulator",
+    "LapProgressSnapshot",
     "EnduranceTorqueOptimizer",
     "FSAEEnduranceEfficiencyScoring",
     "FSAE_2026_MI_ACCELERATION_SCORING",
@@ -137,17 +138,22 @@ def __getattr__(name: str):
             "ReplayTelemetry": ReplayTelemetry,
             "replay_controls": replay_controls,
         }[name]
-    if name in {"EnduranceRunConfig", "EnduranceRunResult", "EnduranceSimulator"}:
+    if name in {
+        "EnduranceRunConfig", "EnduranceRunResult", "EnduranceSimulator",
+        "LapProgressSnapshot",
+    }:
         from .events.endurance import (
             EnduranceRunConfig,
             EnduranceRunResult,
             EnduranceSimulator,
+            LapProgressSnapshot,
         )
 
         return {
             "EnduranceRunConfig": EnduranceRunConfig,
             "EnduranceRunResult": EnduranceRunResult,
             "EnduranceSimulator": EnduranceSimulator,
+            "LapProgressSnapshot": LapProgressSnapshot,
         }[name]
     if name in {"PathConstraintSolver", "PathSpeedConstraints"}:
         from .solvers.path_constraints import PathConstraintSolver, PathSpeedConstraints

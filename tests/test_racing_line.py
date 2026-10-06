@@ -191,10 +191,14 @@ def test_curvature_is_derived_from_xy_not_copied_from_source_channel() -> None:
 def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> None:
     track = _rounded_rectangle()
     plan = RacingLinePlanner().plan(track, _corridor(track))
+    progress = []
     comparison = compare_lines_with_lap_model(
         make_prius_benchmark(VehicleSetup()),
         plan,
         torque_request_fraction=0.8,
+        progress_callback=lambda phase, active_track, snapshot: progress.append(
+            (phase, active_track, snapshot)
+        ),
     )
     assert comparison.baseline_error is None
     assert comparison.candidate_error is None
@@ -205,6 +209,18 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
     assert comparison.selected_track is plan.candidate_track
     assert comparison.selected_run is comparison.candidate_run
     assert comparison.compute_time_s > 0.0
+    for phase, active_track, run in (
+        ("baseline", plan.baseline_track, comparison.baseline_run),
+        ("full", plan.candidate_track, comparison.candidate_run),
+    ):
+        phase_events = [
+            snapshot for observed_phase, observed_track, snapshot in progress
+            if observed_phase == phase and observed_track is active_track
+        ]
+        assert len(phase_events) == active_track.cell_count
+        assert [item.cell_index for item in phase_events] == list(range(active_track.cell_count))
+        assert phase_events[-1].lap_station_m == pytest.approx(active_track.length_m)
+        assert phase_events[-1].elapsed_time_s == pytest.approx(run.driving_time_s)
 
 
 @pytest.fixture(scope="module")
@@ -337,3 +353,33 @@ def test_failed_trials_have_no_fictitious_time(_adaptive_plan, monkeypatch) -> N
     assert len(comparison.trials) == 2
     assert "1x: stalled" in comparison.candidate_error
     assert "0.5x: stalled" in comparison.candidate_error
+
+
+def test_progress_callback_identifies_phase_and_exact_trial_track(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    plan = _adaptive_plan
+    emitted = []
+    received = []
+
+    def fake_lap(vehicle, track, *, torque_request_fraction, progress_callback):
+        snapshot = object()
+        emitted.append((track, snapshot))
+        progress_callback(snapshot)
+        time_s = 100.0 if track is plan.baseline_track else (
+            102.0 if track is plan.candidate_track else 98.0
+        )
+        return SimpleNamespace(completed=True, driving_time_s=time_s, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.7,
+        progress_callback=lambda phase, track, snapshot: received.append((phase, track, snapshot)),
+    )
+    assert tuple(phase for phase, _, _ in received) == ("baseline", "full", "half")
+    for (track, snapshot), (_, callback_track, callback_snapshot) in zip(
+        emitted, received, strict=True,
+    ):
+        assert callback_track is track
+        assert callback_snapshot is snapshot
+    assert comparison.selected_track is emitted[-1][0]

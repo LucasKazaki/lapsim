@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,7 @@ from lapsim.events.endurance import (
     EnduranceRunConfig,
     EnduranceRunResult,
     EnduranceSimulator,
+    LapProgressSnapshot,
 )
 from lapsim.optimization.torque_profile import PeriodicPiecewiseLinearTorqueProfile
 from lapsim.solvers.path_constraints import PathConstraintSolver
@@ -77,6 +79,7 @@ def run_one_lap(
     track: SpatialTrack,
     *,
     torque_request_fraction: float,
+    progress_callback: Callable[[LapProgressSnapshot], None] | None = None,
 ) -> EnduranceRunResult:
     """Simulate one lap with path constraints and the brake controller."""
 
@@ -96,6 +99,7 @@ def run_one_lap(
         profile,
         endurance_run_config(vehicle),
         record_telemetry=True,
+        progress_callback=progress_callback,
     )
 
 
