@@ -8,6 +8,7 @@ from pathlib import Path
 import tkinter as tk
 from unittest.mock import patch
 
+import numpy as np
 import pytest
 
 from lapsim.experiments import RunRecord, replay_lap_record
@@ -135,7 +136,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
             assert app.progress_queue.qsize() == 1
             app._set_busy(True)
             app._poll_live_progress()
-            assert "Half AI line" in app.driver_run_label.get()
+            assert "Three-quarter AI line" in app.driver_run_label.get()
             app.result_queue.put((kind, payload, error))
             app._poll_result()
             root.update()
@@ -146,7 +147,8 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         assert comparison.baseline_time_s is None
         assert comparison.candidate_time_s is None
         assert comparison.baseline_diagnostic_time_s == pytest.approx(87.618366, abs=0.001)
-        assert comparison.candidate_diagnostic_time_s == pytest.approx(87.377773, abs=0.001)
+        assert comparison.candidate_diagnostic_time_s == pytest.approx(87.365597, abs=0.001)
+        assert comparison.candidate_strength == 0.75
         assert comparison.baseline_path_audit is not None
         assert comparison.baseline_path_audit.maximum_corridor_excess_m > 0.09
         assert comparison.baseline_path_audit.seam_position_error_m > 0.75
@@ -194,7 +196,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
             "curvature_integrated_closure_gap_m"
         ] == pytest.approx(0.750897, abs=0.001)
         assert planning["baseline_sampled_path_audit"]["valid"] is False
-        assert len(planning["candidate_trials"]) == 2
+        assert len(planning["candidate_trials"]) == 3
         assert all(trial["sampled_path_audit"]["valid"] is False
                    for trial in planning["candidate_trials"])
         assert selected["settings"]["track"]["length_m"] == pytest.approx(
@@ -273,9 +275,9 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         plan, comparison = payload[4], payload[5]
         assert payload[3] == "candidate"
         assert comparison.rank_status == "candidate_selected"
-        assert comparison.candidate_strength == 0.5
+        assert comparison.candidate_strength == 0.75
         assert comparison.baseline_time_s == pytest.approx(16.885573, abs=0.002)
-        assert comparison.candidate_time_s == pytest.approx(15.624285, abs=0.002)
+        assert comparison.candidate_time_s == pytest.approx(15.007724, abs=0.002)
         assert comparison.baseline_path_audit is not None
         assert comparison.baseline_path_audit.valid
         assert comparison.candidate_path_audit is not None
@@ -306,7 +308,7 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert planning["comparison_is_valid"] is True
         assert planning["diagnostic_only"] is False
         assert planning["selected_mode"] == "candidate"
-        assert planning["selected_offset_strength"] == 0.5
+        assert planning["selected_offset_strength"] == 0.75
         assert planning["processed_baseline_geometry_audit"][
             "curvature_integrated_closure_gap_m"
         ] < 0.01
@@ -379,6 +381,54 @@ def test_synthetic_centerline_run_records_selected_course(tmp_path: Path) -> Non
         assert "Course: Synthetic loop · AI demo" in " ".join(
             child.cget("text") for child in app._walk_widgets(popup)
             if child.winfo_class() == "Label"
+        )
+    finally:
+        root.destroy()
+
+
+def test_completed_fused_centerline_playback_uses_saved_solver_grid(
+    tmp_path: Path,
+) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
+            app._calculate_single(
+                "prius_2026_le", "Prius fused centerline",
+                VehicleSetup(torque_request_fraction=0.8), 5.0, 0.8,
+            )
+        kind, payload, error = app.result_queue.get_nowait()
+        assert error is None, error
+        assert kind == "single"
+        assert payload[2].completed
+        solver_track = payload[4]
+        assert solver_track is not app.track
+        assert solver_track.cell_count == 198
+        record = RunRecord.load(tmp_path / f"{payload[3]}.json").to_dict()
+        geometry = record["settings"]["track"]["geometry"]
+        assert geometry["x_m"] == pytest.approx(solver_track.x_m)
+        assert geometry["y_m"] == pytest.approx(solver_track.y_m)
+
+        app.result_queue.put((kind, payload, None))
+        app._poll_result()
+        app._pause_driver_playback()
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is solver_track
+        stations = np.asarray(app.track.distance_m)
+        solver_x = np.interp(stations, solver_track.distance_m, solver_track.x_m)
+        solver_y = np.interp(stations, solver_track.distance_m, solver_track.y_m)
+        map_delta = np.hypot(
+            solver_x - np.asarray(app.track.x_m),
+            solver_y - np.asarray(app.track.y_m),
+        )
+        index = int(np.argmax(map_delta))
+        assert map_delta[index] > 1.0
+        assert app.driver_playback.point_at(float(stations[index])) == pytest.approx(
+            (solver_x[index], solver_y[index])
         )
     finally:
         root.destroy()

@@ -239,6 +239,7 @@ def test_driver_replay_switches_comparison_cars_and_ai_paths_without_rerunning()
     import tkinter as tk
 
     from lapsim.ui.app import LapSimDesktop
+    from lapsim.ui.course_catalog import solver_track_for_course
 
     try:
         root = tk.Tk()
@@ -264,12 +265,15 @@ def test_driver_replay_switches_comparison_cars_and_ai_paths_without_rerunning()
                 ending_speed_mps=speed_mps,
             )
 
-        first = result_for(app.track, 10.0)
-        second = result_for(app.track, 20.0)
+        solver_track = solver_track_for_course(
+            app.course_spec.course_id, app.track, 5.0,
+        )
+        first = result_for(solver_track, 10.0)
+        second = result_for(solver_track, 20.0)
         app.result_queue.put((
             "comparison",
-            (1.0, 1.0, (("Car A", first), ("Car B", second)),
-             ("a" * 64, "b" * 64)),
+            (5.0, 1.0, (("Car A", first), ("Car B", second)),
+             ("a" * 64, "b" * 64), solver_track),
             None,
         ))
         with patch.object(app, "_show_result"), patch.object(app, "_show_comparison"):
@@ -278,6 +282,7 @@ def test_driver_replay_switches_comparison_cars_and_ai_paths_without_rerunning()
         assert app.driver_replay_menu["state"] == "normal"
         assert app.driver_replay_var.get() == "A · Car A"
         assert app.driver_playback is not None
+        assert app.driver_playback.track is solver_track
         assert app.driver_playback.speeds[-1] == pytest.approx(10.0)
 
         replay_menu = app.driver_replay_menu.nametowidget(
@@ -288,7 +293,7 @@ def test_driver_replay_switches_comparison_cars_and_ai_paths_without_rerunning()
         assert app.driver_run_label.get() == "Centerline · Car B"
         assert app.driver_playback is not None
         assert app.driver_playback.speeds[-1] == pytest.approx(20.0)
-        assert app.driver_playback.track is app.track
+        assert app.driver_playback.track is solver_track
 
         app._set_busy(True)
         app._begin_live_calculation("Next car")

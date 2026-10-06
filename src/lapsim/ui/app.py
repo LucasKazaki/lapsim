@@ -423,7 +423,7 @@ class LapSimDesktop:
             path_box,
             text=("AI mode uses a deterministic path optimizer and an assumed "
                   "uniform corridor. No measured course widths are available. "
-                  "It uses a 2 m path grid and up to three paths, with two "
+                  "It uses a 2 m path grid and up to four paths, with two "
                   "speed-seam passes per path. "
                   "Its rebuilt x/y course has different lap times from the "
                   "default source-curvature course. Solver step above applies "
@@ -1098,12 +1098,11 @@ class LapSimDesktop:
         self, name: str, result: Any, *, driving_mode: str = "Centerline",
         path_track: Any = None,
     ) -> None:
-        """Load a solved lap for lightweight, station-aligned map playback.
+        """Load a solved lap for station-aligned reference-path playback.
 
-        ``path_track`` lets another controller supply its own displayed x/y
-        geometry.  The result must have aligned time, distance, speed and
-        lateral-acceleration telemetry.  This does not synthesize a pose from
-        the vehicle dynamics.
+        Completed workers pass the exact solver grid saved with their runs;
+        a manual or legacy caller without ``path_track`` uses the source map.
+        This displays x/y with solved telemetry, not an integrated car pose.
         """
 
         self._pause_driver_playback()
@@ -1318,7 +1317,7 @@ class LapSimDesktop:
             width - 12, 12,
             text=(("LIVE MODEL STEP" if self._driver_stream_active
                    else "LAST ACCEPTED STEP") + " · REFERENCE PATH"
-                  if self._driver_live_mode else "MAP LINE ONLY"),
+                  if self._driver_live_mode else "MODEL REFERENCE · NOT POSE"),
             anchor="ne", fill=foreground,
             font=("Consolas", 9),
         )
@@ -1795,7 +1794,7 @@ class LapSimDesktop:
         if ai_assumptions is not None:
             self._path_comparison = None
             self.ai_result_text.set(
-                "Evaluating geometric centerline, full line, and half line…"
+                "Evaluating geometric centerline, full, half, and three-quarter lines…"
             )
             if self.ai_compare_button is not None:
                 self.ai_compare_button.configure(state="disabled")
@@ -1888,7 +1887,7 @@ class LapSimDesktop:
                 torque_fraction=torque_fraction,
             )
             self.result_queue.put(
-                ("single", (profile_name, step_m, result, run_id), None)
+                ("single", (profile_name, step_m, result, run_id, solver_track), None)
             )
         except Exception as error:
             self.result_queue.put(("single", None, error))
@@ -1943,6 +1942,7 @@ class LapSimDesktop:
                         "baseline": "Geometric centerline",
                         "full": "Full AI line",
                         "half": "Half AI line",
+                        "three_quarter": "Three-quarter AI line",
                     }.get(phase, phase)
                     self._queue_live_progress(
                         profile_name, label, phase_track, snapshot
@@ -2233,7 +2233,10 @@ class LapSimDesktop:
                 outcomes.append((name, result))
                 run_ids.append(run_id)
             self.result_queue.put((
-                "comparison", (step_m, torque_fraction, tuple(outcomes), tuple(run_ids)),
+                "comparison", (
+                    step_m, torque_fraction, tuple(outcomes), tuple(run_ids),
+                    solver_track,
+                ),
                 None,
             ))
         except Exception as error:
@@ -2263,14 +2266,16 @@ class LapSimDesktop:
             self.status_text.set(f"Calculation failed: {error}")
             messagebox.showerror("Lap calculation failed", str(error), parent=self.root)
         elif kind == "single":
-            profile_name, step_m, result, run_id = payload
+            profile_name, step_m, result, run_id, solver_track = payload
             self._set_driver_replay_options({}, selected="—")
             if result.completed:
                 self._comparison_results = None
                 self._last_result = result
                 self._selected_path_track = None
                 self._show_result(result)
-                self._activate_driver_playback(profile_name, result)
+                self._activate_driver_playback(
+                    profile_name, result, path_track=solver_track,
+                )
                 self.status_text.set(
                     f"{profile_name} completed in {elapsed_s:.1f} s · "
                     f"{step_m:g} m requested maximum step · saved run {run_id[:12]}"
@@ -2490,14 +2495,16 @@ class LapSimDesktop:
                 )
                 messagebox.showerror("No valid timed lap", str(detail), parent=self.root)
         else:
-            step_m, torque_fraction, outcomes, run_ids = payload
+            step_m, torque_fraction, outcomes, run_ids, solver_track = payload
             self._comparison_results = outcomes
             self._last_result = outcomes[0][1]
             self._selected_path_track = None
             self._show_result(outcomes[0][1])
-            self._set_driver_run(outcomes[0][0], outcomes[0][1])
+            self._set_driver_run(
+                outcomes[0][0], outcomes[0][1], path_track=solver_track,
+            )
             replay_options = {
-                f"{letter} · {name}": (name, result, "Centerline", self.track)
+                f"{letter} · {name}": (name, result, "Centerline", solver_track)
                 for letter, (name, result) in zip("AB", outcomes, strict=True)
             }
             self._set_driver_replay_options(

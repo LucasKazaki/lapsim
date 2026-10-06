@@ -76,9 +76,9 @@ tabs. Analysis remains the startup view. When a lap starts, the view first
 labels path and speed-limit preparation; no motion is implied during that
 prepass. As the physics solver accepts cells, Driver view shows its latest
 elapsed time, station, speed, and lateral acceleration on a driver-centered
-top-down **reference map**. The desktop keeps only the newest update and draws
+top-down view of that run's **solver-grid reference x/y**. The desktop keeps only the newest update and draws
 at roughly 10 updates per second, so it does not slow the solver to real time.
-AI mode labels geometric baseline, full line, and half line separately. Its
+AI mode labels geometric baseline, full, half, and three-quarter lines separately. Its
 dry seam-speed probe sends no live updates; Driver view shows accepted cells
 from the final recorded pass for each path.
 Rejected cells are not shown as completed movement. After a completed lap,
@@ -87,13 +87,18 @@ and wheel zoom. **Replay lap** lets you switch between A and B after a
 completed two-car comparison, or between completed geometric baseline and
 best tested AI path runs, including runs labeled **diagnostic** after a failed
 modeled-path audit. Each choice uses that run's
-recorded telemetry and its own processed path where applicable. Switching
+recorded telemetry and exact saved solver-grid x/y. This includes ordinary
+centerline laps and both cars in a profile comparison, so completed playback
+uses the same reference geometry as live progress. Switching
 resets the playback cursor without rerunning physics; the menu is disabled
 when only one completed run is available. The course rotates around a
 fixed car marker. The replay uses
 the solver's constant-acceleration cell relation between recorded exits.
-The lap physics uses a separate curvature channel, so the displayed map
-heading is not necessarily the model's integrated heading. This is a live
+The Analysis tab's course plot continues to show the selected source map;
+resampling can make its x/y differ from the saved solver grid. The lap physics
+uses a separate curvature channel, so the displayed map heading is not
+necessarily the model's integrated heading, especially on the inconsistent
+fused course. This is a live
 **accepted-step reference-path preview** followed by completed telemetry
 playback, not vehicle line tracking, a first-person camera, or interactive
 driving.
@@ -109,13 +114,13 @@ switching back restores the default recorded course's scenario inputs. The
 app has no measured boundaries and does not infer
 vehicle body width from the car profile. A deterministic, bounded planner
 proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
-torque request through a newly derived geometric centerline, the full-offset
-candidate, and a validated half-offset path. For each path it makes one dry
+torque request through a newly derived geometric centerline and full-, half-,
+and three-quarter-offset candidates. For each path it makes one dry
 seam-speed probe and one final recorded lap, starting each from the same fresh
 initial car and pack state. The final pass starts at the probe's exit speed;
-its finish-minus-start speed must be within **0.005 m/s**. This is at most six
-full physics passes across three paths. Pack charge and other states need not
-match at the seam. Evaluating both strengths can catch an interior line that
+its finish-minus-start speed must be within **0.005 m/s**. This is at most eight
+full physics passes across four paths. Pack charge and other states need not
+match at the seam. Evaluating three strengths can catch an interior line that
 is faster than the full path in the modeled time calculation.
 
 Before a time can be compared, the app integrates each solver path's saved
@@ -132,7 +137,7 @@ difference blank, disables **Compare path numbers**, and states the excess and
 seam gap. Driver view still offers diagnostic replay, and linked JSON records
 retain the completed runs. There is no selected AI winner for that case.
 
-When both paths pass the modeled-path audit and speed-seam check, the app
+When the geometric baseline and a candidate pass the modeled-path audit and speed-seam check, the app
 selects the best tested candidate only if its gain is strictly greater than
 **0.05 s**. A smaller positive gain is an unresolved numerical tie and leaves
 the eligible geometric baseline selected. The margin is a provisional
@@ -161,24 +166,27 @@ controller physics. See [AI racer design and checks](ai_racer_design.md) for
 the objective, validation checks, and local benchmark results.
 
 For the default fused course's assumed ±2 m Prius case with 1.78308 m car
-width and 0.3 m margin, baseline/full/half laps complete in
-**87.618366/87.377773/87.403816 s**, but all three are starred diagnostics:
-sampled usable-corridor excess is **0.095506/0.908195/0.501981 m** and the
+width and 0.3 m margin, baseline/full/half/three-quarter laps complete in
+**87.618366/87.377773/87.403816/87.3655968872 s**, but all four are starred diagnostics:
+sampled usable-corridor excess is **0.095506/0.908195/0.501981/0.705117 m** and the
 position seam misses by roughly **0.75–0.77 m**. No AI path is selected from
 those runs. This does not change the ordinary centerline calculation.
 
 For a controlled AI demonstration, choose **Synthetic loop · AI demo**, the
 Prius benchmark, torque request **0.8**, and its initial assumed ±3 m
 half-width, 1.8 m vehicle width, and 0.2 m margin. The current speed-periodic
-model comparison produced an eligible **16.8855728415 s** geometric baseline
-and **15.6242848232 s** half-offset candidate. Both sampled modeled-path
-audits passed; the full-offset trial failed the sampled corridor by
-**0.040635725 m**, so the half-offset candidate was selected on a
-**1.2612880183 s** modeled lead. These are synthetic model numbers, not surveyed-course or team-car
-performance. An on-demand fixed-path `SpatialTrack.refine(1.0)` probe gave
-**16.8820645646 s** baseline and **15.6247044764 s** candidate, both
-completed and speed-closed. Their **1.2573600882 s** gap is close to the
-original-grid gap, but the refined candidate clearance was not re-audited.
+model comparison produced an eligible **16.8855728415 s** geometric baseline,
+**15.6242848232 s** half-offset, and **15.0077244060 s** three-quarter-offset
+candidate. Those three sampled modeled-path audits passed; the full-offset
+trial completed in **14.4579210447 s** but failed sampled clearance by
+**0.0406357247 m**. The three-quarter path was selected on a
+**1.8778484355 s** modeled lead with **191.104159 m** path length. The
+comparison took about **2.48 s** on this machine. These are synthetic model
+numbers, not surveyed-course or team-car performance. An on-demand fixed-path
+`SpatialTrack.refine(1.0)` probe gave **16.882064565 s** baseline,
+**15.624704476 s** half offset, and **15.000468902 s** three-quarter offset;
+all completed and closed speed. The three-quarter refined timing lead was
+about **1.881596 s**, but refined path clearance was not re-audited.
 This is a timing-sensitivity probe, not a new eligible comparison or proof of
 grid convergence.
 

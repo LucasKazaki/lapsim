@@ -87,9 +87,10 @@ The **Driving path** control defaults to the ordinary centerline solver and
 does no path optimization. Its optional **AI racing line (experimental)** mode
 uses an assumed track half-width, vehicle width, and margin to propose one
 smooth line and compare it with a geometric centerline using the same car and
-physics solver. It also tests a half-offset line for a valid candidate.
-Each of at most three paths receives one dry speed-seam pass and one recorded
-pass. A completed lap is eligible for a path comparison only when its start
+physics solver. It also tests half-offset and three-quarter-offset lines from
+the same geometric proposal. Each of at most four paths receives one dry
+speed-seam pass and one recorded pass, for at most eight lap-model passes. A
+completed lap is eligible for a path comparison only when its start
 and finish speeds agree within 0.005 m/s and a sampled integration of its
 prescribed curvature passes the assumed clearance and position-closure
 checks. The audit samples four positions per modeled cell plus every source
@@ -107,9 +108,11 @@ two 40 m and two 20 m straights joined by four 12 m radius quarter-circle
 arcs, stored in 0.5 m source cells. Its default AI inputs are an *assumed*
 ±3 m corridor, 1.8 m vehicle width, and 0.2 m safety margin. With the Prius
 benchmark at torque request 0.8, a current speed-periodic model run gave
-**16.885573 s** on the eligible geometric baseline and **15.624285 s** on an
-eligible half-offset path. Both passed the sampled path checks, and the
-candidate was selected under the 0.05 s rule. This is a synthetic software
+**16.885573 s** on the eligible geometric baseline, **15.624285 s** on an
+eligible half-offset path, and **15.007724 s** on an eligible three-quarter
+path. The full-offset trial completed in **14.457921 s** but failed sampled
+clearance by **0.040636 m**, so the three-quarter path was selected with a
+**1.877848 s** modeled lead under the 0.05 s rule. This is a synthetic software
 demonstration, not a surveyed Formula SAE course or a validated team-car gain.
 
 The default recorded course has no surveyed widths, and its x/y map does not agree
@@ -127,7 +130,7 @@ are diagnostic only, the time difference is blank, and there is no selected
 AI winner. The ordinary centerline mode is unchanged. AI-mode eligible times,
 when available on a coherent course, should be compared only with the AI-mode
 geometric baseline, not the ordinary centerline lap. The **Driver view** shows accepted solver-step progress on a reference
-path, then plays back numeric telemetry after a completed lap. Its **Replay
+path, then plays back numeric telemetry against the exact solver-grid x/y saved with that run. This applies to ordinary centerline and car-comparison runs as well as AI paths; the separate top-down course plot continues to show the source map. The displayed position and map heading are not an integrated vehicle pose, and the fused course's x/y still disagrees with its physics curvature. Its **Replay
 lap** menu switches between A and B after a two-car comparison, or between
 the geometric baseline and best tested AI path after a completed AI run,
 without running physics again. AI trials save linked primary/displayed and

@@ -832,8 +832,8 @@ def compare_lines_with_lap_model(
     """Evaluate a candidate and its baseline with the same lap physics.
 
     The vehicle is copied before each run because a lap mutates pack and
-    chassis state. The full geometric candidate and a validated half-offset
-    path are both tried. The default evaluates one lap per path; opt-in
+    chassis state. The full geometric candidate and validated half- and
+    three-quarter-offset paths are tried. The default evaluates one lap per path; opt-in
     ``speed_periodic`` permits one dry seam-speed probe plus one final lap per
     path, at a fixed initial vehicle/pack state. This checks speed at the
     closed-course seam, not full-state periodicity. A candidate is selected
@@ -997,58 +997,60 @@ def compare_lines_with_lap_model(
         candidate_path_audit = full_audit
         candidate_diagnostic_time = full_diagnostic_time
         # Scaling a valid spline offset toward zero preserves every convex
-        # lateral corridor bound. The intermediate x/y geometry still needs
-        # its own fold and self-intersection checks. A full path that beats
-        # centerline can still lose to an interior offset for this vehicle.
-        try:
-            half_track = _scaled_candidate_track(plan, 0.5)
-        except ValueError as error:
-            trials.append(RacingLineTrial(0.5, None, None, f"Geometry: {error}"))
-        else:
-            half_audit, half_path_error = audit_trial(half_track)
-            half_run, half_model_time, half_run_error = run_trial(
-                half_track, "half"
+        # lateral corridor bound. Each intermediate x/y geometry still needs
+        # its own fold, self-intersection, and modeled-arc clearance checks.
+        # Three-quarter strength recovers useful clearance-limited lines when
+        # the full path fails but the half path leaves room on the course.
+        for strength, phase in ((0.5, "half"), (0.75, "three_quarter")):
+            try:
+                trial_track = _scaled_candidate_track(plan, strength)
+            except ValueError as error:
+                trials.append(RacingLineTrial(strength, None, None, f"Geometry: {error}"))
+                continue
+            trial_audit, trial_path_error = audit_trial(trial_track)
+            trial_run, trial_model_time, trial_run_error = run_trial(
+                trial_track, phase,
             )
-            half_diagnostic_time = completed_diagnostic_time(half_run)
-            half_time = (
-                half_model_time
-                if half_path_error is None and baseline_path_error is None
+            trial_diagnostic_time = completed_diagnostic_time(trial_run)
+            trial_time = (
+                trial_model_time
+                if trial_path_error is None and baseline_path_error is None
                 else None
             )
-            half_error = combined_error(
-                half_path_error, baseline_comparison_error, half_run_error
+            trial_error = combined_error(
+                trial_path_error, baseline_comparison_error, trial_run_error
             )
             trials.append(RacingLineTrial(
-                0.5, half_track.length_m, half_time, half_error,
-                half_audit, half_diagnostic_time,
+                strength, trial_track.length_m, trial_time, trial_error,
+                trial_audit, trial_diagnostic_time,
             ))
-            if half_time is not None and (candidate_time is None or half_time < candidate_time):
-                candidate_track, candidate_run = half_track, half_run
-                candidate_time, candidate_error = half_time, None
-                candidate_path_audit = half_audit
-                candidate_diagnostic_time = half_diagnostic_time
-                candidate_strength = 0.5
-            elif candidate_run is None and half_run is not None:
+            if trial_time is not None and (candidate_time is None or trial_time < candidate_time):
+                candidate_track, candidate_run = trial_track, trial_run
+                candidate_time, candidate_error = trial_time, None
+                candidate_path_audit = trial_audit
+                candidate_diagnostic_time = trial_diagnostic_time
+                candidate_strength = strength
+            elif candidate_run is None and trial_run is not None:
                 # Preserve the path belonging to any available failed
                 # result so the desktop can save a diagnostic run.
-                candidate_track, candidate_run = half_track, half_run
-                candidate_path_audit = half_audit
-                candidate_diagnostic_time = half_diagnostic_time
-                candidate_strength = 0.5
+                candidate_track, candidate_run = trial_track, trial_run
+                candidate_path_audit = trial_audit
+                candidate_diagnostic_time = trial_diagnostic_time
+                candidate_strength = strength
             elif (
-                candidate_time is None and half_time is None
-                and half_diagnostic_time is not None
+                candidate_time is None and trial_time is None
+                and trial_diagnostic_time is not None
                 and (
                     candidate_diagnostic_time is None
-                    or half_diagnostic_time < candidate_diagnostic_time
+                    or trial_diagnostic_time < candidate_diagnostic_time
                 )
             ):
                 # Keep the fastest completed but ineligible trial as a
                 # diagnostic, never as a selectable lap-time comparison.
-                candidate_track, candidate_run = half_track, half_run
-                candidate_path_audit = half_audit
-                candidate_diagnostic_time = half_diagnostic_time
-                candidate_strength = 0.5
+                candidate_track, candidate_run = trial_track, trial_run
+                candidate_path_audit = trial_audit
+                candidate_diagnostic_time = trial_diagnostic_time
+                candidate_strength = strength
         if candidate_time is None:
             candidate_error = "; ".join(
                 f"{trial.strength:g}x: {trial.error}"

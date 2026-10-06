@@ -297,7 +297,7 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
     assert comparison.candidate_time_s is not None
     assert comparison.candidate_time_s < comparison.baseline_time_s
     assert comparison.selected_mode == "candidate"
-    assert comparison.candidate_strength == 0.5
+    assert comparison.candidate_strength == 0.75
     assert comparison.selected_track is comparison.candidate_track
     assert comparison.selected_run is comparison.candidate_run
     assert comparison.compute_time_s > 0.0
@@ -308,9 +308,14 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
     assert comparison.trials[0].diagnostic_lap_time_s is not None
     assert comparison.trials[0].lap_time_s is None
     assert comparison.trials[0].path_audit.maximum_corridor_excess_m > 0.03
+    assert comparison.trials[1].path_audit is not None
+    assert comparison.trials[1].path_audit.valid
+    assert comparison.trials[2].path_audit is not None
+    assert comparison.trials[2].path_audit.valid
+    assert comparison.trials[2].lap_time_s < comparison.trials[1].lap_time_s
     for phase, active_track, run in (
         ("baseline", plan.baseline_track, comparison.baseline_run),
-        ("half", comparison.candidate_track, comparison.candidate_run),
+        ("three_quarter", comparison.candidate_track, comparison.candidate_run),
     ):
         phase_events = [
             snapshot for observed_phase, observed_track, snapshot in progress
@@ -320,6 +325,36 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
         assert [item.cell_index for item in phase_events] == list(range(active_track.cell_count))
         assert phase_events[-1].lap_station_m == pytest.approx(active_track.length_m)
         assert phase_events[-1].elapsed_time_s == pytest.approx(run.driving_time_s)
+
+
+def test_speed_periodic_prius_selects_audited_three_quarter_path() -> None:
+    track = _rounded_rectangle()
+    corridor = TrackCorridor.constant(
+        track, left_width_m=3.0, right_width_m=3.0,
+        vehicle_width_m=1.8, safety_margin_m=0.2,
+        source="assumed synthetic default-width scenario",
+    )
+    plan = RacingLinePlanner().plan(track, corridor)
+    comparison = compare_lines_with_lap_model(
+        make_prius_benchmark(VehicleSetup(tire_mu=0.95)), plan,
+        torque_request_fraction=0.8, speed_periodic=True,
+    )
+
+    assert comparison.rank_status == "candidate_selected"
+    assert comparison.baseline_time_s is not None
+    assert comparison.candidate_strength == 0.75
+    assert comparison.candidate_time_s is not None
+    assert comparison.candidate_time_s < comparison.trials[1].lap_time_s
+    assert comparison.candidate_time_s < comparison.baseline_time_s
+    assert comparison.selected_track is comparison.candidate_track
+    assert comparison.selected_run is comparison.candidate_run
+    assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5, 0.75)
+    assert comparison.trials[0].lap_time_s is None
+    assert comparison.trials[0].diagnostic_lap_time_s is not None
+    assert comparison.trials[0].path_audit is not None
+    assert not comparison.trials[0].path_audit.valid
+    assert comparison.trials[2].path_audit is comparison.candidate_path_audit
+    assert comparison.trials[2].path_audit.valid
 
 
 def test_optional_ai_mode_can_evaluate_every_available_car_profile() -> None:
@@ -458,7 +493,7 @@ def test_shipped_assumed_corridor_marks_both_paths_diagnostic(
     assert comparison.selected_run is None
     assert all(trial.lap_time_s is None for trial in comparison.trials)
     assert tuple(trial.diagnostic_lap_time_s for trial in comparison.trials) == (
-        99.0, 98.0,
+        99.0, 98.0, 98.0,
     )
     assert all(trial.path_audit is not None for trial in comparison.trials)
     assert all(not trial.path_audit.valid for trial in comparison.trials)
@@ -558,19 +593,19 @@ def test_vehicle_model_selects_half_strength_if_full_line_is_slower(
     comparison = compare_lines_with_lap_model(
         {"vehicle": "test"}, plan, torque_request_fraction=0.7,
     )
-    assert len(calls) == 3
+    assert len(calls) == 4
     assert comparison.baseline_time_s == 100.0
     assert comparison.candidate_time_s == 98.0
     assert comparison.candidate_strength == 0.5
-    assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5)
-    assert tuple(trial.lap_time_s for trial in comparison.trials) == (102.0, 98.0)
+    assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5, 0.75)
+    assert tuple(trial.lap_time_s for trial in comparison.trials) == (102.0, 98.0, 98.0)
     assert comparison.candidate_track is calls[2]
     assert comparison.selected_mode == "candidate"
     assert comparison.selected_track is calls[2]
     assert comparison.selected_run is comparison.candidate_run
 
 
-def test_full_strength_win_is_retained_after_half_trial(_adaptive_plan, monkeypatch) -> None:
+def test_full_strength_win_is_retained_after_interior_trials(_adaptive_plan, monkeypatch) -> None:
     plan = _adaptive_plan
     calls = []
 
@@ -584,10 +619,10 @@ def test_full_strength_win_is_retained_after_half_trial(_adaptive_plan, monkeypa
     monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
     comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
     assert calls[:2] == [plan.baseline_track, plan.candidate_track]
-    assert len(calls) == 3
+    assert len(calls) == 4
     assert comparison.candidate_strength == 1.0
     assert comparison.candidate_track is plan.candidate_track
-    assert tuple(trial.lap_time_s for trial in comparison.trials) == (99.0, 99.5)
+    assert tuple(trial.lap_time_s for trial in comparison.trials) == (99.0, 99.5, 99.5)
 
 
 @pytest.mark.parametrize(
@@ -681,7 +716,7 @@ def test_opt_in_speed_periodic_comparison_uses_converged_lap_only(
         object(), plan, torque_request_fraction=0.7, speed_periodic=True,
     )
 
-    assert len(calls) == 3
+    assert len(calls) == 4
     assert [track for track, _ in calls[:2]] == [
         plan.baseline_track, plan.candidate_track,
     ]
@@ -728,7 +763,9 @@ def test_opt_in_speed_periodic_rejects_nonconverged_trials_but_keeps_runs(
         ),
     )
 
-    assert [phase for phase, _, _ in phases] == ["baseline", "full", "half"]
+    assert [phase for phase, _, _ in phases] == [
+        "baseline", "full", "half", "three_quarter",
+    ]
     assert all(observed_track is emitted_track and observed_snapshot is snapshot
                for (_, observed_track, observed_snapshot), (emitted_track, snapshot)
                in zip(phases, received, strict=True))
@@ -738,6 +775,43 @@ def test_opt_in_speed_periodic_rejects_nonconverged_trials_but_keeps_runs(
     assert comparison.candidate_time_s == 99.0
     assert comparison.candidate_strength == 0.5
     assert comparison.selected_mode == "candidate"
+
+
+def test_faster_three_quarter_run_needs_speed_seam_convergence(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    calls = []
+    runs = []
+
+    def fake_periodic(vehicle, track, **kwargs):
+        del vehicle, kwargs
+        calls.append(track)
+        time_s = (100.0, 99.0, 98.0, 90.0)[len(calls) - 1]
+        run = SimpleNamespace(
+            completed=True, driving_time_s=time_s, failure_reason=None,
+        )
+        runs.append(run)
+        converged = len(calls) < 4
+        return SimpleNamespace(
+            run=run, converged=converged,
+            failure_reason=None if converged else "three-quarter seam not periodic",
+        )
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_speed_periodic_lap", fake_periodic)
+    comparison = compare_lines_with_lap_model(
+        object(), _adaptive_plan, torque_request_fraction=0.7,
+        speed_periodic=True,
+    )
+
+    assert len(calls) == 4
+    assert comparison.trials[2].lap_time_s is None
+    assert comparison.trials[2].diagnostic_lap_time_s == 90.0
+    assert comparison.trials[2].error == "three-quarter seam not periodic"
+    assert comparison.candidate_strength == 0.5
+    assert comparison.candidate_time_s == 98.0
+    assert comparison.candidate_track is calls[2]
+    assert comparison.candidate_run is runs[2]
+    assert comparison.selected_run is runs[2]
 
 
 def test_opt_in_speed_periodic_requires_converged_baseline_for_selection(
@@ -804,11 +878,11 @@ def test_half_trial_can_improve_even_when_full_beats_baseline(
 
     monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
     comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
-    assert len(calls) == 3
+    assert len(calls) == 4
     assert comparison.candidate_strength == 0.5
     assert comparison.candidate_time_s == 98.5
     assert comparison.selected_track is calls[2]
-    assert tuple(trial.lap_time_s for trial in comparison.trials) == (99.0, 98.5)
+    assert tuple(trial.lap_time_s for trial in comparison.trials) == (99.0, 98.5, 98.5)
 
 
 def test_no_geometric_candidate_runs_only_baseline(_adaptive_plan, monkeypatch) -> None:
@@ -864,9 +938,10 @@ def test_failed_trials_have_no_fictitious_time(_adaptive_plan, monkeypatch) -> N
     assert comparison.selected_mode == "centerline"
     assert comparison.selected_run is None
     assert comparison.candidate_run is not None
-    assert len(comparison.trials) == 2
+    assert len(comparison.trials) == 3
     assert "1x: stalled" in comparison.candidate_error
     assert "0.5x: stalled" in comparison.candidate_error
+    assert "0.75x: stalled" in comparison.candidate_error
 
 
 def test_progress_callback_identifies_phase_and_exact_trial_track(
@@ -890,10 +965,12 @@ def test_progress_callback_identifies_phase_and_exact_trial_track(
         object(), plan, torque_request_fraction=0.7,
         progress_callback=lambda phase, track, snapshot: received.append((phase, track, snapshot)),
     )
-    assert tuple(phase for phase, _, _ in received) == ("baseline", "full", "half")
+    assert tuple(phase for phase, _, _ in received) == (
+        "baseline", "full", "half", "three_quarter",
+    )
     for (track, snapshot), (_, callback_track, callback_snapshot) in zip(
         emitted, received, strict=True,
     ):
         assert callback_track is track
         assert callback_snapshot is snapshot
-    assert comparison.selected_track is emitted[-1][0]
+    assert comparison.selected_track is emitted[2][0]
