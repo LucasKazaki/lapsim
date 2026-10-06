@@ -66,16 +66,21 @@ application:
 .venv\Scripts\python.exe -m lapsim.ui
 ```
 
-Or double-click `launch_lapsim.cmd` in the repository folder. The app loads the
-team endurance course, offers editable 2026 Prius LE benchmark inputs, saved
+Or double-click `launch_lapsim.cmd` in the repository folder. The app defaults
+to the fused team endurance course and has an explicit **Course** menu for an
+optional synthetic rounded-rectangle calculation example. It offers editable
+2026 Prius LE benchmark inputs, saved
 local car profiles, source-backed TREV5 working scenarios when the external
 data package is present, and a two-car lap comparison. The **Four-wheel lab**
 opens a separate top-down torque-allocation comparison with individual wheel
 slip and force displays. It exposes world-frame wind, air density, drag area,
 base grip, and an optional fixed low-grip rectangle for paired sensitivity
 studies. Completed and interrupted lap runs save local JSON records of inputs
-and telemetry. The solver defaults to
-1 m cells; set it to 0.5 m to use the course data's full station resolution.
+and telemetry. The centerline solver defaults to a requested maximum 1 m step.
+The fused course is resampled to that step; the synthetic course retains its
+exact generated arc cells (at most 0.5 m) when the request is 0.5 m or larger.
+Requests finer than the longest synthetic source cell regenerate the analytic
+arcs, subject to a 5,000-cell guard that counts the actual generated segments.
 See the [desktop guide](docs/simulator_desktop.md) for data and model limits.
 
 The **Driving path** control defaults to the ordinary centerline solver and
@@ -87,7 +92,9 @@ Each of at most three paths receives one dry speed-seam pass and one recorded
 pass. A completed lap is eligible for a path comparison only when its start
 and finish speeds agree within 0.005 m/s and a sampled integration of its
 prescribed curvature passes the assumed clearance and position-closure
-checks. Four positions per cell are sampled; allowable corridor excess is
+checks. The audit samples four positions per modeled cell plus every source
+corridor-cell boundary and midpoint; a shared boundary uses the narrower
+adjacent width, including at the closed seam. Allowable corridor excess is
 1e-8 m and the integrated seam gap must be at most 0.01 m. These checks do
 not certify the continuous swept vehicle body or surveyed cone clearance.
 For eligible paths, the app selects a candidate only when its gain over the
@@ -95,7 +102,17 @@ geometric baseline is strictly greater than 0.05 s. A smaller positive gain
 is an unresolved numerical tie; the 0.05 s margin is a provisional selection
 heuristic, not a proven error bound.
 
-The packaged course has no surveyed widths, and its x/y map does not agree
+The optional **Synthetic loop · AI demo** course is a 195.398224 m rounded rectangle:
+two 40 m and two 20 m straights joined by four 12 m radius quarter-circle
+arcs, stored in 0.5 m source cells. Its default AI inputs are an *assumed*
+±3 m corridor, 1.8 m vehicle width, and 0.2 m safety margin. With the Prius
+benchmark at torque request 0.8, a current speed-periodic model run gave
+**16.885573 s** on the eligible geometric baseline and **15.624285 s** on an
+eligible half-offset path. Both passed the sampled path checks, and the
+candidate was selected under the 0.05 s rule. This is a synthetic software
+demonstration, not a surveyed Formula SAE course or a validated team-car gain.
+
+The default recorded course has no surveyed widths, and its x/y map does not agree
 with its stored solver curvature. The Analysis tab reports 3.657937 rad of
 prescribed turn versus 6.283185 rad of map winding, up to 0.235787 m
 disagreement between individual solver arc-chord lengths and plotted map-chord lengths,
@@ -103,7 +120,8 @@ and a 542.633 m closure gap when the stored curvature is integrated from the
 first map-chord heading.
 The AI processed geometric baseline also has a 0.750897 m integrated closure
 gap because its polygon chords and constant-curvature arcs disagree. On the
-shipped course with an assumed ±2 m corridor, completed Prius baseline and
+shipped course with an assumed ±2 m corridor, 1.78308 m car width, and 0.3 m
+margin, completed Prius baseline and
 offset laps currently fail the sampled path audit; displayed starred times
 are diagnostic only, the time difference is blank, and there is no selected
 AI winner. The ordinary centerline mode is unchanged. AI-mode eligible times,
@@ -114,7 +132,9 @@ lap** menu switches between A and B after a two-car comparison, or between
 the geometric baseline and best tested AI path after a completed AI run,
 without running physics again. AI trials save linked primary/displayed and
 counterpart run records when both paths return runs, including diagnostic
-records that must not be ranked. Completed v2 lap records
+records that must not be ranked. Records identify the selected source course
+by ID; AI metadata also marks a synthetic course explicitly. Candidate-only
+displays with a failed baseline are marked diagnostic. Completed v2 lap records
 can be checked on demand with the programmatic `replay_lap_record()` API: it
 reruns their recorded cell controls on the saved solver grid and reports
 numerical agreement. The lap model also checks both requested and achieved

@@ -15,12 +15,14 @@ from lapsim.optimization.racing_line import (
     RacingLinePlanner,
     TrackCorridor,
     _continuous_offset_violation,
+    _corridor_bounds_at,
     _audit_curvature_path,
     _has_nonadjacent_segment_intersection,
     _periodic_cubic_basis_at,
     _scaled_candidate_track,
     compare_lines_with_lap_model,
 )
+from lapsim.profiles import build_vehicle, list_profiles
 from lapsim.ui.presets import VehicleSetup, make_prius_benchmark
 from lapsim.ui.simulation import load_team_endurance_track
 
@@ -63,6 +65,21 @@ def test_missing_or_unusable_corridor_is_not_inferred() -> None:
         )
     with pytest.raises(TypeError):
         RacingLinePlanner().plan(track)  # type: ignore[call-arg]
+
+
+def test_closed_course_seam_uses_narrower_first_and_last_cell() -> None:
+    corridor = TrackCorridor(
+        left_width_m=(1.2, 3.0, 4.0),
+        right_width_m=(1.4, 3.0, 4.0),
+        vehicle_width_m=1.0,
+        source="variable-width seam check",
+    )
+    lower, upper = _corridor_bounds_at(
+        np.asarray((0.0, 3.0)), np.asarray((0.0, 1.0, 2.0, 3.0)),
+        corridor, 0.5,
+    )
+    assert lower == pytest.approx((-0.9, -0.9))
+    assert upper == pytest.approx((0.7, 0.7))
 
 
 def test_generated_paths_recompute_arc_length_and_curvature() -> None:
@@ -305,6 +322,34 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
         assert phase_events[-1].elapsed_time_s == pytest.approx(run.driving_time_s)
 
 
+def test_optional_ai_mode_can_evaluate_every_available_car_profile() -> None:
+    """The shared planner must accept every runnable car without special cases."""
+
+    track = _rounded_rectangle()
+    corridor = TrackCorridor.constant(
+        track, left_width_m=3.0, right_width_m=3.0,
+        vehicle_width_m=1.8, safety_margin_m=0.2,
+        source="assumed synthetic cross-profile corridor",
+    )
+    plan = RacingLinePlanner().plan(track, corridor)
+    assert plan.status == "candidate"
+    for info in list_profiles():
+        vehicle, _ = build_vehicle(info.profile_id)
+        comparison = compare_lines_with_lap_model(
+            vehicle, plan, torque_request_fraction=0.8, speed_periodic=True,
+        )
+        assert comparison.baseline_run is not None, info.profile_id
+        assert comparison.baseline_run.completed, info.profile_id
+        assert comparison.baseline_time_s is not None, info.profile_id
+        assert comparison.baseline_path_audit is not None, info.profile_id
+        assert comparison.baseline_path_audit.valid, info.profile_id
+        assert comparison.candidate_run is not None, info.profile_id
+        assert comparison.candidate_run.completed, info.profile_id
+        assert comparison.candidate_time_s is not None, info.profile_id
+        assert comparison.candidate_path_audit is not None, info.profile_id
+        assert comparison.candidate_path_audit.valid, info.profile_id
+
+
 def test_curvature_arc_audit_rejects_chord_based_square_with_small_clearance() -> None:
     side_m = 10.0
     square = SpatialTrack(
@@ -320,7 +365,7 @@ def test_curvature_arc_audit_rejects_chord_based_square_with_small_clearance() -
     )
     audit = _audit_curvature_path(square, square, square.distance_m, corridor)
     assert not audit.valid
-    assert audit.sample_count == 16
+    assert audit.sample_count == 17  # quarter cells plus the start/seam sample
     assert audit.maximum_corridor_excess_m > 0.05
     assert audit.allowed_numerical_excess_m == 1e-8
     # Equal turns close heading and position on this symmetric path, but the
@@ -337,6 +382,42 @@ def test_curvature_arc_audit_uses_exact_heading_for_coherent_arc_cells() -> None
     assert audit.seam_position_error_m < 1e-8
     assert audit.maximum_corridor_excess_m == 0.0
     assert audit.valid
+
+
+def test_modeled_arc_audit_samples_a_narrow_source_cell_between_quarters() -> None:
+    angles = np.linspace(0.0, 2.0 * pi, 81)
+
+    def circle(radius_m: float) -> SpatialTrack:
+        x = radius_m * np.cos(angles)
+        y = radius_m * np.sin(angles)
+        chords = np.hypot(np.diff(x), np.diff(y))
+        stations = np.r_[0.0, np.cumsum(chords)]
+        return SpatialTrack(
+            distance_m=tuple(stations), x_m=tuple(x), y_m=tuple(y),
+            curvature_per_m=(2.0 * pi / stations[-1],) * 80,
+            closed=True,
+        )
+
+    reference = circle(6.0)
+    shifted = circle(7.5)
+    # The tight 1 cm source cell lies wholly between the old quarter-cell
+    # samples; source boundary and midpoint samples must still catch it.
+    assert reference.length_m / (4 * shifted.cell_count) > 0.07
+    source_stations = (0.0, 0.06, 0.07, reference.length_m)
+    wide = TrackCorridor(
+        left_width_m=(3.0,) * 3, right_width_m=(3.0,) * 3,
+        vehicle_width_m=1.0, source="synthetic wide clearance",
+    )
+    narrow = TrackCorridor(
+        left_width_m=(3.0, 1.6, 3.0),
+        right_width_m=(3.0, 1.6, 3.0),
+        vehicle_width_m=1.0, source="synthetic narrow source cell",
+    )
+    assert _audit_curvature_path(shifted, reference, source_stations, wide).valid
+    audit = _audit_curvature_path(shifted, reference, source_stations, narrow)
+    assert not audit.valid
+    assert audit.maximum_corridor_excess_m > 0.4
+    assert audit.seam_position_error_m < 1e-9
 
 
 def test_shipped_assumed_corridor_marks_both_paths_diagnostic(

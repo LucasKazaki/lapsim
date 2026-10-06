@@ -14,6 +14,7 @@ from lapsim.experiments import RunRecord, replay_lap_record
 from lapsim.events.endurance import LapProgressSnapshot
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.ui.app import LapSimDesktop, _course_geometry_warning
+from lapsim.ui.course_catalog import COURSE_OPTIONS, SYNTHETIC_DEMO_COURSE_ID
 from lapsim.ui.presets import VehicleSetup
 
 
@@ -111,7 +112,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
             and "Course data mismatch" in widget.cget("text")
         ]
         assert len(warning) == 1
-        assert "542.6 m" in warning[0]
+        assert "542.633 m" in warning[0]
         with patch("lapsim.ui.app.threading.Thread") as worker:
             app._start_run()
             assert worker.call_args.kwargs["target"].__name__ == "_calculate_single"
@@ -217,6 +218,167 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         assert app.driver_playback is not None
         assert app.driver_playback.track.length_m == pytest.approx(
             comparison.candidate_track.length_m
+        )
+    finally:
+        root.destroy()
+
+
+def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app._last_result = object()
+        app.output_values["lap_time"].configure(text="old course")
+        app._select_course(COURSE_OPTIONS[1].label)
+        assert app.course_spec.course_id == SYNTHETIC_DEMO_COURSE_ID
+        assert app.track.length_m == pytest.approx(195.398223686, abs=1e-6)
+        assert app.driving_mode_var.get() == "Centerline (default)"
+        assert app._last_result is None
+        assert app.output_values["lap_time"]["text"] == "—"
+        assert "Synthetic closed calculation course" in app.course_warning_label.cget("text")
+        assert "Course data mismatch" not in app.course_warning_label.cget("text")
+        assert (app.ai_half_width_var.get(), app.ai_vehicle_width_var.get(),
+                app.ai_margin_var.get()) == ("3", "1.8", "0.2")
+        assert "Synthetic" in app.footer_label.cget("text")
+        app.inputs["solver_step_m"].set("0.0391")
+        with pytest.raises(ValueError, match="5000-cell compute cap"):
+            app._read_run_settings()
+        app.inputs["solver_step_m"].set("1")
+        app._set_busy(True)
+        assert app.course_menu["state"] == "disabled"
+        app._select_course(COURSE_OPTIONS[0].label)
+        assert app.course_spec.course_id == SYNTHETIC_DEMO_COURSE_ID
+        app._set_busy(False)
+
+        app.driving_mode_var.set("AI racing line (experimental)")
+        app._on_driving_mode_change()
+        with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
+            app._calculate_ai_single(
+                "prius_2026_le", "Prius synthetic AI demo",
+                VehicleSetup(torque_request_fraction=0.8), 1.0, 0.8,
+                (3.0, 1.8, 0.2),
+            )
+            kind, payload, error = app.result_queue.get_nowait()
+            assert error is None, error
+            assert kind == "ai_single"
+            app._set_busy(True)
+            app.result_queue.put((kind, payload, error))
+            app._poll_result()
+            root.update()
+
+        plan, comparison = payload[4], payload[5]
+        assert payload[3] == "candidate"
+        assert comparison.rank_status == "candidate_selected"
+        assert comparison.candidate_strength == 0.5
+        assert comparison.baseline_time_s == pytest.approx(16.885573, abs=0.002)
+        assert comparison.candidate_time_s == pytest.approx(15.624285, abs=0.002)
+        assert comparison.baseline_path_audit is not None
+        assert comparison.baseline_path_audit.valid
+        assert comparison.candidate_path_audit is not None
+        assert comparison.candidate_path_audit.valid
+        assert app._last_result is comparison.candidate_run
+        assert app.ai_compare_button is not None
+        assert app.ai_compare_button["state"] == "normal"
+        assert app.ai_output_values["difference"]["text"].startswith("-")
+        assert app.ai_result_text.get().startswith("SYNTHETIC AI DEMO.")
+        assert "Faster AI path selected" in app.ai_result_text.get()
+        assert "default lap uses different source curvature" not in app.ai_result_text.get()
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is comparison.candidate_track
+        assert app.driver_replay_menu is not None
+        assert app.driver_replay_menu["state"] == "normal"
+        assert "Synthetic loop" in app.course_ax.get_title(loc="left")
+
+        records = list(tmp_path.glob("*.json"))
+        assert len(records) == 2
+        primary_path = tmp_path / f"{payload[7]}.json"
+        primary = RunRecord.load(primary_path).to_dict()
+        planning = primary["settings"]["path_planning"]
+        assert primary["settings"]["track"]["id"].startswith(
+            SYNTHETIC_DEMO_COURSE_ID
+        )
+        assert planning["source_course_id"] == SYNTHETIC_DEMO_COURSE_ID
+        assert planning["synthetic_course"] is True
+        assert planning["comparison_is_valid"] is True
+        assert planning["diagnostic_only"] is False
+        assert planning["selected_mode"] == "candidate"
+        assert planning["selected_offset_strength"] == 0.5
+        assert planning["processed_baseline_geometry_audit"][
+            "curvature_integrated_closure_gap_m"
+        ] < 0.01
+        assert replay_lap_record(primary_path).model_agreement
+        assert plan.baseline_track.length_m > comparison.candidate_track.length_m
+        app._show_path_comparison()
+        popup = next(child for child in root.winfo_children() if isinstance(child, tk.Toplevel))
+        popup_text = " ".join(
+            child.cget("text") for child in app._walk_widgets(popup)
+            if child.winfo_class() == "Label"
+        )
+        assert "Course: Synthetic loop · AI demo" in popup_text
+        assert "synthetic course demonstrates" in popup_text
+        assert "source x/y map and recorded curvature disagree" not in popup_text
+        app._select_course(COURSE_OPTIONS[0].label)
+        assert app.course_spec.course_id != SYNTHETIC_DEMO_COURSE_ID
+        assert "Course: Synthetic loop · AI demo" in " ".join(
+            child.cget("text") for child in app._walk_widgets(popup)
+            if child.winfo_class() == "Label"
+        )
+    finally:
+        root.destroy()
+
+
+def test_synthetic_centerline_run_records_selected_course(tmp_path: Path) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app._select_course(COURSE_OPTIONS[1].label)
+        assert app.driving_mode_var.get() == "Centerline (default)"
+        with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
+            app._calculate_single(
+                "prius_2026_le", "Prius synthetic centerline",
+                VehicleSetup(torque_request_fraction=0.8), 5.0, 0.8,
+            )
+        kind, payload, error = app.result_queue.get_nowait()
+        assert error is None, error
+        assert kind == "single"
+        assert payload[2].completed
+        record = RunRecord.load(tmp_path / f"{payload[3]}.json").to_dict()
+        assert record["settings"]["track"]["id"] == SYNTHETIC_DEMO_COURSE_ID
+        assert record["settings"].get("path_planning") is None
+        assert record["settings"]["solver"]["requested_maximum_cell_length_m"] == 5.0
+        geometry = record["settings"]["track"]["geometry"]
+        saved_track = SpatialTrack(
+            distance_m=tuple(geometry["distance_m"]),
+            x_m=tuple(geometry["x_m"]),
+            y_m=tuple(geometry["y_m"]),
+            curvature_per_m=tuple(geometry["curvature_per_m"]),
+            closed=geometry["closed"],
+        )
+        assert saved_track.cell_count == app.track.cell_count
+        assert saved_track.geometry_audit().curvature_integrated_closure_gap_m < 1e-7
+        app._show_comparison(
+            (("Car A", payload[2]), ("Car B", payload[2])),
+            5.0, 0.8, (payload[3], payload[3]),
+        )
+        popup = next(child for child in root.winfo_children() if isinstance(child, tk.Toplevel))
+        popup_text = " ".join(
+            child.cget("text") for child in app._walk_widgets(popup)
+            if child.winfo_class() == "Label"
+        )
+        assert "Course: Synthetic loop · AI demo" in popup_text
+        assert "synthetic course model comparisons" in popup_text
+        app._select_course(COURSE_OPTIONS[0].label)
+        assert "Course: Synthetic loop · AI demo" in " ".join(
+            child.cget("text") for child in app._walk_widgets(popup)
+            if child.winfo_class() == "Label"
         )
     finally:
         root.destroy()

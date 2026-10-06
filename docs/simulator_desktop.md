@@ -19,6 +19,17 @@ calculation runs in a worker thread so the window remains responsive.
 
 ## Inputs and outputs
 
+The **Course** menu starts at **Fused GNSS/IMU · default**, the shipped team
+endurance recording. **Synthetic loop · AI demo** selects a separate
+195.398224 m rounded rectangle made from two 40 m and two 20 m straights and
+four 12 m radius quarter-circle arcs, stored in at most 0.5 m source cells.
+Changing courses clears previous output boxes and Driver view replays so
+results from different tracks are not mistaken for a matched comparison.
+Course selection does not change the driving mode: **Centerline (default)**
+continues to run without the AI planner. The synthetic loop is a calculation
+example, not a surveyed Formula SAE course or a measured team track. Both
+course choices lack surveyed left/right boundaries.
+
 The profile menu includes the Prius benchmark and unchanged repository model.
 When the local ENME408 evidence package is present in Downloads, it also
 offers two separate TREV5 working scenarios: geometry and geometry with the
@@ -33,12 +44,19 @@ and speed limit. **Save current** creates another named local profile in
 The repository and source-backed profiles are read-only so source values and
 inherited model defaults remain distinguishable from edited assumptions.
 
-Driver request applies to every run; the solver cell-length box applies to
-standard centerline runs. AI mode builds its separate nominal 2 m geometric
-grid. Invalid or non-finite values are rejected before a run begins. The default solver cell
-is 1 m; 0.5 m uses the source course's full station resolution. Coarser cells
-run faster but can change the lap result because they smooth curvature over
-longer distances.
+Driver request applies to every run; **Max solver step** applies to standard
+centerline runs. AI mode builds its separate nominal 2 m geometric grid.
+Invalid or non-finite values are rejected before a run begins, and requests
+producing more than 5,000 actual cells are refused. For the synthetic course,
+the guard counts cells in each straight and arc separately. The default
+requested maximum is 1 m. The fused course is resampled at the requested
+maximum, which may average
+curvature across original cell boundaries and change lap time. The synthetic
+course keeps its exact generated straight/circular-arc cells (at most 0.5 m)
+for any request at least as large as its longest source cell. A finer request
+regenerates those analytic segments instead of averaging their curvature or
+linearly interpolating their x/y geometry. A coarser request therefore does
+not reduce the synthetic course's solver-cell count.
 
 The numeric outputs are lap time, peak speed, average speed, distance, net
 equivalent-pack energy, peak lateral acceleration in g, and lap entry/exit
@@ -83,9 +101,12 @@ driving.
 ## Optional AI racing line
 
 The **Driving path** menu defaults to **Centerline (default)**. This uses the
-existing recorded curvature and runs no path search. Choose **AI racing line
+selected course's original curvature and runs no path search. Choose **AI racing line
 (experimental)** to supply an *assumed* uniform half-width, vehicle width,
-and safety margin. The app has no measured boundaries and does not infer
+and safety margin. On the synthetic course, the boxes initially show an
+*assumed* ±3 m half-width, 1.8 m vehicle width, and 0.2 m safety margin;
+switching back restores the default recorded course's scenario inputs. The
+app has no measured boundaries and does not infer
 vehicle body width from the car profile. A deterministic, bounded planner
 proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
 torque request through a newly derived geometric centerline, the full-offset
@@ -98,9 +119,11 @@ match at the seam. Evaluating both strengths can catch an interior line that
 is faster than the full path in the modeled time calculation.
 
 Before a time can be compared, the app integrates each solver path's saved
-constant-curvature cells and samples **four positions per cell** against the
-declared usable corridor around the processed geometric baseline. Sampled
-clearance may exceed the usable corridor by no more than **1e-8 m**, and the
+constant-curvature cells and samples **four positions per modeled cell**, plus
+every source-corridor cell boundary and midpoint, against the declared usable
+corridor around the processed geometric baseline. A shared boundary uses the
+narrower adjacent width, including where the first and last cells meet.
+Sampled clearance may exceed the usable corridor by no more than **1e-8 m**, and the
 integrated end position must close within **0.01 m**. The check is deliberately
 conservative and does not certify the continuous swept body or real cone
 clearance. If the processed baseline fails, all completed times in that run
@@ -115,12 +138,16 @@ selects the best tested candidate only if its gain is strictly greater than
 the eligible geometric baseline selected. The margin is a provisional
 selection heuristic, not a proven numerical error bound. Eligible comparisons
 show their signed difference and allow **Compare path numbers** for time,
-distance, speed, equivalent energy, and lateral acceleration. A failed run
+distance, speed, equivalent energy, and lateral acceleration. That window
+names the selected course, as does the two-car comparison window, so an open
+comparison retains its source label after the main course selection changes.
+A failed run
 returned by the solver is saved for diagnosis.
 
-This AI mode rebuilds arc length and curvature from the x/y map. The ordinary
-centerline mode uses the separate recorded curvature channel. On the packaged
-course those channels disagree materially: 1,441 map chords exceed their
+This AI mode rebuilds arc length and curvature from the selected course's x/y
+geometry. On the default fused course, ordinary centerline mode uses its
+separate recorded curvature channel. On that default course those channels
+disagree materially: 1,441 map chords exceed their
 station intervals, individual prescribed arc-chord lengths differ from plotted
 map-chord lengths by up to **0.235787 m**, stored curvature sums to **3.657937 rad** of
 turn versus **6.283185 rad** of map winding, and constant-curvature integration
@@ -133,11 +160,27 @@ not steer a closed-loop car, and the vehicle model has simplified tire and
 controller physics. See [AI racer design and checks](ai_racer_design.md) for
 the objective, validation checks, and local benchmark results.
 
-For the shipped assumed ±2 m Prius case, baseline/full/half laps complete in
+For the default fused course's assumed ±2 m Prius case with 1.78308 m car
+width and 0.3 m margin, baseline/full/half laps complete in
 **87.618366/87.377773/87.403816 s**, but all three are starred diagnostics:
 sampled usable-corridor excess is **0.095506/0.908195/0.501981 m** and the
 position seam misses by roughly **0.75–0.77 m**. No AI path is selected from
 those runs. This does not change the ordinary centerline calculation.
+
+For a controlled AI demonstration, choose **Synthetic loop · AI demo**, the
+Prius benchmark, torque request **0.8**, and its initial assumed ±3 m
+half-width, 1.8 m vehicle width, and 0.2 m margin. The current speed-periodic
+model comparison produced an eligible **16.8855728415 s** geometric baseline
+and **15.6242848232 s** half-offset candidate. Both sampled modeled-path
+audits passed; the full-offset trial failed the sampled corridor by
+**0.040635725 m**, so the half-offset candidate was selected on a
+**1.2612880183 s** modeled lead. These are synthetic model numbers, not surveyed-course or team-car
+performance. An on-demand fixed-path `SpatialTrack.refine(1.0)` probe gave
+**16.8820645646 s** baseline and **15.6247044764 s** candidate, both
+completed and speed-closed. Their **1.2573600882 s** gap is close to the
+original-grid gap, but the refined candidate clearance was not re-audited.
+This is a timing-sensitivity probe, not a new eligible comparison or proof of
+grid convergence.
 
 The primary AI run record includes every tested offset strength and its
 reported eligible or diagnostic result, audit status, and exact saved solver
@@ -145,8 +188,12 @@ geometry and telemetry, including the explicit starting speed of its final
 pass. When a second physics trial returned a run, the app also saves one
 linked counterpart with its own geometry and telemetry; the primary record
 names its ID and role. A third trial may have only its summary saved. For an
-audit-failed shipped course, the primary record is flagged diagnostic, and
-neither record represents a selected winner. These records do not provide a
+audit-failed default course, the primary record is flagged diagnostic, and
+neither record represents a selected winner. A candidate-only display after
+the baseline fails is also marked `diagnostic_only`, even if that candidate
+itself completed. Each record identifies the selected source course by ID;
+AI path-planning metadata additionally saves the source label, description,
+synthetic flag, and exact source-geometry hash. These records do not provide a
 full ghost/session replay.
 
 The Timed sessions tab is explicitly a design placeholder for a future
@@ -156,9 +203,9 @@ exists as described below, but it is not a timed session or a tab workflow.
 The tab's Start button is disabled.
 
 **Run comparison** simulates two selected saved/built-in profiles with the
-same standard centerline course, solver spacing, and driver request. The
-comparison window shows
-both values and B-minus-A differences for each numeric output. The speed plot
+same selected centerline course, solver spacing, and driver request. The
+comparison window shows the selected course, both values, and B-minus-A
+differences for each numeric output. The speed plot
 uses solid and dashed black/white lines. Unsaved Prius edits are excluded from
 comparison until saved as a named profile. Differences show model sensitivity
 to selected inputs, not validated real-world performance.
@@ -257,7 +304,8 @@ kinematics. The path solver first finds tire-limited corner speeds, then
 performs cyclic backward braking passes. The endurance controller reduces
 drive torque or brakes to stay below those path-speed ceilings.
 
-The default solver grid resamples curvature by a distance-weighted mean. This
+The fused course's default solver grid resamples curvature by a
+distance-weighted mean. This
 preserves integrated signed curvature over the lap; x/y coordinates are
 interpolated at the new cell boundaries. A new global grid can average across
 old curvature discontinuities, changing the squared-curvature demand used by

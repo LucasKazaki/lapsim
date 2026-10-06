@@ -20,14 +20,16 @@ from lapsim.experiments import LapRunSettings, capture_lap_run, default_run_dire
 from lapsim.profiles import build_vehicle, browse_records, list_profiles
 
 from .comparison import summarize_lap
+from .course_catalog import (
+    COURSE_OPTIONS, DEFAULT_COURSE_ID, load_course, solver_cell_count_for_course,
+    solver_track_for_course,
+)
 from .driver_view import DriverPlayback
 from .garage import CAR_INPUT_KEYS, ProfileStore, SavedCarProfile
 from .presets import VehicleSetup, make_prius_benchmark
 from .simulation import (
     endurance_run_config,
-    load_team_endurance_track,
     path_solver_settings,
-    resample_track,
     run_one_lap,
 )
 
@@ -106,7 +108,9 @@ class LapSimDesktop:
         self.root.geometry("1380x900")
         self.root.minsize(1080, 720)
 
-        self.track = load_team_endurance_track()
+        self.course_spec = COURSE_OPTIONS[0]
+        self.course_var = tk.StringVar(value=self.course_spec.label)
+        self.track = load_course(self.course_spec.course_id)
         self.course_geometry_audit = self.track.geometry_audit()
         self.result_queue: queue.Queue[tuple[str, Any, BaseException | None]] = (
             queue.Queue()
@@ -263,18 +267,15 @@ class LapSimDesktop:
             )
         self._build_workspace_tabs(right)
 
-        footer = tk.Label(
+        self.footer_label = tk.Label(
             self.root,
-            text=(
-                "Course: team endurance recording · profiles are modeling scenarios · "
-                "lap outputs are estimates"
-            ),
+            text=self._course_footer_text(),
             anchor="w",
             padx=10,
             pady=5,
             font=("Segoe UI", 9),
         )
-        footer.pack(fill="x")
+        self.footer_label.pack(fill="x")
 
     def _build_profiles(self, parent: tk.Widget) -> None:
         box = tk.LabelFrame(
@@ -338,7 +339,7 @@ class LapSimDesktop:
             ("Drag area CdA", "drag_area_m2", "m²"),
             ("Speed limit", "top_speed_kph", "km/h"),
             ("Driver request", "torque_request_percent", "%"),
-            ("Solver step", "solver_step_m", "m"),
+            ("Max solver step", "solver_step_m", "m"),
         )
         self.input_entries.clear()
         for row, (label, key, unit) in enumerate(rows, start=2):
@@ -389,19 +390,26 @@ class LapSimDesktop:
             padx=8, pady=8, bd=1, relief="solid",
         )
         path_box.pack(fill="x", pady=(0, 8), before=box)
-        tk.Label(path_box, text="Mode", anchor="w").grid(row=0, column=0, sticky="w")
+        tk.Label(path_box, text="Course", anchor="w").grid(row=0, column=0, sticky="w")
+        self.course_menu = tk.OptionMenu(
+            path_box, self.course_var, *(option.label for option in COURSE_OPTIONS),
+            command=self._select_course,
+        )
+        self.course_menu.configure(relief="raised", bd=1, anchor="w", font=FONT)
+        self.course_menu.grid(row=0, column=1, columnspan=2, sticky="ew", pady=(0, 5))
+        tk.Label(path_box, text="Mode", anchor="w").grid(row=1, column=0, sticky="w")
         self.driving_mode_menu = tk.OptionMenu(
             path_box, self.driving_mode_var,
             "Centerline (default)", "AI racing line (experimental)",
             command=lambda _value: self._on_driving_mode_change(),
         )
         self.driving_mode_menu.configure(relief="raised", bd=1, anchor="w", font=FONT)
-        self.driving_mode_menu.grid(row=0, column=1, sticky="ew", pady=(0, 5))
+        self.driving_mode_menu.grid(row=1, column=1, columnspan=2, sticky="ew", pady=(0, 5))
         for row, (label, variable) in enumerate((
             ("Assumed half-width", self.ai_half_width_var),
             ("Vehicle width", self.ai_vehicle_width_var),
             ("Safety margin", self.ai_margin_var),
-        ), start=1):
+        ), start=2):
             tk.Label(path_box, text=label, anchor="w").grid(row=row, column=0, sticky="w", pady=2)
             entry = tk.Entry(
                 path_box, textvariable=variable, width=11, justify="right",
@@ -419,9 +427,10 @@ class LapSimDesktop:
                   "speed-seam passes per path. "
                   "Its rebuilt x/y course has different lap times from the "
                   "default source-curvature course. Solver step above applies "
-                  "to centerline mode."),
+                  "to centerline mode. Synthetic straights/arcs retain their "
+                  "exact geometry at 0.5 m or finer cells."),
             justify="left", anchor="w", wraplength=350, font=("Segoe UI", 9),
-        ).grid(row=4, column=0, columnspan=3, sticky="ew", pady=(6, 0))
+        ).grid(row=5, column=0, columnspan=3, sticky="ew", pady=(6, 0))
         self._on_driving_mode_change()
 
     def _build_outputs(self, parent: tk.Widget) -> None:
@@ -596,13 +605,78 @@ class LapSimDesktop:
     def _open_model_notes(self) -> None:
         messagebox.showinfo(
             "Model scope",
-            "The course is a historical team endurance recording. The Prius "
+            f"Selected course: {self.course_spec.description} The Prius "
             "uses an idealized front-drive power source and assumed tire, drag, "
             "and battery values. TREV working profiles contain partial source "
             "inputs; unspecified parameters inherit the repository model. "
             "Lap-time differences are scenario sensitivity, not measured performance.",
             parent=self.root,
         )
+
+    def _course_footer_text(self) -> str:
+        return (
+            f"Course: {self.course_spec.label} · profiles are modeling scenarios · "
+            "lap outputs are estimates"
+        )
+
+    def _course_notice_text(self) -> str:
+        warning = _course_geometry_warning(self.course_geometry_audit)
+        return self.course_spec.description + (f" {warning}" if warning else "")
+
+    def _select_course(self, label: str) -> None:
+        """Switch the source course and clear results from the old course."""
+
+        if self.run_in_progress:
+            self.course_var.set(self.course_spec.label)
+            return
+        selected = next(
+            (option for option in COURSE_OPTIONS if option.label == label), None
+        )
+        if selected is None:
+            self.course_var.set(self.course_spec.label)
+            raise ValueError(f"Unknown course choice: {label!r}")
+        if selected.course_id == self.course_spec.course_id:
+            return
+        track = load_course(selected.course_id)
+        self.course_spec = selected
+        self.course_var.set(selected.label)
+        self.track = track
+        self.course_geometry_audit = track.geometry_audit()
+        self.ai_half_width_var.set(f"{selected.default_ai_half_width_m:g}")
+        self.ai_vehicle_width_var.set(f"{selected.default_ai_vehicle_width_m:g}")
+        self.ai_margin_var.set(f"{selected.default_ai_margin_m:g}")
+        self._pause_driver_playback()
+        self.driver_playback = None
+        self._driver_live_mode = False
+        self._driver_stream_active = False
+        self._driver_playback_time_s = 0.0
+        self.driver_progress_var.set(0.0)
+        self.driver_progress.configure(state="disabled")
+        if self.driver_play_button is not None:
+            self.driver_play_button.configure(state="disabled")
+        self.driver_run_label.set("Run a lap to load playback")
+        for value in self.driver_values.values():
+            value.set("—")
+        self._set_driver_replay_options({}, selected="—")
+        self._path_comparison = None
+        self._selected_path_track = None
+        self._last_result = None
+        self._comparison_results = None
+        self._pan_origin = None
+        for value in self.output_values.values():
+            value.configure(text="—")
+        for value in self.ai_output_values.values():
+            value.configure(text="—")
+        self.ai_result_text.set(
+            "Run the optional AI mode to compare paths on this course."
+        )
+        if self.ai_compare_button is not None:
+            self.ai_compare_button.configure(state="disabled")
+        self.course_warning_label.configure(text=self._course_notice_text())
+        self.footer_label.configure(text=self._course_footer_text())
+        self.status_text.set(f"Selected {selected.label}")
+        self._switch_tab("Analysis")
+        self._draw_plots()
 
     def _refresh_profile_menus(self) -> None:
         self.saved_profiles = {
@@ -867,13 +941,12 @@ class LapSimDesktop:
             anchor="e",
         ).pack(side="right", padx=4)
 
-        geometry_warning = _course_geometry_warning(self.course_geometry_audit)
-        if geometry_warning is not None:
-            tk.Label(
-                plot_box,
-                text=geometry_warning,
-                anchor="w", justify="left", wraplength=780, font=("Segoe UI", 9),
-            ).grid(row=1, column=0, sticky="ew", pady=(0, 5))
+        self.course_warning_label = tk.Label(
+            plot_box,
+            text=self._course_notice_text(),
+            anchor="w", justify="left", wraplength=780, font=("Segoe UI", 9),
+        )
+        self.course_warning_label.grid(row=1, column=0, sticky="ew", pady=(0, 5))
 
         self.figure = Figure(figsize=(9.0, 6.5), dpi=100, constrained_layout=True)
         self.course_ax = self.figure.add_subplot(2, 1, 1)
@@ -1341,7 +1414,7 @@ class LapSimDesktop:
             selected_y = np.asarray(self._selected_path_track.y_m, dtype=float)
             self.course_ax.plot(
                 x, y, color=foreground, linewidth=1.0, linestyle="--",
-                label="Source map",
+                label="Reference course",
             )
             self.course_ax.plot(
                 selected_x, selected_y, color=foreground, linewidth=1.7,
@@ -1361,9 +1434,10 @@ class LapSimDesktop:
             linestyle="none",
         )
         self.course_ax.set_title(
-            (f"Top-down source map · {self.track.length_m:.0f} m"
+            (f"Top-down {self.course_spec.label} · {self.track.length_m:.0f} m"
              if self._selected_path_track is None else
-             f"Top-down model path · {self._selected_path_track.length_m:.0f} m"),
+             f"Top-down model path ({self.course_spec.label}) · "
+             f"{self._selected_path_track.length_m:.0f} m"),
             color=foreground,
             loc="left",
             fontsize=11,
@@ -1513,6 +1587,10 @@ class LapSimDesktop:
             raise ValueError("Driver request must be between 0 and 100%.")
         if not np.isfinite(solver_step_m) or not 0.0 < solver_step_m <= self.track.length_m:
             raise ValueError("Solver step must be finite and within the course length.")
+        if solver_cell_count_for_course(
+            self.course_spec.course_id, self.track, solver_step_m,
+        ) > 5000:
+            raise ValueError("Requested solver grid exceeds the 5000-cell compute cap.")
         return torque_fraction, solver_step_m
 
     def _read_run_inputs(self) -> tuple[VehicleSetup | None, float, float]:
@@ -1562,6 +1640,7 @@ class LapSimDesktop:
         self.compare_b_menu.configure(state=state)
         self.save_profile_button.configure(state=state)
         self.delete_profile_button.configure(state=state)
+        self.course_menu.configure(state=state)
         self.driving_mode_menu.configure(state=state)
         editable = (
             self.profile_display_to_id.get(self.profile_var.get()) == "prius_2026_le"
@@ -1662,7 +1741,7 @@ class LapSimDesktop:
         self, *, result: Any, vehicle: Any, manifest: Any,
         solver_track: Any, profile_id: str, profile_name: str,
         setup: VehicleSetup | None, step_m: float, torque_fraction: float,
-        track_id: str = "team_endurance_fused_gnss_imu",
+        track_id: str | None = None,
         path_planning: dict[str, Any] | None = None,
         starting_speed_mps: float | None = None,
     ) -> str:
@@ -1670,7 +1749,7 @@ class LapSimDesktop:
 
         settings = LapRunSettings.from_track(
             solver_track,
-            track_id=track_id,
+            track_id=track_id or self.course_spec.course_id,
             solver_step_m=step_m,
             solver_settings=path_solver_settings(vehicle),
             torque_request_fraction=torque_fraction,
@@ -1725,7 +1804,7 @@ class LapSimDesktop:
         self.run_started_at = time.perf_counter()
         self.status_text.set(
             f"Calculating {profile_name}"
-            + (" with experimental AI path…" if ai_assumptions else f" at {step_m:g} m spacing…")
+            + (" with experimental AI path…" if ai_assumptions else f" at {step_m:g} m maximum step…")
         )
         worker = threading.Thread(
             target=self._calculate_ai_single if ai_assumptions else self._calculate_single,
@@ -1759,7 +1838,7 @@ class LapSimDesktop:
         self._begin_live_calculation("Car comparison")
         self.run_started_at = time.perf_counter()
         self.status_text.set(
-            f"Comparing two cars on the same course at {step_m:g} m spacing…"
+            f"Comparing two cars on the same course at {step_m:g} m maximum step…"
         )
         threading.Thread(
             target=self._calculate_comparison,
@@ -1776,7 +1855,9 @@ class LapSimDesktop:
         torque_fraction: float,
     ) -> None:
         try:
-            solver_track = resample_track(self.track, maximum_cell_length_m=step_m)
+            solver_track = solver_track_for_course(
+                self.course_spec.course_id, self.track, step_m,
+            )
             vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
             last_progress_post_s = float("-inf")
 
@@ -1837,7 +1918,11 @@ class LapSimDesktop:
                 right_width_m=half_width_m,
                 vehicle_width_m=vehicle_width_m,
                 safety_margin_m=safety_margin_m,
-                source="user-assumed uniform half-width; no surveyed boundaries",
+                source=(
+                    "user-assumed synthetic demo half-width; no surveyed boundaries"
+                    if self.course_spec.synthetic else
+                    "user-assumed uniform half-width; no surveyed boundaries"
+                ),
             )
             planner = RacingLinePlanner()
             plan = planner.plan(self.track, corridor)
@@ -1916,15 +2001,26 @@ class LapSimDesktop:
                 json.dumps(source_geometry, sort_keys=True, separators=(",", ":"),
                            allow_nan=False).encode("utf-8")
             ).hexdigest()
+            ai_track_id = (
+                "team_endurance_xy_derived_assumed_corridor"
+                if self.course_spec.course_id == DEFAULT_COURSE_ID else
+                f"{self.course_spec.course_id}_xy_derived_assumed_corridor"
+            )
             path_planning = {
                 "mode": "experimental_racing_line",
                 "algorithm": "periodic_cubic_minimum_curvature_slsqp_v4_sampled_arc_clearance",
                 "record_role": "selected_result",
+                "source_course_id": self.course_spec.course_id,
+                "source_course_label": self.course_spec.label,
+                "source_course_description": self.course_spec.description,
+                "synthetic_course": self.course_spec.synthetic,
                 "lap_start_policy": "speed_only_periodic_fixed_initial_vehicle_state",
                 "speed_seam_tolerance_mps": 0.005,
                 "maximum_lap_passes_per_trial": 2,
                 "selected_mode": selected_mode,
-                "diagnostic_only": selected_mode == "no_comparable_path",
+                "diagnostic_only": selected_mode in (
+                    "no_comparable_path", "candidate_only_baseline_failed"
+                ),
                 "rank_status": comparison.rank_status,
                 "selection_margin_s": comparison.selection_margin_s,
                 "candidate_offset_strength": comparison.candidate_strength,
@@ -2033,11 +2129,15 @@ class LapSimDesktop:
                     profile_name=profile_name, setup=setup,
                     step_m=max(counterpart_track.cell_length_m),
                     torque_fraction=torque_fraction,
-                    track_id="team_endurance_xy_derived_assumed_corridor",
+                    track_id=ai_track_id,
                     path_planning={
                         "mode": "experimental_racing_line",
                         "algorithm": path_planning["algorithm"],
                         "record_role": "comparison_counterpart",
+                        "source_course_id": self.course_spec.course_id,
+                        "source_course_label": self.course_spec.label,
+                        "source_course_description": self.course_spec.description,
+                        "synthetic_course": self.course_spec.synthetic,
                         "comparison_role": counterpart_role,
                         "offset_strength": counterpart_strength,
                         "lap_start_policy": path_planning["lap_start_policy"],
@@ -2072,7 +2172,7 @@ class LapSimDesktop:
                 profile_name=profile_name, setup=setup,
                 step_m=max(selected_track.cell_length_m),
                 torque_fraction=torque_fraction,
-                track_id="team_endurance_xy_derived_assumed_corridor",
+                track_id=ai_track_id,
                 path_planning=path_planning,
                 starting_speed_mps=selected_run.starting_speed_mps,
             )
@@ -2092,7 +2192,9 @@ class LapSimDesktop:
         torque_fraction: float,
     ) -> None:
         try:
-            solver_track = resample_track(self.track, maximum_cell_length_m=step_m)
+            solver_track = solver_track_for_course(
+                self.course_spec.course_id, self.track, step_m,
+            )
             outcomes = []
             run_ids = []
             for profile_id, name, setup in plans:
@@ -2171,7 +2273,7 @@ class LapSimDesktop:
                 self._activate_driver_playback(profile_name, result)
                 self.status_text.set(
                     f"{profile_name} completed in {elapsed_s:.1f} s · "
-                    f"{step_m:g} m spacing · saved run {run_id[:12]}"
+                    f"{step_m:g} m requested maximum step · saved run {run_id[:12]}"
                 )
             else:
                 self.status_text.set(
@@ -2206,7 +2308,11 @@ class LapSimDesktop:
 
             values = {
                 "baseline": time_box(baseline_time, baseline_diagnostic_time),
-                "candidate": time_box(candidate_time, candidate_diagnostic_time),
+                "candidate": time_box(
+                    candidate_time if baseline_time is not None else None,
+                    candidate_diagnostic_time if baseline_time is not None
+                    else candidate_time or candidate_diagnostic_time,
+                ),
                 "difference": (
                     f"{candidate_time - baseline_time:+.3f}"
                     if baseline_time is not None and candidate_time is not None else "—"
@@ -2295,14 +2401,19 @@ class LapSimDesktop:
                 if baseline_time is not None and candidate_time is not None
                 else "Diagnostic numbers do not establish a path ranking."
             )
+            source_curvature_note = (
+                " The default lap uses different source curvature."
+                if not self.course_spec.synthetic else ""
+            )
             self.ai_result_text.set(
-                f"{selection} Assumed ±{half_width_m:g} m corridor, "
+                ("SYNTHETIC AI DEMO. " if self.course_spec.synthetic else "")
+                + f"{selection} Assumed ±{half_width_m:g} m corridor, "
                 f"{vehicle_width_m:g} m car, {margin_m:g} m margin. "
                 f"Proposed max offset {plan.max_abs_offset_m:.2f} m; "
                 f"{len(comparison.trials)} candidate trial(s). "
                 f"source map length differs by {plan.source_vs_processed_length_fraction:+.1%}."
-                f"{audit_text} {comparison_note} The default lap uses different "
-                "source curvature. A trial receives a comparison time only when "
+                f"{audit_text} {comparison_note}{source_curvature_note} "
+                "A trial receives a comparison time only when "
                 "its rolling-start speed closes within 0.005 m/s and its "
                 "sampled modeled path passes the declared clearance and closure "
                 "checks. The sample check is not a continuous collision proof. "
@@ -2310,7 +2421,9 @@ class LapSimDesktop:
                 "need not be periodic."
             )
             if result.completed:
-                eligible_selection = selected_mode != "no_comparable_path"
+                eligible_selection = selected_mode not in (
+                    "no_comparable_path", "candidate_only_baseline_failed"
+                )
                 runs = []
                 if comparison.baseline_time_s is not None and comparison.baseline_run is not None:
                     runs.append(("Geometric centerline", comparison.baseline_run))
@@ -2439,6 +2552,8 @@ class LapSimDesktop:
         candidate = summarize_lap(
             comparison.candidate_run, comparison.candidate_track.length_m
         )
+        course_label = self.course_spec.label
+        synthetic_course = self.course_spec.synthetic
         window = tk.Toplevel(self.root)
         window.title("LapSim path comparison")
         window.geometry("800x475")
@@ -2449,7 +2564,8 @@ class LapSimDesktop:
         )
         tk.Label(
             body,
-            text=(f"One car, one geometric source, assumed ±{assumptions[0]:g} m "
+            text=(f"Course: {course_label}. One car, one geometric source, "
+                  f"assumed ±{assumptions[0]:g} m "
                   f"corridor. Best tested AI path uses {comparison.candidate_strength:g}× "
                   "proposed offset. Candidate − centerline; negative lap-time Δ is faster."),
             anchor="w", justify="left", wraplength=755,
@@ -2501,11 +2617,18 @@ class LapSimDesktop:
             body.grid_columnconfigure(column, weight=1)
         tk.Label(
             body,
-            text=("Widths and vehicle envelope are assumptions. The source x/y map "
-                  "and recorded curvature disagree; these times are comparable model "
-                  "scenarios, not validated Terps lap predictions. Seam speed Δ is "
-                  "finish minus start; the timed AI trials close it within "
-                  "0.005 m/s at a fixed initial car and pack state."),
+            text=(
+                "Widths and vehicle envelope are assumptions. This synthetic "
+                "course demonstrates the model and optimizer; it is not a "
+                "surveyed Formula SAE course or a validated Terps prediction. "
+                if synthetic_course else
+                "Widths and vehicle envelope are assumptions. The source x/y "
+                "map and recorded curvature disagree; these are model "
+                "scenarios, not validated Terps lap predictions. "
+            ) + (
+                "Seam speed Δ is finish minus start; the timed AI trials "
+                "close it within 0.005 m/s at a fixed initial car and pack state."
+            ),
             anchor="w", justify="left", wraplength=755,
         ).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(10, 0))
         self._apply_theme()
@@ -2528,7 +2651,7 @@ class LapSimDesktop:
         )
         tk.Label(
             box,
-            text=f"Solver step: {step_m:g} m · driver request: "
+            text=f"Course: {self.course_spec.label} · Requested max solver step: {step_m:g} m · driver request: "
                  f"{torque_fraction * 100:g}% · "
                  "Δ = B − A; positive lap-time Δ is slower",
             anchor="w", justify="left", wraplength=720,
@@ -2584,7 +2707,9 @@ class LapSimDesktop:
             box,
             text="*Equivalent pack-model energy. Seam speed Δ = finish minus start; "
                  "a nonzero value means a single initial-condition lap, not "
-                 "a periodic steady-state lap. These are model comparisons.",
+                 "a periodic steady-state lap. These are "
+                 + ("synthetic course model comparisons." if self.course_spec.synthetic
+                    else "model comparisons on the selected source course."),
             anchor="w", justify="left", wraplength=720,
         ).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(10, 0))
         tk.Label(

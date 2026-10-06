@@ -223,6 +223,10 @@ def _corridor_bounds_at(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Cell widths at stations; shared cell boundaries use the narrower side."""
 
+    # The lap endpoint is the same physical seam as station zero. Without
+    # wrapping it, searchsorted clips L into the last cell and misses the
+    # first cell's potentially narrower boundary at the final audit sample.
+    station_m = np.mod(station_m, source_station_m[-1])
     cell = np.minimum(
         np.searchsorted(source_station_m, station_m, side="right") - 1,
         len(corridor.left_width_m) - 1,
@@ -675,8 +679,9 @@ def _audit_curvature_path(
     The planner and model use the polygon chord as each spatial cell length,
     but the model travels a circular arc at that length and curvature. Thus
     following every prescribed curvature does not generally visit the polygon
-    vertices. Sample each modeled arc at quarter-cell intervals in the same
-    processed normal-coordinate frame used to bound the proposed spline.
+    vertices. Sample each modeled arc at quarter-cell intervals, and also at
+    each source-corridor boundary and midpoint, in the same processed
+    normal-coordinate frame used to bound the proposed spline.
     This deliberately does not certify the continuous swept vehicle envelope.
     """
 
@@ -734,8 +739,16 @@ def _audit_curvature_path(
     entry_x = x[0] + np.concatenate(((0.0,), np.cumsum(exit_dx)[:-1]))
     entry_y = y[0] + np.concatenate(((0.0,), np.cumsum(exit_dy)[:-1]))
     fractions = np.asarray((0.25, 0.5, 0.75, 1.0))
-    cell = np.repeat(np.arange(count), len(fractions))
-    fraction = np.tile(fractions, count)
+    source_stations = np.asarray(source_station_m, dtype=float)
+    planner_station = np.unique(np.concatenate((
+        (np.repeat(np.arange(count), len(fractions))
+         + np.tile(fractions, count)) * source_stations[-1] / count,
+        source_stations,
+        0.5 * (source_stations[:-1] + source_stations[1:]),
+    )))
+    planner_cell_position = planner_station * count / source_stations[-1]
+    cell = np.minimum(np.floor(planner_cell_position).astype(int), count - 1)
+    fraction = planner_cell_position - cell
     half_turn = 0.5 * cell_turn[cell] * fraction
     magnitude = length[cell] * fraction * np.sinc(half_turn / pi)
     driven_x = entry_x[cell] + magnitude * np.cos(entry_heading[cell] + half_turn)
@@ -763,11 +776,10 @@ def _audit_curvature_path(
         (driven_x - reference_sample_x) * sample_normal_x
         + (driven_y - reference_sample_y) * sample_normal_y
     ) / normal_length
-    planner_station = (cell + fraction) * source_station_m[-1] / count
     half_vehicle_plus_margin = 0.5 * corridor.vehicle_width_m + corridor.safety_margin_m
     lower, upper = _corridor_bounds_at(
         planner_station,
-        np.asarray(source_station_m),
+        source_stations,
         corridor,
         half_vehicle_plus_margin,
     )
