@@ -2177,8 +2177,8 @@ class LapSimDesktop:
             )
             path_planning = {
                 "mode": "experimental_racing_line",
-                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v5_adaptive_strength",
-                "fourth_strength_policy": "eligible_quadratic_grid_v1_fallback_0.75",
+                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v6_clearance_probe",
+                "fourth_strength_policy": "eligible_quadratic_or_clearance_probe_v2_fallback_0.75",
                 "record_role": "selected_result",
                 "source_course_id": self.course_spec.course_id,
                 "source_course_label": self.course_spec.label,

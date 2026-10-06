@@ -7,15 +7,24 @@ white, with a dark-mode switch that reverses those colors.
 
 ## Launch
 
-From the repository folder, double-click `launch_lapsim.cmd`, or run:
+From a fresh Windows checkout, install **64-bit Python 3.11 or newer** with
+Tkinter, then double-click `setup_lapsim.cmd`. It creates `.venv`, installs
+LapSim in editable mode, and checks Python, Tk, desktop imports, and the default
+course. Then double-click `launch_lapsim.cmd`. From PowerShell, the same steps
+are:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install -e .
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup_lapsim.ps1
 .venv\Scripts\python.exe -m lapsim.ui
 ```
 
-In VS Code, select **LapSim desktop app** from the Run and Debug menu. The
-calculation runs in a worker thread so the window remains responsive.
+The launcher checks the setup before opening a console-free window. If a later
+startup error occurs, it shows a message and writes details to
+`%LOCALAPPDATA%\LapSim\logs\desktop_startup.log`. In VS Code, run setup first,
+then select **LapSim desktop app** from Run and Debug; the checked-in launch
+configuration uses this checkout's `.venv`. The source checkout must remain
+present because the default course is stored in its `analysis/data` folder.
+The calculation runs in a worker thread so the window remains responsive.
 
 ## Inputs and outputs
 
@@ -146,7 +155,10 @@ half-offset candidates. If all three paths have eligible audits and times,
 and half beats both endpoints by more than **0.05 s**, a convex quadratic
 through their times estimates an interior best strength. The fourth path uses
 the nearest safeguarded choice from **0.25, 0.375, 0.625, 0.75, 0.875**;
-otherwise it falls back to **0.75**. This is a bounded probe for the selected
+if full offset fails its sampled path audit while eligible half offset clearly
+beats the baseline, a short geometry-only screen instead tries stronger
+offsets and requires at least **0.02 m** of extra sampled clearance beyond the
+entered vehicle width and margin. Other cases fall back to **0.75**. This is a bounded probe for the selected
 car, not a learned or closed-loop controller. For each path it makes one dry
 seam-speed probe and one final recorded lap, starting each from the same fresh
 initial car and pack state. The final pass starts at the probe's exit speed;
@@ -211,26 +223,24 @@ For a controlled AI demonstration, choose **Synthetic loop · AI demo**, the
 Prius benchmark, torque request **0.8**, and its initial assumed ±3 m
 half-width, 1.8 m vehicle width, and 0.2 m margin. The current speed-periodic
 model comparison produced an eligible **16.8855728415 s** geometric baseline,
-**15.6242848232 s** half-offset, and **15.0077244060 s** three-quarter-offset
+**15.6242848232 s** half-offset, and **14.5566114677 s** 0.95-offset
 candidate. Those three sampled modeled-path audits passed; the full-offset
 trial completed in **14.4579210447 s** but failed sampled clearance by
-**0.0406357247 m**. The three-quarter path was selected on a
-**1.8778484355 s** modeled lead with **191.104159 m** path length. The
-failed full-offset audit made the fourth strength fall back to **0.75**. The
-comparison took about **2.48 s** on this machine. These are synthetic model
+**0.0406357247 m**. The 0.95 path passed with **0.053411 m** of additional
+sampled clearance and was selected on a **2.3289613738 s** modeled lead. These are synthetic model
 numbers, not surveyed-course or team-car performance. An on-demand fixed-path
 `SpatialTrack.refine(1.0)` probe gave **16.882064565 s** baseline,
-**15.624704476 s** half offset, and **15.000468902 s** three-quarter offset;
-all completed and closed speed. The three-quarter refined timing lead was
-about **1.881596 s**, but refined path clearance was not re-audited.
+**15.000468902 s** old 0.75 offset, and **14.551839123 s** selected 0.95
+offset; all completed and closed speed. The 0.95 line retained about
+**0.449 s** over the old fallback, but refined path clearance was not re-audited.
 This is a timing-sensitivity probe, not a new eligible comparison or proof of
 grid convergence.
 
 The primary AI run record includes every tested offset strength and its
 reported eligible or diagnostic result and audit status. It stores its own
 exact solver geometry and telemetry, including the explicit starting speed of
-its final pass. Its `settings.path_planning.algorithm` ends in `v5_adaptive_strength`;
-`fourth_strength_policy` names the bounded quadratic grid and 0.75 fallback.
+its final pass. Its `settings.path_planning.algorithm` ends in `v6_clearance_probe`;
+`fourth_strength_policy` names the bounded quadratic, clearance screen, and 0.75 fallback.
 Read `candidate_trials[].offset_strength`, sampled audit, and eligible versus
 diagnostic time for the actual fourth probe; its position in the trial list
 does not imply a fixed 0.75 strength or an eligible result. Every completed

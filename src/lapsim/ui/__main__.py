@@ -4,7 +4,13 @@ import os
 
 # The lap solver uses scalar numerical operations; extra BLAS worker threads
 # add memory pressure without helping the desktop calculation.
-os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+
+from ._tk_runtime import configure_tk_libraries
+
+configure_tk_libraries()
 
 from .app import main
 

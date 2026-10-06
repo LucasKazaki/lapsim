@@ -7,10 +7,11 @@
       "request": "launch",
       "module": "lapsim.ui",
       "cwd": "${workspaceFolder}",
-      "envFile": "${workspaceFolder}/.env",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "env": {
         "OPENBLAS_NUM_THREADS": "1",
-        "OMP_NUM_THREADS": "1"
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
       },
       "console": "integratedTerminal",
       "justMyCode": true

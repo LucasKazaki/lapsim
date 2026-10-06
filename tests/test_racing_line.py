@@ -24,7 +24,7 @@ from lapsim.optimization.racing_line import (
 )
 from lapsim.profiles import build_vehicle, list_profiles
 from lapsim.ui.presets import VehicleSetup, make_prius_benchmark
-from lapsim.ui.simulation import load_team_endurance_track
+from lapsim.ui.simulation import load_team_endurance_track, run_speed_periodic_lap
 
 
 def _rounded_rectangle() -> SpatialTrack:
@@ -297,7 +297,7 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
     assert comparison.candidate_time_s is not None
     assert comparison.candidate_time_s < comparison.baseline_time_s
     assert comparison.selected_mode == "candidate"
-    assert comparison.candidate_strength == 0.75
+    assert comparison.candidate_strength == 0.95
     assert comparison.selected_track is comparison.candidate_track
     assert comparison.selected_run is comparison.candidate_run
     assert comparison.compute_time_s > 0.0
@@ -312,10 +312,11 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
     assert comparison.trials[1].path_audit.valid
     assert comparison.trials[2].path_audit is not None
     assert comparison.trials[2].path_audit.valid
+    assert comparison.trials[2].path_audit.minimum_corridor_slack_m >= 0.02
     assert comparison.trials[2].lap_time_s < comparison.trials[1].lap_time_s
     for phase, active_track, run in (
         ("baseline", plan.baseline_track, comparison.baseline_run),
-        ("three_quarter", comparison.candidate_track, comparison.candidate_run),
+        ("adaptive", comparison.candidate_track, comparison.candidate_run),
     ):
         phase_events = [
             snapshot for observed_phase, observed_track, snapshot in progress
@@ -327,7 +328,7 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
         assert phase_events[-1].elapsed_time_s == pytest.approx(run.driving_time_s)
 
 
-def test_speed_periodic_prius_selects_audited_three_quarter_path() -> None:
+def test_speed_periodic_prius_selects_stronger_feasible_path() -> None:
     track = _rounded_rectangle()
     corridor = TrackCorridor.constant(
         track, left_width_m=3.0, right_width_m=3.0,
@@ -342,19 +343,46 @@ def test_speed_periodic_prius_selects_audited_three_quarter_path() -> None:
 
     assert comparison.rank_status == "candidate_selected"
     assert comparison.baseline_time_s is not None
-    assert comparison.candidate_strength == 0.75
+    assert comparison.candidate_strength == 0.95
     assert comparison.candidate_time_s is not None
     assert comparison.candidate_time_s < comparison.trials[1].lap_time_s
     assert comparison.candidate_time_s < comparison.baseline_time_s
     assert comparison.selected_track is comparison.candidate_track
     assert comparison.selected_run is comparison.candidate_run
-    assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5, 0.75)
+    assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5, 0.95)
     assert comparison.trials[0].lap_time_s is None
     assert comparison.trials[0].diagnostic_lap_time_s is not None
     assert comparison.trials[0].path_audit is not None
     assert not comparison.trials[0].path_audit.valid
     assert comparison.trials[2].path_audit is comparison.candidate_path_audit
     assert comparison.trials[2].path_audit.valid
+    assert comparison.trials[2].path_audit.minimum_corridor_slack_m > 0.02
+    assert comparison.trials[2].path_audit.minimum_corridor_slack_m < 0.06
+    assert comparison.candidate_time_s == pytest.approx(14.556611, abs=0.002)
+    near_boundary_audit = _audit_curvature_path(
+        _scaled_candidate_track(plan, 0.975), plan.baseline_track,
+        plan.source_station_m, corridor,
+    )
+    assert near_boundary_audit.valid
+    assert near_boundary_audit.minimum_corridor_slack_m < 0.02
+
+    # A fixed, on-demand 1 m grid check does not rerun the geometry planner.
+    # It only asks whether the observed gain over the old 0.75 fallback is
+    # larger than a minor cell-size effect; eligibility was audited above on
+    # the actual generated paths.
+    old_fallback = _scaled_candidate_track(plan, 0.75)
+    vehicle = make_prius_benchmark(VehicleSetup(tire_mu=0.95))
+    refined_selected = run_speed_periodic_lap(
+        vehicle, comparison.candidate_track.refine(1.0),
+        torque_request_fraction=0.8,
+    )
+    refined_fallback = run_speed_periodic_lap(
+        vehicle, old_fallback.refine(1.0),
+        torque_request_fraction=0.8,
+    )
+    assert refined_selected.converged
+    assert refined_fallback.converged
+    assert refined_fallback.run.driving_time_s - refined_selected.run.driving_time_s > 0.3
 
 
 def test_optional_ai_mode_can_evaluate_every_available_car_profile() -> None:

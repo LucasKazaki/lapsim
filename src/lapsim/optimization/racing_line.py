@@ -122,8 +122,10 @@ class CurvaturePathAudit:
     heading inferred from the first chord and half the start-vertex turn. Four
     points per cell are compared with the planner's processed reference and
     declared normal-coordinate corridor. The integrated end position must
-    also close near the start. This is a deterministic screening check, not a
-    continuous swept-body or surveyed-boundary certificate.
+    also close near the start. ``minimum_corridor_slack_m`` is the smallest
+    sampled distance from a usable lateral bound (negative outside). This is
+    a deterministic screen, not a continuous swept-body or surveyed-boundary
+    certificate.
     """
 
     valid: bool
@@ -137,6 +139,7 @@ class CurvaturePathAudit:
     vehicle_width_m: float
     safety_margin_m: float
     initial_heading_policy: str
+    minimum_corridor_slack_m: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -792,12 +795,16 @@ def _audit_curvature_path(
         np.max(lower - lateral_offset),
         np.max(lateral_offset - upper),
     ))
+    minimum_slack = float(np.min(np.minimum(
+        lateral_offset - lower, upper - lateral_offset,
+    )))
     seam_error = hypot(
         float(entry_x[-1] + exit_dx[-1] - x[-1]),
         float(entry_y[-1] + exit_dy[-1] - y[-1]),
     )
     if not all(isfinite(value) for value in (
-        maximum_excess, seam_error, float(np.max(np.abs(lateral_offset)))
+        maximum_excess, minimum_slack, seam_error,
+        float(np.max(np.abs(lateral_offset))),
     )):
         raise ValueError("curvature-path audit produced a nonfinite result")
     # Roundoff only for declared clearance. A generated closed solver path
@@ -821,6 +828,7 @@ def _audit_curvature_path(
         vehicle_width_m=corridor.vehicle_width_m,
         safety_margin_m=corridor.safety_margin_m,
         initial_heading_policy=heading_policy,
+        minimum_corridor_slack_m=minimum_slack,
     )
 
 
@@ -867,6 +875,49 @@ def _adaptive_fourth_strength(
     return min(strengths, key=lambda strength: (abs(strength - vertex), strength))
 
 
+def _clearance_aware_fourth_strength(
+    plan: RacingLinePlan,
+    audit_trial: Callable[[SpatialTrack], tuple[CurvaturePathAudit | None, str | None]],
+    baseline_time_s: float | None,
+    full_trial: RacingLineTrial,
+    half_trial: RacingLineTrial,
+    minimum_gain_s: float,
+) -> float | None:
+    """Screen stronger offsets cheaply when the full path misses clearance.
+
+    A clear half-strength model win is evidence to probe farther along the
+    same offset, but the invalid full-strength lap cannot be ranked. Check a
+    fixed, descending grid of intermediate strengths with geometry and the
+    existing sampled path audit before spending the one remaining model run.
+    A 2 cm *additional selection buffer* avoids deliberately choosing a path
+    at the declared sampled boundary. It is not surveyed road clearance or a
+    continuous swept-body guarantee. No monotonic feasibility is assumed.
+    """
+
+    if (
+        plan.status != "candidate"
+        or baseline_time_s is None
+        or full_trial.path_audit is None or full_trial.path_audit.valid
+        or half_trial.lap_time_s is None
+        or half_trial.path_audit is None or not half_trial.path_audit.valid
+        or baseline_time_s - half_trial.lap_time_s <= minimum_gain_s
+    ):
+        return None
+    selection_buffer_m = 0.02
+    for strength in (0.975, 0.95, 0.9, 0.875, 0.75, 0.625):
+        try:
+            trial_track = _scaled_candidate_track(plan, strength)
+        except ValueError:
+            continue
+        audit, error = audit_trial(trial_track)
+        if (
+            error is None and audit is not None and audit.valid
+            and audit.minimum_corridor_slack_m >= selection_buffer_m
+        ):
+            return strength
+    return None
+
+
 def compare_lines_with_lap_model(
     vehicle: object,
     plan: RacingLinePlan,
@@ -881,8 +932,11 @@ def compare_lines_with_lap_model(
     The vehicle is copied before each run because a lap mutates pack and
     chassis state. The full geometric candidate and a validated half-offset
     path are tried first. One bounded fourth strength is chosen from their
-    eligible car-specific times, or defaults to three-quarter offset. The
-    default evaluates one lap per path; opt-in
+    eligible car-specific times. If the full path fails its sampled audit but
+    the half path wins clearly, a few cheap geometry-only clearance probes
+    can move the fourth model trial closer to full strength. Otherwise it
+    defaults to three-quarter offset. The default evaluates one lap per path;
+    opt-in
     ``speed_periodic`` permits one dry seam-speed probe plus one final lap per
     path, at a fixed initial vehicle/pack state. This checks speed at the
     closed-course seam, not full-state periodicity. A candidate is selected
@@ -1058,6 +1112,12 @@ def compare_lines_with_lap_model(
                     baseline_time, baseline_path_audit,
                     trials[0], trials[1], minimum_selection_gain_s,
                 )
+                stronger_feasible = _clearance_aware_fourth_strength(
+                    plan, audit_trial, baseline_time,
+                    trials[0], trials[1], minimum_selection_gain_s,
+                )
+                if stronger_feasible is not None:
+                    strength = stronger_feasible
                 phase = "three_quarter" if strength == 0.75 else "adaptive"
             try:
                 trial_track = _scaled_candidate_track(plan, strength)

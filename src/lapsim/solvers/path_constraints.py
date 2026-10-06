@@ -90,7 +90,7 @@ class PathConstraintSolver:
             )
         vehicle.validate()
         local_limits = [
-            self._steady_state_speed_limit(vehicle, curvature_per_m)
+            self.local_corner_speed_limit_mps(vehicle, curvature_per_m)
             for curvature_per_m in track.curvature_per_m
         ]
         ceilings = local_limits.copy()
@@ -320,9 +320,14 @@ class PathConstraintSolver:
                 upper_speed_mps = candidate_speed_mps
         return lower_speed_mps
 
-    def _steady_state_speed_limit(
+    def local_corner_speed_limit_mps(
         self, vehicle: Vehicle, curvature_per_m: float
     ) -> float:
+        """Return the steady lateral-capacity speed bound for one path cell.
+
+        This is independent of driver controls. Callers must separately check
+        any combined longitudinal/lateral tire-force limitation.
+        """
         vehicle_speed_limit_mps = vehicle.drivetrain.vehicle_speed_limit_mps
         absolute_curvature_per_m = abs(curvature_per_m)
         if absolute_curvature_per_m <= 1e-15:

@@ -61,15 +61,28 @@ main classes for concise imports.
 
 ## LapSim desktop app
 
-Install the project in its virtual environment and launch the native Windows
-application:
+On Windows, install **64-bit Python 3.11 or newer** with Tkinter, then from this
+checkout run the one-time setup. It creates `.venv`, installs the required
+packages, and checks that the app can import and load its bundled course:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install -e .
+./setup_lapsim.cmd
+./launch_lapsim.cmd
+```
+
+You can also double-click those two files in that order. For a terminal-only
+setup without the batch file's final pause, run:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup_lapsim.ps1
 .venv\Scripts\python.exe -m lapsim.ui
 ```
 
-Or double-click `launch_lapsim.cmd` in the repository folder. The app defaults
+The launcher checks Python, Tk, app imports, and the bundled course before
+opening a console-free window. A later startup error is shown in a message box
+and saved under `%LOCALAPPDATA%\LapSim\logs\desktop_startup.log`. The app runs
+from this source checkout because the default course is stored here; it is not
+a standalone EXE. The app defaults
 to the fused team endurance course and has an explicit **Course** menu for an
 optional synthetic rounded-rectangle calculation example. **Import course…**
 adds a validated, versioned course prepared from a coherent CSV and preserves
@@ -102,8 +115,10 @@ physics solver. The baseline (strength 0), full offset (1), and
 half offset (0.5) run first. If all three paths have eligible audits and times,
 and half beats both endpoints by more than 0.05 s, a convex quadratic through
 those times chooses the nearest safeguarded fourth strength from 0.25, 0.375,
-0.625, 0.75, or 0.875. Otherwise the fourth strength is 0.75. Each of at most
-four paths receives one dry
+0.625, 0.75, or 0.875. If full offset fails its sampled audit but eligible half
+offset clearly beats the baseline, a short geometry-only search tries a stronger
+fourth offset with at least 0.02 m of additional **sampled** clearance. In other
+cases the fourth strength is 0.75. Each of at most four paths receives one dry
 speed-seam pass and one recorded pass, for at most eight lap-model passes. A
 completed lap is eligible for a path comparison only when its start
 and finish speeds agree within 0.005 m/s and a sampled integration of its
@@ -124,11 +139,11 @@ arcs, stored in 0.5 m source cells. Its default AI inputs are an *assumed*
 ±3 m corridor, 1.8 m vehicle width, and 0.2 m safety margin. With the Prius
 benchmark at torque request 0.8, a current speed-periodic model run gave
 **16.885573 s** on the eligible geometric baseline, **15.624285 s** on an
-eligible half-offset path, and **15.007724 s** on an eligible three-quarter
+eligible half-offset path, and **14.556611 s** on the selected 0.95-offset
 path. The full-offset trial completed in **14.457921 s** but failed sampled
-clearance by **0.040636 m**. That failed audit makes the fourth strength fall
-back to 0.75, so the three-quarter path was selected with a
-**1.877848 s** modeled lead under the 0.05 s rule. This is a synthetic software
+clearance by **0.040636 m**. The fourth path passed its sampled audit with
+0.053411 m of additional modeled clearance and had a **2.328961 s** lead under
+the 0.05 s rule. This is a synthetic software
 demonstration, not a surveyed Formula SAE course or a validated team-car gain.
 
 The default recorded course has no surveyed widths, and its x/y map does not agree

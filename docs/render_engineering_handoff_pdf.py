@@ -211,6 +211,11 @@ def _parse(lines: list[str]) -> list:
 
     for line in lines:
         stripped = line.strip()
+        if stripped == "<!-- PDF_PAGE_BREAK -->":
+            flush_paragraph()
+            flush_table()
+            story.append(PageBreak())
+            continue
         if code is not None:
             if stripped.startswith("```"):
                 story.append(KeepTogether([Preformatted(

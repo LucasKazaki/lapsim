@@ -32,6 +32,7 @@ from .scoring import (
 
 
 EventName = Literal["endurance", "acceleration", "skidpad"]
+PRESCRIBED_PATH_SPEED_TOLERANCE_MPS = 0.01
 
 
 @dataclass(frozen=True, slots=True)
@@ -229,9 +230,33 @@ def _run_prescribed_path(
         track=track,
         wheelbase_m=vehicle.chassis.wheelbase_m,
     )
+    corner_solver = PathConstraintSolver(
+        gravity_mps2=vehicle.gravity_mps2,
+        air_density_kgpm3=vehicle.air_density_kgpm3,
+    )
+    corner_limit_by_curvature: dict[float, float] = {}
+    corner_limits_mps: list[float] = []
+    for curvature_per_m in track.curvature_per_m:
+        if curvature_per_m not in corner_limit_by_curvature:
+            corner_limit_by_curvature[curvature_per_m] = (
+                corner_solver.local_corner_speed_limit_mps(
+                    vehicle, curvature_per_m,
+                )
+            )
+        corner_limits_mps.append(corner_limit_by_curvature[curvature_per_m])
 
     for lap_index in range(laps):
         for cell_index, cell_length_m in enumerate(track.cell_length_m):
+            corner_limit_mps = corner_limits_mps[cell_index]
+            if vehicle.speed_mps > (
+                corner_limit_mps + PRESCRIBED_PATH_SPEED_TOLERANCE_MPS
+            ):
+                failure_reason = (
+                    "vehicle entered prescribed path above corner-speed limit "
+                    f"on lap {lap_index + 1}, cell {cell_index}: "
+                    f"{vehicle.speed_mps:.6f} > {corner_limit_mps:.6f} m/s"
+                )
+                break
             lap_distance_m = track.cell_center_distance_m[cell_index]
             controls = steering_profile.controls_at(lap_distance_m)
             time_before_step_s = vehicle.time_s
@@ -256,6 +281,15 @@ def _run_prescribed_path(
             )
             recorder.record(snapshot, timestep_s=timestep_s)
 
+            if vehicle.speed_mps > (
+                corner_limit_mps + PRESCRIBED_PATH_SPEED_TOLERANCE_MPS
+            ):
+                failure_reason = (
+                    "vehicle exited prescribed path above corner-speed limit "
+                    f"on lap {lap_index + 1}, cell {cell_index}: "
+                    f"{vehicle.speed_mps:.6f} > {corner_limit_mps:.6f} m/s"
+                )
+                break
             if snapshot.get("limits.lateral_saturated", 0.0) > 0.5:
                 failure_reason = (
                     f"vehicle exceeded lateral path capacity on lap {lap_index + 1}, "

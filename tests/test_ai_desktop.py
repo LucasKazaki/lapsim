@@ -205,7 +205,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         assert source_course["revision"] == "legacy_unversioned"
         assert source_course["source_artifact_sha256"]["fused_csv"]
         assert planning["mode"] == "experimental_racing_line"
-        assert planning["algorithm"].endswith("v5_adaptive_strength")
+        assert planning["algorithm"].endswith("v6_clearance_probe")
         assert planning["selected_mode"] == "no_comparable_path"
         assert planning["diagnostic_only"] is True
         assert planning["rank_status"] == "invalid_processed_baseline"
@@ -323,9 +323,9 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         plan, comparison = payload[4], payload[5]
         assert payload[3] == "candidate"
         assert comparison.rank_status == "candidate_selected"
-        assert comparison.candidate_strength == 0.75
+        assert comparison.candidate_strength == 0.95
         assert comparison.baseline_time_s == pytest.approx(16.885573, abs=0.002)
-        assert comparison.candidate_time_s == pytest.approx(15.007724, abs=0.002)
+        assert comparison.candidate_time_s == pytest.approx(14.556611, abs=0.002)
         assert comparison.baseline_path_audit is not None
         assert comparison.baseline_path_audit.valid
         assert comparison.candidate_path_audit is not None
@@ -359,9 +359,9 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         )
         assert planning["source_course_id"] == SYNTHETIC_DEMO_COURSE_ID
         assert planning["synthetic_course"] is True
-        assert planning["algorithm"].endswith("v5_adaptive_strength")
+        assert planning["algorithm"].endswith("v6_clearance_probe")
         assert planning["fourth_strength_policy"] == (
-            "eligible_quadratic_grid_v1_fallback_0.75"
+            "eligible_quadratic_or_clearance_probe_v2_fallback_0.75"
         )
         counterpart_id = planning["comparison_counterpart_run_id"]
         counterpart = RunRecord.load(tmp_path / f"{counterpart_id}.json").to_dict()
@@ -374,7 +374,7 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert planning["comparison_is_valid"] is True
         assert planning["diagnostic_only"] is False
         assert planning["selected_mode"] == "candidate"
-        assert planning["selected_offset_strength"] == 0.75
+        assert planning["selected_offset_strength"] == 0.95
         assert planning["trial_record_manifest_version"] == 1
         assert planning["baseline_record"]["run_id"] == counterpart_id
         assert planning["baseline_record"]["record_role"] == "comparison_counterpart"
