@@ -2,16 +2,42 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from math import pi
 from pathlib import Path
 import tkinter as tk
 from unittest.mock import patch
 
 import pytest
 
-from lapsim.experiments import RunRecord
+from lapsim.experiments import RunRecord, replay_lap_record
 from lapsim.events.endurance import LapProgressSnapshot
-from lapsim.ui.app import LapSimDesktop
+from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.ui.app import LapSimDesktop, _course_geometry_warning
 from lapsim.ui.presets import VehicleSetup
+
+
+def test_course_warning_includes_arc_chord_mismatch_without_chord_excess() -> None:
+    square = SpatialTrack(
+        distance_m=(0.0, 10.0, 20.0, 30.0, 40.0),
+        x_m=(0.0, 10.0, 10.0, 0.0, 0.0),
+        y_m=(0.0, 0.0, 10.0, 10.0, 0.0),
+        curvature_per_m=(pi / 20.0,) * 4,
+    )
+    audit = square.geometry_audit()
+    assert audit.cells_with_chord_excess == 0
+    warning = _course_geometry_warning(audit)
+    assert warning is not None
+    assert "prescribed arc chord length differs" in warning
+    barely_over_threshold = replace(
+        audit,
+        maximum_arc_chord_mismatch_m=1.1e-6,
+        curvature_integrated_closure_gap_m=0.0101,
+    )
+    precise_warning = _course_geometry_warning(barely_over_threshold)
+    assert precise_warning is not None
+    assert "1.1e-06 m" in precise_warning
+    assert "0.0101 m" in precise_warning
 
 
 def test_live_view_clears_old_numbers_and_distinguishes_empty_failure() -> None:
@@ -65,7 +91,7 @@ def test_live_view_clears_old_numbers_and_distinguishes_empty_failure() -> None:
         root.destroy()
 
 
-def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
+def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> None:
     try:
         root = tk.Tk()
     except tk.TclError as error:
@@ -74,34 +100,21 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
     try:
         app = LapSimDesktop(root)
         assert app.driving_mode_var.get() == "Centerline (default)"
-        assert app.course_geometry_audit.cells_with_chord_excess > 0
-        assert any(
-            widget.winfo_class() == "Label"
-            and "Course data mismatch" in widget.cget("text")
-            for widget in app._walk_widgets(root)
+        assert app.course_geometry_audit.cells_with_chord_excess == 1441
+        assert app.course_geometry_audit.curvature_integrated_closure_gap_m == pytest.approx(
+            542.633, abs=0.01
         )
+        warning = [
+            widget.cget("text")
+            for widget in app._walk_widgets(root)
+            if widget.winfo_class() == "Label"
+            and "Course data mismatch" in widget.cget("text")
+        ]
+        assert len(warning) == 1
+        assert "542.6 m" in warning[0]
         with patch("lapsim.ui.app.threading.Thread") as worker:
             app._start_run()
             assert worker.call_args.kwargs["target"].__name__ == "_calculate_single"
-            worker.return_value.start.assert_called_once()
-        for cell in range(3):
-            app._queue_live_progress(
-                "Prius live test", "Centerline model", app.track,
-                LapProgressSnapshot(
-                    lap_index=0, cell_index=cell, cell_count=app.track.cell_count,
-                    elapsed_time_s=float(cell + 1),
-                    lap_station_m=float((cell + 1) * 10),
-                    total_distance_m=float((cell + 1) * 10),
-                    speed_mps=10.0, lateral_acceleration_mps2=0.0,
-                ),
-            )
-        assert app.progress_queue.qsize() == 1
-        app._poll_live_progress()
-        assert app._active_tab == "Driver view"
-        assert app.driver_playback is not None
-        assert app.driver_playback.frame_at(3.0).distance_m == pytest.approx(30.0)
-        assert "accepted cell 3/" in app.driver_run_label.get()
-        assert app.driver_play_button["state"] == "disabled"
         app._set_busy(False)
         app.driving_mode_var.set("AI racing line (experimental)")
         app._on_driving_mode_change()
@@ -109,11 +122,10 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
             app._start_run()
             assert worker.call_args.kwargs["target"].__name__ == "_calculate_ai_single"
             assert worker.call_args.kwargs["args"][-1] == (2.0, 1.8, 0.2)
-            assert "Evaluating geometric centerline" in app.ai_result_text.get()
         app._set_busy(False)
         with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
             app._calculate_ai_single(
-                "prius_2026_le", "Prius integration test", VehicleSetup(),
+                "prius_2026_le", "Prius geometry diagnostic", VehicleSetup(),
                 1.0, 1.0, (2.0, 1.78308, 0.3),
             )
             kind, payload, error = app.result_queue.get_nowait()
@@ -123,124 +135,88 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
             app._set_busy(True)
             app._poll_live_progress()
             assert "Half AI line" in app.driver_run_label.get()
-            assert app.driver_playback is not None
-            assert app.driver_playback.frame_at(
-                app.driver_playback.duration_s
-            ).distance_m == pytest.approx(app.driver_playback.track.length_m)
             app.result_queue.put((kind, payload, error))
             app._poll_result()
             root.update()
 
-        assert app._last_result is not None and app._last_result.completed
+        plan, comparison = payload[4], payload[5]
+        assert payload[3] == "no_comparable_path"
+        assert comparison.rank_status == "invalid_processed_baseline"
+        assert comparison.baseline_time_s is None
+        assert comparison.candidate_time_s is None
+        assert comparison.baseline_diagnostic_time_s == pytest.approx(87.618366, abs=0.001)
+        assert comparison.candidate_diagnostic_time_s == pytest.approx(87.377773, abs=0.001)
+        assert comparison.baseline_path_audit is not None
+        assert comparison.baseline_path_audit.maximum_corridor_excess_m > 0.09
+        assert comparison.baseline_path_audit.seam_position_error_m > 0.75
+        assert all(trial.lap_time_s is None for trial in comparison.trials)
+        assert all(trial.diagnostic_lap_time_s is not None for trial in comparison.trials)
+        assert app._last_result is None
         assert app._active_tab == "Driver view"
         assert app.driver_playback is not None
-        assert app.driver_playback.track.length_m > 1000.0
         assert app.ai_compare_button is not None
-        assert app.ai_compare_button["state"] == "normal"
-        assert app.ai_output_values["baseline"]["text"] != "—"
-        assert app.ai_output_values["candidate"]["text"] != "—"
-        assert app.output_values["entry_speed"]["text"] != "—"
-        assert app.output_values["exit_speed"]["text"] != "—"
-        assert "different source curvature" in app.ai_result_text.get()
-        assert "rolling-start speed closes within 0.005 m/s" in app.ai_result_text.get()
+        assert app.ai_compare_button["state"] == "disabled"
+        assert app.ai_output_values["baseline"]["text"].endswith("*")
+        assert app.ai_output_values["candidate"]["text"].endswith("*")
+        assert app.ai_output_values["difference"]["text"] == "—"
+        assert "cannot be ranked" in app.ai_result_text.get()
+        assert "sampled excess" in app.ai_result_text.get()
         assert "other states need not be periodic" in app.ai_result_text.get()
+        assert app.driver_replay_var.get() == "Geometric centerline · diagnostic"
+        assert app.driver_replay_menu is not None
+        assert app.driver_replay_menu["state"] == "normal"
+        before_windows = sum(isinstance(child, tk.Toplevel) for child in root.winfo_children())
+        app._show_path_comparison()
+        assert sum(isinstance(child, tk.Toplevel) for child in root.winfo_children()) == before_windows
+
         records = list(tmp_path.glob("*.json"))
         assert len(records) == 2
-        assert payload[3] == "candidate"
-        record = RunRecord.load(tmp_path / f"{payload[7]}.json").to_dict()
-        assert record["result"]["seam_speed_delta_mps"] == pytest.approx(
-            record["result"]["ending_speed_mps"]
-            - record["result"]["starting_speed_mps"]
-        )
-        planning = record["settings"]["path_planning"]
+        selected_path = tmp_path / f"{payload[7]}.json"
+        selected = RunRecord.load(selected_path).to_dict()
+        planning = selected["settings"]["path_planning"]
         assert planning["mode"] == "experimental_racing_line"
-        assert planning["record_role"] == "selected_result"
-        assert planning["lap_start_policy"] == "speed_only_periodic_fixed_initial_vehicle_state"
-        assert planning["speed_seam_tolerance_mps"] == 0.005
-        assert record["settings"]["endurance_config"]["starting_speed_mps"] == pytest.approx(
-            record["result"]["starting_speed_mps"]
+        assert planning["algorithm"].endswith("v4_sampled_arc_clearance")
+        assert planning["selected_mode"] == "no_comparable_path"
+        assert planning["diagnostic_only"] is True
+        assert planning["rank_status"] == "invalid_processed_baseline"
+        assert planning["comparison_is_valid"] is False
+        assert planning["selection_margin_s"] == 0.05
+        assert planning["baseline_lap_time_s"] is None
+        assert planning["candidate_lap_time_s"] is None
+        assert planning["baseline_diagnostic_lap_time_s"] == pytest.approx(
+            comparison.baseline_diagnostic_time_s
         )
-        assert abs(record["result"]["seam_speed_delta_mps"]) <= 0.005
-        assert planning["algorithm"].endswith("v3_winding_three_trial")
+        assert planning["source_geometry_audit"]["curvature_integrated_closure_gap_m"] == pytest.approx(
+            542.633, abs=0.01
+        )
+        assert planning["processed_baseline_geometry_audit"][
+            "curvature_integrated_closure_gap_m"
+        ] == pytest.approx(0.750897, abs=0.001)
+        assert planning["baseline_sampled_path_audit"]["valid"] is False
         assert len(planning["candidate_trials"]) == 2
-        assert planning["corridor_fold_ratio_max"] < 0.98
-        assert planning["candidate_trials"][0]["offset_strength"] == 1.0
-        assert planning["candidate_length_m"] == pytest.approx(
-            payload[5].candidate_track.length_m
+        assert all(trial["sampled_path_audit"]["valid"] is False
+                   for trial in planning["candidate_trials"])
+        assert selected["settings"]["track"]["length_m"] == pytest.approx(
+            plan.baseline_track.length_m
         )
-        assert record["settings"]["track"]["length_m"] == pytest.approx(
-            app.driver_playback.track.length_m
-        )
+        assert abs(selected["result"]["seam_speed_delta_mps"]) <= 0.005
         counterpart_id = planning["comparison_counterpart_run_id"]
         assert counterpart_id and counterpart_id != payload[7]
-        assert planning["comparison_counterpart_role"] == "geometric_centerline"
-        counterpart = RunRecord.load(tmp_path / f"{counterpart_id}.json").to_dict()
+        counterpart_path = tmp_path / f"{counterpart_id}.json"
+        counterpart = RunRecord.load(counterpart_path).to_dict()
         counterpart_planning = counterpart["settings"]["path_planning"]
-        assert counterpart_planning["record_role"] == "comparison_counterpart"
-        assert counterpart_planning["comparison_role"] == "geometric_centerline"
-        assert counterpart_planning["offset_strength"] == 0.0
-        assert counterpart["settings"]["endurance_config"]["starting_speed_mps"] == pytest.approx(
-            counterpart["result"]["starting_speed_mps"]
-        )
-        assert abs(counterpart["result"]["seam_speed_delta_mps"]) <= 0.005
+        assert counterpart_planning["comparison_role"] == "candidate_trial"
+        assert counterpart_planning["rank_status"] == "invalid_processed_baseline"
+        assert counterpart_planning["sampled_path_audit"]["valid"] is False
         assert counterpart["settings"]["track"]["length_m"] == pytest.approx(
-            payload[4].baseline_track.length_m
+            comparison.candidate_track.length_m
         )
-        assert counterpart["result"]["lap_times_s"] == pytest.approx(
-            payload[5].baseline_run.lap_times_s
-        )
-        app._show_path_comparison()
-        root.update()
-        assert any(isinstance(child, tk.Toplevel) for child in root.winfo_children())
-
-        # A wider assumed corridor makes the full proposal slower for this
-        # fixed benchmark. Exercise the conditional half-offset path through
-        # the actual desktop record and driver-view wiring.
-        with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
-            app._calculate_ai_single(
-                "prius_2026_le", "Prius half-offset test", VehicleSetup(),
-                1.0, 1.0, (3.0, 1.78308, 0.3),
-            )
-            kind, half_payload, error = app.result_queue.get_nowait()
-            assert error is None, error
-            assert kind == "ai_single"
-            assert half_payload[3] == "candidate"
-            assert half_payload[5].candidate_strength == 0.5
-            assert half_payload[2] is half_payload[5].candidate_track
-            app.result_queue.put((kind, half_payload, error))
-            app._poll_result()
-            root.update()
-
-        half_record = RunRecord.load(
-            tmp_path / f"{half_payload[7]}.json"
-        ).to_dict()
-        half_planning = half_record["settings"]["path_planning"]
-        assert len(list(tmp_path.glob("*.json"))) == 4
-        assert half_planning["record_role"] == "selected_result"
-        half_counterpart_id = half_planning["comparison_counterpart_run_id"]
-        assert half_counterpart_id not in (None, counterpart_id, payload[7], half_payload[7])
-        half_counterpart = RunRecord.load(
-            tmp_path / f"{half_counterpart_id}.json"
-        ).to_dict()
-        assert half_planning["comparison_counterpart_role"] == "geometric_centerline"
-        assert half_counterpart["settings"]["path_planning"]["record_role"] == (
-            "comparison_counterpart"
-        )
-        assert half_counterpart["settings"]["track"]["length_m"] == pytest.approx(
-            half_payload[4].baseline_track.length_m
-        )
-        assert half_counterpart["result"]["lap_times_s"] == pytest.approx(
-            half_payload[5].baseline_run.lap_times_s
-        )
-        assert half_planning["selected_offset_strength"] == 0.5
-        assert [trial["offset_strength"] for trial in half_planning["candidate_trials"]] == [
-            1.0, 0.5,
-        ]
-        assert half_record["settings"]["track"]["length_m"] == pytest.approx(
-            half_payload[5].candidate_track.length_m
-        )
+        assert replay_lap_record(selected_path).model_agreement
+        assert replay_lap_record(counterpart_path).model_agreement
+        app._select_driver_replay("Best tested AI path · diagnostic")
+        assert app.driver_playback is not None
         assert app.driver_playback.track.length_m == pytest.approx(
-            half_payload[5].candidate_track.length_m
+            comparison.candidate_track.length_m
         )
     finally:
         root.destroy()

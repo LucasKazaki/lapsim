@@ -17,7 +17,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from math import ceil, hypot, isfinite
+from math import atan2, ceil, hypot, isfinite, pi
+from numbers import Real
 from time import perf_counter
 from typing import Callable
 
@@ -83,7 +84,12 @@ class TrackCorridor:
 
 @dataclass(frozen=True, slots=True)
 class RacingLinePlan:
-    """Candidate, same-preprocessing baseline, and transparent diagnostics."""
+    """Candidate, same-preprocessing baseline, and transparent diagnostics.
+
+    Planner-created instances retain the explicit corridor and original source
+    stations so comparison can check modeled arc positions. Legacy/manual
+    plans without those inputs are ineligible for automatic path selection.
+    """
 
     baseline_track: SpatialTrack
     candidate_track: SpatialTrack
@@ -104,16 +110,49 @@ class RacingLinePlan:
     objective_evaluations: int
     compute_time_s: float
     corridor_source: str
+    corridor: TrackCorridor | None = None
+    source_station_m: tuple[float, ...] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CurvaturePathAudit:
+    """Sampled clearance of the path actually integrated from cell curvature.
+
+    The trajectory starts at the proposed path's first point, with its initial
+    heading inferred from the first chord and half the start-vertex turn. Four
+    points per cell are compared with the planner's processed reference and
+    declared normal-coordinate corridor. The integrated end position must
+    also close near the start. This is a deterministic screening check, not a
+    continuous swept-body or surveyed-boundary certificate.
+    """
+
+    valid: bool
+    sample_count: int
+    maximum_lateral_offset_m: float
+    maximum_corridor_excess_m: float
+    allowed_numerical_excess_m: float
+    seam_position_error_m: float
+    allowed_seam_position_error_m: float
+    corridor_source: str
+    vehicle_width_m: float
+    safety_margin_m: float
+    initial_heading_policy: str
 
 
 @dataclass(frozen=True, slots=True)
 class RacingLineComparison:
     """Full-model timings for a centerline and bounded candidate trials.
 
-    ``candidate_*`` refers to the fastest completed nonzero-strength trial,
-    not necessarily the full-strength geometric proposal. If no candidate
-    completes, it refers to the first failed trial when a run was returned.
-    ``selected_*`` remains the faster completed path when both complete.
+    ``candidate_*`` refers to the fastest eligible nonzero-strength trial,
+    not necessarily the full-strength geometric proposal. If no candidate is
+    eligible, its run/track retain a completed diagnostic trial when available.
+    Eligible times require a completed model run, the requested speed-seam
+    rule when enabled, and a passing sampled curvature-path corridor audit.
+    Completed but ineligible times remain in ``*_diagnostic_time_s``.
+    ``selected_*`` uses the candidate only when its modeled time beats the
+    baseline by more than ``selection_margin_s``. This margin is a conservative
+    selection heuristic, not a proven numerical error bound. A faster but
+    unresolved candidate remains available through ``candidate_*``.
     """
 
     baseline_time_s: float | None
@@ -123,12 +162,18 @@ class RacingLineComparison:
     candidate_track: SpatialTrack
     candidate_strength: float | None
     trials: tuple[RacingLineTrial, ...]
+    rank_status: str
+    selection_margin_s: float
     selected_mode: str
     selected_track: SpatialTrack
     selected_run: EnduranceRunResult | None
     baseline_error: str | None
     candidate_error: str | None
     compute_time_s: float
+    baseline_path_audit: CurvaturePathAudit | None = None
+    candidate_path_audit: CurvaturePathAudit | None = None
+    baseline_diagnostic_time_s: float | None = None
+    candidate_diagnostic_time_s: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,6 +184,8 @@ class RacingLineTrial:
     path_length_m: float | None
     lap_time_s: float | None
     error: str | None
+    path_audit: CurvaturePathAudit | None = None
+    diagnostic_lap_time_s: float | None = None
 
 
 def _periodic_cubic_basis_at(
@@ -578,6 +625,8 @@ class RacingLinePlanner:
             objective_evaluations=int(result.nfev),
             compute_time_s=perf_counter() - start,
             corridor_source=corridor.source,
+            corridor=corridor,
+            source_station_m=track.distance_m,
         )
 
 
@@ -615,6 +664,150 @@ def _scaled_candidate_track(plan: RacingLinePlan, strength: float) -> SpatialTra
     return track
 
 
+def _audit_curvature_path(
+    track: SpatialTrack,
+    reference: SpatialTrack,
+    source_station_m: tuple[float, ...],
+    corridor: TrackCorridor,
+) -> CurvaturePathAudit:
+    """Screen an integrated constant-curvature path against declared clearance.
+
+    The planner and model use the polygon chord as each spatial cell length,
+    but the model travels a circular arc at that length and curvature. Thus
+    following every prescribed curvature does not generally visit the polygon
+    vertices. Sample each modeled arc at quarter-cell intervals in the same
+    processed normal-coordinate frame used to bound the proposed spline.
+    This deliberately does not certify the continuous swept vehicle envelope.
+    """
+
+    count = track.cell_count
+    if (
+        not track.closed or not reference.closed
+        or count != reference.cell_count
+        or len(source_station_m) != len(corridor.left_width_m) + 1
+        or source_station_m[0] != 0.0
+        or source_station_m[-1] <= 0.0
+    ):
+        raise ValueError("curvature-path audit needs aligned closed planner paths and source stations")
+    x = np.asarray(track.x_m, dtype=float)
+    y = np.asarray(track.y_m, dtype=float)
+    reference_x = np.asarray(reference.x_m, dtype=float)
+    reference_y = np.asarray(reference.y_m, dtype=float)
+    length = np.asarray(track.cell_length_m, dtype=float)
+    curvature = np.asarray(track.curvature_per_m, dtype=float)
+    chord_x = np.diff(x)
+    chord_y = np.diff(y)
+    previous_x = np.roll(chord_x, 1)
+    previous_y = np.roll(chord_y, 1)
+    start_turn = atan2(
+        previous_x[0] * chord_y[0] - previous_y[0] * chord_x[0],
+        previous_x[0] * chord_x[0] + previous_y[0] * chord_y[0],
+    )
+    cell_turn = length * curvature
+    chord_length = np.hypot(chord_x, chord_y)
+    arc_chord_length = length * np.sinc(0.5 * cell_turn / pi)
+    if bool(np.all(
+        np.abs(arc_chord_length - chord_length)
+        <= np.maximum(1e-8, 1e-8 * chord_length)
+    )):
+        # A coherent circular-arc cell connects its saved endpoints. Its
+        # midpoint bearing determines the exact entry heading. For legacy
+        # polygon paths that use each chord as the arc length, this equality
+        # does not hold and the shared-vertex tangent is the appropriate seed.
+        first_heading = atan2(chord_y[0], chord_x[0]) - 0.5 * cell_turn[0]
+        heading_policy = "coherent_first_arc_chord"
+    else:
+        first_heading = atan2(chord_y[0], chord_x[0]) - 0.5 * start_turn
+        heading_policy = "polygon_start_vertex_tangent"
+    entry_heading = first_heading + np.concatenate(((0.0,), np.cumsum(cell_turn)[:-1]))
+
+    def arc_displacement(fraction: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        arc_length = length * fraction
+        half_turn = 0.5 * cell_turn * fraction
+        magnitude = arc_length * np.sinc(half_turn / pi)
+        return (
+            magnitude * np.cos(entry_heading + half_turn),
+            magnitude * np.sin(entry_heading + half_turn),
+        )
+
+    exit_dx, exit_dy = arc_displacement(np.ones(count))
+    entry_x = x[0] + np.concatenate(((0.0,), np.cumsum(exit_dx)[:-1]))
+    entry_y = y[0] + np.concatenate(((0.0,), np.cumsum(exit_dy)[:-1]))
+    fractions = np.asarray((0.25, 0.5, 0.75, 1.0))
+    cell = np.repeat(np.arange(count), len(fractions))
+    fraction = np.tile(fractions, count)
+    half_turn = 0.5 * cell_turn[cell] * fraction
+    magnitude = length[cell] * fraction * np.sinc(half_turn / pi)
+    driven_x = entry_x[cell] + magnitude * np.cos(entry_heading[cell] + half_turn)
+    driven_y = entry_y[cell] + magnitude * np.sin(entry_heading[cell] + half_turn)
+    reference_sample_x = reference_x[cell] + fraction * (
+        reference_x[cell + 1] - reference_x[cell]
+    )
+    reference_sample_y = reference_y[cell] + fraction * (
+        reference_y[cell + 1] - reference_y[cell]
+    )
+    tangent_x = np.roll(reference_x[:-1], -1) - np.roll(reference_x[:-1], 1)
+    tangent_y = np.roll(reference_y[:-1], -1) - np.roll(reference_y[:-1], 1)
+    tangent_length = np.hypot(tangent_x, tangent_y)
+    if float(np.min(tangent_length)) < 1e-8:
+        raise ValueError("processed reference has an undefined normal")
+    normal_x = -tangent_y / tangent_length
+    normal_y = tangent_x / tangent_length
+    next_cell = (cell + 1) % count
+    sample_normal_x = (1.0 - fraction) * normal_x[cell] + fraction * normal_x[next_cell]
+    sample_normal_y = (1.0 - fraction) * normal_y[cell] + fraction * normal_y[next_cell]
+    normal_length = np.hypot(sample_normal_x, sample_normal_y)
+    if float(np.min(normal_length)) < 1e-8:
+        raise ValueError("processed reference normal reverses within a path cell")
+    lateral_offset = (
+        (driven_x - reference_sample_x) * sample_normal_x
+        + (driven_y - reference_sample_y) * sample_normal_y
+    ) / normal_length
+    planner_station = (cell + fraction) * source_station_m[-1] / count
+    half_vehicle_plus_margin = 0.5 * corridor.vehicle_width_m + corridor.safety_margin_m
+    lower, upper = _corridor_bounds_at(
+        planner_station,
+        np.asarray(source_station_m),
+        corridor,
+        half_vehicle_plus_margin,
+    )
+    maximum_excess = float(max(
+        0.0,
+        np.max(lower - lateral_offset),
+        np.max(lateral_offset - upper),
+    ))
+    seam_error = hypot(
+        float(entry_x[-1] + exit_dx[-1] - x[-1]),
+        float(entry_y[-1] + exit_dy[-1] - y[-1]),
+    )
+    if not all(isfinite(value) for value in (
+        maximum_excess, seam_error, float(np.max(np.abs(lateral_offset)))
+    )):
+        raise ValueError("curvature-path audit produced a nonfinite result")
+    # Roundoff only for declared clearance. A generated closed solver path
+    # must also bring the integrated vehicle path back to its starting point
+    # within one centimeter. This fixed numerical closure tolerance is not a
+    # survey uncertainty or a vehicle tracking accuracy claim.
+    numerical_epsilon_m = 1e-8
+    seam_tolerance_m = 0.01
+    return CurvaturePathAudit(
+        valid=(
+            maximum_excess <= numerical_epsilon_m
+            and seam_error <= seam_tolerance_m
+        ),
+        sample_count=len(lateral_offset),
+        maximum_lateral_offset_m=float(np.max(np.abs(lateral_offset))),
+        maximum_corridor_excess_m=maximum_excess,
+        allowed_numerical_excess_m=numerical_epsilon_m,
+        seam_position_error_m=seam_error,
+        allowed_seam_position_error_m=seam_tolerance_m,
+        corridor_source=corridor.source,
+        vehicle_width_m=corridor.vehicle_width_m,
+        safety_margin_m=corridor.safety_margin_m,
+        initial_heading_policy=heading_policy,
+    )
+
+
 def compare_lines_with_lap_model(
     vehicle: object,
     plan: RacingLinePlan,
@@ -622,6 +815,7 @@ def compare_lines_with_lap_model(
     torque_request_fraction: float,
     progress_callback: Callable[[str, SpatialTrack, LapProgressSnapshot], None] | None = None,
     speed_periodic: bool = False,
+    minimum_selection_gain_s: float = 0.05,
 ) -> RacingLineComparison:
     """Evaluate a candidate and its baseline with the same lap physics.
 
@@ -631,23 +825,83 @@ def compare_lines_with_lap_model(
     ``speed_periodic`` permits one dry seam-speed probe plus one final lap per
     path, at a fixed initial vehicle/pack state. This checks speed at the
     closed-course seam, not full-state periodicity. A candidate is selected
-    only if both it and the baseline yield acceptable times. Errors remain explicit.
+    only if both it and the baseline yield acceptable times and the gain is
+    larger than ``minimum_selection_gain_s``. A planner-created path is also
+    screened by a sampled integration of the curvature that the vehicle model
+    follows. The screen checks the declared clearance around the processed
+    reference, but is not a continuous swept-body certificate. Failed screens
+    leave actual physics times/runs as diagnostics, never selectable times.
+    The selection margin is not a certified discretization error bound.
+    Errors remain explicit.
     With a callback, accepted-cell snapshots carry a phase label and the exact
     track being simulated; periodic probes do not emit callbacks.
     """
+
+    if (
+        isinstance(minimum_selection_gain_s, bool)
+        or not isinstance(minimum_selection_gain_s, Real)
+        or not isfinite(minimum_selection_gain_s)
+        or minimum_selection_gain_s < 0.0
+    ):
+        raise ValueError("minimum_selection_gain_s must be finite and nonnegative")
 
     from lapsim.ui.simulation import run_one_lap, run_speed_periodic_lap
 
     start = perf_counter()
     baseline_time: float | None = None
     candidate_time: float | None = None
+    baseline_diagnostic_time: float | None = None
+    candidate_diagnostic_time: float | None = None
     baseline_run: EnduranceRunResult | None = None
     candidate_run: EnduranceRunResult | None = None
     candidate_track = plan.candidate_track
-    candidate_strength: float | None = None
+    baseline_path_audit: CurvaturePathAudit | None = None
+    candidate_path_audit: CurvaturePathAudit | None = None
+    candidate_strength: float | None = (
+        1.0 if plan.status == "candidate" else None
+    )
     trials: list[RacingLineTrial] = []
     baseline_error: str | None = None
     candidate_error: str | None = None
+
+    def audit_trial(track: SpatialTrack) -> tuple[CurvaturePathAudit | None, str | None]:
+        if plan.corridor is None or plan.source_station_m is None:
+            return None, "Sampled curvature-path corridor audit unavailable: corridor or source stations missing"
+        try:
+            audit = _audit_curvature_path(
+                track, plan.baseline_track, plan.source_station_m, plan.corridor,
+            )
+        except ValueError as error:
+            return None, f"Sampled curvature-path corridor audit unavailable: {error}"
+        if not audit.valid:
+            reasons = []
+            if audit.maximum_corridor_excess_m > audit.allowed_numerical_excess_m:
+                reasons.append(
+                    "sampled modeled curvature path exceeds declared centerline "
+                    f"clearance by {audit.maximum_corridor_excess_m:.6f} m"
+                )
+            if audit.seam_position_error_m > audit.allowed_seam_position_error_m:
+                reasons.append(
+                    "integrated path misses its closed start position by "
+                    f"{audit.seam_position_error_m:.6f} m "
+                    f"(limit {audit.allowed_seam_position_error_m:.3f} m)"
+                )
+            return audit, (
+                "; ".join(reasons)
+                + f" ({audit.sample_count} arc samples; no continuous swept-body certificate)"
+            )
+        return audit, None
+
+    def combined_error(*messages: str | None) -> str | None:
+        return "; ".join(message for message in messages if message) or None
+
+    def completed_diagnostic_time(result: EnduranceRunResult | None) -> float | None:
+        if (
+            result is not None and result.completed
+            and isfinite(result.driving_time_s) and result.driving_time_s > 0.0
+        ):
+            return result.driving_time_s
+        return None
 
     def run_trial(
         track: SpatialTrack, phase: str,
@@ -695,12 +949,41 @@ def compare_lines_with_lap_model(
             return result, result.driving_time_s, None
         return result, None, result.failure_reason or "Lap did not complete with a finite positive time"
 
-    baseline_run, baseline_time, baseline_error = run_trial(plan.baseline_track, "baseline")
+    baseline_path_audit, baseline_path_error = audit_trial(plan.baseline_track)
+    baseline_run, baseline_model_time, baseline_run_error = run_trial(
+        plan.baseline_track, "baseline"
+    )
+    baseline_diagnostic_time = completed_diagnostic_time(baseline_run)
+    baseline_time = (
+        baseline_model_time if baseline_path_error is None else None
+    )
+    baseline_error = combined_error(baseline_path_error, baseline_run_error)
+    baseline_comparison_error = (
+        "Processed baseline path failed the sampled corridor audit; candidate "
+        "time is diagnostic only"
+        if baseline_path_error is not None else None
+    )
     if plan.status == "candidate":
-        full_run, full_time, full_error = run_trial(plan.candidate_track, "full")
-        trials.append(RacingLineTrial(1.0, plan.candidate_track.length_m, full_time, full_error))
+        full_audit, full_path_error = audit_trial(plan.candidate_track)
+        full_run, full_model_time, full_run_error = run_trial(
+            plan.candidate_track, "full"
+        )
+        full_diagnostic_time = completed_diagnostic_time(full_run)
+        full_time = (
+            full_model_time
+            if full_path_error is None and baseline_path_error is None
+            else None
+        )
+        full_error = combined_error(
+            full_path_error, baseline_comparison_error, full_run_error
+        )
+        trials.append(RacingLineTrial(
+            1.0, plan.candidate_track.length_m, full_time, full_error,
+            full_audit, full_diagnostic_time,
+        ))
         candidate_run, candidate_time, candidate_error = full_run, full_time, full_error
-        candidate_strength = 1.0 if full_time is not None else None
+        candidate_path_audit = full_audit
+        candidate_diagnostic_time = full_diagnostic_time
         # Scaling a valid spline offset toward zero preserves every convex
         # lateral corridor bound. The intermediate x/y geometry still needs
         # its own fold and self-intersection checks. A full path that beats
@@ -710,27 +993,78 @@ def compare_lines_with_lap_model(
         except ValueError as error:
             trials.append(RacingLineTrial(0.5, None, None, f"Geometry: {error}"))
         else:
-            half_run, half_time, half_error = run_trial(half_track, "half")
-            trials.append(RacingLineTrial(0.5, half_track.length_m, half_time, half_error))
+            half_audit, half_path_error = audit_trial(half_track)
+            half_run, half_model_time, half_run_error = run_trial(
+                half_track, "half"
+            )
+            half_diagnostic_time = completed_diagnostic_time(half_run)
+            half_time = (
+                half_model_time
+                if half_path_error is None and baseline_path_error is None
+                else None
+            )
+            half_error = combined_error(
+                half_path_error, baseline_comparison_error, half_run_error
+            )
+            trials.append(RacingLineTrial(
+                0.5, half_track.length_m, half_time, half_error,
+                half_audit, half_diagnostic_time,
+            ))
             if half_time is not None and (candidate_time is None or half_time < candidate_time):
                 candidate_track, candidate_run = half_track, half_run
                 candidate_time, candidate_error = half_time, None
+                candidate_path_audit = half_audit
+                candidate_diagnostic_time = half_diagnostic_time
                 candidate_strength = 0.5
             elif candidate_run is None and half_run is not None:
                 # Preserve the path belonging to any available failed
                 # result so the desktop can save a diagnostic run.
                 candidate_track, candidate_run = half_track, half_run
+                candidate_path_audit = half_audit
+                candidate_diagnostic_time = half_diagnostic_time
+                candidate_strength = 0.5
+            elif (
+                candidate_time is None and half_time is None
+                and half_diagnostic_time is not None
+                and (
+                    candidate_diagnostic_time is None
+                    or half_diagnostic_time < candidate_diagnostic_time
+                )
+            ):
+                # Keep the fastest completed but ineligible trial as a
+                # diagnostic, never as a selectable lap-time comparison.
+                candidate_track, candidate_run = half_track, half_run
+                candidate_path_audit = half_audit
+                candidate_diagnostic_time = half_diagnostic_time
+                candidate_strength = 0.5
         if candidate_time is None:
             candidate_error = "; ".join(
                 f"{trial.strength:g}x: {trial.error}"
                 for trial in trials if trial.error is not None
             ) or "No candidate lap completed"
-    use_candidate = (
-        baseline_time is not None
-        and candidate_time is not None
-        and isfinite(candidate_time)
-        and candidate_time < baseline_time
-    )
+    if baseline_path_audit is None:
+        rank_status = "path_audit_unavailable"
+    elif not baseline_path_audit.valid:
+        rank_status = "invalid_processed_baseline"
+    elif plan.status == "candidate" and candidate_time is None and any(
+        trial.path_length_m is not None and trial.path_audit is None
+        for trial in trials
+    ):
+        rank_status = "path_audit_unavailable"
+    elif plan.status == "candidate" and candidate_time is None and any(
+        trial.path_audit is not None and not trial.path_audit.valid
+        for trial in trials
+    ):
+        rank_status = "invalid_candidate_path"
+    elif baseline_time is None or candidate_time is None:
+        rank_status = "no_comparison"
+    elif candidate_time >= baseline_time:
+        rank_status = "candidate_not_faster"
+    elif baseline_time - candidate_time <= minimum_selection_gain_s:
+        rank_status = "unresolved_close_gain"
+    else:
+        rank_status = "candidate_selected"
+    use_candidate = rank_status == "candidate_selected"
     return RacingLineComparison(
         baseline_time_s=baseline_time,
         candidate_time_s=candidate_time,
@@ -739,16 +1073,23 @@ def compare_lines_with_lap_model(
         candidate_track=candidate_track,
         candidate_strength=candidate_strength,
         trials=tuple(trials),
+        rank_status=rank_status,
+        selection_margin_s=minimum_selection_gain_s,
         selected_mode="candidate" if use_candidate else "centerline",
         selected_track=candidate_track if use_candidate else plan.baseline_track,
         selected_run=candidate_run if use_candidate else (baseline_run if baseline_time is not None else None),
         baseline_error=baseline_error,
         candidate_error=candidate_error,
         compute_time_s=perf_counter() - start,
+        baseline_path_audit=baseline_path_audit,
+        candidate_path_audit=candidate_path_audit,
+        baseline_diagnostic_time_s=baseline_diagnostic_time,
+        candidate_diagnostic_time_s=candidate_diagnostic_time,
     )
 
 
 __all__ = [
-    "TrackCorridor", "RacingLinePlan", "RacingLineComparison", "RacingLineTrial",
+    "TrackCorridor", "RacingLinePlan", "CurvaturePathAudit",
+    "RacingLineComparison", "RacingLineTrial",
     "RacingLinePlanner", "compare_lines_with_lap_model",
 ]

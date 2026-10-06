@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from math import ceil, copysign, cos, hypot, isfinite, sin
+from math import atan2, ceil, copysign, cos, fsum, hypot, isfinite, sin
 from os import PathLike
 from pathlib import Path
 import csv
@@ -22,6 +22,13 @@ class TrackGeometryAudit:
     A straight chord cannot be longer than the distance travelled along its
     cell.  Positive chord excess therefore proves that at least one of the
     station or x/y channels is inconsistent; it does not identify which one.
+    Closed-course turn and integrated-arc checks compare the saved curvature
+    with the plotted chord directions. They are diagnostics, not corrections.
+    The x/y winding sums turns between listed chord directions, including
+    the seam; ``endpoint_separation_m`` independently reports a map gap.
+    A zero-length first chord makes the integration heading undefined; any
+    zero-length chord makes the x/y winding undefined. The dependent fields
+    are then ``None``.
     """
 
     station_length_m: float
@@ -30,6 +37,11 @@ class TrackGeometryAudit:
     cells_with_chord_excess: int
     total_chord_excess_m: float
     maximum_chord_excess_m: float
+    curvature_signed_turn_rad: float | None = None
+    xy_signed_winding_rad: float | None = None
+    curvature_minus_xy_turn_rad: float | None = None
+    curvature_integrated_closure_gap_m: float | None = None
+    maximum_arc_chord_mismatch_m: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -155,28 +167,87 @@ class SpatialTrack:
         )
 
     def geometry_audit(self) -> TrackGeometryAudit:
-        """Compare x/y chords with the station distances used by the solver.
+        """Compare plotted x/y with solver distance and prescribed curvature.
 
         A small relative and absolute tolerance excludes ordinary floating
         point roundoff. This audit intentionally does not infer a new track or
-        replace the source curvature used by the default lap model.
+        replace the source curvature used by the default lap model. The
+        curvature-integrated gap follows exact constant-curvature arcs from
+        the first plotted chord tangent without forcing the endpoint closed.
+        It is therefore a geometric discrepancy, not a simulated car pose.
         """
 
-        chords = tuple(
-            hypot(upper_x - lower_x, upper_y - lower_y)
+        deltas = tuple(
+            (upper_x - lower_x, upper_y - lower_y)
             for lower_x, upper_x, lower_y, upper_y in zip(
                 self.x_m[:-1], self.x_m[1:],
                 self.y_m[:-1], self.y_m[1:], strict=True
             )
         )
+        chords = tuple(
+            hypot(delta_x, delta_y) for delta_x, delta_y in deltas
+        )
+        cell_lengths_m = self.cell_length_m
         excess = tuple(
             max(chord - length, 0.0)
-            for chord, length in zip(chords, self.cell_length_m, strict=True)
+            for chord, length in zip(chords, cell_lengths_m, strict=True)
         )
         above_tolerance = tuple(
             amount > max(1e-6, 1e-6 * length)
-            for amount, length in zip(excess, self.cell_length_m, strict=True)
+            for amount, length in zip(excess, cell_lengths_m, strict=True)
         )
+        signed_turn_rad = fsum(
+            curvature * length
+            for curvature, length in zip(
+                self.curvature_per_m, cell_lengths_m, strict=True
+            )
+        )
+        arc_chords: list[float] = []
+        for length_m, curvature_per_m in zip(
+            cell_lengths_m, self.curvature_per_m, strict=True
+        ):
+            half_turn_rad = 0.5 * curvature_per_m * length_m
+            if abs(half_turn_rad) < 1e-6:
+                half_turn_squared = half_turn_rad * half_turn_rad
+                sinc = 1.0 - half_turn_squared / 6.0 + (
+                    half_turn_squared * half_turn_squared / 120.0
+                )
+            else:
+                sinc = sin(half_turn_rad) / half_turn_rad
+            arc_chords.append(length_m * sinc)
+        maximum_arc_chord_mismatch_m = max(
+            abs(chord - abs(arc_chord))
+            for chord, arc_chord in zip(chords, arc_chords, strict=True)
+        )
+        xy_winding_rad: float | None = None
+        turn_difference_rad: float | None = None
+        integrated_gap_m: float | None = None
+        if self.closed and self.cell_count >= 3 and all(
+            chord > 0.0 for chord in chords
+        ):
+            xy_winding_rad = fsum(
+                atan2(
+                    previous_x * current_y - previous_y * current_x,
+                    previous_x * current_x + previous_y * current_y,
+                )
+                for (previous_x, previous_y), (current_x, current_y) in zip(
+                    (deltas[-1], *deltas[:-1]), deltas, strict=True
+                )
+            )
+            turn_difference_rad = signed_turn_rad - xy_winding_rad
+        if self.closed and chords[0] > 0.0:
+            heading_rad = atan2(deltas[0][1], deltas[0][0])
+            arc_deltas_x: list[float] = []
+            arc_deltas_y: list[float] = []
+            for length_m, curvature_per_m, arc_chord_m in zip(
+                cell_lengths_m, self.curvature_per_m, arc_chords, strict=True
+            ):
+                half_turn_rad = 0.5 * curvature_per_m * length_m
+                mid_heading_rad = heading_rad + half_turn_rad
+                arc_deltas_x.append(arc_chord_m * cos(mid_heading_rad))
+                arc_deltas_y.append(arc_chord_m * sin(mid_heading_rad))
+                heading_rad += 2.0 * half_turn_rad
+            integrated_gap_m = hypot(fsum(arc_deltas_x), fsum(arc_deltas_y))
         return TrackGeometryAudit(
             station_length_m=self.length_m,
             xy_chord_length_m=sum(chords),
@@ -189,6 +260,11 @@ class SpatialTrack:
                 if counted
             ),
             maximum_chord_excess_m=max(excess),
+            curvature_signed_turn_rad=signed_turn_rad,
+            xy_signed_winding_rad=xy_winding_rad,
+            curvature_minus_xy_turn_rad=turn_difference_rad,
+            curvature_integrated_closure_gap_m=integrated_gap_m,
+            maximum_arc_chord_mismatch_m=maximum_arc_chord_mismatch_m,
         )
 
     def wrap_distance_m(self, distance_m: float) -> float:

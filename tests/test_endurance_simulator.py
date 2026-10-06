@@ -6,6 +6,7 @@ from unittest import TestCase
 
 from lapsim import LapProgressSnapshot
 from lapsim.core.controls import Controls
+from lapsim.core.profiles import ConstantControlsProfile
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Track
 from lapsim.events.endurance import (
@@ -17,6 +18,7 @@ from lapsim.optimization.torque_profile import UniformPeriodicTorqueParameteriza
 from lapsim.solvers.path_constraints import PathConstraintSolver
 from lapsim.ui.simulation import run_one_lap
 from vehicle_model import Vehicle
+from vehicle_model.mech.chassis import DEFAULT_WHEELBASE_M
 
 
 def small_closed_track() -> SpatialTrack:
@@ -33,7 +35,7 @@ class ConstantDriverControls:
             motor_torque_request_nm=5.0,
             front_brake_pressure_psi=1.0,
             rear_brake_pressure_psi=1.0,
-            steering_angle_rad=atan(1.0 / 25.0 * 1.55),
+            steering_angle_rad=atan(DEFAULT_WHEELBASE_M / 25.0),
         )
 
 
@@ -44,7 +46,7 @@ class ConstantUnsafeControls:
             motor_torque_request_nm=1_000.0,
             front_brake_pressure_psi=0.0,
             rear_brake_pressure_psi=0.0,
-            steering_angle_rad=atan(1.0 / 25.0 * 1.55),
+            steering_angle_rad=atan(DEFAULT_WHEELBASE_M / 25.0),
         )
 
 
@@ -53,10 +55,100 @@ class EnduranceSimulatorTests(TestCase):
         for name in (
             "starting_speed_mps", "maximum_driving_time_s",
             "minimum_moving_speed_mps", "path_speed_tolerance_mps",
+            "path_curvature_tolerance_per_m",
         ):
             for value in (float("nan"), float("inf"), float("-inf")):
                 with self.subTest(field=name, value=value), self.assertRaises(ValueError):
                     EnduranceRunConfig(**{name: value})
+
+    def test_rejects_invalid_path_curvature_tolerance(self) -> None:
+        for value in (0.0, -1e-6, True, False):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                EnduranceRunConfig(path_curvature_tolerance_per_m=value)
+
+    def test_direct_controls_must_request_prescribed_curvature(self) -> None:
+        track = small_closed_track()
+        correct_angle = atan(DEFAULT_WHEELBASE_M / 25.0)
+        constraints = PathConstraintSolver().solve(track, Vehicle())
+
+        for steering_angle_rad in (0.0, -correct_angle):
+            with self.subTest(steering_angle_rad=steering_angle_rad):
+                vehicle = Vehicle()
+                progress = []
+                result = EnduranceSimulator().run(
+                    vehicle, constraints,
+                    ConstantControlsProfile(Controls(
+                        motor_torque_request_nm=5.0,
+                        steering_angle_rad=steering_angle_rad,
+                    )),
+                    EnduranceRunConfig(laps=1, starting_speed_mps=5.0),
+                    record_telemetry=True,
+                    progress_callback=progress.append,
+                )
+
+                self.assertFalse(result.completed)
+                self.assertIn(
+                    "supplied steering did not follow prescribed path curvature",
+                    result.failure_reason,
+                )
+                self.assertIsNotNone(result.telemetry)
+                assert result.telemetry is not None
+                self.assertEqual(result.telemetry.sample_count, 0)
+                self.assertEqual(progress, [])
+
+    def test_small_persistent_steering_bias_is_rejected(self) -> None:
+        track = small_closed_track()
+        constraints = PathConstraintSolver().solve(track, Vehicle())
+        biased_curvature = 1.0 / 25.0 + 5e-8
+        result = EnduranceSimulator().run(
+            Vehicle(), constraints,
+            ConstantControlsProfile(Controls(
+                motor_torque_request_nm=5.0,
+                steering_angle_rad=atan(DEFAULT_WHEELBASE_M * biased_curvature),
+            )),
+            EnduranceRunConfig(laps=1, starting_speed_mps=5.0),
+            record_telemetry=True,
+        )
+
+        self.assertFalse(result.completed)
+        self.assertIn(
+            "supplied steering did not follow prescribed path curvature",
+            result.failure_reason,
+        )
+        self.assertIsNotNone(result.telemetry)
+        assert result.telemetry is not None
+        self.assertEqual(result.telemetry.sample_count, 0)
+
+    def test_direct_controls_must_achieve_prescribed_curvature(self) -> None:
+        track = small_closed_track()
+        vehicle = Vehicle()
+        constraints = PathConstraintSolver().solve(track, vehicle)
+        # A stale high-grip envelope alone cannot certify path following when
+        # the tire on the run is actually too weak for its requested turn.
+        vehicle.tire.constant_friction_coefficient = 0.05
+        progress = []
+        result = EnduranceSimulator().run(
+            vehicle, constraints,
+            ConstantControlsProfile(Controls(
+                motor_torque_request_nm=5.0,
+                steering_angle_rad=atan(vehicle.chassis.wheelbase_m / 25.0),
+            )),
+            EnduranceRunConfig(laps=1, starting_speed_mps=5.0),
+            record_telemetry=True,
+            progress_callback=progress.append,
+        )
+
+        self.assertFalse(result.completed)
+        self.assertIn(
+            "vehicle could not achieve prescribed path curvature",
+            result.failure_reason,
+        )
+        self.assertAlmostEqual(vehicle.requested_curvature_per_m, 1.0 / 25.0)
+        self.assertLess(vehicle.curvature_per_m, 1.0 / 25.0)
+        self.assertIsNotNone(result.telemetry)
+        assert result.telemetry is not None
+        self.assertEqual(result.telemetry.sample_count, 0)
+        self.assertEqual(progress, [])
 
     def test_progress_snapshots_match_accepted_cells_without_changing_result(self) -> None:
         track = small_closed_track()

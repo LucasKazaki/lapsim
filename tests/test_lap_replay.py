@@ -191,6 +191,22 @@ def test_changed_recorded_commands_fail_numerical_agreement(
     assert report.mismatch_reasons
 
 
+def test_off_path_recorded_steering_fails_model_replay(
+    saved_laps: dict[str, Path], tmp_path: Path,
+) -> None:
+    def mutate(payload: dict) -> None:
+        payload["telemetry"]["channels"]["controls.steering_angle_rad"]["values"][0] = 0.0
+
+    path = _mutated_record(
+        saved_laps["prius_2026_le"], tmp_path / "off_path_steering.json", mutate,
+    )
+    report = replay_lap_record(path)
+    assert not report.model_agreement
+    assert not report.replay_completed
+    assert report.replayed_sample_count == 0
+    assert any("did not complete" in reason for reason in report.mismatch_reasons)
+
+
 def test_first_cell_model_failure_returns_a_structured_mismatch(
     saved_laps: dict[str, Path], tmp_path: Path,
 ) -> None:

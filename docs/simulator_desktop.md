@@ -66,11 +66,12 @@ from the final recorded pass for each path.
 Rejected cells are not shown as completed movement. After a completed lap,
 the app starts a 1× replay with Play/Pause, Start, time scrub, playback rate,
 and wheel zoom. **Replay lap** lets you switch between A and B after a
-completed two-car comparison, or between the geometric baseline and best
-tested AI path after a valid AI comparison. Each choice uses that run's
+completed two-car comparison, or between completed geometric baseline and
+best tested AI path runs, including runs labeled **diagnostic** after a failed
+modeled-path audit. Each choice uses that run's
 recorded telemetry and its own processed path where applicable. Switching
 resets the playback cursor without rerunning physics; the menu is disabled
-for a single run or an unsuccessful comparison. The course rotates around a
+when only one completed run is available. The course rotates around a
 fixed car marker. The replay uses
 the solver's constant-acceleration cell relation between recorded exits.
 The lap physics uses a separate curvature channel, so the displayed map
@@ -91,36 +92,62 @@ torque request through a newly derived geometric centerline, the full-offset
 candidate, and a validated half-offset path. For each path it makes one dry
 seam-speed probe and one final recorded lap, starting each from the same fresh
 initial car and pack state. The final pass starts at the probe's exit speed;
-its finish-minus-start speed must be within **0.005 m/s** to receive a
-comparison time. This is at most six full physics passes across three paths.
-It checks speed closure only; pack charge and other states need not match at
-the seam. Evaluating both strengths can catch an interior line that is faster
-than the full path even when the full path already beats centerline.
-It selects the best tested candidate only if that path and the baseline both
-have valid comparison times and the candidate is faster. The left panel shows
-the available times, signed difference,
-selected path length, and assumptions; **Compare path numbers** shows time,
-distance, speed, equivalent energy, and lateral acceleration side by side.
-The selected path is used for the course plot, Driver view, and saved run
-record. A failed run returned by the solver is saved for diagnosis.
+its finish-minus-start speed must be within **0.005 m/s**. This is at most six
+full physics passes across three paths. Pack charge and other states need not
+match at the seam. Evaluating both strengths can catch an interior line that
+is faster than the full path in the modeled time calculation.
+
+Before a time can be compared, the app integrates each solver path's saved
+constant-curvature cells and samples **four positions per cell** against the
+declared usable corridor around the processed geometric baseline. Sampled
+clearance may exceed the usable corridor by no more than **1e-8 m**, and the
+integrated end position must close within **0.01 m**. The check is deliberately
+conservative and does not certify the continuous swept body or real cone
+clearance. If the processed baseline fails, all completed times in that run
+are **diagnostic only**. The left panel adds `*` to those times, leaves their
+difference blank, disables **Compare path numbers**, and states the excess and
+seam gap. Driver view still offers diagnostic replay, and linked JSON records
+retain the completed runs. There is no selected AI winner for that case.
+
+When both paths pass the modeled-path audit and speed-seam check, the app
+selects the best tested candidate only if its gain is strictly greater than
+**0.05 s**. A smaller positive gain is an unresolved numerical tie and leaves
+the eligible geometric baseline selected. The margin is a provisional
+selection heuristic, not a proven numerical error bound. Eligible comparisons
+show their signed difference and allow **Compare path numbers** for time,
+distance, speed, equivalent energy, and lateral acceleration. A failed run
+returned by the solver is saved for diagnosis.
 
 This AI mode rebuilds arc length and curvature from the x/y map. The ordinary
 centerline mode uses the separate recorded curvature channel. On the packaged
-course those channels disagree materially; the Analysis tab warns that 1,441
-map chords are longer than their assigned station intervals. The two AI-mode paths can be
-compared with each other, but their times should not be compared directly to
-the ordinary lap time. The map is not a surveyed corridor, the planner does
+course those channels disagree materially: 1,441 map chords exceed their
+station intervals, individual prescribed arc-chord lengths differ from plotted
+map-chord lengths by up to **0.235787 m**, stored curvature sums to **3.657937 rad** of
+turn versus **6.283185 rad** of map winding, and constant-curvature integration
+from the first map-chord heading leaves a **542.633 m** closure gap. The processed AI
+baseline polygon closes in x/y but has a **0.750897 m** integrated arc closure
+gap. The Analysis tab shows the source warning. Even two x/y-derived AI-mode
+times may be ranked only if their modeled-path audits pass; they must not be
+compared directly with the ordinary source-curvature lap. The map is not a surveyed corridor, the planner does
 not steer a closed-loop car, and the vehicle model has simplified tire and
 controller physics. See [AI racer design and checks](ai_racer_design.md) for
 the objective, validation checks, and local benchmark results.
 
-The selected AI run record includes every tested offset strength and its
-reported result or error, the selected strength, and exact selected path
+For the shipped assumed ±2 m Prius case, baseline/full/half laps complete in
+**87.618366/87.377773/87.403816 s**, but all three are starred diagnostics:
+sampled usable-corridor excess is **0.095506/0.908195/0.501981 m** and the
+position seam misses by roughly **0.75–0.77 m**. No AI path is selected from
+those runs. This does not change the ordinary centerline calculation.
+
+The primary AI run record includes every tested offset strength and its
+reported eligible or diagnostic result, audit status, and exact saved solver
 geometry and telemetry, including the explicit starting speed of its final
-pass. When a second physics trial returned a run, the app
-also saves one comparison counterpart with its own geometry and telemetry;
-the selected record names its run ID and role. A third trial may have only its
-summary saved. These records do not provide a full ghost/session replay.
+pass. When a second physics trial returned a run, the app also saves one
+linked counterpart with its own geometry and telemetry; the primary record
+names its ID and role. A third trial may have only its summary saved. For an
+audit-failed shipped course, the primary record is flagged diagnostic, and
+neither record represents a selected winner. These records do not provide a
+full ghost/session replay.
 
 The Timed sessions tab is explicitly a design placeholder for a future
 versioned Terps vehicle/controller, timed drive, ghost, full session capture,
@@ -172,10 +199,15 @@ for station; recorded control channels must match exactly. The report separates
 numerical agreement from source commit, dirty-worktree, Python, platform,
 and dependency-version warnings. This check requires the installed model code
 and supports neither older v1 records nor incomplete laps. Agreement means
-the current code reproduced the selected saved model outputs. For a record
-made with explicit controls, the event checks speed ceilings but does not
-confirm that supplied steering tracked the prescribed course or stayed within
-boundaries. The replay is not validation against a measured car or a complete
+the current code reproduced the saved model outputs, even for a diagnostic
+AI run whose path audit failed. For a record
+made with explicit controls, the event checks speed ceilings and both the
+steering-requested and tire-achieved curvature against the prescribed cell
+curvature. `EnduranceRunConfig.path_curvature_tolerance_per_m` defaults to
+**1e-9 1/m**; a direct zero-steer circular lap fails this check. The replay
+uses the same event gate. This cell check does not establish that integrated
+x/y followed the plotted course or that the car stayed clear of boundaries.
+The replay is not validation against a measured car or a complete
 ghost/session workflow.
 
 **Four-wheel lab** opens a separate top-down, time-domain experiment. It

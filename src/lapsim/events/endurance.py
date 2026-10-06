@@ -26,6 +26,7 @@ class EnduranceRunConfig:
     path_speed_tolerance_mps: float = 0.01
     maximum_brake_pressure_psi: float | None = DEFAULT_MAXIMUM_BRAKE_PRESSURE_PSI
     regenerative_braking_soc_threshold: float | None = None
+    path_curvature_tolerance_per_m: float = 1e-9
 
     def __post_init__(self) -> None:
         if self.laps <= 0:
@@ -40,6 +41,12 @@ class EnduranceRunConfig:
             raise ValueError("minimum_moving_speed_mps must be finite and positive")
         if not isfinite(self.path_speed_tolerance_mps) or self.path_speed_tolerance_mps <= 0.0:
             raise ValueError("path_speed_tolerance_mps must be finite and positive")
+        if (
+            isinstance(self.path_curvature_tolerance_per_m, bool)
+            or not isfinite(self.path_curvature_tolerance_per_m)
+            or self.path_curvature_tolerance_per_m <= 0.0
+        ):
+            raise ValueError("path_curvature_tolerance_per_m must be finite and positive")
         if self.maximum_brake_pressure_psi is not None and (
             not isfinite(self.maximum_brake_pressure_psi)
             or self.maximum_brake_pressure_psi <= 0.0
@@ -117,8 +124,9 @@ class EnduranceSimulator:
     longitudinal controller.  The controller reduces requested drive torque,
     coasts, or requests friction braking as needed to reach the next cyclic
     path-speed ceiling.  A full control profile supplies motor, brake-pressure,
-    regen, and steering commands directly and is only validated against the
-    path constraints.
+    regen, and steering commands directly. Both commanded and achieved
+    curvature must follow the prescribed path, in addition to its speed
+    constraints. This is not a check against plotted x/y or course boundaries.
     """
 
     @staticmethod
@@ -546,6 +554,28 @@ class EnduranceSimulator:
                 timestep_s = vehicle.time_s - time_before_step_s
                 if timestep_s <= 0.0:
                     failure_reason = "vehicle stalled on the endurance path"
+                    break
+                if (
+                    abs(vehicle.requested_curvature_per_m - curvature_per_m)
+                    > config.path_curvature_tolerance_per_m
+                ):
+                    failure_reason = (
+                        "supplied steering did not follow prescribed path "
+                        f"curvature at lap {lap_index + 1}, cell {cell_index}: "
+                        f"requested {vehicle.requested_curvature_per_m:.8g} 1/m, "
+                        f"path {curvature_per_m:.8g} 1/m"
+                    )
+                    break
+                if (
+                    abs(vehicle.curvature_per_m - curvature_per_m)
+                    > config.path_curvature_tolerance_per_m
+                ):
+                    failure_reason = (
+                        "vehicle could not achieve prescribed path curvature "
+                        f"at lap {lap_index + 1}, cell {cell_index}: "
+                        f"achieved {vehicle.curvature_per_m:.8g} 1/m, "
+                        f"path {curvature_per_m:.8g} 1/m"
+                    )
                     break
                 if (
                     vehicle.speed_mps

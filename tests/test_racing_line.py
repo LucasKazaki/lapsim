@@ -15,12 +15,14 @@ from lapsim.optimization.racing_line import (
     RacingLinePlanner,
     TrackCorridor,
     _continuous_offset_violation,
+    _audit_curvature_path,
     _has_nonadjacent_segment_intersection,
     _periodic_cubic_basis_at,
     _scaled_candidate_track,
     compare_lines_with_lap_model,
 )
 from lapsim.ui.presets import VehicleSetup, make_prius_benchmark
+from lapsim.ui.simulation import load_team_endurance_track
 
 
 def _rounded_rectangle() -> SpatialTrack:
@@ -278,12 +280,20 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
     assert comparison.candidate_time_s is not None
     assert comparison.candidate_time_s < comparison.baseline_time_s
     assert comparison.selected_mode == "candidate"
-    assert comparison.selected_track is plan.candidate_track
+    assert comparison.candidate_strength == 0.5
+    assert comparison.selected_track is comparison.candidate_track
     assert comparison.selected_run is comparison.candidate_run
     assert comparison.compute_time_s > 0.0
+    assert comparison.baseline_path_audit is not None
+    assert comparison.baseline_path_audit.valid
+    assert comparison.trials[0].path_audit is not None
+    assert not comparison.trials[0].path_audit.valid
+    assert comparison.trials[0].diagnostic_lap_time_s is not None
+    assert comparison.trials[0].lap_time_s is None
+    assert comparison.trials[0].path_audit.maximum_corridor_excess_m > 0.03
     for phase, active_track, run in (
         ("baseline", plan.baseline_track, comparison.baseline_run),
-        ("full", plan.candidate_track, comparison.candidate_run),
+        ("half", comparison.candidate_track, comparison.candidate_run),
     ):
         phase_events = [
             snapshot for observed_phase, observed_track, snapshot in progress
@@ -295,12 +305,139 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
         assert phase_events[-1].elapsed_time_s == pytest.approx(run.driving_time_s)
 
 
+def test_curvature_arc_audit_rejects_chord_based_square_with_small_clearance() -> None:
+    side_m = 10.0
+    square = SpatialTrack(
+        distance_m=(0.0, 10.0, 20.0, 30.0, 40.0),
+        x_m=(0.0, 10.0, 10.0, 0.0, 0.0),
+        y_m=(0.0, 0.0, 10.0, 10.0, 0.0),
+        curvature_per_m=(pi / (2.0 * side_m),) * 4,
+    )
+    corridor = TrackCorridor.constant(
+        square, left_width_m=1.0, right_width_m=1.0,
+        vehicle_width_m=0.5, safety_margin_m=0.1,
+        source="synthetic square clearance",
+    )
+    audit = _audit_curvature_path(square, square, square.distance_m, corridor)
+    assert not audit.valid
+    assert audit.sample_count == 16
+    assert audit.maximum_corridor_excess_m > 0.05
+    assert audit.allowed_numerical_excess_m == 1e-8
+    # Equal turns close heading and position on this symmetric path, but the
+    # intermediate arc endpoints do not coincide with polygon vertices.
+    assert audit.seam_position_error_m < 1e-10
+
+
+def test_curvature_arc_audit_uses_exact_heading_for_coherent_arc_cells() -> None:
+    track = _rounded_rectangle()
+    audit = _audit_curvature_path(
+        track, track, track.distance_m, _corridor(track),
+    )
+    assert audit.initial_heading_policy == "coherent_first_arc_chord"
+    assert audit.seam_position_error_m < 1e-8
+    assert audit.maximum_corridor_excess_m == 0.0
+    assert audit.valid
+
+
+def test_shipped_assumed_corridor_marks_both_paths_diagnostic(
+    monkeypatch,
+) -> None:
+    track = load_team_endurance_track()
+    corridor = TrackCorridor.constant(
+        track, left_width_m=2.0, right_width_m=2.0,
+        vehicle_width_m=1.78308, safety_margin_m=0.3,
+        source="synthetic assumed Prius clearance",
+    )
+    plan = RacingLinePlanner().plan(track, corridor)
+    assert plan.status == "candidate"
+
+    def fake_lap(vehicle, active_track, *, torque_request_fraction):
+        del vehicle, torque_request_fraction
+        time_s = 100.0 if active_track is plan.baseline_track else (
+            99.0 if active_track is plan.candidate_track else 98.0
+        )
+        return SimpleNamespace(
+            completed=True, driving_time_s=time_s, failure_reason=None,
+        )
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.8,
+    )
+    assert comparison.rank_status == "invalid_processed_baseline"
+    assert comparison.baseline_path_audit is not None
+    assert comparison.baseline_path_audit.maximum_corridor_excess_m > 0.09
+    assert comparison.baseline_time_s is None
+    assert comparison.baseline_diagnostic_time_s == 100.0
+    assert comparison.baseline_run is not None
+    assert comparison.candidate_time_s is None
+    assert comparison.candidate_diagnostic_time_s == 98.0
+    assert comparison.candidate_run is not None
+    assert comparison.selected_mode == "centerline"
+    assert comparison.selected_run is None
+    assert all(trial.lap_time_s is None for trial in comparison.trials)
+    assert tuple(trial.diagnostic_lap_time_s for trial in comparison.trials) == (
+        99.0, 98.0,
+    )
+    assert all(trial.path_audit is not None for trial in comparison.trials)
+    assert all(not trial.path_audit.valid for trial in comparison.trials)
+    wide_corridor = TrackCorridor.constant(
+        track, left_width_m=4.0, right_width_m=4.0,
+        vehicle_width_m=1.78308, safety_margin_m=0.3,
+        source="wide synthetic closure check",
+    )
+    seam_only = _audit_curvature_path(
+        plan.baseline_track, plan.baseline_track,
+        track.distance_m, wide_corridor,
+    )
+    assert seam_only.maximum_corridor_excess_m == 0.0
+    assert seam_only.seam_position_error_m > 0.7
+    assert seam_only.allowed_seam_position_error_m == 0.01
+    assert not seam_only.valid
+
+
+def test_missing_corridor_audit_cannot_select_candidate(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    plan = replace(_adaptive_plan, corridor=None, source_station_m=None)
+
+    def fake_lap(vehicle, track, *, torque_request_fraction):
+        del vehicle, torque_request_fraction
+        return SimpleNamespace(
+            completed=True,
+            driving_time_s=(100.0 if track is plan.baseline_track else 90.0),
+            failure_reason=None,
+        )
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.7,
+    )
+    assert comparison.rank_status == "path_audit_unavailable"
+    assert comparison.baseline_time_s is None
+    assert comparison.candidate_time_s is None
+    assert comparison.baseline_diagnostic_time_s == 100.0
+    assert comparison.candidate_diagnostic_time_s == 90.0
+    assert comparison.selected_run is None
+    assert "audit unavailable" in comparison.baseline_error
+
+
 @pytest.fixture(scope="module")
 def _adaptive_plan():
     track = _rounded_rectangle()
     plan = RacingLinePlanner().plan(track, _corridor(track))
     assert plan.status == "candidate"
-    return plan
+    # These timing-policy tests need a clearance that also contains the
+    # full-strength *integrated* arc, not only the proposed polygon vertices.
+    comparison_corridor = TrackCorridor.constant(
+        track, left_width_m=3.1, right_width_m=3.1,
+        vehicle_width_m=1.4, safety_margin_m=0.2,
+        source="synthetic comparison clearance",
+    )
+    return replace(
+        plan, corridor=comparison_corridor,
+        corridor_source=comparison_corridor.source,
+    )
 
 
 def test_half_strength_path_rebuilds_geometry_inside_valid_endpoints(_adaptive_plan) -> None:
@@ -370,6 +507,77 @@ def test_full_strength_win_is_retained_after_half_trial(_adaptive_plan, monkeypa
     assert comparison.candidate_strength == 1.0
     assert comparison.candidate_track is plan.candidate_track
     assert tuple(trial.lap_time_s for trial in comparison.trials) == (99.0, 99.5)
+
+
+@pytest.mark.parametrize(
+    ("candidate_time_s", "rank_status", "selected_mode"),
+    [
+        (100.0, "candidate_not_faster", "centerline"),
+        (99.991, "unresolved_close_gain", "centerline"),
+        (99.95, "unresolved_close_gain", "centerline"),
+        (99.949, "candidate_selected", "candidate"),
+    ],
+)
+def test_close_candidate_retains_its_result_but_uses_selection_margin(
+    _adaptive_plan, monkeypatch, candidate_time_s, rank_status, selected_mode,
+) -> None:
+    plan = _adaptive_plan
+
+    def fake_lap(vehicle, track, *, torque_request_fraction):
+        assert torque_request_fraction == 0.7
+        time_s = 100.0 if track is plan.baseline_track else (
+            candidate_time_s if track is plan.candidate_track else 101.0
+        )
+        return SimpleNamespace(completed=True, driving_time_s=time_s, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.7,
+    )
+
+    assert comparison.baseline_time_s == 100.0
+    assert comparison.candidate_time_s == candidate_time_s
+    assert comparison.candidate_strength == 1.0
+    assert comparison.candidate_run is not None
+    assert comparison.candidate_track is plan.candidate_track
+    assert comparison.selection_margin_s == 0.05
+    assert comparison.rank_status == rank_status
+    assert comparison.selected_mode == selected_mode
+    assert comparison.selected_track is (
+        plan.candidate_track if selected_mode == "candidate" else plan.baseline_track
+    )
+
+
+@pytest.mark.parametrize(
+    "bad_margin", [-0.001, float("nan"), float("inf"), True, False],
+)
+def test_selection_margin_must_be_finite_and_nonnegative(
+    _adaptive_plan, bad_margin,
+) -> None:
+    with pytest.raises(ValueError, match="minimum_selection_gain_s"):
+        compare_lines_with_lap_model(
+            object(), _adaptive_plan, torque_request_fraction=0.7,
+            minimum_selection_gain_s=bad_margin,
+        )
+
+
+def test_zero_margin_allows_any_positive_gain(_adaptive_plan, monkeypatch) -> None:
+    plan = _adaptive_plan
+
+    def fake_lap(vehicle, track, *, torque_request_fraction):
+        time_s = 100.0 if track is plan.baseline_track else (
+            99.999 if track is plan.candidate_track else 101.0
+        )
+        return SimpleNamespace(completed=True, driving_time_s=time_s, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.7,
+        minimum_selection_gain_s=0.0,
+    )
+    assert comparison.rank_status == "candidate_selected"
+    assert comparison.selection_margin_s == 0.0
+    assert comparison.selected_mode == "candidate"
 
 
 def test_opt_in_speed_periodic_comparison_uses_converged_lap_only(
@@ -571,7 +779,7 @@ def test_failed_trials_have_no_fictitious_time(_adaptive_plan, monkeypatch) -> N
     comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
     assert comparison.baseline_time_s is None
     assert comparison.candidate_time_s is None
-    assert comparison.candidate_strength is None
+    assert comparison.candidate_strength == 1.0
     assert comparison.selected_mode == "centerline"
     assert comparison.selected_run is None
     assert comparison.candidate_run is not None

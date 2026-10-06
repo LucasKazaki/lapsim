@@ -317,6 +317,10 @@ def test_driver_replay_switches_comparison_cars_and_ai_paths_without_rerunning()
             candidate_time_s=candidate.driving_time_s,
             baseline_run=baseline, candidate_run=candidate,
             candidate_track=candidate_track, candidate_strength=0.5,
+            rank_status="candidate_selected", selection_margin_s=0.05,
+                baseline_diagnostic_time_s=baseline.driving_time_s,
+                candidate_diagnostic_time_s=candidate.driving_time_s,
+                baseline_path_audit=None, candidate_path_audit=None,
             trials=(SimpleNamespace(),),
         )
         app.run_started_at = time.perf_counter()
@@ -341,5 +345,37 @@ def test_driver_replay_switches_comparison_cars_and_ai_paths_without_rerunning()
         assert app.driver_playback is not None
         assert app.driver_playback.track is candidate_track
         assert app.driver_playback.speeds[-1] == pytest.approx(12.0)
+
+        # A numerical tie keeps the processed baseline selected while the
+        # faster-on-this-grid candidate remains available for inspection.
+        close_candidate = result_for(candidate_track, 10.01)
+        close_comparison = SimpleNamespace(
+            baseline_time_s=baseline.driving_time_s,
+            candidate_time_s=close_candidate.driving_time_s,
+            baseline_run=baseline, candidate_run=close_candidate,
+            candidate_track=candidate_track, candidate_strength=0.5,
+            rank_status="unresolved_close_gain", selection_margin_s=0.05,
+                baseline_diagnostic_time_s=baseline.driving_time_s,
+                candidate_diagnostic_time_s=close_candidate.driving_time_s,
+                baseline_path_audit=None, candidate_path_audit=None,
+            trials=(SimpleNamespace(),),
+        )
+        app.result_queue.put((
+            "ai_single",
+            ("AI car", baseline, baseline_track, "centerline", plan,
+             close_comparison, (2.0, 1.8, 0.2), "d" * 64),
+            None,
+        ))
+        with patch.object(app, "_show_result"):
+            app._poll_result()
+        assert "provisional selection margin" in app.ai_result_text.get()
+        assert app.driver_replay_var.get() == "Geometric centerline"
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is baseline_track
+        assert app.driver_replay_menu["state"] == "normal"
+        replay_menu.invoke(1)
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is candidate_track
+        assert app.driver_playback.speeds[-1] == pytest.approx(10.01)
     finally:
         root.destroy()

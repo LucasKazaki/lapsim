@@ -84,21 +84,43 @@ uses an assumed track half-width, vehicle width, and margin to propose one
 smooth line and compare it with a geometric centerline using the same car and
 physics solver. It also tests a half-offset line for a valid candidate.
 Each of at most three paths receives one dry speed-seam pass and one recorded
-pass; only paths whose start and finish speeds agree within 0.005 m/s receive
-a comparison time. The app selects a candidate only when its valid time beats
-the baseline's. The packaged
-course has no surveyed widths, and its x/y map does not agree with its stored
-solver curvature; the Analysis tab displays the measured inconsistency. AI-mode times should be
-compared only with the AI-mode geometric baseline, not the ordinary centerline
-lap. The **Driver view** shows accepted solver-step progress on a reference
+pass. A completed lap is eligible for a path comparison only when its start
+and finish speeds agree within 0.005 m/s and a sampled integration of its
+prescribed curvature passes the assumed clearance and position-closure
+checks. Four positions per cell are sampled; allowable corridor excess is
+1e-8 m and the integrated seam gap must be at most 0.01 m. These checks do
+not certify the continuous swept vehicle body or surveyed cone clearance.
+For eligible paths, the app selects a candidate only when its gain over the
+geometric baseline is strictly greater than 0.05 s. A smaller positive gain
+is an unresolved numerical tie; the 0.05 s margin is a provisional selection
+heuristic, not a proven error bound.
+
+The packaged course has no surveyed widths, and its x/y map does not agree
+with its stored solver curvature. The Analysis tab reports 3.657937 rad of
+prescribed turn versus 6.283185 rad of map winding, up to 0.235787 m
+disagreement between individual solver arc-chord lengths and plotted map-chord lengths,
+and a 542.633 m closure gap when the stored curvature is integrated from the
+first map-chord heading.
+The AI processed geometric baseline also has a 0.750897 m integrated closure
+gap because its polygon chords and constant-curvature arcs disagree. On the
+shipped course with an assumed ±2 m corridor, completed Prius baseline and
+offset laps currently fail the sampled path audit; displayed starred times
+are diagnostic only, the time difference is blank, and there is no selected
+AI winner. The ordinary centerline mode is unchanged. AI-mode eligible times,
+when available on a coherent course, should be compared only with the AI-mode
+geometric baseline, not the ordinary centerline lap. The **Driver view** shows accepted solver-step progress on a reference
 path, then plays back numeric telemetry after a completed lap. Its **Replay
 lap** menu switches between A and B after a two-car comparison, or between
-the geometric baseline and best tested AI path after a valid AI comparison,
-without running physics again. AI comparisons save linked selected and
-counterpart run records when both paths return runs. Completed v2 lap records
+the geometric baseline and best tested AI path after a completed AI run,
+without running physics again. AI trials save linked primary/displayed and
+counterpart run records when both paths return runs, including diagnostic
+records that must not be ranked. Completed v2 lap records
 can be checked on demand with the programmatic `replay_lap_record()` API: it
 reruns their recorded cell controls on the saved solver grid and reports
-numerical agreement. **Timed sessions · WIP** remains a disabled placeholder
+numerical agreement. The lap model also checks both requested and achieved
+curvature against the prescribed cell curvature within a default 1e-9 1/m
+tolerance before accepting a cell. This does not verify the plotted x/y path
+or cone clearance. **Timed sessions · WIP** remains a disabled placeholder
 for an interactive drive, ghost, complete session capture, and report workflow.
 
 ## Basic use

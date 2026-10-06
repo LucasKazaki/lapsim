@@ -35,6 +35,50 @@ from .simulation import (
 FONT = ("Segoe UI", 10)
 FONT_BOLD = ("Segoe UI", 10, "bold")
 FONT_TITLE = ("Segoe UI", 16, "bold")
+AI_SELECTION_MARGIN_S = 0.05
+
+
+def _course_geometry_warning(audit: Any) -> str | None:
+    """Describe source-map inconsistencies without changing lap inputs."""
+
+    details = []
+    if audit.cells_with_chord_excess:
+        details.append(
+            f"{audit.cells_with_chord_excess:,} map segments exceed their "
+            f"assigned travel distance ({audit.total_chord_excess_m:.1f} m "
+            "combined excess)."
+        )
+    if (
+        audit.curvature_minus_xy_turn_rad is not None
+        and abs(audit.curvature_minus_xy_turn_rad) > 1e-6
+    ):
+        details.append(
+            f"Curvature turns {audit.curvature_signed_turn_rad:.6g} rad versus "
+            f"{audit.xy_signed_winding_rad:.6g} rad on the map."
+        )
+    if audit.maximum_arc_chord_mismatch_m > 1e-6:
+        details.append(
+            "A prescribed arc chord length differs from its map-cell chord "
+            "length by up to "
+            f"{audit.maximum_arc_chord_mismatch_m:.6g} m."
+        )
+    if (
+        audit.curvature_integrated_closure_gap_m is not None
+        and audit.curvature_integrated_closure_gap_m > 0.01
+    ):
+        details.append(
+            "The integrated curvature path misses closure by "
+            f"{audit.curvature_integrated_closure_gap_m:.6g} m."
+        )
+    if not details:
+        return None
+    return (
+        "Course data mismatch: " + " ".join(details) + " The source map is a "
+        "visual reference; default lap physics uses its separate distance "
+        "and curvature data."
+    )
+
+
 TRACE_OPTIONS = {
     "Speed": ("vehicle.speed_mps", 3.6, "km/h"),
     "Longitudinal acceleration": (
@@ -443,7 +487,7 @@ class LapSimDesktop:
             ("Geometric centerline", "baseline", "s"),
             ("Best tested AI path", "candidate", "s"),
             ("Candidate − centerline", "difference", "s"),
-            ("Selected path length", "length", "m"),
+            ("Displayed path length", "length", "m"),
         )):
             row, column = divmod(index, 2)
             card = tk.Frame(self.ai_output_box, bd=1, relief="solid", padx=5, pady=4)
@@ -823,17 +867,11 @@ class LapSimDesktop:
             anchor="e",
         ).pack(side="right", padx=4)
 
-        audit = self.course_geometry_audit
-        if audit.cells_with_chord_excess:
+        geometry_warning = _course_geometry_warning(self.course_geometry_audit)
+        if geometry_warning is not None:
             tk.Label(
                 plot_box,
-                text=(
-                    f"Course data mismatch: {audit.cells_with_chord_excess:,} map "
-                    f"segments exceed their assigned travel distance "
-                    f"({audit.total_chord_excess_m:.1f} m combined excess). "
-                    "The source map is a visual reference; default lap physics "
-                    "uses its separate distance and curvature data."
-                ),
+                text=geometry_warning,
                 anchor="w", justify="left", wraplength=780, font=("Segoe UI", 9),
             ).grid(row=1, column=0, sticky="ew", pady=(0, 5))
 
@@ -1830,6 +1868,7 @@ class LapSimDesktop:
                 vehicle, plan, torque_request_fraction=torque_fraction,
                 progress_callback=on_progress,
                 speed_periodic=True,
+                minimum_selection_gain_s=AI_SELECTION_MARGIN_S,
             )
             selected_mode = comparison.selected_mode
             selected_run = comparison.selected_run
@@ -1847,9 +1886,17 @@ class LapSimDesktop:
             if selected_run is None:
                 # Preserve a failed attempt for diagnosis when the simulator
                 # returned a run object for at least one path.
-                selected_run = comparison.baseline_run or comparison.candidate_run
+                selected_run = next(
+                    (
+                        run for run in (
+                            comparison.baseline_run, comparison.candidate_run
+                        )
+                        if run is not None and run.completed
+                    ),
+                    None,
+                ) or comparison.baseline_run or comparison.candidate_run
                 selected_track = (
-                    plan.baseline_track if comparison.baseline_run is not None
+                    plan.baseline_track if selected_run is comparison.baseline_run
                     else comparison.candidate_track
                 )
                 selected_mode = "no_comparable_path"
@@ -1871,12 +1918,15 @@ class LapSimDesktop:
             ).hexdigest()
             path_planning = {
                 "mode": "experimental_racing_line",
-                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v3_winding_three_trial",
+                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v4_sampled_arc_clearance",
                 "record_role": "selected_result",
                 "lap_start_policy": "speed_only_periodic_fixed_initial_vehicle_state",
                 "speed_seam_tolerance_mps": 0.005,
                 "maximum_lap_passes_per_trial": 2,
                 "selected_mode": selected_mode,
+                "diagnostic_only": selected_mode == "no_comparable_path",
+                "rank_status": comparison.rank_status,
+                "selection_margin_s": comparison.selection_margin_s,
                 "candidate_offset_strength": comparison.candidate_strength,
                 "selected_offset_strength": (
                     comparison.candidate_strength
@@ -1888,6 +1938,11 @@ class LapSimDesktop:
                         "offset_strength": trial.strength,
                         "path_length_m": trial.path_length_m,
                         "lap_time_s": trial.lap_time_s,
+                        "diagnostic_lap_time_s": trial.diagnostic_lap_time_s,
+                        "sampled_path_audit": (
+                            asdict(trial.path_audit)
+                            if trial.path_audit is not None else None
+                        ),
                         "error": trial.error,
                     }
                     for trial in comparison.trials
@@ -1896,6 +1951,13 @@ class LapSimDesktop:
                     baseline_valid and comparison.candidate_time_s is not None
                 ),
                 "source_geometry_sha256": source_hash,
+                "source_geometry_audit": asdict(self.course_geometry_audit),
+                "processed_baseline_geometry_audit": asdict(
+                    plan.baseline_track.geometry_audit()
+                ),
+                "selected_solver_geometry_audit": asdict(
+                    selected_track.geometry_audit()
+                ),
                 "user_requested_centerline_step_m": step_m,
                 "planner_sample_spacing_m": planner.sample_spacing_m,
                 "actual_maximum_cell_length_m": max(selected_track.cell_length_m),
@@ -1912,6 +1974,20 @@ class LapSimDesktop:
                 },
                 "baseline_lap_time_s": comparison.baseline_time_s,
                 "candidate_lap_time_s": comparison.candidate_time_s,
+                "baseline_diagnostic_lap_time_s": (
+                    comparison.baseline_diagnostic_time_s
+                ),
+                "candidate_diagnostic_lap_time_s": (
+                    comparison.candidate_diagnostic_time_s
+                ),
+                "baseline_sampled_path_audit": (
+                    asdict(comparison.baseline_path_audit)
+                    if comparison.baseline_path_audit is not None else None
+                ),
+                "candidate_sampled_path_audit": (
+                    asdict(comparison.candidate_path_audit)
+                    if comparison.candidate_path_audit is not None else None
+                ),
                 "baseline_error": comparison.baseline_error,
                 "candidate_error": comparison.candidate_error,
                 "baseline_length_m": plan.baseline_track.length_m,
@@ -1967,7 +2043,21 @@ class LapSimDesktop:
                         "lap_start_policy": path_planning["lap_start_policy"],
                         "speed_seam_tolerance_mps": path_planning["speed_seam_tolerance_mps"],
                         "maximum_lap_passes_per_trial": path_planning["maximum_lap_passes_per_trial"],
+                        "rank_status": comparison.rank_status,
+                        "selection_margin_s": comparison.selection_margin_s,
+                        "sampled_path_audit": (
+                            asdict(comparison.baseline_path_audit)
+                            if counterpart_track is plan.baseline_track
+                            and comparison.baseline_path_audit is not None
+                            else asdict(comparison.candidate_path_audit)
+                            if comparison.candidate_path_audit is not None
+                            else None
+                        ),
                         "source_geometry_sha256": source_hash,
+                        "source_geometry_audit": asdict(self.course_geometry_audit),
+                        "solver_geometry_audit": asdict(
+                            counterpart_track.geometry_audit()
+                        ),
                         "corridor": path_planning["corridor"],
                     },
                     starting_speed_mps=counterpart_run.starting_speed_mps,
@@ -2104,9 +2194,19 @@ class LapSimDesktop:
                 self.ai_output_box.pack(fill="x", pady=(0, 8))
             baseline_time = comparison.baseline_time_s
             candidate_time = comparison.candidate_time_s
+            baseline_diagnostic_time = comparison.baseline_diagnostic_time_s
+            candidate_diagnostic_time = comparison.candidate_diagnostic_time_s
+
+            def time_box(valid_time: float | None, diagnostic_time: float | None) -> str:
+                if valid_time is not None:
+                    return f"{valid_time:.3f}"
+                if diagnostic_time is not None:
+                    return f"{diagnostic_time:.3f}*"
+                return "—"
+
             values = {
-                "baseline": f"{baseline_time:.3f}" if baseline_time is not None else "—",
-                "candidate": f"{candidate_time:.3f}" if candidate_time is not None else "—",
+                "baseline": time_box(baseline_time, baseline_diagnostic_time),
+                "candidate": time_box(candidate_time, candidate_diagnostic_time),
                 "difference": (
                     f"{candidate_time - baseline_time:+.3f}"
                     if baseline_time is not None and candidate_time is not None else "—"
@@ -2116,7 +2216,34 @@ class LapSimDesktop:
             for key, value in values.items():
                 self.ai_output_values[key].configure(text=value)
             half_width_m, vehicle_width_m, margin_m = assumptions
-            if selected_mode == "no_comparable_path":
+            if (
+                selected_mode == "no_comparable_path"
+                and comparison.rank_status == "invalid_candidate_path"
+            ):
+                selection = (
+                    "No eligible path is selected: the modeled AI path fails "
+                    "the sampled clearance or closure check, and the geometric "
+                    "centerline did not produce an eligible timed lap. Starred "
+                    "times are diagnostic only."
+                )
+            elif comparison.rank_status == "invalid_processed_baseline":
+                selection = (
+                    "AI paths cannot be ranked: the modeled geometric centerline "
+                    "fails the sampled path clearance or closure check. "
+                    "Starred times are diagnostic only."
+                )
+            elif comparison.rank_status == "invalid_candidate_path":
+                selection = (
+                    "The modeled AI path fails the sampled path clearance or "
+                    "closure check; geometric centerline selected. "
+                    "A starred candidate time is diagnostic only."
+                )
+            elif comparison.rank_status == "path_audit_unavailable":
+                selection = (
+                    "AI paths cannot be ranked because the sampled path audit "
+                    "could not run. Starred times are diagnostic only."
+                )
+            elif selected_mode == "no_comparable_path":
                 selection = "Neither geometric path produced a valid timed lap. A diagnostic run was saved."
             elif selected_mode == "candidate":
                 selection = (
@@ -2128,61 +2255,112 @@ class LapSimDesktop:
                     f"AI path at {comparison.candidate_strength:g}× offset completed; "
                     "geometric centerline failed, so no time gain is established."
                 )
+            elif comparison.rank_status == "unresolved_close_gain":
+                selection = (
+                    "Best tested AI path was numerically faster, but its gain is "
+                    f"at most the {comparison.selection_margin_s:.2f} s provisional "
+                    "selection margin. Geometric centerline selected; a finer-grid "
+                    "study is needed before ranking these paths."
+                )
             elif candidate_time is not None:
                 selection = "Best tested AI path was slower; geometric centerline selected."
             else:
                 selection = "No valid faster AI candidate; geometric centerline selected."
             if (
                 baseline_time is not None and candidate_time is not None
-                and abs(candidate_time - baseline_time) < 0.05
+                and comparison.rank_status == "candidate_not_faster"
+                and abs(candidate_time - baseline_time) <= comparison.selection_margin_s
             ):
                 selection += (
-                    " This gap is under 0.05 s; check a finer solver grid "
-                    "before trusting the rank."
+                    " This small difference does not establish a reliable "
+                    "time ranking; a finer-grid study is needed."
                 )
+            audit_notes = []
+            for label, audit in (
+                ("centerline", comparison.baseline_path_audit),
+                ("AI path", comparison.candidate_path_audit),
+            ):
+                if audit is not None and not audit.valid:
+                    audit_notes.append(
+                        f"{label}: sampled excess "
+                        f"{audit.maximum_corridor_excess_m:.3f} m, "
+                        f"seam gap {audit.seam_position_error_m:.3f} m"
+                    )
+            audit_text = (
+                " Modeled-path audit: " + "; ".join(audit_notes) + "."
+                if audit_notes else ""
+            )
+            comparison_note = (
+                "Compare only eligible x/y-derived times."
+                if baseline_time is not None and candidate_time is not None
+                else "Diagnostic numbers do not establish a path ranking."
+            )
             self.ai_result_text.set(
                 f"{selection} Assumed ±{half_width_m:g} m corridor, "
                 f"{vehicle_width_m:g} m car, {margin_m:g} m margin. "
                 f"Proposed max offset {plan.max_abs_offset_m:.2f} m; "
                 f"{len(comparison.trials)} candidate trial(s). "
-                f"source map length differs by {plan.source_vs_processed_length_fraction:+.1%}. "
-                "Compare only these two x/y-derived times; the default lap "
-                "uses different source curvature. A trial receives a comparison "
-                "time only when its rolling-start speed closes within 0.005 m/s. "
+                f"source map length differs by {plan.source_vs_processed_length_fraction:+.1%}."
+                f"{audit_text} {comparison_note} The default lap uses different "
+                "source curvature. A trial receives a comparison time only when "
+                "its rolling-start speed closes within 0.005 m/s and its "
+                "sampled modeled path passes the declared clearance and closure "
+                "checks. The sample check is not a continuous collision proof. "
                 "This uses a fixed initial car and pack state; other states "
                 "need not be periodic."
             )
-            if result.completed and selected_mode != "no_comparable_path":
-                self._selected_path_track = selected_track
-                self._last_result = result
+            if result.completed:
+                eligible_selection = selected_mode != "no_comparable_path"
                 runs = []
                 if comparison.baseline_time_s is not None and comparison.baseline_run is not None:
                     runs.append(("Geometric centerline", comparison.baseline_run))
                 if comparison.candidate_time_s is not None and comparison.candidate_run is not None:
                     runs.append(("Best tested AI path", comparison.candidate_run))
-                self._comparison_results = tuple(runs) if len(runs) == 2 else None
-                self._show_result(result, track_length_m=selected_track.length_m)
+                self._comparison_results = (
+                    tuple(runs) if eligible_selection and len(runs) == 2 else None
+                )
+                self._selected_path_track = selected_track if eligible_selection else None
+                self._last_result = result if eligible_selection else None
+                if eligible_selection:
+                    self._show_result(result, track_length_m=selected_track.length_m)
+                else:
+                    self._draw_plots(preserve_course_view=True)
                 self._activate_driver_playback(
                     profile_name, result,
-                    driving_mode=("AI path" if selected_mode.startswith("candidate")
-                                  else "Geometric centerline"),
+                    driving_mode=(
+                        "Diagnostic reference · path not cleared"
+                        if not eligible_selection else
+                        "AI path" if selected_mode.startswith("candidate")
+                        else "Geometric centerline"
+                    ),
                     path_track=selected_track,
                 )
                 replay_options: dict[str, tuple[str, Any, str, Any]] = {}
-                if comparison.baseline_time_s is not None and comparison.baseline_run is not None:
-                    replay_options["Geometric centerline"] = (
+                baseline_replay_label = (
+                    "Geometric centerline" if comparison.baseline_time_s is not None
+                    else "Geometric centerline · diagnostic"
+                )
+                candidate_replay_label = (
+                    "Best tested AI path" if comparison.candidate_time_s is not None
+                    else "Best tested AI path · diagnostic"
+                )
+                if comparison.baseline_run is not None and comparison.baseline_run.completed:
+                    replay_options[baseline_replay_label] = (
                         profile_name, comparison.baseline_run,
-                        "Geometric centerline", plan.baseline_track,
+                        baseline_replay_label, plan.baseline_track,
                     )
-                if comparison.candidate_time_s is not None and comparison.candidate_run is not None:
-                    replay_options["Best tested AI path"] = (
+                if comparison.candidate_run is not None and comparison.candidate_run.completed:
+                    replay_options[candidate_replay_label] = (
                         profile_name, comparison.candidate_run,
-                        "AI path", comparison.candidate_track,
+                        candidate_replay_label, comparison.candidate_track,
                     )
                 self._set_driver_replay_options(
                     replay_options,
-                    selected=("Best tested AI path" if selected_mode.startswith("candidate")
-                              else "Geometric centerline"),
+                    selected=(
+                        candidate_replay_label
+                        if result is comparison.candidate_run
+                        else baseline_replay_label
+                    ),
                 )
                 self.status_text.set(
                     f"Experimental path calculation: {selection} "
@@ -2248,7 +2426,10 @@ class LapSimDesktop:
             return
         plan, comparison, assumptions = self._path_comparison
         if (
-            comparison.baseline_run is None or not comparison.baseline_run.completed
+            comparison.baseline_time_s is None
+            or comparison.candidate_time_s is None
+            or comparison.baseline_run is None
+            or not comparison.baseline_run.completed
             or comparison.candidate_run is None or not comparison.candidate_run.completed
         ):
             return
