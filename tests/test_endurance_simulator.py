@@ -206,6 +206,22 @@ class EnduranceSimulatorTests(TestCase):
                 snapshot.lateral_acceleration_mps2,
                 observed.telemetry["vehicle.lateral_acceleration_mps2"][index],
             )
+            for field, channel in (
+                ("path_speed_ceiling_mps", "endurance.path_speed_ceiling_mps"),
+                ("motor_torque_request_nm", "controls.motor_torque_request_nm"),
+                ("front_brake_pressure_psi", "controls.front_brake_pressure_psi"),
+                ("rear_brake_pressure_psi", "controls.rear_brake_pressure_psi"),
+                ("drive_force_n", "vehicle.drive_force_n"),
+                ("friction_braking_force_n", "vehicle.friction_braking_force_n"),
+                ("regenerative_braking_force_n", "vehicle.regenerative_braking_force_n"),
+                ("longitudinal_acceleration_mps2", "vehicle.longitudinal_acceleration_mps2"),
+                ("battery_power_w", "battery.power_w"),
+            ):
+                with self.subTest(index=index, field=field):
+                    self.assertEqual(
+                        getattr(snapshot, field),
+                        observed.telemetry[channel][index],
+                    )
         with self.assertRaises(FrozenInstanceError):
             progress[0].speed_mps = 0.0
 

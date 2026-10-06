@@ -145,7 +145,7 @@ are diagnostic only, the time difference is blank, and there is no selected
 AI winner. The ordinary centerline mode is unchanged. AI-mode eligible times,
 when available on a coherent course, should be compared only with the AI-mode
 geometric baseline, not the ordinary centerline lap. The **Driver view** shows accepted solver-step progress on a reference
-path, then plays back numeric telemetry against the exact solver-grid x/y saved with that run. This applies to ordinary centerline and car-comparison runs as well as AI paths; the separate top-down course plot continues to show the source map. The displayed position and map heading are not an integrated vehicle pose, and the fused course's x/y still disagrees with its physics curvature. Its **Replay
+path, then plays back numeric telemetry against the exact solver-grid x/y saved with that run. Cell model boxes show each accepted cell's torque and brake requests, achieved forces, acceleration, signed battery power, and next-entry speed ceiling. This applies to ordinary centerline and car-comparison runs as well as AI paths; the separate top-down course plot continues to show the source map. The displayed position and map heading are not an integrated vehicle pose, and the fused course's x/y still disagrees with its physics curvature. Its **Replay
 lap** menu switches between A and B after a two-car comparison, or among
 the completed geometric baseline, full, half, and fourth AI trials after an
 AI run, without running physics again. Each completed AI trial has a

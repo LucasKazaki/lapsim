@@ -11,7 +11,7 @@ import pytest
 from lapsim.core.telemetry import Telemetry
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.events.endurance import EnduranceRunResult
-from lapsim.ui.driver_view import DriverPlayback
+from lapsim.ui.driver_view import DriverCellDecision, DriverPlayback
 
 
 def straight_map() -> SpatialTrack:
@@ -63,6 +63,7 @@ def test_playback_motion_matches_constant_acceleration_cells() -> None:
     )
 
     assert playback.frame_at(0.0).speed_mps == pytest.approx(0.0)
+    assert playback.frame_at(0.0).decision is None
     accelerating = playback.frame_at(0.5)
     assert accelerating.distance_m == pytest.approx(2.5)
     assert accelerating.x_m == pytest.approx(2.5)
@@ -93,8 +94,62 @@ def test_modeled_cell_lateral_force_is_held_until_next_cell() -> None:
         assert playback.frame_at(instant).lateral_acceleration_mps2 == pytest.approx(-4.0)
 
 
+def test_completed_model_cell_decision_uses_active_exit_sample() -> None:
+    playback = DriverPlayback(
+        straight_map(),
+        lap_channels(**{
+            "vehicle.speed_mps": (20.0, 0.0),
+            "endurance.path_speed_ceiling_mps": (25.0, 5.0),
+            "controls.motor_torque_request_nm": (150.0, 0.0),
+            "controls.front_brake_pressure_psi": (0.0, 500.0),
+            "controls.rear_brake_pressure_psi": (0.0, 400.0),
+            "vehicle.drive_force_n": (900.0, 0.0),
+            "vehicle.friction_braking_force_n": (0.0, 1200.0),
+            "vehicle.regenerative_braking_force_n": (0.0, 200.0),
+            "vehicle.longitudinal_acceleration_mps2": (2.0, -3.0),
+            "battery.power_w": (10000.0, -1000.0),
+        }),
+    )
+
+    first = DriverCellDecision(
+        25.0, 150.0, 0.0, 0.0, 900.0, 0.0, 0.0, 2.0, 10000.0,
+    )
+    second = DriverCellDecision(
+        5.0, 0.0, 500.0, 400.0, 0.0, 1200.0, 200.0, -3.0, -1000.0,
+    )
+    assert playback.cell_aligned
+    assert playback.frame_at(0.0).decision == first
+    assert playback.frame_at(0.5).decision == first
+    assert playback.frame_at(1.0).decision == second
+    assert playback.frame_at(1.5).decision == second
+    assert playback.frame_at(2.0).decision == second
+
+
+def test_optional_decision_channels_fail_independently() -> None:
+    channels = lap_channels(**{
+        "vehicle.speed_mps": (20.0, 0.0),
+    }).as_dict()
+    channels.update({
+        "endurance.path_speed_ceiling_mps": (25.0, 5.0),
+        "controls.motor_torque_request_nm": ("bad", 0.0),
+        "controls.front_brake_pressure_psi": (float("nan"), 500.0),
+        "controls.rear_brake_pressure_psi": (400.0,),
+        "vehicle.drive_force_n": (900.0, -1.0),
+        "battery.power_w": (10000.0, -1000.0),
+    })
+    playback = DriverPlayback(straight_map(), channels)
+
+    decision = playback.frame_at(1.5).decision
+    assert decision == DriverCellDecision(
+        path_speed_ceiling_mps=5.0, battery_power_w=-1000.0,
+    )
+    assert playback.frame_at(1.5).lateral_acceleration_mps2 == pytest.approx(9.80665)
+
+
 def test_inconsistent_legacy_cell_keeps_linear_station_fallback() -> None:
-    playback = DriverPlayback(straight_map(), lap_channels())
+    playback = DriverPlayback(straight_map(), lap_channels(**{
+        "controls.motor_torque_request_nm": (100.0, 0.0),
+    }))
 
     # Between 1 and 2 s, speeds of 10 and 20 m/s imply 15 m of motion,
     # whereas this old fixture records 10 m.  Do not change its endpoints.
@@ -103,6 +158,7 @@ def test_inconsistent_legacy_cell_keeps_linear_station_fallback() -> None:
     assert halfway.distance_m == pytest.approx(15.0)
     assert halfway.speed_mps == pytest.approx(15.0)
     assert halfway.lateral_acceleration_mps2 == pytest.approx(9.80665 / 2)
+    assert halfway.decision is None
 
 
 def test_unaligned_imported_stations_keep_lateral_interpolation() -> None:
@@ -247,17 +303,28 @@ def test_desktop_tabs_and_playback_smoke() -> None:
         assert app.driver_play_button is not None
         assert app.driver_play_button["state"] == "disabled"
 
-        result = SimpleNamespace(telemetry=lap_channels(
-            **{"vehicle.distance_m": (app.track.length_m / 2, app.track.length_m)}
-        ))
-        app._set_driver_run("smoke car", result)
+        result = SimpleNamespace(telemetry=lap_channels(**{
+            "vehicle.speed_mps": (10.0, 10.0),
+            "endurance.path_speed_ceiling_mps": (10.0, 20.0),
+            "controls.motor_torque_request_nm": (50.0, 25.0),
+            "controls.front_brake_pressure_psi": (0.0, 10.0),
+            "battery.power_w": (1000.0, -1000.0),
+        }))
+        app._set_driver_run("smoke car", result, path_track=straight_map())
         app._switch_tab("Driver view")
         root.update()
         assert app.driver_play_button["state"] == "normal"
         assert app.driver_run_label.get() == "Centerline · smoke car"
         assert app.driver_values["distance"].get().startswith("0.0 /")
+        assert app.driver_decision_values["path_speed_ceiling_mps"].get() == "36.0"
+        assert app.driver_decision_values["motor_torque_request_nm"].get() == "50.0"
+        assert app.driver_decision_values["battery_power_w"].get() == "+1.00"
+        assert app.driver_decision_values["rear_brake_pressure_psi"].get() == "—"
         app._on_driver_scrub("500")
         assert app.driver_values["time"].get().startswith("1.00 /")
+        assert app.driver_decision_values["path_speed_ceiling_mps"].get() == "72.0"
+        assert app.driver_decision_values["front_brake_pressure_psi"].get() == "10.0"
+        assert app.driver_decision_values["battery_power_w"].get() == "-1.00"
         app._toggle_driver_playback()
         time.sleep(0.11)
         root.update()

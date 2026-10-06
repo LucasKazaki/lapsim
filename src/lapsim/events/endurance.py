@@ -115,6 +115,15 @@ class LapProgressSnapshot:
     total_distance_m: float
     speed_mps: float
     lateral_acceleration_mps2: float
+    path_speed_ceiling_mps: float | None = None
+    motor_torque_request_nm: float | None = None
+    front_brake_pressure_psi: float | None = None
+    rear_brake_pressure_psi: float | None = None
+    drive_force_n: float | None = None
+    friction_braking_force_n: float | None = None
+    regenerative_braking_force_n: float | None = None
+    longitudinal_acceleration_mps2: float | None = None
+    battery_power_w: float | None = None
 
 
 class EnduranceSimulator:
@@ -660,6 +669,21 @@ class EnduranceSimulator:
                         lateral_acceleration_mps2=(
                             vehicle.lateral_acceleration_mps2
                         ),
+                        path_speed_ceiling_mps=target_speed_mps,
+                        motor_torque_request_nm=controls.motor_torque_request_nm,
+                        front_brake_pressure_psi=controls.front_brake_pressure_psi,
+                        rear_brake_pressure_psi=controls.rear_brake_pressure_psi,
+                        drive_force_n=vehicle.current_drive_force_n,
+                        friction_braking_force_n=(
+                            vehicle.current_friction_braking_force_n
+                        ),
+                        regenerative_braking_force_n=(
+                            vehicle.current_regenerative_braking_force_n
+                        ),
+                        longitudinal_acceleration_mps2=(
+                            vehicle.longitudinal_acceleration_mps2
+                        ),
+                        battery_power_w=vehicle.battery.current_power_w,
                     ))
 
             if failure_reason is not None:

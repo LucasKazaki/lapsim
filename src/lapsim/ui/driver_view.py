@@ -19,6 +19,37 @@ from lapsim.courses.spatial_track import SpatialTrack
 
 
 @dataclass(frozen=True, slots=True)
+class DriverCellDecision:
+    """Recorded control and force values for the active modeled path cell."""
+
+    path_speed_ceiling_mps: float | None = None
+    motor_torque_request_nm: float | None = None
+    front_brake_pressure_psi: float | None = None
+    rear_brake_pressure_psi: float | None = None
+    drive_force_n: float | None = None
+    friction_braking_force_n: float | None = None
+    regenerative_braking_force_n: float | None = None
+    longitudinal_acceleration_mps2: float | None = None
+    battery_power_w: float | None = None
+
+
+_DECISION_CHANNELS = {
+    "path_speed_ceiling_mps": "endurance.path_speed_ceiling_mps",
+    "motor_torque_request_nm": "controls.motor_torque_request_nm",
+    "front_brake_pressure_psi": "controls.front_brake_pressure_psi",
+    "rear_brake_pressure_psi": "controls.rear_brake_pressure_psi",
+    "drive_force_n": "vehicle.drive_force_n",
+    "friction_braking_force_n": "vehicle.friction_braking_force_n",
+    "regenerative_braking_force_n": "vehicle.regenerative_braking_force_n",
+    "longitudinal_acceleration_mps2": "vehicle.longitudinal_acceleration_mps2",
+    "battery_power_w": "battery.power_w",
+}
+_NONNEGATIVE_DECISION_FIELDS = frozenset(_DECISION_CHANNELS) - {
+    "longitudinal_acceleration_mps2", "battery_power_w",
+}
+
+
+@dataclass(frozen=True, slots=True)
 class DriverFrame:
     time_s: float
     distance_m: float
@@ -27,6 +58,7 @@ class DriverFrame:
     course_heading_rad: float
     speed_mps: float
     lateral_acceleration_mps2: float
+    decision: DriverCellDecision | None = None
 
 
 class DriverPlayback:
@@ -64,6 +96,20 @@ class DriverPlayback:
             raise ValueError("Playback speeds must be nonnegative")
         if distances[-1] > track.length_m + 1e-5:
             raise ValueError("Playback distance exceeds the reference path")
+        decision_channels: dict[str, np.ndarray] = {}
+        for field_name, channel_name in _DECISION_CHANNELS.items():
+            try:
+                values = np.asarray(telemetry[channel_name], dtype=float)
+            except (KeyError, TypeError, ValueError, OverflowError):
+                continue
+            if (
+                values.ndim != 1 or values.size != times.size
+                or not np.all(np.isfinite(values))
+                or (field_name in _NONNEGATIVE_DECISION_FIELDS
+                    and np.any(values < 0.0))
+            ):
+                continue
+            decision_channels[field_name] = values
         if times[0] > 0:
             # Endurance telemetry is recorded after accepted cells.  The first
             # display frame is the starting grid, not the first completed cell.
@@ -80,6 +126,10 @@ class DriverPlayback:
             distances = np.concatenate(([0.0], distances))
             speeds = np.concatenate(([entry_speed], speeds))
             lateral = np.concatenate(([lateral[0]], lateral))
+            decision_channels = {
+                name: np.concatenate(([values[0]], values))
+                for name, values in decision_channels.items()
+            }
         self.times = times
         self.distances = distances
         self.speeds = speeds
@@ -107,6 +157,7 @@ class DriverPlayback:
                 <= np.maximum(1e-6, 1e-5 * cell_distance)
             )
         )
+        self._decision_channels = decision_channels if self.cell_aligned else {}
 
     def point_at(self, distance_m: float) -> tuple[float, float]:
         """Return the path point at a station, wrapping only closed courses."""
@@ -176,6 +227,17 @@ class DriverPlayback:
             if self.cell_aligned
             else np.interp(instant, self.times, self.lateral_accelerations)
         )
+        decision = (
+            DriverCellDecision(**{
+                field_name: (
+                    float(values[segment])
+                    if (values := self._decision_channels.get(field_name)) is not None
+                    else None
+                )
+                for field_name in _DECISION_CHANNELS
+            })
+            if self._decision_channels else None
+        )
         return DriverFrame(
             time_s=instant,
             distance_m=station,
@@ -184,6 +246,7 @@ class DriverPlayback:
             course_heading_rad=heading,
             speed_mps=speed,
             lateral_acceleration_mps2=float(lateral_acceleration),
+            decision=decision,
         )
 
     def local_path_m(

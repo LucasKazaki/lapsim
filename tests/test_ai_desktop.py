@@ -52,6 +52,8 @@ def test_live_view_clears_old_numbers_and_distinguishes_empty_failure() -> None:
         app = LapSimDesktop(root)
         for value in app.driver_values.values():
             value.set("previous run")
+        for value in app.driver_decision_values.values():
+            value.set("previous run")
         for value in app.output_values.values():
             value.configure(text="previous run")
         app.driver_progress_var.set(700.0)
@@ -62,6 +64,8 @@ def test_live_view_clears_old_numbers_and_distinguishes_empty_failure() -> None:
         assert app.driver_playback is None
         assert app.driver_progress_var.get() == 0.0
         assert all(value.get() == "—" for value in app.driver_values.values())
+        assert all(value.get() == "—" for value in app.driver_decision_values.values())
+        assert app.driver_decision_title.get().startswith("Last accepted cell")
         assert all(value["text"] == "—" for value in app.output_values.values())
         app.result_queue.put(("single", None, RuntimeError("planning failed")))
         with patch("lapsim.ui.app.messagebox.showerror"):
@@ -80,10 +84,28 @@ def test_live_view_clears_old_numbers_and_distinguishes_empty_failure() -> None:
                 elapsed_time_s=1.0, lap_station_m=station_m,
                 total_distance_m=station_m, speed_mps=4.0,
                 lateral_acceleration_mps2=0.0,
+                path_speed_ceiling_mps=5.0,
+                motor_torque_request_nm=25.0,
+                front_brake_pressure_psi=10.0,
+                rear_brake_pressure_psi=5.0,
+                drive_force_n=800.0,
+                friction_braking_force_n=100.0,
+                regenerative_braking_force_n=50.0,
+                longitudinal_acceleration_mps2=0.980665,
+                battery_power_w=-1500.0,
             ),
         )
         app._poll_live_progress()
         assert app.driver_values["speed"].get() == "14.4"
+        assert app.driver_decision_values["path_speed_ceiling_mps"].get() == "18.0"
+        assert app.driver_decision_values["motor_torque_request_nm"].get() == "25.0"
+        assert app.driver_decision_values["front_brake_pressure_psi"].get() == "10.0"
+        assert app.driver_decision_values["rear_brake_pressure_psi"].get() == "5.0"
+        assert app.driver_decision_values["drive_force_n"].get() == "0.80"
+        assert app.driver_decision_values["friction_braking_force_n"].get() == "0.10"
+        assert app.driver_decision_values["regenerative_braking_force_n"].get() == "0.05"
+        assert app.driver_decision_values["longitudinal_acceleration_mps2"].get() == "+0.10"
+        assert app.driver_decision_values["battery_power_w"].get() == "-1.50"
         app.result_queue.put(("single", None, RuntimeError("later failure")))
         with patch("lapsim.ui.app.messagebox.showerror"):
             app._poll_result()

@@ -351,7 +351,7 @@ This method is inspired by the boundary-aware, minimum-curvature stage in [TUM F
 | AI result boxes | Eligible baseline/candidate times and signed difference when both audits pass; completed audit-failed times carry `*`, difference is blank, Compare path numbers is disabled, and text gives sampled excess and seam gap |
 | Trace selector | Speed, acceleration, drive/braking forces, inferred driven slip, or battery power from named telemetry channels, against time or distance |
 | Course map | Selected source x/y reference, fixed top-down; mouse drag pans and wheel zooms; the fused course displays its geometry warning while the synthetic option is labeled as an assumed example |
-| Driver view tab | Latest accepted physics cell during a solve, then timed top-down replay on each run's saved solver-grid x/y with fixed car marker, play/pause, scrub, rate, wheel zoom, numeric boxes, and a Replay lap menu for completed comparisons |
+| Driver view tab | Latest accepted physics cell during a solve, then timed top-down replay on each run's saved solver-grid x/y with fixed car marker, play/pause, scrub, rate, wheel zoom, cell control/force number boxes, and a Replay lap menu for completed comparisons |
 | Timed sessions · WIP tab | Scope text and disabled start button for the future ghost/controller/complete-session/replay-tolerance workflow |
 | Source data / model notes | Inspect reviewed records, origins, model use, and caveats; inspection does not change the active vehicle |
 | Dark mode | Reverses white/black Tk and Matplotlib surfaces; it does not change a simulation parameter |
@@ -362,9 +362,47 @@ The GUI deliberately keeps numeric output boxes and simple monochrome traces. Ca
 
 `EnduranceSimulator.run` accepts an optional `progress_callback`. After an accepted cell has passed the speed, traversal, time, stall, and battery checks, it emits an immutable `LapProgressSnapshot` with zero-based lap/cell indices, cell count, elapsed model time, current-lap station, total model distance, speed, and lateral acceleration. A rejected cell emits no snapshot. `ui/simulation.py::run_one_lap` forwards the callback, and `compare_lines_with_lap_model` adds the phase (`baseline`, `full`, `half`, `three_quarter` fallback, or `adaptive` fourth) and exact trial track for AI runs. The normal core API pays only a conditional branch when no observer is supplied; callback tests compare observed values with recorded telemetry and unchanged final lap time/energy.
 
+The snapshot also copies the accepted cell's next-entry braking ceiling,
+motor torque request, front/rear brake pressure requests, achieved drive,
+friction-brake, and regenerative-brake forces, longitudinal acceleration,
+and signed pack-terminal power. It reads already solved scalar state; it
+does not evaluate forces or rerun the vehicle. The progress regression
+compares all nine values with same-cell saved telemetry and checks that
+attaching the observer does not change lap time or energy.
+
 The desktop's worker posts no more than about one update every 0.1 s of computation, plus a phase's final accepted cell, to a one-slot queue. The Tk thread consumes only the latest event; it never reads mutable vehicle state. Before the path-constraint prepass finishes, the view says it is preparing path and speed limits. During a solve it shows the accepted endpoint on that trial's **solver-grid reference x/y path**, its modeled speed and lateral acceleration, and a station-based progress bar. Replay buttons and scrubbing stay disabled until a completed run arrives. A stopped run leaves the last accepted step visibly labeled. The display runs at computation speed; it does not pause the solver to animate a real-time driver.
 
 `ui/driver_view.py::DriverPlayback` requires four equal-length, finite, synchronized telemetry arrays: `vehicle.time_s`, `vehicle.distance_m`, `vehicle.speed_mps`, and `vehicle.lateral_acceleration_mps2`. It rejects nonincreasing time, decreasing distance, negative speed, and a station beyond the displayed path. Endurance telemetry begins after an accepted cell, so playback prepends a time-zero display frame at station zero when necessary. Its initial speed is recovered from the first cell's distance, exit speed, and elapsed time. Given a requested display time within a consistent cell, it interpolates speed and station with the same constant-acceleration relation as `Vehicle.update_state`; inconsistent imported cells use linear station interpolation instead. Solver-aligned lateral acceleration holds the **active cell's** solved value because the core produces one force result per accepted cell. Legacy traces without that alignment retain linear display interpolation. It then interpolates x/y by station on the run's solver-grid reference path and computes a displayed heading from nearby path points. The canvas transforms a short path segment into the car-fixed view; the triangle stays fixed while the map line rotates. The GUI uses wall-clock time only to advance the display cursor, with selectable 0.25× to 4× speed. Playback can be scrubbed and zoomed without rerunning physics. After a completed A/B car comparison, **Replay lap** selects either recorded profile and its shared saved solver grid. After completed AI trials, it selects among the geometric baseline, full, half, and fourth trials that completed, each paired with its exact processed path; an audit-failed run is explicitly labeled **diagnostic** in the menu. Switching resets playback to the beginning, retains the previous play/pause state, and makes no new solver call. The selector is disabled if fewer than two completed runs are available.
+
+The monochrome **cell model values** panel has these exact sources and display
+conversions. Each quantity belongs to the accepted cell; it is a command or
+achieved model value as labeled, not a measured driver action. The next-entry
+ceiling is `constraints.braking_speed_ceiling_mps[next_cell_index]`, recorded
+under `endurance.path_speed_ceiling_mps`; the torque/brake controller also
+checks the current cell's local corner limit, so this one ceiling is not the
+whole target-speed rule.
+
+| Box | Saved telemetry channel | Display conversion |
+|---|---|---|
+| Next-entry ceiling | `endurance.path_speed_ceiling_mps` | m/s × 3.6 → km/h |
+| Motor request | `controls.motor_torque_request_nm` | N·m unchanged |
+| Front brake / rear brake | `controls.front_brake_pressure_psi` / `controls.rear_brake_pressure_psi` | psi unchanged; requested pressures |
+| Drive force | `vehicle.drive_force_n` | N ÷ 1,000 → kN; achieved |
+| Friction brake | `vehicle.friction_braking_force_n` | N ÷ 1,000 → kN; achieved magnitude |
+| Regen brake | `vehicle.regenerative_braking_force_n` | N ÷ 1,000 → kN; achieved magnitude |
+| Longitudinal | `vehicle.longitudinal_acceleration_mps2` | m/s² ÷ 9.80665 → signed g |
+| Net battery | `battery.power_w` | W ÷ 1,000 → signed kW; positive discharge, negative charge |
+
+For replay, `DriverPlayback` uses an active-cell zero-order hold on those
+optional channels **only when** saved station, time, and speed match the
+solver's cell grid and constant-acceleration distance relation. At an exact
+interior cell boundary it switches to the next cell; at the final endpoint
+it holds the last. Missing, nonfinite, wrong-length, or physically invalid
+optional channels display `—` independently; unaligned legacy traces show
+`—` for all cell decisions. Live progress instead shows the latest accepted
+snapshot directly, since a one-snapshot preview does not contain the
+prefix of earlier cells needed for playback alignment. Tk may coalesce
+intermediate updates, but no extra physics pass is performed.
 
 For a centerline lap, including either car in a profile comparison, the displayed path is the exact centerline solver-grid x/y frozen in the saved run; for an AI trial it is that trial's processed solver path. Live progress and completed replay therefore interpolate the same per-run reference geometry. The separate Analysis course plot still shows the source x/y, which can differ after solver resampling. None of these views is the integrated `Vehicle` x/y/heading state. In particular, the fused default track's x/y and curvature disagree numerically even on the saved grid. The view is a useful time/station and speed preview but does **not** show steering error, tire path tracking, cone proximity, a true driver's camera, or interactive driving. The desktop switches to this tab when a calculation starts, shows preparation until a cell is accepted, and starts replay after a completed lap. The Timed sessions tab remains visibly unavailable until a closed-loop session engine, versioned controller contract, full input/state/environment capture, replay tolerance policy, and linked comparison report exist.
 
@@ -566,7 +604,7 @@ Keep derivative evaluations pure during RK4 and commit thermal, charge, wear, or
 
 ## 16. Checks performed, interpretation, and known discrepancies
 
-On 6 October 2026, a clean integrated full suite reported **411 passed, 66 subtests, and zero skips in 105.50 s**. It ran with one OpenBLAS and OMP thread and explicit Tcl/Tk library paths. A later full run after the converter's process-local BLAS thread cap reported **410 passed, 66 subtests, and one Windows Tk startup skip in 74.58 s**; the skipped AI desktop case passed alone in **32.68 s**, and the focused converter/bundle/import group passed **33 tests** with no skip. The earlier full run likewise had one transient Tk startup skip before the clean run. Course checks include exact catalog-source identity for the synthetic ID, analytic per-cell endpoint and closed-heading validation, original-station-preserving subarcs, and a valid coarse two-semicircle loop whose polygon chord winding aliases the true turn. They also cover bounded versioned JSON and CSV loading, duplicate/nonfinite/malformed input rejection, source and manifest hashes, local catalog reload and revision conflicts, imported centerline and AI runs, linked trial records, and model replay of those records. These are numerical and software checks, not a track survey or measured-boundary validation.
+On 6 October 2026, the latest integrated full suite reported **413 passed, 642 subtests, and zero skips in 107.22 s**. It ran with one OpenBLAS and OMP thread and explicit Tcl/Tk library paths. The new Driver view checks compare every live accepted-cell value with same-cell telemetry, verify replay's active-cell boundary timing and independent missing-channel handling, and confirm the desktop numbers and unit conversions. At the declared minimum **1080 × 720** window, the decision grid requests **620 px** inside a **660 px** panel and the course canvas remains **264 px** high. Course checks include exact catalog-source identity for the synthetic ID, analytic per-cell endpoint and closed-heading validation, original-station-preserving subarcs, and a valid coarse two-semicircle loop whose polygon chord winding aliases the true turn. They also cover bounded versioned JSON and CSV loading, duplicate/nonfinite/malformed input rejection, source and manifest hashes, local catalog reload and revision conflicts, imported centerline and AI runs, linked trial records, and model replay of those records. These are numerical and software checks, not a track survey or measured-boundary validation.
 
 The repository tests exercise constructors, component limits, path constraints, endurance events, desktop settings, record integrity, and the four-wheel equations. The environment checks cover backward-compatible zero-drag/still-air behavior, headwind/tailwind/crosswind signs and power, rotated world wind, road queries after heading rotation, malformed inputs, deterministic repeated runs, and road-domain violations that occur **only inside RK4 stages**. The four-wheel lab checks that A/B share initial conditions and the same wind/patch, and that its worker saves a linked record. The record checks cover content hashes, geometry/input alignment, schema compatibility, tamper rejection, and residual summaries. The aero/suspension guards reject unsupported loss of normal reaction. Course-catalog checks cover source identity, synthetic and imported arc geometry at several requested steps, exact per-source-cell grid limits, fused-grid behavior, and invalid grid requests; desktop checks cover course-switch clearing, saved course IDs, import persistence, and comparison provenance. The exact command, result, and Git commit should be logged together for a later design review.
 

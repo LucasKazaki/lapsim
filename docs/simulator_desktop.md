@@ -112,6 +112,15 @@ the solver's constant-acceleration cell relation between recorded exits.
 For a solver-cell-aligned run, the lateral acceleration number holds that
 cell's solved value until the next cell. Legacy traces without this alignment
 keep the prior linear display interpolation.
+The simple **cell model values** boxes show the accepted cell's motor torque
+request, front/rear hydraulic pressure requests, achieved drive/friction/regen
+forces, longitudinal acceleration, and signed terminal battery power. The
+**next-entry ceiling** is the braking speed limit at the next cell entrance,
+not the full controller target or a guarantee of the shown exit speed. During
+live solving the boxes show the last accepted cell; completed playback holds
+the active cell's saved values and switches at cell boundaries. Missing or
+unaligned legacy channels show a dash rather than an invented number. Positive
+battery kW denotes discharge; negative denotes charge.
 The Analysis tab's course plot continues to show the selected source map;
 resampling can make its x/y differ from the saved solver grid. The lap physics
 uses a separate curvature channel, so the displayed map heading is not

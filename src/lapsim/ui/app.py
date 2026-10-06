@@ -28,7 +28,7 @@ from .course_catalog import (
     load_imported_course_catalog, solver_cell_count_for_course,
     solver_track_for_course,
 )
-from .driver_view import DriverPlayback
+from .driver_view import DriverCellDecision, DriverPlayback
 from .garage import CAR_INPUT_KEYS, ProfileStore, SavedCarProfile
 from .presets import VehicleSetup, make_prius_benchmark
 from .simulation import (
@@ -101,6 +101,19 @@ TRACE_OPTIONS = {
     "Driven tire slip": ("tire.driven_slip_percent", 1.0, "%"),
     "Battery power": ("battery.power_w", 0.001, "kW"),
 }
+
+
+DRIVER_CELL_BOXES = (
+    ("path_speed_ceiling_mps", "NEXT ENTRY (km/h)", 3.6, ".1f"),
+    ("motor_torque_request_nm", "MOTOR REQUEST (N·m)", 1.0, ".1f"),
+    ("front_brake_pressure_psi", "FRONT BRAKE (psi)", 1.0, ".1f"),
+    ("rear_brake_pressure_psi", "REAR BRAKE (psi)", 1.0, ".1f"),
+    ("battery_power_w", "NET BATTERY (kW)", 0.001, "+.2f"),
+    ("drive_force_n", "DRIVE FORCE (kN)", 0.001, ".2f"),
+    ("friction_braking_force_n", "FRICTION BRAKE (kN)", 0.001, ".2f"),
+    ("regenerative_braking_force_n", "REGEN BRAKE (kN)", 0.001, ".2f"),
+    ("longitudinal_acceleration_mps2", "LONGITUDINAL (g)", 1.0 / 9.80665, "+.2f"),
+)
 
 
 class LapSimDesktop:
@@ -210,6 +223,12 @@ class LapSimDesktop:
             key: tk.StringVar(value="—")
             for key in ("time", "distance", "speed", "lateral", "heading")
         }
+        self.driver_decision_values = {
+            key: tk.StringVar(value="—")
+            for key, _title, _scale, _format in DRIVER_CELL_BOXES
+        }
+        self.driver_decision_title = tk.StringVar(value="Solved cell values")
+        self._live_decision: DriverCellDecision | None = None
         self._driver_playing = False
         self._driver_playback_time_s = 0.0
         self._driver_last_clock_s = 0.0
@@ -750,6 +769,8 @@ class LapSimDesktop:
         self.ai_margin_var.set(f"{selected.default_ai_margin_m:g}")
         self._pause_driver_playback()
         self.driver_playback = None
+        self._live_decision = None
+        self.driver_decision_title.set("Solved cell values")
         self._driver_live_mode = False
         self._driver_stream_active = False
         self._driver_playback_time_s = 0.0
@@ -759,6 +780,8 @@ class LapSimDesktop:
             self.driver_play_button.configure(state="disabled")
         self.driver_run_label.set("Run a lap to load playback")
         for value in self.driver_values.values():
+            value.set("—")
+        for value in self.driver_decision_values.values():
             value.set("—")
         self._set_driver_replay_options({}, selected="—")
         self._path_comparison = None
@@ -1138,18 +1161,37 @@ class LapSimDesktop:
                 anchor="w",
             ).pack(anchor="w")
         tk.Label(
+            parent, textvariable=self.driver_decision_title,
+            font=FONT_BOLD, anchor="w",
+        ).grid(row=5, column=0, sticky="ew", pady=(3, 3))
+        decision_boxes = tk.Frame(parent)
+        decision_boxes.grid(row=6, column=0, sticky="ew")
+        for column in range(5):
+            decision_boxes.grid_columnconfigure(column, weight=1)
+        for index, (key, title, _scale, _format) in enumerate(DRIVER_CELL_BOXES):
+            row, column = divmod(index, 5)
+            box = tk.Frame(decision_boxes, relief="solid", bd=1, padx=7, pady=4)
+            box.grid(row=row, column=column, sticky="ew", padx=(0, 4), pady=(0, 4))
+            tk.Label(box, text=title, font=("Segoe UI", 8)).pack(anchor="w")
+            tk.Label(
+                box, textvariable=self.driver_decision_values[key],
+                font=("Consolas", 12), anchor="w",
+            ).pack(anchor="w")
+        tk.Label(
             parent,
             text=(
                 "Reference-map playback: position and heading come from the "
                 "distance-aligned x/y map; speed and lateral g come from the "
-                "solved run. The physics uses a separate curvature channel. "
-                "This is not a tracked vehicle pose or first-person camera."
+                "solved run. The ceiling is the next cell's braking limit, not "
+                "the complete controller target. Positive battery kW means "
+                "discharge; negative means charge. Boxes show accepted-cell "
+                "values; the map is not a tracked vehicle pose."
             ),
             justify="left",
             anchor="w",
             wraplength=820,
             font=("Segoe UI", 9),
-        ).grid(row=5, column=0, sticky="ew", pady=(2, 3))
+        ).grid(row=7, column=0, sticky="ew", pady=(2, 3))
 
     def _build_timed_sessions_tab(self, parent: tk.Frame) -> None:
         parent.grid_columnconfigure(0, weight=1)
@@ -1209,6 +1251,8 @@ class LapSimDesktop:
         """
 
         self._pause_driver_playback()
+        self._live_decision = None
+        self.driver_decision_title.set("Solved cell values")
         self._driver_live_mode = False
         self._driver_stream_active = False
         self._driver_playback_time_s = 0.0
@@ -1222,6 +1266,8 @@ class LapSimDesktop:
         except ValueError as error:
             self.driver_playback = None
             self.driver_run_label.set(f"Playback unavailable: {error}")
+            for value in self.driver_decision_values.values():
+                value.set("—")
             if self.driver_play_button is not None:
                 self.driver_play_button.configure(state="disabled")
             self._draw_driver_view()
@@ -1359,6 +1405,14 @@ class LapSimDesktop:
         self.driver_values["heading"].set(
             f"{float(np.degrees(frame.course_heading_rad)):+.1f}"
         )
+        decision = self._live_decision if self._driver_live_mode else frame.decision
+        for key, _title, scale, format_spec in DRIVER_CELL_BOXES:
+            raw = getattr(decision, key) if decision is not None else None
+            self.driver_decision_values[key].set(
+                f"{raw * scale:{format_spec}}"
+                if isinstance(raw, (int, float)) and np.isfinite(raw)
+                else "—"
+            )
         self._driver_updating_scale = True
         self.driver_progress_var.set(
             1000.0 * frame.distance_m / playback.track.length_m
@@ -1762,11 +1816,15 @@ class LapSimDesktop:
         self._set_driver_replay_options({}, selected="—")
         self._pause_driver_playback()
         self.driver_playback = None
+        self._live_decision = None
+        self.driver_decision_title.set("Last accepted cell · model values")
         self._driver_playback_time_s = 0.0
         self._driver_live_mode = True
         self._driver_stream_active = True
         self.driver_progress_var.set(0.0)
         for value in self.driver_values.values():
+            value.set("—")
+        for value in self.driver_decision_values.values():
             value.set("—")
         for value in self.output_values.values():
             value.configure(text="—")
@@ -1823,6 +1881,10 @@ class LapSimDesktop:
             # worker or turn an incomplete lap into a displayed solution.
             return
         self.driver_playback = playback
+        self._live_decision = DriverCellDecision(**{
+            key: getattr(snapshot, key, None)
+            for key, _title, _scale, _format in DRIVER_CELL_BOXES
+        })
         self._driver_playback_time_s = snapshot.elapsed_time_s
         self.driver_run_label.set(
             f"{name} · {phase} · accepted cell "
