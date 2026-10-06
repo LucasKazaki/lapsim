@@ -111,9 +111,16 @@ STYLES = {
 
 def _inline(value: str) -> str:
     text = escape(value, quote=False)
+    protected: dict[str, str] = {}
+
+    def keep(markup: str) -> str:
+        marker = f"@@LAPSIMINLINE{len(protected)}@@"
+        protected[marker] = markup
+        return marker
+
     text = re.sub(
         r"\[([^\]]+)\]\((https?://[^)]+)\)",
-        lambda match: (
+        lambda match: keep(
             f'<link href="{escape(unescape(match.group(2)), quote=True)}" '
             f'color="black" underline="1">{match.group(1)}</link>'
         ),
@@ -121,11 +128,13 @@ def _inline(value: str) -> str:
     )
     text = re.sub(
         r"`([^`]+)`",
-        lambda match: f'<font name="Consolas" size="8">{match.group(1)}</font>',
+        lambda match: keep(f'<font name="Consolas" size="8">{match.group(1)}</font>'),
         text,
     )
     text = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text)
     text = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<i>\1</i>", text)
+    for marker, markup in protected.items():
+        text = text.replace(marker, markup)
     return text
 
 

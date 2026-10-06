@@ -15,7 +15,9 @@ import pytest
 from lapsim.experiments import RunRecord, replay_lap_record
 from lapsim.events.endurance import LapProgressSnapshot
 from lapsim.courses.spatial_track import SpatialTrack
-from lapsim.ui.app import LapSimDesktop, _course_geometry_warning
+from lapsim.ui.app import (
+    AI_ROAD_PATCH, LapSimDesktop, _course_geometry_warning,
+)
 from lapsim.ui.course_catalog import COURSE_OPTIONS, SYNTHETIC_DEMO_COURSE_ID
 from lapsim.ui.presets import VehicleSetup
 from lapsim.ui.simulation import prepare_one_lap_constraints
@@ -343,8 +345,8 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         with patch("lapsim.ui.app.threading.Thread") as worker:
             app._start_run()
             assert worker.call_args.kwargs["target"].__name__ == "_calculate_ai_single"
-            assert worker.call_args.kwargs["args"][-2:] == (
-                (2.0, 1.8, 0.2), 1.0,
+            assert worker.call_args.kwargs["args"][-3:] == (
+                (2.0, 1.8, 0.2), 1.0, None,
             )
         app._set_busy(False)
         with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
@@ -913,5 +915,86 @@ def test_completed_fused_centerline_playback_uses_saved_solver_grid(
         assert app.driver_playback.point_at(float(stations[index])) == pytest.approx(
             (solver_x[index], solver_y[index])
         )
+    finally:
+        root.destroy()
+
+
+def test_assumed_world_patch_ai_trials_save_their_own_replayable_grip(
+    tmp_path: Path,
+) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app.driving_mode_var.set("AI racing line (experimental)")
+        app.ai_road_condition_var.set(AI_ROAD_PATCH)
+        app._on_driving_mode_change()
+        assert all(entry["state"] == "normal" for entry in app.ai_patch_entries)
+        with pytest.raises(ValueError, match="coherent, closed course"):
+            app._read_ai_road()
+        synthetic = next(
+            spec for spec in COURSE_OPTIONS
+            if spec.course_id == SYNTHETIC_DEMO_COURSE_ID
+        )
+        app._select_course(synthetic.label)
+        app.ai_patch_vars["x_min_m"].set("-1e308")
+        app.ai_patch_vars["x_max_m"].set("1e308")
+        with pytest.raises(ValueError, match="finite, positive X and Y spans"):
+            app._read_ai_road()
+        app.ai_patch_vars["x_min_m"].set("36")
+        app.ai_patch_vars["x_max_m"].set("55")
+        road = app._read_ai_road()
+        assert road is not None
+        with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
+            app._calculate_ai_single(
+                "prius_2026_le", "Prius patch sensitivity",
+                VehicleSetup(torque_request_fraction=0.8), 1.0, 0.8,
+                (3.0, 1.8, 0.2), road=road,
+            )
+            kind, payload, error = app.result_queue.get_nowait()
+            assert error is None, error
+            assert kind == "ai_single"
+            app._set_busy(True)
+            app.result_queue.put((kind, payload, error))
+            app._poll_result()
+            root.update()
+        comparison = payload[5]
+        assert comparison.baseline_time_s is not None
+        assert comparison.candidate_time_s is not None
+        assert comparison.baseline_cell_road_grip_multiplier is not None
+        assert 0.3 in comparison.baseline_cell_road_grip_multiplier
+        baseline_low_cells = sum(
+            grip < 1.0 for grip in comparison.baseline_cell_road_grip_multiplier
+        )
+        assert any(
+            sum(grip < 1.0 for grip in trial.cell_road_grip_multiplier)
+            != baseline_low_cells
+            for trial in comparison.trials
+            if trial.run is not None and trial.cell_road_grip_multiplier is not None
+        )
+        assert all(
+            trial.cell_road_grip_multiplier is not None
+            for trial in comparison.trials if trial.run is not None
+        )
+        assert app._displayed_ai_road is road
+        assert len(app.course_ax.patches) == 1
+        assert "rectangle x 36–55 m" in app.ai_result_text.get()
+
+        records = list(tmp_path.glob("*.json"))
+        assert len(records) >= 2
+        for path in records:
+            saved = RunRecord.load(path).to_dict()
+            conditions = saved["settings"]["conditions"]
+            assert conditions["source"] == "assumed_cellwise_surface_sensitivity"
+            assert len(conditions["cell_road_grip_multiplier"]) == (
+                saved["settings"]["track"]["cell_count"]
+            )
+            assert saved["settings"]["path_planning"]["road_condition"][
+                "mapping_version"
+            ] == "integrated_arc_nominal_wheel_min_cell_v1"
+            assert replay_lap_record(path).model_agreement
     finally:
         root.destroy()

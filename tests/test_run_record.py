@@ -11,6 +11,7 @@ from pathlib import Path
 import platform
 from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 
 from lapsim.core.telemetry import Telemetry
 from lapsim.courses.spatial_track import SpatialTrack
@@ -144,6 +145,108 @@ class RunRecordTests(unittest.TestCase):
                     endurance_config=EnduranceRunConfig(laps=1),
                     road_grip_multiplier=invalid,
                 )
+
+    def test_cell_grip_settings_are_absolute_grid_aligned_and_frozen(self) -> None:
+        schedule = (0.9, 0.7)
+        settings = LapRunSettings.from_track(
+            self.track, track_id="synthetic_loop", solver_step_m=1.0,
+            solver_settings={"maximum_passes": 120},
+            torque_request_fraction=0.8,
+            endurance_config=EnduranceRunConfig(laps=1),
+            road_grip_multiplier=0.85,
+            cell_road_grip_multiplier=schedule,
+        )
+        saved = settings.to_dict()["conditions"]
+        self.assertEqual(saved, {
+            "road_grip_multiplier": 0.85,
+            "source": "assumed_cellwise_surface_sensitivity",
+            "cell_road_grip_multiplier": [0.9, 0.7],
+        })
+        saved["cell_road_grip_multiplier"][0] = 0.1
+        self.assertEqual(
+            settings.to_dict()["conditions"]["cell_road_grip_multiplier"],
+            [0.9, 0.7],
+        )
+
+        for invalid in (
+            [0.9, 0.7], (0.9,), (0.9, 0.7, 1.0),
+            (True, 0.7), (0.0, 0.7), (-1.0, 0.7),
+            (float("nan"), 0.7), (float("inf"), 0.7),
+        ):
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(
+                ValueError, "cell road grip",
+            ):
+                LapRunSettings.from_track(
+                    self.track, track_id="synthetic_loop", solver_step_m=1.0,
+                    solver_settings={"maximum_passes": 120},
+                    torque_request_fraction=0.8,
+                    endurance_config=EnduranceRunConfig(laps=1),
+                    cell_road_grip_multiplier=invalid,
+                )
+
+    def test_scheduled_completed_record_requires_full_grip_trace(self) -> None:
+        settings = LapRunSettings.from_track(
+            self.track, track_id="synthetic_loop", solver_step_m=1.0,
+            solver_settings={"maximum_passes": 120},
+            torque_request_fraction=0.8,
+            endurance_config=EnduranceRunConfig(laps=1),
+            cell_road_grip_multiplier=(0.9, 0.7),
+        )
+        with self.assertRaisesRegex(ValueError, "one grip sample per cell"):
+            capture_lap_run(
+                self._result(), self.manifest, settings,
+                actual_vehicle=self.vehicle,
+            )
+
+    def test_scheduled_failed_record_checks_only_accepted_grip_prefix(self) -> None:
+        settings = LapRunSettings.from_track(
+            self.track, track_id="synthetic_loop", solver_step_m=1.0,
+            solver_settings={"maximum_passes": 120},
+            torque_request_fraction=0.8,
+            endurance_config=EnduranceRunConfig(laps=1),
+            cell_road_grip_multiplier=(0.9, 0.7),
+        )
+
+        def failed_result(grip: float) -> EnduranceRunResult:
+            return EnduranceRunResult(
+                completed_laps=0, driving_time_s=0.5, lap_times_s=(),
+                pack_energy_kwh=0.001, final_state_of_charge=0.9,
+                failure_reason="second cell rejected",
+                telemetry=Telemetry({
+                    "vehicle.time_s": (0.5,),
+                    "vehicle.distance_m": (1.0,),
+                    "tire.road_grip_multiplier": (grip,),
+                }),
+            )
+
+        saved = capture_lap_run(
+            failed_result(0.9), self.manifest, settings,
+            actual_vehicle=self.vehicle,
+        ).to_dict()
+        self.assertEqual(saved["result"]["status"], "failed")
+        self.assertEqual(saved["telemetry"]["sample_count"], 1)
+        with self.assertRaisesRegex(ValueError, "saved tire grip telemetry disagrees"):
+            capture_lap_run(
+                failed_result(0.8), self.manifest, settings,
+                actual_vehicle=self.vehicle,
+            )
+
+    def test_load_rejects_duplicate_keys_and_oversized_input(self) -> None:
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "lap.json"
+            path.write_text('{"schema_version":2,"schema_version":2}', encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
+                RunRecord.load(path)
+            path.write_bytes(b" " * 65)
+            with patch("lapsim.experiments.run_record._MAX_RUN_RECORD_BYTES", 64):
+                with self.assertRaisesRegex(ValueError, "file cap"):
+                    RunRecord.load(path)
+                record = capture_lap_run(
+                    self._result(), self.manifest, self.settings,
+                    actual_vehicle=self.vehicle,
+                )
+                with self.assertRaisesRegex(ValueError, "file cap"):
+                    record.save(path)
 
     def test_measured_seam_speeds_are_in_the_saved_result(self) -> None:
         observed = replace(

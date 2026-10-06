@@ -31,7 +31,8 @@ from vehicle_model import (
 
 from .run_record import (
     RUN_RECORD_SCHEMA_VERSION, RunRecord, _runtime_identity,
-    _saved_road_grip_multiplier,
+    _saved_cell_road_grip_multiplier, _saved_road_grip_multiplier,
+    _validate_cell_grip_trace,
 )
 
 
@@ -65,6 +66,79 @@ def _required_object(parent: Mapping[str, Any], key: str, label: str) -> dict[st
     if not isinstance(value, dict):
         raise ValueError(f"saved {label} must be an object")
     return value
+
+
+def _verify_saved_world_road_schedule(
+    planning: Mapping[str, Any], track: SpatialTrack, vehicle: Vehicle,
+    cell_grip: tuple[float, ...] | None,
+) -> None:
+    """Check a desktop patch's claimed world geometry against its saved grid."""
+
+    condition = planning.get("road_condition")
+    if condition is None:
+        return  # Old records and non-desktop scheduled API runs.
+    if not isinstance(condition, dict):
+        raise ValueError("saved AI road condition must be an object")
+    mode = condition.get("mode")
+    if mode == "assumed_uniform_surface":
+        if set(condition) != {"mode"} or cell_grip is not None:
+            raise ValueError("saved uniform AI road condition conflicts with grip schedule")
+        return
+    if mode != "assumed_world_fixed_low_grip_rectangle":
+        raise ValueError("saved AI road condition mode is unsupported")
+    if cell_grip is None:
+        raise ValueError("saved world patch has no cell grip schedule")
+    from lapsim.dynamics.conditions import PlanarRoad, RectangularGripPatch
+    from lapsim.optimization.road_grip_schedule import (
+        ROAD_GRIP_SCHEDULE_MAPPING_VERSION, world_patch_grip_schedule,
+    )
+
+    required = {
+        "mode", "mapping_version", "base_material_id",
+        "base_friction_multiplier", "patches", "policy",
+        "contact_resolution_m", "measured",
+    }
+    if set(condition) != required:
+        raise ValueError("saved world patch definition is incomplete or unsupported")
+    if (
+        condition["mapping_version"] != ROAD_GRIP_SCHEDULE_MAPPING_VERSION
+        or condition["policy"] != "minimum_nominal_wheel_contact_grip_for_whole_cell"
+        or condition["contact_resolution_m"] != 0.01
+        or condition["measured"] is not False
+    ):
+        raise ValueError("saved world patch mapping contract is unsupported")
+    base_factor = _finite_number(
+        condition["base_friction_multiplier"], "saved world road base grip",
+    )
+    raw_patches = condition["patches"]
+    if not isinstance(raw_patches, list) or not 1 <= len(raw_patches) <= 128:
+        raise ValueError("saved world road needs 1–128 rectangular patches")
+    patch_fields = {
+        "x_min_m", "x_max_m", "y_min_m", "y_max_m",
+        "friction_multiplier", "material_id",
+    }
+    patches = []
+    for raw in raw_patches:
+        if not isinstance(raw, dict) or set(raw) != patch_fields:
+            raise ValueError("saved world road patch fields are unsupported")
+        values = {name: _finite_number(raw[name], name) for name in (
+            "x_min_m", "x_max_m", "y_min_m", "y_max_m",
+            "friction_multiplier",
+        )}
+        patches.append(RectangularGripPatch(
+            **values, material_id=raw["material_id"],
+        ))
+    try:
+        road = PlanarRoad(
+            base_material_id=condition["base_material_id"],
+            base_friction_multiplier=base_factor,
+            patches=tuple(patches),
+        )
+        expected = world_patch_grip_schedule(track, vehicle, road)
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"saved world patch cannot be mapped: {error}") from error
+    if expected != cell_grip:
+        raise ValueError("saved world patch does not reproduce cell grip schedule")
 
 
 def _restore_config(value: Any) -> Any:
@@ -308,6 +382,11 @@ def replay_lap_record(
     if not track.closed:
         raise ValueError("lap replay requires a closed solver track")
     commands = _recorded_controls(payload, track)
+    cell_grip = _saved_cell_road_grip_multiplier(settings, track.cell_count)
+    _validate_cell_grip_trace(
+        payload["telemetry"], cell_grip, completed=True,
+        uniform_grip_multiplier=vehicle.tire.road_grip_multiplier,
+    )
     solver_settings = _required_object(
         _required_object(settings, "solver", "solver"),
         "path_constraint_settings", "path constraint settings",
@@ -322,6 +401,7 @@ def replay_lap_record(
     path_planning = settings.get("path_planning", {})
     if not isinstance(path_planning, dict):
         raise ValueError("saved path planning settings must be an object")
+    _verify_saved_world_road_schedule(path_planning, track, vehicle, cell_grip)
     if (
         path_planning.get("lap_start_policy")
         == "speed_only_periodic_fixed_initial_vehicle_state"
@@ -355,7 +435,12 @@ def replay_lap_record(
         raise ValueError(f"saved path constraint settings are invalid: {exc}") from exc
     try:
         vehicle.reset_state()
-        constraints = solver.solve(track, vehicle)
+        if cell_grip is None:
+            constraints = solver.solve(track, vehicle)
+        else:
+            constraints = solver.solve(
+                track, vehicle, cell_road_grip_multiplier=cell_grip,
+            )
         replayed = EnduranceSimulator().run(
             vehicle, constraints, _RecordedCellControls(track, commands),
             config, record_telemetry=True,
@@ -399,6 +484,12 @@ def replay_lap_record(
             metrics.append(_trace_metric(name, expected, actual, tolerance))
         for field in _CONTROL_FIELDS:
             name = f"controls.{field}"
+            metrics.append(_trace_metric(
+                name, saved_trace["channels"][name]["values"],
+                replayed_trace[name], 0.0,
+            ))
+        name = "tire.road_grip_multiplier"
+        if name in saved_trace["channels"]:
             metrics.append(_trace_metric(
                 name, saved_trace["channels"][name]["values"],
                 replayed_trace[name], 0.0,

@@ -28,6 +28,7 @@ from scipy.interpolate import CubicSpline
 from scipy.optimize import LinearConstraint, minimize
 
 from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.dynamics.conditions import PlanarRoad
 from lapsim.events.endurance import EnduranceRunResult, LapProgressSnapshot
 from lapsim.solvers.path_constraints import PathConstraintProgressSnapshot
 
@@ -187,6 +188,7 @@ class RacingLineComparison:
     candidate_path_audit: CurvaturePathAudit | None = None
     baseline_diagnostic_time_s: float | None = None
     candidate_diagnostic_time_s: float | None = None
+    baseline_cell_road_grip_multiplier: tuple[float, ...] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -201,6 +203,9 @@ class RacingLineTrial:
     diagnostic_lap_time_s: float | None = None
     track: SpatialTrack | None = field(default=None, repr=False, compare=False)
     run: EnduranceRunResult | None = field(default=None, repr=False, compare=False)
+    cell_road_grip_multiplier: tuple[float, ...] | None = field(
+        default=None, repr=False, compare=False,
+    )
 
 
 def _periodic_cubic_basis_at(
@@ -1234,6 +1239,7 @@ def compare_lines_with_lap_model(
     constraint_progress_callback: Callable[[str, PathConstraintProgressSnapshot], None] | None = None,
     speed_periodic: bool = False,
     minimum_selection_gain_s: float = 0.05,
+    road: PlanarRoad | None = None,
 ) -> RacingLineComparison:
     """Evaluate a candidate and its baseline with the same lap physics.
 
@@ -1273,6 +1279,8 @@ def compare_lines_with_lap_model(
         or minimum_selection_gain_s < 0.0
     ):
         raise ValueError("minimum_selection_gain_s must be finite and nonnegative")
+    if road is not None and not isinstance(road, PlanarRoad):
+        raise ValueError("road must be a PlanarRoad or None")
 
     from lapsim.ui.simulation import run_one_lap, run_speed_periodic_lap
 
@@ -1339,8 +1347,18 @@ def compare_lines_with_lap_model(
 
     def run_trial(
         track: SpatialTrack, phase: str,
-    ) -> tuple[EnduranceRunResult | None, float | None, str | None]:
+    ) -> tuple[
+        EnduranceRunResult | None, float | None, str | None,
+        tuple[float, ...] | None,
+    ]:
+        cell_grip = None
         try:
+            condition_options = {}
+            if road is not None:
+                from .road_grip_schedule import world_patch_grip_schedule
+
+                cell_grip = world_patch_grip_schedule(track, vehicle, road)
+                condition_options["cell_road_grip_multiplier"] = cell_grip
             constraint_options = (
                 {"constraint_progress_callback": lambda snapshot: (
                     constraint_progress_callback(phase, snapshot)
@@ -1356,10 +1374,12 @@ def compare_lines_with_lap_model(
                 if progress_callback is None:
                     periodic = run_speed_periodic_lap(
                         vehicle, track, **periodic_options, **constraint_options,
+                        **condition_options,
                     )
                 else:
                     periodic = run_speed_periodic_lap(
                         vehicle, track, **periodic_options, **constraint_options,
+                        **condition_options,
                         progress_callback=lambda snapshot: progress_callback(
                             phase, track, snapshot,
                         ),
@@ -1368,34 +1388,37 @@ def compare_lines_with_lap_model(
                 if not periodic.converged:
                     return result, None, periodic.failure_reason or (
                         "Speed-only lap seam did not converge"
-                    )
+                    ), cell_grip
             else:
                 if progress_callback is None:
                     result = run_one_lap(
                         deepcopy(vehicle), track,
                         torque_request_fraction=torque_request_fraction,
-                        **constraint_options,
+                        **constraint_options, **condition_options,
                     )
                 else:
                     result = run_one_lap(
                         deepcopy(vehicle), track,
                         torque_request_fraction=torque_request_fraction,
-                        **constraint_options,
+                        **constraint_options, **condition_options,
                         progress_callback=lambda snapshot: progress_callback(
                             phase, track, snapshot,
                         ),
                     )
         except (ValueError, RuntimeError, ArithmeticError, OverflowError) as error:
-            return None, None, f"{type(error).__name__}: {error}"
+            return None, None, f"{type(error).__name__}: {error}", cell_grip
         if result.completed and isfinite(result.driving_time_s) and result.driving_time_s > 0.0:
-            return result, result.driving_time_s, None
-        return result, None, result.failure_reason or "Lap did not complete with a finite positive time"
+            return result, result.driving_time_s, None, cell_grip
+        return result, None, result.failure_reason or "Lap did not complete with a finite positive time", cell_grip
 
     baseline_path_audit, baseline_path_error = audit_trial(plan.baseline_track)
 
     def run_ai_trial(
         track: SpatialTrack, phase: str, path_audit: CurvaturePathAudit | None,
-    ) -> tuple[EnduranceRunResult | None, float | None, str | None]:
+    ) -> tuple[
+        EnduranceRunResult | None, float | None, str | None,
+        tuple[float, ...] | None,
+    ]:
         # A failed clearance path cannot become selectable by running physics.
         # Preserve diagnostic runs when the processed baseline also fails,
         # because those runs expose the source-course mismatch.
@@ -1403,10 +1426,10 @@ def compare_lines_with_lap_model(
             baseline_path_error is None
             and path_audit is not None and not path_audit.valid
         ):
-            return None, None, "Model run skipped after failed path audit"
+            return None, None, "Model run skipped after failed path audit", None
         return run_trial(track, phase)
 
-    baseline_run, baseline_model_time, baseline_run_error = run_trial(
+    baseline_run, baseline_model_time, baseline_run_error, baseline_cell_grip = run_trial(
         plan.baseline_track, "baseline"
     )
     baseline_diagnostic_time = completed_diagnostic_time(baseline_run)
@@ -1421,7 +1444,7 @@ def compare_lines_with_lap_model(
     )
     if plan.status == "candidate":
         full_audit, full_path_error = audit_trial(plan.candidate_track)
-        full_run, full_model_time, full_run_error = run_ai_trial(
+        full_run, full_model_time, full_run_error, full_cell_grip = run_ai_trial(
             plan.candidate_track, "full", full_audit,
         )
         full_diagnostic_time = completed_diagnostic_time(full_run)
@@ -1436,6 +1459,7 @@ def compare_lines_with_lap_model(
         trials.append(RacingLineTrial(
             1.0, plan.candidate_track.length_m, full_time, full_error,
             full_audit, full_diagnostic_time, plan.candidate_track, full_run,
+            full_cell_grip,
         ))
         candidate_run, candidate_time, candidate_error = full_run, full_time, full_error
         candidate_path_audit = full_audit
@@ -1466,7 +1490,7 @@ def compare_lines_with_lap_model(
                 trials.append(RacingLineTrial(strength, None, None, f"Geometry: {error}"))
                 continue
             trial_audit, trial_path_error = audit_trial(trial_track)
-            trial_run, trial_model_time, trial_run_error = run_ai_trial(
+            trial_run, trial_model_time, trial_run_error, trial_cell_grip = run_ai_trial(
                 trial_track, phase, trial_audit,
             )
             trial_diagnostic_time = completed_diagnostic_time(trial_run)
@@ -1481,6 +1505,7 @@ def compare_lines_with_lap_model(
             trials.append(RacingLineTrial(
                 strength, trial_track.length_m, trial_time, trial_error,
                 trial_audit, trial_diagnostic_time, trial_track, trial_run,
+                trial_cell_grip,
             ))
             if trial_time is not None and (candidate_time is None or trial_time < candidate_time):
                 candidate_track, candidate_run = trial_track, trial_run
@@ -1557,6 +1582,7 @@ def compare_lines_with_lap_model(
         candidate_path_audit=candidate_path_audit,
         baseline_diagnostic_time_s=baseline_diagnostic_time,
         candidate_diagnostic_time_s=candidate_diagnostic_time,
+        baseline_cell_road_grip_multiplier=baseline_cell_grip,
     )
 
 

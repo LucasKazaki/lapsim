@@ -29,6 +29,10 @@ from vehicle_model import Vehicle
 RUN_RECORD_SCHEMA_VERSION = 2
 _SUPPORTED_RUN_RECORD_SCHEMAS = frozenset((1, RUN_RECORD_SCHEMA_VERSION))
 _RUNTIME_DEPENDENCIES = ("numpy", "scipy", "matplotlib")
+_MAX_RUN_RECORD_BYTES = 128 * 1024 * 1024
+_MAX_SCHEDULE_CELLS = 100_000
+_UNIFORM_GRIP_SOURCE = "assumed_uniform_surface_sensitivity"
+_CELLWISE_GRIP_SOURCE = "assumed_cellwise_surface_sensitivity"
 
 
 def _canonical_json(value: Any) -> str:
@@ -43,6 +47,15 @@ def _sha256_json(value: Any) -> str:
 
 def _reject_json_constant(value: str) -> None:
     raise ValueError(f"Nonfinite JSON constant is forbidden: {value}")
+
+
+def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
 
 
 def _validated_mapping(value: Mapping[str, Any], name: str) -> dict[str, Any]:
@@ -71,11 +84,50 @@ def _saved_road_grip_multiplier(settings: Mapping[str, Any]) -> float:
     if "conditions" not in settings:
         return 1.0
     conditions = settings["conditions"]
-    if not isinstance(conditions, dict) or set(conditions) != {
-        "road_grip_multiplier", "source"
-    } or conditions.get("source") != "assumed_uniform_surface_sensitivity":
+    if not isinstance(conditions, dict):
+        raise ValueError("saved run conditions are invalid")
+    source = conditions.get("source")
+    expected = {"road_grip_multiplier", "source"}
+    if source == _CELLWISE_GRIP_SOURCE:
+        expected.add("cell_road_grip_multiplier")
+    elif source != _UNIFORM_GRIP_SOURCE:
+        raise ValueError("saved run conditions are invalid")
+    if set(conditions) != expected:
         raise ValueError("saved run conditions are invalid")
     return _road_grip_multiplier(conditions["road_grip_multiplier"])
+
+
+def _cell_road_grip_multiplier(
+    values: Any, cell_count: int, *, saved: bool,
+) -> tuple[float, ...]:
+    """Validate absolute tire factors tied to one embedded solver grid."""
+
+    if cell_count > _MAX_SCHEDULE_CELLS:
+        raise ValueError("cell road grip exceeds the 100000-cell record cap")
+    expected_type = list if saved else tuple
+    if not isinstance(values, expected_type) or len(values) != cell_count:
+        raise ValueError("cell road grip must have one value per track cell")
+    if any(
+        isinstance(value, bool) or not isinstance(value, Real)
+        or not isfinite(value) or value <= 0.0
+        for value in values
+    ):
+        raise ValueError("cell road grip values must be finite and positive")
+    return tuple(float(value) for value in values)
+
+
+def _saved_cell_road_grip_multiplier(
+    settings: Mapping[str, Any], cell_count: int,
+) -> tuple[float, ...] | None:
+    """Keep intact old v2 runs uniform; reject malformed new conditions."""
+
+    _saved_road_grip_multiplier(settings)
+    conditions = settings.get("conditions")
+    if conditions is None or conditions["source"] == _UNIFORM_GRIP_SOURCE:
+        return None
+    return _cell_road_grip_multiplier(
+        conditions["cell_road_grip_multiplier"], cell_count, saved=True,
+    )
 
 
 def _runtime_identity() -> dict[str, Any]:
@@ -146,6 +198,7 @@ def _validate_embedded_track(payload: Mapping[str, Any]) -> None:
             or track["closed"] is not solver_track.closed
         ):
             raise ValueError("run-record embedded track geometry does not match its hash or metadata")
+        _saved_cell_road_grip_multiplier(settings, solver_track.cell_count)
     except (KeyError, TypeError, AttributeError) as exc:
         raise ValueError("run-record embedded track geometry is missing or invalid") from exc
 
@@ -156,7 +209,10 @@ class LapRunSettings:
 
     ``solver_settings`` must contain the actual path-constraint settings, not
     just the requested grid spacing.  The course hash includes every point
-    and cell curvature in the solver's resampled track.
+    and cell curvature in the solver's resampled track. Optional cell grip
+    values are absolute tire multipliers in that exact grid's cell order;
+    ``road_grip_multiplier`` remains the vehicle's reference tire setting
+    and is not multiplied by the cell values.
     """
 
     _json: str
@@ -172,6 +228,7 @@ class LapRunSettings:
         torque_request_fraction: float,
         endurance_config: EnduranceRunConfig,
         road_grip_multiplier: float = 1.0,
+        cell_road_grip_multiplier: tuple[float, ...] | None = None,
         profile_id: str | None = None,
         profile_label: str | None = None,
         path_planning: Mapping[str, Any] | None = None,
@@ -186,6 +243,12 @@ class LapRunSettings:
         if not isfinite(torque_request_fraction) or not 0.0 <= torque_request_fraction <= 1.0:
             raise ValueError("torque_request_fraction must be finite and in [0, 1]")
         selected_road_grip = _road_grip_multiplier(road_grip_multiplier)
+        selected_cell_grip = (
+            None if cell_road_grip_multiplier is None else
+            _cell_road_grip_multiplier(
+                cell_road_grip_multiplier, track.cell_count, saved=False,
+            )
+        )
         if not isinstance(endurance_config, EnduranceRunConfig) or endurance_config.laps != 1:
             raise ValueError("endurance_config must describe exactly one lap")
         if profile_id is not None and (not isinstance(profile_id, str) or not profile_id.strip()):
@@ -218,12 +281,17 @@ class LapRunSettings:
             "driver": {"torque_request_fraction": torque_request_fraction},
             "conditions": {
                 "road_grip_multiplier": selected_road_grip,
-                "source": "assumed_uniform_surface_sensitivity",
+                "source": (
+                    _UNIFORM_GRIP_SOURCE if selected_cell_grip is None
+                    else _CELLWISE_GRIP_SOURCE
+                ),
             },
             "endurance_config": asdict(endurance_config),
             "profile_id": profile_id,
             "profile_label": profile_label,
         }
+        if selected_cell_grip is not None:
+            payload["conditions"]["cell_road_grip_multiplier"] = selected_cell_grip
         if source_course is not None:
             source = _validated_mapping(source_course, "source_course")
             if not source:
@@ -261,10 +329,15 @@ class RunRecord:
         destination.parent.mkdir(parents=True, exist_ok=True)
         temporary = destination.with_name(f"{destination.name}.{uuid4().hex}.tmp")
         try:
-            temporary.write_text(
-                json.dumps(self.to_dict(), indent=2, ensure_ascii=False, allow_nan=False) + "\n",
-                encoding="utf-8",
-            )
+            content = json.dumps(
+                self.to_dict(), indent=2, ensure_ascii=False, allow_nan=False,
+            ) + "\n"
+            encoded_size = len(content.encode("utf-8"))
+            if os.linesep == "\r\n":
+                encoded_size += content.count("\n")  # Text I/O expands LF on Windows.
+            if encoded_size > _MAX_RUN_RECORD_BYTES:
+                raise ValueError("run record exceeds the 128 MiB file cap")
+            temporary.write_text(content, encoding="utf-8")
             os.replace(temporary, destination)
         finally:
             temporary.unlink(missing_ok=True)
@@ -274,8 +347,15 @@ class RunRecord:
     def load(cls, path: str | Path) -> RunRecord:
         """Read a saved record and reject corruption or unsupported schemas."""
 
-        with Path(path).open("r", encoding="utf-8") as stream:
-            payload = json.load(stream, parse_constant=_reject_json_constant)
+        with Path(path).open("rb") as stream:
+            content = stream.read(_MAX_RUN_RECORD_BYTES + 1)
+        if len(content) > _MAX_RUN_RECORD_BYTES:
+            raise ValueError("run record exceeds the 128 MiB file cap")
+        payload = json.loads(
+            content.decode("utf-8"),
+            parse_constant=_reject_json_constant,
+            object_pairs_hook=_reject_duplicate_keys,
+        )
         if (
             not isinstance(payload, dict)
             or type(payload.get("schema_version")) is not int
@@ -412,6 +492,46 @@ def _trace_payload(result: EnduranceRunResult) -> dict[str, Any]:
     }
 
 
+def _validate_cell_grip_trace(
+    trace: Mapping[str, Any], schedule: tuple[float, ...] | None,
+    *, completed: bool, uniform_grip_multiplier: float | None = None,
+) -> None:
+    """Check every available accepted-cell tire factor against saved inputs."""
+
+    count = trace["sample_count"]
+    if schedule is not None:
+        if count > len(schedule):
+            raise ValueError("scheduled lap has more grip samples than track cells")
+        if completed and count != len(schedule):
+            raise ValueError("completed scheduled lap needs one grip sample per cell")
+    if count == 0:
+        return  # A first-cell failure has no accepted model samples.
+    channel = trace["channels"].get("tire.road_grip_multiplier")
+    if schedule is None:
+        if channel is None:
+            return  # Narrow compatibility with historical v2 traces.
+        if uniform_grip_multiplier is None:
+            raise ValueError("uniform road grip is required to check saved tire telemetry")
+        expected_grip = (uniform_grip_multiplier,) * count
+    else:
+        expected_grip = schedule[:count]
+    if (
+        not isinstance(channel, dict)
+        or channel.get("validity") != "complete"
+        or channel.get("valid_sample_count") != count
+        or not isinstance(channel.get("values"), list)
+        or len(channel["values"]) != count
+        or any(
+            type(value) not in (int, float) or not isfinite(value)
+            or value != expected
+            for value, expected in zip(
+                channel["values"], expected_grip, strict=True,
+            )
+        )
+    ):
+        raise ValueError("saved tire grip telemetry disagrees with cell road grip")
+
+
 def _result_payload(result: EnduranceRunResult) -> dict[str, Any]:
     if result.completed_laps not in (0, 1) or len(result.lap_times_s) != result.completed_laps:
         raise ValueError("the run result must contain at most one completed lap")
@@ -527,6 +647,9 @@ def capture_lap_run(
     base_config = base_manifest["model_config"]
     run_settings = settings.to_dict()
     road_grip_multiplier = _saved_road_grip_multiplier(run_settings)
+    cell_grip = _saved_cell_road_grip_multiplier(
+        run_settings, run_settings["track"]["cell_count"],
+    )
     try:
         tire_fields = effective_vehicle["fields"]["tire"]["fields"]
         base_tire_fields = base_config["fields"]["tire"]["fields"]
@@ -548,6 +671,10 @@ def capture_lap_run(
         raise ValueError("actual vehicle differs from base manifest; supply user_overrides")
     summary = _result_payload(result)
     telemetry = _trace_payload(result)
+    _validate_cell_grip_trace(
+        telemetry, cell_grip, completed=result.completed,
+        uniform_grip_multiplier=road_grip_multiplier,
+    )
     if telemetry["sample_count"] and "accepted_time_s" in summary:
         for field_name, samples_name in (
             ("accepted_time_s", "sample_time_s"),

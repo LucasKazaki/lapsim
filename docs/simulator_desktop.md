@@ -85,26 +85,35 @@ desktop starts at 1 m. AI builds a separate x/y-derived path grid and adds sampl
 offset meet that bound; fractional offsets then fit it too. A smaller request
 can increase planning and lap time, and a request needing more than 5,000
 points is refused. The saved grid's individual lengths are authoritative.
-**Assumed road grip** defaults to 100% and uniformly multiplies the selected
-tire model's longitudinal and lateral force capacities. It applies to ordinary
-laps, AI trials, and both cars in a profile comparison. A value below 100%
-is a sensitivity scenario; it is not a calibrated wet-road model, a local
-surface map, or a claim about actual course conditions. Each saved lap records
-the multiplier alongside the effective tire configuration. The engineering
-replay checker restores both; older v2 records without this condition use
-the original 100% grip. Editing a run input or changing the selected profile
-clears displayed outputs and playback so prior numbers cannot be read as the
-new setup.
+**Assumed road grip** defaults to 100% and scales the selected tire model's
+longitudinal and lateral force capacities. It is the uniform base condition
+for ordinary laps, AI trials, and both cars in a profile comparison. AI mode
+also offers **One rectangular low-grip patch (assumed)** with editable world
+X/Y minimum and maximum coordinates and a grip percentage of that base.
+The source course must be a coherent closed path, so the shipped fused course
+rejects this option; the analytic courses and coherent imported courses can use it.
+Each AI trial receives its own path-specific per-cell schedule: nominal wheel
+centers follow the path's prescribed curvature, and any wheel touching the
+rectangle reduces the entire cell's tire capacity. The top-down map outlines
+the assumed rectangle. This is a conservative scalar sensitivity, not a
+measured wet-road map, four independent tire contacts, or a tracked vehicle
+pose. The geometric path proposal does not use the patch; its bounded
+car-dependent trial timing and line-strength selection do. Each saved trial
+records its exact schedule and the assumed rectangle/mapping version.
+The engineering replay checker restores the schedule; older v2 records without
+conditions use the original 100% grip. Editing a run input or changing the
+selected profile clears displayed outputs and playback so prior numbers
+cannot be read as the new setup.
 For Python-only studies, the path-constraint and one-lap APIs also accept an
 immutable tuple of **absolute** tire-grip multipliers with exactly one
 positive finite value per solver cell. The local corner-speed calculation,
 cyclic braking-envelope pass, and that cell's force update all use its value,
 and the car's configured tire multiplier is restored afterward. Omitting the
-tuple preserves the uniform baseline. The desktop does not expose this
-schedule, draw a local main-lap grip map, or save such a schedule in a lap
-record; its percentage box remains uniform for centerline, AI, and A/B.
-A scheduled API run needs a future record/replay schema extension before it
-can be shared as a checked v2 lap record.
+tuple preserves the uniform baseline. `LapRunSettings.from_track` can freeze
+that tuple on its exact solver grid, and a completed scheduled lap record can
+be replayed with the same values and checked grip telemetry. The desktop
+generates such a tuple automatically only for optional AI rectangle trials;
+there is no free-form per-cell editor.
 Invalid or non-finite values are rejected before a run begins, and requests
 producing more than 5,000 actual cells are refused. For either synthetic course,
 the guard counts subdivisions of each original straight or arc cell. The fused

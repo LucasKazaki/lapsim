@@ -17,6 +17,7 @@ from typing import Any, Callable
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+from matplotlib.patches import Rectangle
 
 from lapsim.courses.course_bundle import CourseBundle
 from lapsim.dynamics.conditions import (
@@ -56,6 +57,20 @@ FONT = ("Segoe UI", 10)
 FONT_BOLD = ("Segoe UI", 10, "bold")
 FONT_TITLE = ("Segoe UI", 16, "bold")
 AI_SELECTION_MARGIN_S = 0.05
+AI_ROAD_UNIFORM = "Uniform (default)"
+AI_ROAD_PATCH = "One rectangular low-grip patch (assumed)"
+
+
+def _ai_road_label(road: PlanarRoad | None, base_grip: float) -> str:
+    if road is None or not road.patches:
+        return f"Assumed uniform road grip {base_grip * 100:g}%."
+    patch = road.patches[0]
+    return (
+        f"Assumed base grip {base_grip * 100:g}%; rectangle "
+        f"x {patch.x_min_m:g}–{patch.x_max_m:g} m, "
+        f"y {patch.y_min_m:g}–{patch.y_max_m:g} m at "
+        f"{patch.friction_multiplier * 100:g}% of base."
+    )
 REFERENCE_DRIVER_NOTE = (
     "Reference-map playback: position and heading come from the "
     "distance-aligned x/y map; speed and lateral g come from the "
@@ -169,6 +184,7 @@ def _run_evidence_text(label: str, path: Path, record: dict[str, Any]) -> str:
     profile = record.get("configuration", {})
     result = record.get("result", {})
     planning = settings.get("path_planning", {})
+    conditions = settings.get("conditions", {})
     source_id = source.get("selected_course_id") or track.get("id") or "not recorded"
     source_kind = source.get("source_kind") or "not recorded"
     synthetic = "yes" if source_kind == "synthetic" else "no"
@@ -191,6 +207,16 @@ def _run_evidence_text(label: str, path: Path, record: dict[str, Any]) -> str:
             f"Source corridor: {source_corridor.get('status') or 'not recorded'}; "
             f"used by AI planner: {'yes' if source_corridor.get('used_by_ai_planner') else 'no'}"
         )
+    if isinstance(conditions, dict):
+        schedule = conditions.get("cell_road_grip_multiplier")
+        base_grip = conditions.get("road_grip_multiplier")
+        if isinstance(schedule, list) and schedule and isinstance(base_grip, (int, float)):
+            lines.append(
+                f"Road grip: assumed cellwise; base {base_grip:g}×; "
+                f"cell range {min(schedule):g}–{max(schedule):g}×"
+            )
+        elif isinstance(base_grip, (int, float)):
+            lines.append(f"Road grip: assumed uniform {base_grip:g}×")
     if isinstance(planning, dict) and planning.get("mode") == "experimental_racing_line":
         corridor = planning.get("corridor") or {}
         lines.append(
@@ -200,6 +226,27 @@ def _run_evidence_text(label: str, path: Path, record: dict[str, Any]) -> str:
             f"AI rank status: {planning.get('rank_status') or 'not recorded'}; "
             f"diagnostic only: {'yes' if planning.get('diagnostic_only') else 'no'}"
         )
+        road_condition = planning.get("road_condition")
+        if isinstance(road_condition, dict) and road_condition.get("mode") == (
+            "assumed_world_fixed_low_grip_rectangle"
+        ):
+            patches = road_condition.get("patches")
+            if isinstance(patches, list) and patches and isinstance(patches[0], dict):
+                patch = patches[0]
+                fields = (
+                    patch.get("x_min_m"), patch.get("x_max_m"),
+                    patch.get("y_min_m"), patch.get("y_max_m"),
+                    patch.get("friction_multiplier"),
+                )
+                if all(type(value) in (int, float) and np.isfinite(value)
+                       for value in fields):
+                    x_min, x_max, y_min, y_max, fraction = fields
+                    lines.append(
+                        "AI surface: assumed rectangle X "
+                        f"{x_min:g}–{x_max:g} m, Y "
+                        f"{y_min:g}–{y_max:g} m, "
+                        f"{fraction * 100:g}% of base"
+                    )
     return "\n".join(lines)
 
 
@@ -304,6 +351,17 @@ class LapSimDesktop:
         self.ai_half_width_var = tk.StringVar(value="2.0")
         self.ai_vehicle_width_var = tk.StringVar(value="1.8")
         self.ai_margin_var = tk.StringVar(value="0.2")
+        self.ai_road_condition_var = tk.StringVar(value=AI_ROAD_UNIFORM)
+        self.ai_patch_vars = {
+            "x_min_m": tk.StringVar(value="36"),
+            "x_max_m": tk.StringVar(value="55"),
+            "y_min_m": tk.StringVar(value="-3"),
+            "y_max_m": tk.StringVar(value="16"),
+            "grip_percent_of_base": tk.StringVar(value="30"),
+        }
+        self.ai_road_menu: tk.OptionMenu | None = None
+        self.ai_patch_entries: list[tk.Entry] = []
+        self._displayed_ai_road: PlanarRoad | None = None
         self.ai_result_text = tk.StringVar(value="Select AI racing line to compare modeled paths.")
         self.ai_output_values: dict[str, tk.Label] = {}
         self.ai_entries: list[tk.Entry] = []
@@ -685,6 +743,35 @@ class LapSimDesktop:
             entry.grid(row=row, column=1, sticky="ew", pady=2)
             self.ai_entries.append(entry)
             tk.Label(path_box, text="m").grid(row=row, column=2, sticky="w", padx=(5, 0))
+        tk.Label(path_box, text="AI trial surface", anchor="w").grid(
+            row=6, column=0, sticky="w", pady=2,
+        )
+        self.ai_road_menu = tk.OptionMenu(
+            path_box, self.ai_road_condition_var,
+            AI_ROAD_UNIFORM, AI_ROAD_PATCH,
+            command=lambda _value: self._on_driving_mode_change(),
+        )
+        self.ai_road_menu.configure(relief="raised", bd=1, anchor="w", font=FONT)
+        self.ai_road_menu.grid(row=6, column=1, columnspan=3, sticky="ew", pady=2)
+        for row, (label, key, unit) in enumerate((
+            ("Patch X minimum", "x_min_m", "m"),
+            ("Patch X maximum", "x_max_m", "m"),
+            ("Patch Y minimum", "y_min_m", "m"),
+            ("Patch Y maximum", "y_max_m", "m"),
+            ("Patch grip of base", "grip_percent_of_base", "%"),
+        ), start=7):
+            tk.Label(path_box, text=label, anchor="w").grid(
+                row=row, column=0, sticky="w", pady=2,
+            )
+            entry = tk.Entry(
+                path_box, textvariable=self.ai_patch_vars[key], width=11,
+                justify="right", relief="solid", bd=1, font=FONT,
+            )
+            entry.grid(row=row, column=1, sticky="ew", pady=2)
+            self.ai_patch_entries.append(entry)
+            tk.Label(path_box, text=unit).grid(
+                row=row, column=2, sticky="w", padx=(5, 0),
+            )
         path_box.grid_columnconfigure(1, weight=1)
         tk.Label(
             path_box,
@@ -694,12 +781,15 @@ class LapSimDesktop:
                   "up to four paths, with two "
                   "speed-seam passes per path. Its fourth path can follow "
                   "the selected car's eligible lap times. "
+                  "The optional rectangular surface reduces whole-cell grip "
+                  "when a nominal wheel touches it; it is an assumed "
+                  "sensitivity, not measured tire or road data. "
                   "Its rebuilt x/y course has different lap times from the "
                   "default source-curvature course. Smaller cells can take "
                   "longer. Synthetic straights/arcs retain their "
                   "exact geometry at 0.5 m or finer cells."),
             justify="left", anchor="w", wraplength=350, font=("Segoe UI", 9),
-        ).grid(row=6, column=0, columnspan=3, sticky="ew", pady=(6, 0))
+        ).grid(row=12, column=0, columnspan=3, sticky="ew", pady=(6, 0))
         self._on_driving_mode_change()
 
     def _build_run_controls(self, parent: tk.Widget) -> None:
@@ -1182,6 +1272,7 @@ class LapSimDesktop:
         self._last_result = None
         self._set_displayed_run_records(())
         self._displayed_road_grip_multiplier = None
+        self._displayed_ai_road = None
         self._comparison_results = None
         self._pan_origin = None
         for value in self.output_values.values():
@@ -2304,6 +2395,19 @@ class LapSimDesktop:
                 frameon=False, labelcolor=foreground, facecolor=background,
                 fontsize=8,
             )
+        if self._displayed_ai_road is not None:
+            patch = self._displayed_ai_road.patches[0]
+            self.course_ax.add_patch(Rectangle(
+                (patch.x_min_m, patch.y_min_m),
+                patch.x_max_m - patch.x_min_m,
+                patch.y_max_m - patch.y_min_m,
+                fill=False, edgecolor=foreground, linewidth=1.1,
+                linestyle=":", label="Assumed low-grip rectangle",
+            ))
+            self.course_ax.legend(
+                frameon=False, labelcolor=foreground, facecolor=background,
+                fontsize=8,
+            )
         self.course_ax.plot(
             [x[0]],
             [y[0]],
@@ -2463,6 +2567,7 @@ class LapSimDesktop:
         variables = (
             *self.inputs.values(), self.profile_var, self.driving_mode_var,
             self.ai_half_width_var, self.ai_vehicle_width_var, self.ai_margin_var,
+            self.ai_road_condition_var, *self.ai_patch_vars.values(),
             self.compare_a_var, self.compare_b_var,
         )
         for variable in variables:
@@ -2475,7 +2580,8 @@ class LapSimDesktop:
             self.compare_b_var.get(),
             *(value.get() for value in self.inputs.values()),
             self.ai_half_width_var.get(), self.ai_vehicle_width_var.get(),
-            self.ai_margin_var.get(),
+            self.ai_margin_var.get(), self.ai_road_condition_var.get(),
+            *(value.get() for value in self.ai_patch_vars.values()),
         )
 
     def _schedule_input_invalidation(self, *_change: str) -> None:
@@ -2514,6 +2620,7 @@ class LapSimDesktop:
         self._last_result = None
         self._set_displayed_run_records(())
         self._displayed_road_grip_multiplier = None
+        self._displayed_ai_road = None
         self._comparison_results = None
         self._path_comparison = None
         self._selected_path_track = None
@@ -2584,9 +2691,51 @@ class LapSimDesktop:
         state = "normal" if self._ai_mode_selected() and not self.run_in_progress else "disabled"
         for entry in self.ai_entries:
             entry.configure(state=state)
+        if self.ai_road_menu is not None:
+            self.ai_road_menu.configure(state=state)
+        patch_state = (
+            state if self.ai_road_condition_var.get() == AI_ROAD_PATCH else "disabled"
+        )
+        for entry in self.ai_patch_entries:
+            entry.configure(state=patch_state)
         if not self._ai_mode_selected() and self.ai_output_box is not None:
             self.ai_output_box.pack_forget()
         self._update_cell_count_hint()
+
+    def _read_ai_road(self) -> PlanarRoad | None:
+        """Read one explicit assumed rectangle; None retains uniform physics."""
+
+        scenario = self.ai_road_condition_var.get()
+        if scenario == AI_ROAD_UNIFORM:
+            return None
+        if scenario != AI_ROAD_PATCH:
+            raise ValueError("Choose a listed AI trial surface.")
+        try:
+            values = {key: float(variable.get()) for key, variable in self.ai_patch_vars.items()}
+        except ValueError as error:
+            raise ValueError("Enter numeric rectangular-patch coordinates and grip.") from error
+        if not all(np.isfinite(value) for value in values.values()):
+            raise ValueError("Rectangular-patch coordinates and grip must be finite.")
+        percent = values.pop("grip_percent_of_base")
+        if not 0.0 < percent <= 100.0:
+            raise ValueError("Patch grip must be above 0% and at most 100% of base.")
+        x_span = values["x_max_m"] - values["x_min_m"]
+        y_span = values["y_max_m"] - values["y_min_m"]
+        if not all(np.isfinite(span) and span > 0.0 for span in (x_span, y_span)):
+            raise ValueError("Patch bounds must have finite, positive X and Y spans.")
+        try:
+            self.track.validate_coherent_arcs()
+        except ValueError as error:
+            raise ValueError(
+                "A world-fixed patch needs a coherent, closed course. "
+                "Choose a synthetic course or a validated imported course. "
+                f"Current course: {error}"
+            ) from error
+        return PlanarRoad(patches=(RectangularGripPatch(
+            values["x_min_m"], values["x_max_m"],
+            values["y_min_m"], values["y_max_m"], percent / 100.0,
+            material_id="user_assumed_rectangular_low_grip",
+        ),))
 
     def _read_ai_assumptions(self) -> tuple[float, float, float]:
         try:
@@ -2654,6 +2803,7 @@ class LapSimDesktop:
         self._last_result = None
         self._set_displayed_run_records(())
         self._displayed_road_grip_multiplier = None
+        self._displayed_ai_road = None
         self._comparison_results = None
         self._selected_path_track = None
         self._path_comparison = None
@@ -2842,6 +2992,7 @@ class LapSimDesktop:
         solver_track: Any, profile_id: str, profile_name: str,
         setup: VehicleSetup | None, step_m: float, torque_fraction: float,
         road_grip_multiplier: float = 1.0,
+        cell_road_grip_multiplier: tuple[float, ...] | None = None,
         track_id: str | None = None,
         path_planning: dict[str, Any] | None = None,
         starting_speed_mps: float | None = None,
@@ -2855,6 +3006,7 @@ class LapSimDesktop:
             solver_settings=path_solver_settings(vehicle),
             torque_request_fraction=torque_fraction,
             road_grip_multiplier=road_grip_multiplier,
+            cell_road_grip_multiplier=cell_road_grip_multiplier,
             endurance_config=replace(
                 endurance_run_config(vehicle),
                 starting_speed_mps=starting_speed_mps,
@@ -3067,6 +3219,7 @@ class LapSimDesktop:
             setup, step_m, torque_fraction = self._read_run_inputs()
             road_grip_multiplier = self._read_road_grip_multiplier()
             ai_assumptions = self._read_ai_assumptions() if self._ai_mode_selected() else None
+            ai_road = self._read_ai_road() if ai_assumptions is not None else None
         except ValueError as error:
             messagebox.showerror("Check vehicle inputs", str(error), parent=self.root)
             return
@@ -3097,7 +3250,8 @@ class LapSimDesktop:
             target=self._calculate_ai_single if ai_assumptions else self._calculate_single,
             args=(profile_id, profile_name, setup, step_m, torque_fraction)
                  + ((ai_assumptions,) if ai_assumptions else ())
-                 + (road_grip_multiplier,),
+                 + (road_grip_multiplier,)
+                 + ((ai_road,) if ai_assumptions else ()),
             daemon=True,
         )
         worker.start()
@@ -3203,6 +3357,7 @@ class LapSimDesktop:
         torque_fraction: float,
         assumptions: tuple[float, float, float],
         road_grip_multiplier: float = 1.0,
+        road: PlanarRoad | None = None,
     ) -> None:
         """Compare geometry-derived paths without changing the default lap."""
 
@@ -3211,6 +3366,9 @@ class LapSimDesktop:
             from lapsim.optimization.racing_line import (
                 RacingLinePlanner, TrackCorridor, compare_lines_with_lap_model,
             )
+
+            if road is not None and len(road.patches) != 1:
+                raise ValueError("Desktop AI road scenario needs exactly one rectangle")
 
             half_width_m, vehicle_width_m, safety_margin_m = assumptions
             vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
@@ -3266,6 +3424,7 @@ class LapSimDesktop:
                 ),
                 speed_periodic=True,
                 minimum_selection_gain_s=AI_SELECTION_MARGIN_S,
+                road=road,
             )
             selected_mode = comparison.selected_mode
             selected_run = comparison.selected_run
@@ -3318,6 +3477,23 @@ class LapSimDesktop:
                 if self.course_spec.course_id == DEFAULT_COURSE_ID else
                 f"{self.course_spec.course_id}_xy_derived_assumed_corridor"
             )
+            if road is None:
+                road_condition = {"mode": "assumed_uniform_surface"}
+            else:
+                from lapsim.optimization.road_grip_schedule import (
+                    ROAD_GRIP_SCHEDULE_MAPPING_VERSION,
+                )
+
+                road_condition = {
+                    "mode": "assumed_world_fixed_low_grip_rectangle",
+                    "mapping_version": ROAD_GRIP_SCHEDULE_MAPPING_VERSION,
+                    "base_material_id": road.base_material_id,
+                    "base_friction_multiplier": road.base_friction_multiplier,
+                    "patches": [asdict(patch) for patch in road.patches],
+                    "policy": "minimum_nominal_wheel_contact_grip_for_whole_cell",
+                    "contact_resolution_m": 0.01,
+                    "measured": False,
+                }
             path_planning = {
                 "mode": "experimental_racing_line",
                 "algorithm": "periodic_cubic_minimum_curvature_slsqp_v7_continuous_scalar_clearance",
@@ -3327,6 +3503,7 @@ class LapSimDesktop:
                 "source_course_label": self.course_spec.label,
                 "source_course_description": self.course_spec.description,
                 "synthetic_course": self.course_spec.synthetic,
+                "road_condition": road_condition,
                 "lap_start_policy": "speed_only_periodic_fixed_initial_vehicle_state",
                 "speed_seam_tolerance_mps": 0.005,
                 "maximum_lap_passes_per_trial": 2,
@@ -3353,6 +3530,11 @@ class LapSimDesktop:
                             if trial.path_audit is not None else None
                         ),
                         "error": trial.error,
+                        "reduced_grip_cells": (
+                            sum(value < road_grip_multiplier
+                                for value in trial.cell_road_grip_multiplier)
+                            if trial.cell_road_grip_multiplier is not None else None
+                        ),
                     }
                     for trial in comparison.trials
                 ],
@@ -3444,6 +3626,23 @@ class LapSimDesktop:
             # the other records without a self-referential content hash.
             saved_trial_ids: dict[int, str] = {}
 
+            def cell_grip_for_result(result: Any) -> tuple[float, ...] | None:
+                if result is None:
+                    return None
+                if result is comparison.baseline_run:
+                    schedule = comparison.baseline_cell_road_grip_multiplier
+                else:
+                    schedule = next(
+                    (trial.cell_road_grip_multiplier for trial in comparison.trials
+                     if trial.run is result),
+                    None,
+                )
+                if road is not None and schedule is None:
+                    raise ValueError(
+                        "A patch-mode AI model run has no matching cell grip schedule"
+                    )
+                return schedule
+
             def save_other_path(
                 result: Any, track: Any, *, role: str, strength: float,
                 audit: Any, eligible_time_s: float | None,
@@ -3469,6 +3668,7 @@ class LapSimDesktop:
                     step_m=step_m,
                     torque_fraction=torque_fraction,
                     road_grip_multiplier=road_grip_multiplier,
+                    cell_road_grip_multiplier=cell_grip_for_result(result),
                     track_id=ai_track_id,
                     path_planning={
                         "mode": "experimental_racing_line",
@@ -3479,6 +3679,7 @@ class LapSimDesktop:
                         "source_course_label": self.course_spec.label,
                         "source_course_description": self.course_spec.description,
                         "synthetic_course": self.course_spec.synthetic,
+                        "road_condition": road_condition,
                         "comparison_role": role,
                         "offset_strength": strength,
                         "user_requested_maximum_cell_length_m": step_m,
@@ -3610,6 +3811,7 @@ class LapSimDesktop:
                 step_m=step_m,
                 torque_fraction=torque_fraction,
                 road_grip_multiplier=road_grip_multiplier,
+                cell_road_grip_multiplier=cell_grip_for_result(selected_run),
                 track_id=ai_track_id,
                 path_planning=path_planning,
                 starting_speed_mps=selected_run.starting_speed_mps,
@@ -3617,7 +3819,8 @@ class LapSimDesktop:
             self.result_queue.put((
                 "ai_single",
                 (profile_name, selected_run, selected_track, selected_mode,
-                 plan, comparison, assumptions, run_id, road_grip_multiplier),
+                 plan, comparison, assumptions, run_id, road_grip_multiplier,
+                 road),
                 None,
             ))
         except Exception as error:
@@ -3932,6 +4135,7 @@ class LapSimDesktop:
             self._set_displayed_run_records((("AI result", run_id),))
             road_grip_multiplier = grip_setting[0] if grip_setting else 1.0
             self._displayed_road_grip_multiplier = road_grip_multiplier
+            self._displayed_ai_road = grip_setting[1] if len(grip_setting) > 1 else None
             self._path_comparison = (plan, comparison, assumptions)
             if self.ai_compare_button is not None:
                 self.ai_compare_button.configure(
@@ -4051,16 +4255,26 @@ class LapSimDesktop:
                 " The default lap uses different source curvature."
                 if not self.course_spec.synthetic else ""
             )
+            surface_error_note = ""
+            if self._displayed_ai_road is not None:
+                surface_errors = tuple(dict.fromkeys(
+                    message for message in (
+                        comparison.baseline_error if baseline_time is None else None,
+                        comparison.candidate_error if candidate_time is None else None,
+                    ) if message is not None
+                ))
+                if surface_errors:
+                    surface_error_note = " Trial error: " + "; ".join(surface_errors) + "."
             self.ai_result_text.set(
                 (f"SYNTHETIC COURSE: {self.course_spec.label}. "
                  if self.course_spec.synthetic else "")
                 + f"{selection} Assumed ±{half_width_m:g} m corridor, "
                 f"{vehicle_width_m:g} m car, {margin_m:g} m margin. "
-                f"Assumed uniform road grip {road_grip_multiplier * 100:g}%. "
+                f"{_ai_road_label(self._displayed_ai_road, road_grip_multiplier)} "
                 f"Proposed max offset {plan.max_abs_offset_m:.2f} m; "
                 f"{len(comparison.trials)} candidate trial(s). "
                 f"source map length differs by {plan.source_vs_processed_length_fraction:+.1%}."
-                f"{audit_text} {comparison_note}{source_curvature_note} "
+                f"{audit_text}{surface_error_note} {comparison_note}{source_curvature_note} "
                 "A trial receives a comparison time only when "
                 "its rolling-start speed closes within 0.005 m/s and its "
                 "modeled path passes its continuous scalar-clearance and closure "
@@ -4246,8 +4460,7 @@ class LapSimDesktop:
             body,
             text=(f"Course: {course_label}. One car, one geometric source, "
                   f"assumed ±{assumptions[0]:g} m "
-                   f"corridor and uniform road grip "
-                   f"{(self._displayed_road_grip_multiplier or 1.0) * 100:g}%. "
+                  f"corridor. {_ai_road_label(self._displayed_ai_road, self._displayed_road_grip_multiplier or 1.0)} "
                    f"Best tested AI path uses {comparison.candidate_strength:g}× "
                   "proposed offset. Candidate − centerline; negative lap-time Δ is faster."),
             anchor="w", justify="left", wraplength=755,

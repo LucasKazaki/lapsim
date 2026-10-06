@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import asdict, replace
 from hashlib import sha256
 import json
 from math import pi
@@ -12,10 +12,14 @@ import pytest
 
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Track
+from lapsim.dynamics.conditions import PlanarRoad, RectangularGripPatch
 from lapsim.experiments import (
     LapRunSettings, RunRecord, capture_lap_run, replay_lap_record,
 )
 from lapsim.profiles import build_vehicle
+from lapsim.optimization.road_grip_schedule import (
+    ROAD_GRIP_SCHEDULE_MAPPING_VERSION, world_patch_grip_schedule,
+)
 from lapsim.ui.simulation import (
     apply_uniform_road_grip, endurance_run_config, path_solver_settings, run_one_lap,
     run_speed_periodic_lap,
@@ -124,6 +128,199 @@ def test_assumed_grip_record_replays_with_same_profile_and_condition(tmp_path: P
     assert payload["settings"]["conditions"]["road_grip_multiplier"] == 0.7
     assert payload["configuration"]["base_profile_manifest"]["model_config"]["fields"]["tire"]["fields"]["road_grip_multiplier"] == 1.0
     assert replay_lap_record(path).model_agreement
+
+
+def test_world_patch_record_checks_geometry_and_grip_after_rehash(
+    tmp_path: Path,
+) -> None:
+    track = SpatialTrack.from_track(
+        Track.from_segments([Curve(25.0, 2.0 * pi)]),
+        maximum_cell_length_m=5.0,
+    )
+    vehicle, manifest = build_vehicle("repository_baseline")
+    road = PlanarRoad(patches=(RectangularGripPatch(
+        -100.0, 100.0, -100.0, 100.0, 0.7,
+    ),))
+    schedule = world_patch_grip_schedule(track, vehicle, road)
+    assert set(schedule) == {0.7}
+    run = run_one_lap(
+        vehicle, track, torque_request_fraction=0.8,
+        cell_road_grip_multiplier=schedule,
+    )
+    assert run.completed, run.failure_reason
+    settings = LapRunSettings.from_track(
+        track, track_id="assumed_patch_circle", solver_step_m=5.0,
+        solver_settings=path_solver_settings(vehicle),
+        torque_request_fraction=0.8,
+        endurance_config=endurance_run_config(vehicle),
+        cell_road_grip_multiplier=schedule,
+        path_planning={"road_condition": {
+            "mode": "assumed_world_fixed_low_grip_rectangle",
+            "mapping_version": ROAD_GRIP_SCHEDULE_MAPPING_VERSION,
+            "base_material_id": road.base_material_id,
+            "base_friction_multiplier": road.base_friction_multiplier,
+            "patches": [asdict(patch) for patch in road.patches],
+            "policy": "minimum_nominal_wheel_contact_grip_for_whole_cell",
+            "contact_resolution_m": 0.01,
+            "measured": False,
+        }},
+    )
+    path = capture_lap_run(
+        run, manifest, settings, actual_vehicle=vehicle,
+    ).save(tmp_path / "world_patch.json")
+    assert replay_lap_record(path).model_agreement
+
+    changed_rectangle = _mutated_record(
+        path, tmp_path / "changed_rectangle.json",
+        lambda payload: payload["settings"]["path_planning"]["road_condition"]
+        ["patches"][0].update(friction_multiplier=0.8),
+    )
+    with pytest.raises(ValueError, match="does not reproduce cell grip schedule"):
+        replay_lap_record(changed_rectangle)
+
+    claimed_uniform = _mutated_record(
+        path, tmp_path / "claimed_uniform.json",
+        lambda payload: (
+            payload["settings"].update(conditions={
+                "road_grip_multiplier": 1.0,
+                "source": "assumed_uniform_surface_sensitivity",
+            }),
+            payload["settings"]["path_planning"].update(
+                road_condition={"mode": "assumed_uniform_surface"},
+            ),
+        ),
+    )
+    with pytest.raises(ValueError, match="saved tire grip telemetry disagrees"):
+        replay_lap_record(claimed_uniform)
+
+
+@pytest.mark.parametrize("periodic", [False, True])
+def test_cell_grip_record_replays_exact_saved_schedule(
+    tmp_path: Path, periodic: bool,
+) -> None:
+    track = SpatialTrack.from_track(
+        Track.from_segments([Curve(25.0, 2.0 * pi)]),
+        maximum_cell_length_m=5.0,
+    )
+    schedule = tuple(0.7 if 8 <= i < 12 else 1.0 for i in range(track.cell_count))
+    vehicle, manifest = build_vehicle("repository_baseline")
+    if periodic:
+        periodic_result = run_speed_periodic_lap(
+            vehicle, track, torque_request_fraction=0.8,
+            cell_road_grip_multiplier=schedule,
+        )
+        assert periodic_result.converged, periodic_result.failure_reason
+        run = periodic_result.run
+        actual_vehicle = periodic_result.vehicle
+        config = replace(
+            endurance_run_config(actual_vehicle),
+            starting_speed_mps=run.starting_speed_mps,
+        )
+        planning = {
+            "mode": "experimental_racing_line",
+            "lap_start_policy": "speed_only_periodic_fixed_initial_vehicle_state",
+        }
+    else:
+        run = run_one_lap(
+            vehicle, track, torque_request_fraction=0.8,
+            cell_road_grip_multiplier=schedule,
+        )
+        actual_vehicle = vehicle
+        config = endurance_run_config(vehicle)
+        planning = None
+    assert run.completed, run.failure_reason
+    assert run.telemetry is not None
+    assert run.telemetry["tire.road_grip_multiplier"] == schedule
+    assert actual_vehicle.tire.road_grip_multiplier == 1.0
+    settings = LapRunSettings.from_track(
+        track, track_id="cell_grip_circle", solver_step_m=5.0,
+        solver_settings=path_solver_settings(actual_vehicle),
+        torque_request_fraction=0.8, endurance_config=config,
+        cell_road_grip_multiplier=schedule,
+        path_planning=planning,
+    )
+    path = capture_lap_run(
+        run, manifest, settings, actual_vehicle=actual_vehicle,
+    ).save(tmp_path / "cell_grip.json")
+    payload = RunRecord.load(path).to_dict()
+    assert payload["schema_version"] == 2
+    assert payload["settings"]["conditions"] == {
+        "road_grip_multiplier": 1.0,
+        "source": "assumed_cellwise_surface_sensitivity",
+        "cell_road_grip_multiplier": list(schedule),
+    }
+    report = replay_lap_record(path)
+    assert report.model_agreement, report.mismatch_reasons
+    assert report.replay_completed
+    assert any(
+        metric.name == "tire.road_grip_multiplier"
+        and metric.passed and metric.maximum_absolute_error == 0.0
+        for metric in report.metrics
+    )
+
+
+def test_cell_grip_capture_rejects_settings_that_differ_from_run() -> None:
+    track = SpatialTrack.from_track(
+        Track.from_segments([Curve(25.0, 2.0 * pi)]),
+        maximum_cell_length_m=5.0,
+    )
+    vehicle, manifest = build_vehicle("repository_baseline")
+    run = run_one_lap(vehicle, track, torque_request_fraction=0.8)
+    assert run.completed
+    schedule = tuple(0.7 if i == 8 else 1.0 for i in range(track.cell_count))
+    settings = LapRunSettings.from_track(
+        track, track_id="cell_grip_circle", solver_step_m=5.0,
+        solver_settings=path_solver_settings(vehicle),
+        torque_request_fraction=0.8,
+        endurance_config=endurance_run_config(vehicle),
+        cell_road_grip_multiplier=schedule,
+    )
+    with pytest.raises(ValueError, match="saved tire grip telemetry disagrees"):
+        capture_lap_run(run, manifest, settings, actual_vehicle=vehicle)
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda conditions: conditions["cell_road_grip_multiplier"].pop(),
+    lambda conditions: conditions["cell_road_grip_multiplier"].__setitem__(0, False),
+    lambda conditions: conditions["cell_road_grip_multiplier"].__setitem__(0, 0.0),
+    lambda conditions: conditions.__setitem__("source", "unknown"),
+    lambda conditions: conditions.__setitem__("cell_road_grip_multiplier", None),
+])
+def test_rehashed_malformed_cell_grip_is_rejected_on_load(
+    saved_laps: dict[str, Path], tmp_path: Path, mutation,
+) -> None:
+    def alter(payload: dict) -> None:
+        count = payload["settings"]["track"]["cell_count"]
+        conditions = payload["settings"]["conditions"]
+        conditions["source"] = "assumed_cellwise_surface_sensitivity"
+        conditions["cell_road_grip_multiplier"] = [1.0] * count
+        mutation(conditions)
+
+    path = _mutated_record(
+        saved_laps["repository_baseline"], tmp_path / "bad_cell_grip.json", alter,
+    )
+    with pytest.raises(ValueError, match="cell road grip|saved run conditions"):
+        RunRecord.load(path)
+
+
+def test_rehashed_valid_cell_grip_conflicting_with_trace_is_rejected_before_replay(
+    saved_laps: dict[str, Path], tmp_path: Path,
+) -> None:
+    def add_schedule(payload: dict) -> None:
+        count = payload["settings"]["track"]["cell_count"]
+        conditions = payload["settings"]["conditions"]
+        conditions["source"] = "assumed_cellwise_surface_sensitivity"
+        conditions["cell_road_grip_multiplier"] = [1.0] * count
+        conditions["cell_road_grip_multiplier"][8] = 0.7
+
+    path = _mutated_record(
+        saved_laps["repository_baseline"], tmp_path / "false_cell_grip.json", add_schedule,
+    )
+    assert RunRecord.load(path).to_dict()["settings"]["conditions"][
+        "cell_road_grip_multiplier"
+    ][8] == 0.7
+    with pytest.raises(ValueError, match="saved tire grip telemetry disagrees"):
+        replay_lap_record(path)
 
 
 def test_old_v2_tire_snapshot_replays_with_original_default_grip(

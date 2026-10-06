@@ -40,6 +40,16 @@ is saved with the run and restored by the engineering replay checker; it is
 not measured surface grip, weather, or a spatial patch. Editing it clears the
 old on-screen result and replay before another run.
 
+For a local-condition demonstration on the **synthetic loop**, select
+**One rectangular low-grip patch (assumed)** under **AI trial surface**.
+The starting boxes describe world X **36–55 m**, Y **−3–16 m**, at **30% of
+base grip**. Run AI again; the top-down map outlines the rectangle, while
+each modeled path gets a separately mapped cell-grip schedule. A completed
+trial's JSON retains its own schedule and rectangle version, and the replay
+checker regenerates that mapping before checking lap numbers. This is a
+controlled software sensitivity, not observed pavement or a driver that
+learns where to steer around the patch.
+
 The car and path comparison popups display the selected course label; an open
 popup retains that label if the main course choice changes.
 

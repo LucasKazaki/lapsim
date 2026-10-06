@@ -149,10 +149,17 @@ limit, braking-envelope calculation, and distance-cell force update; the
 vehicle's configured grip is restored afterward. An omitted schedule keeps
 the original uniform calculation. This API input is a numerical road-grip
 sensitivity, distinct from the desktop's uniform percentage control and the
-four-wheel preview's world-fixed patch. The desktop does not yet provide a
-per-cell grip-map editor or save such a schedule in its lap records; a
-scheduled API result should not be labeled v2-record replayable until that
-schema and replay checker store and reapply the tuple.
+four-wheel preview's separate pose model. A completed scheduled API lap can
+now be captured in a v2 lap record and checked by `replay_lap_record`, which
+reapplies its exact saved per-cell values and compares grip telemetry. The
+desktop's ordinary centerline and two-car comparison still use only uniform
+grip. Experimental AI mode can instead use one editable, assumed world-fixed
+low-grip rectangle on a coherent closed course. Each trial maps nominal wheel
+contacts along its own curvature-integrated path to a scalar grip schedule;
+one touched wheel lowers the whole solver cell's tire capacity. The top-down
+map outlines the rectangle, and each saved AI trial retains and replays its
+own schedule. This is a conservative sensitivity model, not measured grip,
+independent-wheel road forces, or a closed-loop driver.
 
 The **Driving path** control defaults to the ordinary centerline solver and
 does no path optimization. Its optional **AI racing line (experimental)** mode

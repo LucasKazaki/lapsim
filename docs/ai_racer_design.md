@@ -8,16 +8,59 @@
 
 The desktop offers **Centerline (default)** and **AI racing line (experimental)**, plus an explicit **Course** choice. The default course is the fused team endurance recording; two separate analytic calculation courses provide a short AI demo and a longer endurance-style practice lap. A teammate can also import a versioned, coherent closed-course bundle without editing Python; see [Versioned course bundles](course_bundle_format.md). Importing leaves Centerline selected. The second driving mode is an offline minimum-curvature path planner with a bounded vehicle-model line-strength search, not machine learning or a closed-loop driving agent. It has access to the selected car model when comparing completed laps, and it uses the same lap physics for its processed geometric centerline and proposed paths. The default driving mode neither imports nor runs the optimizer. The planner does not steer a simulated vehicle, sense cones, react to another car, or learn from experience.
 
-The engineering lap APIs can accept an **absolute per-solver-cell grip tuple**
+The engineering lap APIs accept an **absolute per-solver-cell grip tuple**
 for a sensitivity experiment. Corner limits, cyclic braking ceilings, and
-the corresponding cell force updates then use the same cell value. The
-desktop AI comparison still supplies only one assumed **uniform** road-grip
-percentage to every trial. It does not place the WIP pose preview's
-world-fixed low-grip rectangle on its own processed main-lap grids; local
-condition adaptation in the desktop AI lap should not be inferred from the
-separate synthetic pose experiment. A scheduled API lap has no corresponding
-grip-schedule field in the current v2 lap record and must not be presented
-as numerically replayable saved-lap evidence.
+the corresponding cell force updates use the same cell value. The desktop
+AI comparison can now additionally place one editable, **assumed world-fixed
+low-grip rectangle** on a coherent closed course. It computes a fresh
+schedule for each processed path from that path's curvature-integrated
+nominal wheel-center geometry, then uses the existing per-cell lap solver.
+The geometric planner is still grip-blind; only the bounded full-model trial
+times and line-strength selection respond to the patch. Centerline and
+two-car desktop runs retain uniform grip. Each completed scheduled AI trial
+saves its own exact per-cell schedule in the additive v2 lap-record conditions
+and is numerically replayable; this does not validate the assumed patch or
+turn the separate WIP pose preview into a full-lap controller.
+
+### Assumed patch to solver-cell calculation
+
+The optional **AI trial surface** selector defaults to Uniform. In rectangle
+mode the user enters world X/Y bounds and a positive grip percentage no
+greater than the base percentage. The shipped fused GNSS/IMU course fails the
+source arc-coherence gate, so this mode requires an analytic course or a
+validated coherent imported course. The displayed top-down rectangle is an
+input to the calculation, not a measured track feature. A finer course grid
+still obeys the 5,000-cell cap.
+
+For each modeled constant-curvature cell, the mapper starts from the same
+initial heading policy as the continuous path-clearance audit. At distance
+`s` from the cell entry, `psi(s)=psi_0+kappa*s`; the CG follows the exact
+circular-arc displacement `s*sinc(kappa*s/2)` in direction
+`psi_0+kappa*s/2`. A nominal wheel center is the CG plus longitudinal offset
+`l*(cos(psi),sin(psi))` and lateral offset
+`b*(-sin(psi),cos(psi))`. With wheelbase `L` and static front-weight fraction
+`f`, the offsets are `l_front=L*(1-f)` and `l_rear=-L*f`; the left/right
+offsets use half their axle track widths. These are geometric contact
+locations only; the main lap still integrates no four-wheel pose or load on
+separate road materials.
+
+For one rectangle with factor `a` and the selected tire's uniform reference
+factor `gamma`, the desktop's road base is `beta=1`. Its absolute solver input
+is `q_i=gamma*min(beta,a)` when any nominal wheel-center curve may touch the
+rectangle during cell `i`, and `q_i=gamma*beta` otherwise. The programmatic
+mapper also accepts a different positive `beta`. The interval test uses
+a bound on contact displacement, subdivides only near the rectangle, and
+conservatively treats an unresolved possible touch within 0.01 m as contact.
+It raises on its finite work limit instead of silently missing a patch.
+All tire force capacity in a touched **whole cell** is reduced; this can
+understate performance, and it is not independent-wheel surface physics.
+The desktop offers one patch; the mapper supports up to 128 positive
+low-grip rectangles and rejects unsupported bounded-road domains. The
+mapping version is
+`integrated_arc_nominal_wheel_min_cell_v1`. Trial records retain the assumed
+rectangle and mapping version as planning metadata, plus the exact absolute
+schedule in `settings.conditions` and accepted grip telemetry. Replay uses
+the frozen schedule rather than trying to reconstruct road geometry.
 
 The UI requires one assumed uniform half-width for both sides, plus vehicle width and safety margin. The planner API also accepts **different left and right clearances for every source cell**, with an explicit source label. Each side must be wider than half the vehicle width plus margin. Neither built-in course nor v1 imported bundles include measured widths, so the entered numbers are hypothetical corridors. The user-facing result reports the modeled-path audit, including continuous scalar clearance certification before ranking any completed times. When the processed baseline audit fails, completed laps remain starred diagnostics, the time difference is blank, and no AI winner is selected. When that baseline is valid, a candidate failing its modeled-path audit is recorded as a skipped geometry trial without spending a lap-model pass or creating a replay. If both paths pass, an invalid, slower, or insufficiently faster candidate retains the geometric centerline. A candidate may be displayed if it finishes and its eligible geometric baseline does not, but that is explicitly **not** called a time improvement; its primary run record is also marked `diagnostic_only`.
 
@@ -68,6 +111,16 @@ The full-offset short-demo path exceeded the assumed corridor by **0.0026717805 
 
 At otherwise identical **70% assumed uniform road grip** and the same 1 m limit, the short synthetic Prius comparison remained `candidate_selected`, now at 0.975 strength: eligible baseline **19.8711951482 s**, half offset **18.4359730524 s**, and selected offset **17.1829034123 s**. This shows a tire-capacity sensitivity in the bounded comparison; it is not a calibrated wet-track result.
 
+With the optional assumed rectangle **X 36–55 m, Y −3–16 m at 30% of the
+100% base**, the same short-course Prius setup produced an eligible processed
+baseline **20.3465718414 s** and selected 0.975 path **17.7554567737 s**.
+The rectangle mapped to **32** baseline cells and **33** selected-path cells,
+showing that one road location is evaluated separately on each modeled path.
+The full-strength geometry still failed the assumed corridor audit and did
+not receive a lap time. These are software-model sensitivities under an
+invented surface condition; the selected strength remaining 0.975 is not
+evidence of a general patch-avoidance policy.
+
 For one historical on-demand resolution probe before the exit-speed combined-grip gate, `SpatialTrack.refine(1.0)` preserved the **fixed baseline, old 0.75 fallback, and selected 0.95-offset** cells and curvature boundaries while splitting longer cells. Their refined two-pass laps completed and closed speed: baseline **16.882064565 s**, 0.75 offset **15.000468902 s**, and 0.95 offset **14.551839123 s**. The refined 0.95 numerical lead over 0.75 was about **0.448630 s**. The refined paths' sampled clearance was **not re-audited**, so this probe measures timing sensitivity of fixed paths under an earlier cell-force policy, not renewed eligibility at the refined resolution or formal convergence. Neither this calculation nor the synthetic source establishes real cone clearance.
 
 Both ordinary and AI records identify the selected course by ID and freeze its source metadata separately from the generated solver grid. Imported runs carry the course revision, source geometry hash, canonical bundle hash, and declared source hash; built-ins have no bundle hash. AI records also include source-course label/description, a synthetic flag, and path audits. A candidate-only display after the geometric baseline fails does not establish a comparable gain and is flagged `diagnostic_only` in its primary record.
@@ -110,7 +163,7 @@ The earlier **TREV5 working geometry** case at the same assumed ±2 m width (1.8
 
 An earlier on-demand grid check, also before the modeled-path audit, held the generated assumed ±2 m paths fixed and used boundary-preserving `SpatialTrack.refine(1.0)` to split cells without averaging neighboring curvature. The original paths had 495 cells and maximum cell lengths of **2.873–3.368 m**; the refined paths had **1,335–1,344 cells**. Prius full offset retained a numerical lead: **0.240593 s** on the original grid and **0.236265 s** on the refined grid. TREV half offset had a **0.009310 s** numerical lead on the original grid, but the refined baseline beat half by **0.001388 s**. All refined paths completed and closed speed at the seam. TREV's old numerical ranking was grid sensitive; none of these figures establishes eligibility under the new path audit. The refined two-pass trials took about **9.5 s** per Prius path and **20 s** per TREV path on this computer, so this check stays outside default operation. Earlier global-grid resampling also reversed TREV's ranking but averaged across curvature boundaries. Neither check is a formal convergence study or measured validation.
 
-The objective is minimum **mean squared curvature with a length penalty**, not minimum lap time. The curvature term has units `m^-2`; therefore the coefficient of relative length is a numerical weight with units `m^-2`. Its geometry does not use car mass, drive layout, aero, tire map, or battery while optimizing. Those enter during the bounded four-path model comparison, which can choose full, half, or the tested fourth offset (0.75 on fallback), or the geometric centerline for that car and torque request **only after the modeled-path audit passes**. If the geometric candidate is rejected, only the baseline path is timed. This is coarse vehicle adaptation, not continuous minimum-time optimization. The main lap model currently assumes flat, still-air conditions and supports one user-assumed uniform road-grip factor. That factor scales both longitudinal and lateral tire capacity in the path prepass and cell model, and the same value is applied to all car and path trials in one comparison. It is saved with each run. This feature cannot adapt to local surface patches, grade, wind, tire temperature, or traffic that the lap model does not represent.
+The objective is minimum **mean squared curvature with a length penalty**, not minimum lap time. The curvature term has units `m^-2`; therefore the coefficient of relative length is a numerical weight with units `m^-2`. Its geometry does not use car mass, drive layout, aero, tire map, or battery while optimizing. Those enter during the bounded four-path model comparison, which can choose full, half, or the tested fourth offset (0.75 on fallback), or the geometric centerline for that car and torque request **only after the modeled-path audit passes**. If the geometric candidate is rejected, only the baseline path is timed. This is coarse vehicle adaptation, not continuous minimum-time optimization. The main lap model assumes a flat, still-air path and uses the user-assumed base grip factor for both longitudinal and lateral tire capacity in the prepass and cell model. Uniform mode applies it to every cell. Optional rectangle mode creates a path-specific, world-fixed low-grip schedule before each trial, so the full-model trial selection can respond to one local surface assumption. The geometric proposal itself cannot plan around that patch, and the model still cannot represent grade, main-lap wind, tire temperature, or traffic.
 
 An offline **one-pass** strength probe illustrates the numerical-resolution limit of choosing a line from very small time gaps. On the assumed ±2 m Prius case, strength 0.75 beat strength 1.0 on an approximately 2 m solver grid (**87.130291 s** versus **87.155418 s**), but their order reversed on an approximately 1 m grid (**86.841115 s** versus **86.806429 s**). A TREV probe similarly reversed strength 0.25 versus baseline. These are model/grid sensitivity checks under the earlier start policy, not current AI times or measured-car validation. The current bounded policy tests 0, 1, and 0.5 first; its one fourth strength comes from an eligible quadratic, an audit-screened stronger path after an invalid full path, or the 0.75 fallback. It still cannot resolve hundredth-second gains without a resolution study. The current 1 m synthetic 0.975 selection has a much larger lead, while the older assumed fused-course strength probe remains a caution about small numerical differences.
 
@@ -159,6 +212,17 @@ For numerical QA, `SpatialTrack.refine(maximum_cell_length_m)` subdivides the al
 Its interior x/y points are interpolated along each old chord; this unchanged
 QA method neither performs analytic subarc subdivision nor certifies that x/y,
 stations, and curvature agree.
+
+`diagnose_paired_grid_stability` in `optimization/grid_stability.py` packages
+a bounded, **API-only** paired timing check for already eligible baseline and
+candidate paths. It preflights each refined grid against 5,000 cells, reruns
+the same selected car and start policy on both fixed paths, and reports whether
+the candidate-minus-baseline sign or 0.05 s margin crossing changes. It does
+not re-audit corridor clearance or select a different path. If given an
+original per-cell grip schedule, it repeats each value through that original
+cell's subdivisions; it does **not** remap a world-fixed rectangle on the
+refined geometry. It can add four lap-model passes and is intentionally
+outside the normal desktop calculation.
 
 ## Bounded synthetic pose-aware driver experiment
 
@@ -302,7 +366,7 @@ replay result should be reviewed alongside that identity.
 | Source-width frame | V2 source-cell widths and provenance remain tied to source geometry; planner uses the explicit assumed corridor until a checked frame transformation exists |
 | Geometric validity | Continuous spline offset respects piecewise supplied widths after vehicle width/margin; closed path has finite positive cells, periodic geometry, no detected self-crossing |
 | Modeled-path validity | Initial quarter-cell/source-boundary samples and bounded interval checks certify continuous scalar normal-coordinate clearance to 1e-8 m for the represented curvature path; unresolved bounds fail, and the integrated path and both saved polygon endpoints must close within 0.01 m. This is not swept-body certification |
-| Fair A/B | Eligible geometric centerline and AI path share the same source x/y preparation, car, controller request, uniform assumed road grip, and solver settings |
+| Fair A/B | Eligible geometric centerline and AI path share source x/y preparation, car, controller request, one declared world-road scenario, and solver settings; a local rectangle is remapped to each path's own modeled geometry |
 | Robust selection | Only completed, speed-closed, modeled-path-audited laps can win; a failed candidate audit skips physics when the baseline is valid, invalid completed runs remain diagnostic, and eligible gain must exceed 0.05 s |
 | Bounded cost | SLSQP iteration cap, 5,000-point path cap, and at most eight full lap passes across four paths; report elapsed wall time |
 | Traceability | Record selected path geometry, source hash, corridor assumptions, planner settings/version, selected profile and effective car, and run ID |
