@@ -30,6 +30,13 @@ continues to run without the AI planner. The synthetic loop is a calculation
 example, not a surveyed Formula SAE course or a measured team track. Both
 course choices lack surveyed left/right boundaries.
 
+**Import course…** accepts a versioned, internally coherent closed course
+bundle. Its source arcs are validated before selection, and its local copy
+reappears in the menu after restarting the desktop. Imports have no measured
+boundaries in the current format; their starting AI width is an editable
+scenario assumption. See [Versioned course bundles](course_bundle_format.md)
+for the CSV format, converter command, metadata, and numerical gates.
+
 The profile menu includes the Prius benchmark and unchanged repository model.
 When the local ENME408 evidence package is present in Downloads, it also
 offers two separate TREV5 working scenarios: geometry and geometry with the
@@ -53,13 +60,15 @@ requested maximum is 1 m. The fused course is resampled at the requested
 maximum, which may average
 curvature across original cell boundaries and change lap time. The synthetic
 course keeps its exact generated straight/circular-arc cells (at most 0.5 m)
-for any request at least as large as its longest source cell. A finer request
+for any request at least as large as its longest source cell. An imported
+coherent course follows the same retain-or-subdivide policy. A finer request
 first strictly validates the source station, x/y, and constant-curvature
 geometry, then subdivides each original cell into analytic straight or
 circular subarcs. It keeps every source station and endpoint, without
 averaging curvature or interpolating interior x/y along the old chord. A
-coarser request therefore does not reduce the synthetic course's solver-cell
-count. This gate checks a numerical solver representation; it does not establish
+coarser request therefore does not reduce a coherent source's solver-cell
+count. Imported courses have the same 5,000-cell guard. This gate checks a
+numerical solver representation; it does not establish
 a surveyed track or measured left/right boundaries.
 
 The numeric outputs are lap time, peak speed, average speed, distance, net
@@ -100,6 +109,9 @@ resets the playback cursor without rerunning physics; the menu is disabled
 when only one completed run is available. The course rotates around a
 fixed car marker. The replay uses
 the solver's constant-acceleration cell relation between recorded exits.
+For a solver-cell-aligned run, the lateral acceleration number holds that
+cell's solved value until the next cell. Legacy traces without this alignment
+keep the prior linear display interpolation.
 The Analysis tab's course plot continues to show the selected source map;
 resampling can make its x/y differ from the saved solver grid. The lap physics
 uses a separate curvature channel, so the displayed map heading is not

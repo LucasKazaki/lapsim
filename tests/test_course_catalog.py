@@ -7,12 +7,16 @@ from math import pi
 
 import pytest
 
+from lapsim.courses.course_bundle import CourseBundle, course_geometry_sha256
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Track
 from lapsim.ui.course_catalog import (
     COURSE_OPTIONS,
     DEFAULT_COURSE_ID,
+    IMPORTED_COURSE_PREFIX,
     SYNTHETIC_DEMO_COURSE_ID,
+    course_source_metadata,
+    imported_course_spec,
     load_course,
     solver_cell_count_for_course,
     solver_track_for_course,
@@ -139,3 +143,84 @@ def test_synthetic_source_cell_subdivision_cannot_bypass_compute_cap() -> None:
     ) == 5096
     with pytest.raises(ValueError, match="5000-cell compute cap"):
         solver_track_for_course(SYNTHETIC_DEMO_COURSE_ID, source, 0.0391)
+
+
+def test_imported_course_uses_coherent_arc_refinement_only() -> None:
+    imported_id = f"{IMPORTED_COURSE_PREFIX}practice_loop@r1"
+    source = SpatialTrack.from_track(
+        Track.from_segments([Curve(10.0, 2.0 * pi)]),
+        maximum_cell_length_m=1.0,
+    )
+    refined = solver_track_for_course(imported_id, source, 0.4)
+    assert refined.cell_count == solver_cell_count_for_course(
+        imported_id, source, 0.4,
+    )
+    assert max(refined.cell_length_m) <= 0.4 + 1e-12
+    refined.validate_coherent_arcs()
+    assert solver_track_for_course(imported_id, source, 2.0) is source
+    with pytest.raises(ValueError, match="closed endpoint mismatch"):
+        solver_track_for_course(imported_id, load_course(), 1.0)
+
+
+def test_source_metadata_separates_import_bundle_and_solver_geometry() -> None:
+    fused_spec, demo_spec = COURSE_OPTIONS
+    fused = course_source_metadata(fused_spec, load_course())
+    assert fused["revision"] == "legacy_unversioned"
+    assert fused["bundle_sha256"] is None
+    assert fused["source_artifact_sha256"]["fused_csv"]
+    assert fused["source_geometry_sha256"] == course_geometry_sha256(load_course())
+    demo = course_source_metadata(demo_spec, load_course(SYNTHETIC_DEMO_COURSE_ID))
+    assert demo["source_kind"] == "synthetic"
+    assert demo["boundary_status"] == "absent"
+
+    track = SpatialTrack.from_track(
+        Track.from_segments([Curve(10.0, 2.0 * pi)]),
+        maximum_cell_length_m=0.5,
+    )
+    bundle = CourseBundle.from_dict({
+        "schema_version": 1,
+        "course_id": "practice_loop",
+        "revision": "r1",
+        "label": "Practice loop",
+        "description": "Analytic import example",
+        "source_kind": "synthetic",
+        "provenance": {
+            "source_name": "Analytic circle",
+            "source_sha256": None,
+            "processing_method": "Exact circular arcs",
+            "review_note": "No measured cone boundaries",
+        },
+        "coordinate_frame": {
+            "type": "local_cartesian_right_handed_xy",
+            "units": "m",
+            "origin": "Start",
+            "x_axis": "east",
+            "y_axis": "north",
+        },
+        "travel_direction": "counterclockwise",
+        "boundary_status": "absent",
+        "ai_defaults": {
+            "width_source": "assumed_uniform",
+            "half_width_m": 2.5,
+            "vehicle_width_m": 1.8,
+            "safety_margin_m": 0.2,
+        },
+        "geometry": {
+            "model": "piecewise_constant_curvature_arcs",
+            "closed": True,
+            "distance_m": list(track.distance_m),
+            "x_m": list(track.x_m),
+            "y_m": list(track.y_m),
+            "curvature_per_m": list(track.curvature_per_m),
+        },
+        "geometry_sha256": course_geometry_sha256(track),
+    })
+    spec = imported_course_spec(bundle)
+    assert spec.course_id == f"{IMPORTED_COURSE_PREFIX}{bundle.catalog_id}"
+    assert "No measured boundaries" in spec.description
+    metadata = course_source_metadata(spec, bundle.track, bundle=bundle)
+    assert metadata["bundle_sha256"] == bundle.bundle_sha256
+    assert metadata["source_geometry_sha256"] == bundle.geometry_sha256
+    assert metadata["boundary_status"] == "absent"
+    with pytest.raises(ValueError, match="does not match"):
+        course_source_metadata(spec, load_course(), bundle=bundle)

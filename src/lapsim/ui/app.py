@@ -4,24 +4,28 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
+from pathlib import Path
 import queue
 import threading
 import time
 import tkinter as tk
 from dataclasses import asdict, replace
-from tkinter import messagebox, simpledialog
+from tkinter import filedialog, messagebox, simpledialog
 from typing import Any
 
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
+from lapsim.courses.course_bundle import CourseBundle
 from lapsim.experiments import LapRunSettings, capture_lap_run, default_run_directory
 from lapsim.profiles import build_vehicle, browse_records, list_profiles
 
 from .comparison import summarize_lap
 from .course_catalog import (
-    COURSE_OPTIONS, DEFAULT_COURSE_ID, load_course, solver_cell_count_for_course,
+    COURSE_OPTIONS, DEFAULT_COURSE_ID, MAX_SAVED_COURSE_FILES,
+    course_source_metadata, imported_course_spec, load_course,
+    load_imported_course_catalog, solver_cell_count_for_course,
     solver_track_for_course,
 )
 from .driver_view import DriverPlayback
@@ -108,9 +112,27 @@ class LapSimDesktop:
         self.root.geometry("1380x900")
         self.root.minsize(1080, 720)
 
+        self.course_options = list(COURSE_OPTIONS)
+        self.imported_courses, load_warnings = load_imported_course_catalog(
+            default_run_directory().parent / "courses"
+        )
+        self.course_load_warnings = list(load_warnings)
+        for course_id, bundle in tuple(self.imported_courses.items()):
+            spec = imported_course_spec(bundle)
+            if any(option.label == spec.label for option in self.course_options):
+                del self.imported_courses[course_id]
+                self.course_load_warnings.append(
+                    f"{course_id}: display label conflicts with another saved course"
+                )
+            else:
+                self.course_options.append(spec)
         self.course_spec = COURSE_OPTIONS[0]
         self.course_var = tk.StringVar(value=self.course_spec.label)
         self.track = load_course(self.course_spec.course_id)
+        self.course_source_json = json.dumps(
+            course_source_metadata(self.course_spec, self.track),
+            sort_keys=True, separators=(",", ":"), allow_nan=False,
+        )
         self.course_geometry_audit = self.track.geometry_audit()
         self.result_queue: queue.Queue[tuple[str, Any, BaseException | None]] = (
             queue.Queue()
@@ -201,6 +223,17 @@ class LapSimDesktop:
         self._select_profile("prius_2026_le")
         self._apply_theme()
         self.root.after(100, self._poll_result)
+        if self.course_load_warnings:
+            self.root.after(150, self._show_course_load_warnings)
+
+    def _show_course_load_warnings(self) -> None:
+        count = len(self.course_load_warnings)
+        lines = "\n".join(self.course_load_warnings[:5])
+        if count > 5:
+            lines += f"\n...and {count - 5} more"
+        messagebox.showwarning(
+            "Saved courses skipped", lines, parent=self.root,
+        )
 
     def _build_window(self) -> None:
         header = tk.Frame(self.root, padx=10, pady=8)
@@ -392,11 +425,16 @@ class LapSimDesktop:
         path_box.pack(fill="x", pady=(0, 8), before=box)
         tk.Label(path_box, text="Course", anchor="w").grid(row=0, column=0, sticky="w")
         self.course_menu = tk.OptionMenu(
-            path_box, self.course_var, *(option.label for option in COURSE_OPTIONS),
+            path_box, self.course_var, *(option.label for option in self.course_options),
             command=self._select_course,
         )
         self.course_menu.configure(relief="raised", bd=1, anchor="w", font=FONT)
         self.course_menu.grid(row=0, column=1, columnspan=2, sticky="ew", pady=(0, 5))
+        self.import_course_button = tk.Button(
+            path_box, text="Import course…", command=self._choose_course_bundle,
+            relief="raised", bd=1, font=FONT,
+        )
+        self.import_course_button.grid(row=0, column=3, sticky="ew", padx=(5, 0), pady=(0, 5))
         tk.Label(path_box, text="Mode", anchor="w").grid(row=1, column=0, sticky="w")
         self.driving_mode_menu = tk.OptionMenu(
             path_box, self.driving_mode_var,
@@ -624,6 +662,64 @@ class LapSimDesktop:
         warning = _course_geometry_warning(self.course_geometry_audit)
         return self.course_spec.description + (f" {warning}" if warning else "")
 
+    def _choose_course_bundle(self) -> None:
+        """Ask for one self-contained course file and report validation errors."""
+
+        if self.run_in_progress:
+            return
+        selected_path = filedialog.askopenfilename(
+            parent=self.root, title="Import course bundle",
+            filetypes=(("LapSim course bundle", "*.json"), ("All files", "*.*")),
+        )
+        if not selected_path:
+            return
+        try:
+            self._import_course_bundle(Path(selected_path))
+        except (OSError, ValueError, TypeError) as error:
+            messagebox.showerror("Course import failed", str(error), parent=self.root)
+
+    def _import_course_bundle(self, path: Path) -> None:
+        """Validate and select a versioned course without editing source code."""
+
+        if self.run_in_progress:
+            raise ValueError("Wait for the current lap before importing a course")
+        bundle = CourseBundle.load(path)
+        spec = imported_course_spec(bundle)
+        existing = self.imported_courses.get(spec.course_id)
+        if existing is not None and existing.bundle_sha256 != bundle.bundle_sha256:
+            raise ValueError(
+                "This course ID and revision already have different content; "
+                "give the revised course a new revision"
+            )
+        if existing is None and any(
+            option.label == spec.label for option in self.course_options
+        ):
+            raise ValueError("Imported course display label conflicts with an existing course")
+        # Keep a portable local copy. Its content hash identifies the revision;
+        # no path in the imported file is followed by the loader.
+        directory = default_run_directory().parent / "courses"
+        stored_path = directory / f"{bundle.bundle_sha256}.json"
+        if existing is None and not stored_path.exists() and directory.exists():
+            saved_count = sum(
+                1 for saved in directory.iterdir()
+                if saved.name.lower().endswith(".json")
+            )
+            if saved_count >= MAX_SAVED_COURSE_FILES:
+                raise ValueError(
+                    f"Saved course catalog is limited to {MAX_SAVED_COURSE_FILES} JSON files"
+                )
+        bundle.save(stored_path)
+        if existing is None:
+            self.imported_courses[spec.course_id] = bundle
+            self.course_options.append(spec)
+            if self.course_menu is not None:
+                menu = self.course_menu.nametowidget(self.course_menu["menu"])
+                menu.add_command(
+                    label=spec.label,
+                    command=lambda choice=spec.label: self._select_course(choice),
+                )
+        self._select_course(spec.label)
+
     def _select_course(self, label: str) -> None:
         """Switch the source course and clear results from the old course."""
 
@@ -631,17 +727,23 @@ class LapSimDesktop:
             self.course_var.set(self.course_spec.label)
             return
         selected = next(
-            (option for option in COURSE_OPTIONS if option.label == label), None
+            (option for option in self.course_options if option.label == label), None
         )
         if selected is None:
             self.course_var.set(self.course_spec.label)
             raise ValueError(f"Unknown course choice: {label!r}")
         if selected.course_id == self.course_spec.course_id:
             return
-        track = load_course(selected.course_id)
+        bundle = self.imported_courses.get(selected.course_id)
+        track = bundle.track if bundle is not None else load_course(selected.course_id)
+        source_json = json.dumps(
+            course_source_metadata(selected, track, bundle=bundle),
+            sort_keys=True, separators=(",", ":"), allow_nan=False,
+        )
         self.course_spec = selected
         self.course_var.set(selected.label)
         self.track = track
+        self.course_source_json = source_json
         self.course_geometry_audit = track.geometry_audit()
         self.ai_half_width_var.set(f"{selected.default_ai_half_width_m:g}")
         self.ai_vehicle_width_var.set(f"{selected.default_ai_vehicle_width_m:g}")
@@ -1641,6 +1743,7 @@ class LapSimDesktop:
         self.save_profile_button.configure(state=state)
         self.delete_profile_button.configure(state=state)
         self.course_menu.configure(state=state)
+        self.import_course_button.configure(state=state)
         self.driving_mode_menu.configure(state=state)
         editable = (
             self.profile_display_to_id.get(self.profile_var.get()) == "prius_2026_le"
@@ -1759,6 +1862,7 @@ class LapSimDesktop:
             ),
             profile_id=profile_id,
             profile_label=profile_name,
+            source_course=json.loads(self.course_source_json),
             path_planning=path_planning,
         )
         default_prius = VehicleSetup(torque_request_fraction=torque_fraction)

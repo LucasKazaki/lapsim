@@ -85,6 +85,28 @@ class DriverPlayback:
         self.speeds = speeds
         self.lateral_accelerations = lateral
         self.duration_s = float(times[-1])
+        # A modeled lap records one sample at each accepted cell exit.  Its
+        # lateral tire force is solved once for that cell, so interpolating
+        # between adjacent exits would blend two different cell forces.  A
+        # legacy/imported trace may have arbitrary stations or timing; retain
+        # smooth interpolation for those traces instead of assuming it uses
+        # the model's cell grid.
+        cell_distance = np.diff(distances)
+        with np.errstate(over="ignore", invalid="ignore"):
+            expected_cell_distance = (
+                0.5 * (speeds[:-1] + speeds[1:]) * np.diff(times)
+            )
+        self.cell_aligned = bool(
+            len(distances) <= len(self.track_distance)
+            and np.allclose(
+                distances, self.track_distance[:len(distances)],
+                rtol=0.0, atol=1e-5,
+            )
+            and np.all(
+                np.abs(expected_cell_distance - cell_distance)
+                <= np.maximum(1e-6, 1e-5 * cell_distance)
+            )
+        )
 
     def point_at(self, distance_m: float) -> tuple[float, float]:
         """Return the path point at a station, wrapping only closed courses."""
@@ -149,6 +171,11 @@ class DriverPlayback:
         before = self.point_at(station - tangent_half_span)
         after = self.point_at(station + tangent_half_span)
         heading = atan2(after[1] - before[1], after[0] - before[0])
+        lateral_acceleration = (
+            self.lateral_accelerations[segment]
+            if self.cell_aligned
+            else np.interp(instant, self.times, self.lateral_accelerations)
+        )
         return DriverFrame(
             time_s=instant,
             distance_m=station,
@@ -156,9 +183,7 @@ class DriverPlayback:
             y_m=position[1],
             course_heading_rad=heading,
             speed_mps=speed,
-            lateral_acceleration_mps2=float(
-                np.interp(instant, self.times, self.lateral_accelerations)
-            ),
+            lateral_acceleration_mps2=float(lateral_acceleration),
         )
 
     def local_path_m(

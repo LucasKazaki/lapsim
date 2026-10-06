@@ -184,6 +184,71 @@ class RunRecordTests(unittest.TestCase):
                 path_planning={"bad": float("nan")},
             )
 
+    def test_optional_source_course_round_trip_and_content_hash(self) -> None:
+        source = {
+            "bundle_id": "team_endurance_fused_gnss_imu",
+            "bundle_version": "1",
+            "bundle_sha256": "a" * 64,
+            "source_geometry_sha256": "b" * 64,
+            "hash_scope": "source course bundle files",
+            "provenance": {"synthetic": False},
+        }
+        settings = LapRunSettings.from_track(
+            self.track,
+            track_id="synthetic_loop",
+            solver_step_m=1.0,
+            solver_settings={"maximum_passes": 120},
+            torque_request_fraction=0.8,
+            endurance_config=EnduranceRunConfig(laps=1),
+            source_course=source,
+        )
+        source["provenance"]["synthetic"] = True
+        self.assertFalse(
+            settings.to_dict()["track"]["source_course"]["provenance"]["synthetic"]
+        )
+        record = capture_lap_run(
+            self._result(self._telemetry()), self.manifest, settings,
+            actual_vehicle=self.vehicle,
+        )
+        with TemporaryDirectory() as directory:
+            path = record.save(Path(directory) / "source.json")
+            self.assertEqual(
+                RunRecord.load(path).to_dict()["settings"]["track"]["source_course"],
+                settings.to_dict()["track"]["source_course"],
+            )
+            altered = record.to_dict()
+            altered["settings"]["track"]["source_course"]["bundle_version"] = "2"
+            path.write_text(json.dumps(altered, allow_nan=False), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "content hash does not match"):
+                RunRecord.load(path)
+
+        changed = LapRunSettings.from_track(
+            self.track,
+            track_id="synthetic_loop",
+            solver_step_m=1.0,
+            solver_settings={"maximum_passes": 120},
+            torque_request_fraction=0.8,
+            endurance_config=EnduranceRunConfig(laps=1),
+            source_course={**source, "bundle_version": "2"},
+        )
+        changed_record = capture_lap_run(
+            self._result(self._telemetry()), self.manifest, changed,
+            actual_vehicle=self.vehicle,
+        )
+        self.assertNotEqual(record.run_id, changed_record.run_id)
+
+        for invalid in ({}, {"bundle_sha256": float("nan")}):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                LapRunSettings.from_track(
+                    self.track,
+                    track_id="synthetic_loop",
+                    solver_step_m=1.0,
+                    solver_settings={"maximum_passes": 120},
+                    torque_request_fraction=0.8,
+                    endurance_config=EnduranceRunConfig(laps=1),
+                    source_course=invalid,
+                )
+
     def test_load_accepts_an_intact_legacy_v1_record(self) -> None:
         record = capture_lap_run(
             self._result(self._telemetry()), self.manifest, self.settings,

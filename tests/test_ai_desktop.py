@@ -177,6 +177,10 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         selected_path = tmp_path / f"{payload[7]}.json"
         selected = RunRecord.load(selected_path).to_dict()
         planning = selected["settings"]["path_planning"]
+        source_course = selected["settings"]["track"]["source_course"]
+        assert source_course["selected_course_id"] == app.course_spec.course_id
+        assert source_course["revision"] == "legacy_unversioned"
+        assert source_course["source_artifact_sha256"]["fused_csv"]
         assert planning["mode"] == "experimental_racing_line"
         assert planning["algorithm"].endswith("v5_adaptive_strength")
         assert planning["selected_mode"] == "no_comparable_path"
@@ -207,6 +211,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
             trial_path = tmp_path / f"{trial_row['run_id']}.json"
             assert trial_path.exists()
             saved_trial = RunRecord.load(trial_path).to_dict()
+            assert saved_trial["settings"]["track"]["source_course"] == source_course
             saved_planning = saved_trial["settings"]["path_planning"]
             assert saved_planning["comparison_rank_status"] == comparison.rank_status
             assert saved_planning["diagnostic_only"] is True
@@ -223,6 +228,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         assert counterpart_id and counterpart_id != payload[7]
         counterpart_path = tmp_path / f"{counterpart_id}.json"
         counterpart = RunRecord.load(counterpart_path).to_dict()
+        assert counterpart["settings"]["track"]["source_course"] == source_course
         counterpart_planning = counterpart["settings"]["path_planning"]
         assert counterpart_planning["comparison_role"] == "candidate_trial"
         assert counterpart_planning["rank_status"] == "invalid_processed_baseline"
@@ -322,6 +328,9 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         primary_path = tmp_path / f"{payload[7]}.json"
         primary = RunRecord.load(primary_path).to_dict()
         planning = primary["settings"]["path_planning"]
+        source_course = primary["settings"]["track"]["source_course"]
+        assert source_course["selected_course_id"] == SYNTHETIC_DEMO_COURSE_ID
+        assert source_course["revision"] == "generator_v1"
         assert primary["settings"]["track"]["id"].startswith(
             SYNTHETIC_DEMO_COURSE_ID
         )
@@ -333,6 +342,7 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         )
         counterpart_id = planning["comparison_counterpart_run_id"]
         counterpart = RunRecord.load(tmp_path / f"{counterpart_id}.json").to_dict()
+        assert counterpart["settings"]["track"]["source_course"] == source_course
         counterpart_planning = counterpart["settings"]["path_planning"]
         assert counterpart_planning["algorithm"] == planning["algorithm"]
         assert counterpart_planning["fourth_strength_policy"] == (
@@ -355,6 +365,7 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
             trial_path = tmp_path / f"{trial_row['run_id']}.json"
             assert trial_path.exists()
             saved_trial = RunRecord.load(trial_path).to_dict()
+            assert saved_trial["settings"]["track"]["source_course"] == source_course
             saved_planning = saved_trial["settings"]["path_planning"]
             assert saved_planning["comparison_rank_status"] == comparison.rank_status
             assert saved_planning["diagnostic_only"] == (trial.lap_time_s is None)

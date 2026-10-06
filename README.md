@@ -47,6 +47,9 @@ main classes for concise imports.
 - [LapSim desktop app](docs/simulator_desktop.md): editable vehicle setup,
   top-down course navigation, optional path planning, driver playback, saved
   lap records, and comparison traces.
+- [Versioned course bundles](docs/course_bundle_format.md): prepare coherent
+  course CSVs, create portable revisions, import them in the desktop, and
+  trace their source and solver geometry in saved runs.
 - [Optional AI racer design and checks](docs/ai_racer_design.md): bounded path
   search, geometry assumptions, model comparison, and known limits.
 - [Team demo brief](docs/team_demo_brief.md): a five-minute walkthrough,
@@ -68,7 +71,10 @@ application:
 
 Or double-click `launch_lapsim.cmd` in the repository folder. The app defaults
 to the fused team endurance course and has an explicit **Course** menu for an
-optional synthetic rounded-rectangle calculation example. It offers editable
+optional synthetic rounded-rectangle calculation example. **Import course…**
+adds a validated, versioned course prepared from a coherent CSV and preserves
+it in the local course catalog across launches; see the
+[course-bundle guide](docs/course_bundle_format.md). It offers editable
 2026 Prius LE benchmark inputs, saved
 local car profiles, source-backed TREV5 working scenarios when the external
 data package is present, and a two-car lap comparison. The **Four-wheel lab**
@@ -77,9 +83,9 @@ slip and force displays. It exposes world-frame wind, air density, drag area,
 base grip, and an optional fixed low-grip rectangle for paired sensitivity
 studies. Completed and interrupted lap runs save local JSON records of inputs
 and telemetry. The centerline solver defaults to a requested maximum 1 m step.
-The fused course is resampled to that step; the synthetic course retains its
-exact generated arc cells (at most 0.5 m) when the request is 0.5 m or larger.
-For a finer request, the desktop strictly validates the synthetic source's
+The fused course is resampled to that step; synthetic and imported coherent
+courses retain their exact source arc cells when the request is at least as
+large as their longest cell. For a finer request, the desktop strictly validates the source's
 station, x/y, and constant-curvature geometry, then subdivides each source
 cell into analytic straight or circular subarcs. Every original station and
 endpoint remains on the solver grid. A 5,000-cell guard counts the resulting

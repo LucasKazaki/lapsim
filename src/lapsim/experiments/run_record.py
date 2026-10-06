@@ -150,6 +150,7 @@ class LapRunSettings:
         profile_id: str | None = None,
         profile_label: str | None = None,
         path_planning: Mapping[str, Any] | None = None,
+        source_course: Mapping[str, Any] | None = None,
     ) -> LapRunSettings:
         if not isinstance(track_id, str) or not track_id.strip():
             raise ValueError("track_id must be a nonempty string")
@@ -193,6 +194,11 @@ class LapRunSettings:
             "profile_id": profile_id,
             "profile_label": profile_label,
         }
+        if source_course is not None:
+            source = _validated_mapping(source_course, "source_course")
+            if not source:
+                raise ValueError("source_course cannot be empty")
+            payload["track"]["source_course"] = source
         if path_planning is not None:
             planning = _validated_mapping(path_planning, "path_planning")
             if not planning:

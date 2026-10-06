@@ -73,14 +73,49 @@ def test_playback_motion_matches_constant_acceleration_cells() -> None:
     assert playback.frame_at(2.0).distance_m == pytest.approx(20.0)
 
 
+def test_modeled_cell_lateral_force_is_held_until_next_cell() -> None:
+    # The trace has one exit sample at each modeled station, with distance
+    # matching the constant-acceleration solve in both cells.  The reported
+    # lateral force belongs to its whole cell, not an interpolation between
+    # the preceding and following cell's solved forces.
+    playback = DriverPlayback(
+        straight_map(),
+        lap_channels(**{
+            "vehicle.speed_mps": (20.0, 0.0),
+            "vehicle.lateral_acceleration_mps2": (3.0, -4.0),
+        }),
+    )
+
+    assert playback.cell_aligned
+    for instant in (0.0, 0.5, 0.999):
+        assert playback.frame_at(instant).lateral_acceleration_mps2 == pytest.approx(3.0)
+    for instant in (1.0, 1.5, 2.0):
+        assert playback.frame_at(instant).lateral_acceleration_mps2 == pytest.approx(-4.0)
+
+
 def test_inconsistent_legacy_cell_keeps_linear_station_fallback() -> None:
     playback = DriverPlayback(straight_map(), lap_channels())
 
     # Between 1 and 2 s, speeds of 10 and 20 m/s imply 15 m of motion,
     # whereas this old fixture records 10 m.  Do not change its endpoints.
     halfway = playback.frame_at(1.5)
+    assert not playback.cell_aligned
     assert halfway.distance_m == pytest.approx(15.0)
     assert halfway.speed_mps == pytest.approx(15.0)
+    assert halfway.lateral_acceleration_mps2 == pytest.approx(9.80665 / 2)
+
+
+def test_unaligned_imported_stations_keep_lateral_interpolation() -> None:
+    playback = DriverPlayback(
+        straight_map(),
+        lap_channels(**{
+            "vehicle.distance_m": (8.0, 20.0),
+            "vehicle.lateral_acceleration_mps2": (2.0, 6.0),
+        }),
+    )
+
+    assert not playback.cell_aligned
+    assert playback.frame_at(1.5).lateral_acceleration_mps2 == pytest.approx(4.0)
 
 
 def test_impossibly_short_imported_first_cell_time_keeps_finite_playback() -> None:
