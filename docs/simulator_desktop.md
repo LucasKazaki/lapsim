@@ -256,9 +256,13 @@ exists as described below, but it is not a timed session or a tab workflow.
 The tab's Start button is disabled.
 
 **Run comparison** simulates two selected saved/built-in profiles with the
-same selected centerline course, solver spacing, and driver request. The
-comparison window shows the selected course, both values, and B-minus-A
-differences for each numeric output. The speed plot
+same selected centerline course, solver spacing, driver request, and rolling
+start speed. It prepares both cars' speed limits and uses the lower first-cell
+braking ceiling as a feasible start for both. Each car then runs one recorded
+lap; the saved records include that explicit common speed for replay. The
+comparison window shows the selected course, shared start, both values, and
+B-minus-A differences for each numeric output. Their finish speeds may differ,
+so these remain one-pass initial-condition laps. The speed plot
 uses solid and dashed black/white lines. Unsaved Prius edits are excluded from
 comparison until saved as a named profile. Differences show model sensitivity
 to selected inputs, not validated real-world performance.

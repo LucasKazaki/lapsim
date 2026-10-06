@@ -17,6 +17,7 @@ from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.ui.app import LapSimDesktop, _course_geometry_warning
 from lapsim.ui.course_catalog import COURSE_OPTIONS, SYNTHETIC_DEMO_COURSE_ID
 from lapsim.ui.presets import VehicleSetup
+from lapsim.ui.simulation import prepare_one_lap_constraints
 
 
 def test_course_warning_includes_arc_chord_mismatch_without_chord_excess() -> None:
@@ -520,6 +521,119 @@ def test_synthetic_centerline_run_records_selected_course(tmp_path: Path) -> Non
             child.cget("text") for child in app._walk_widgets(popup)
             if child.winfo_class() == "Label"
         )
+    finally:
+        root.destroy()
+
+
+def test_car_comparison_shares_rolling_start_and_replays_both_records(
+    tmp_path: Path,
+) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app._select_course(COURSE_OPTIONS[1].label)
+        entry_ceilings_mps: list[float] = []
+
+        def track_prepared_constraints(vehicle, track):
+            constraints = prepare_one_lap_constraints(vehicle, track)
+            entry_ceilings_mps.append(constraints.braking_speed_ceiling_mps[0])
+            return constraints
+
+        with (
+            patch("lapsim.ui.app.default_run_directory", return_value=tmp_path),
+            patch(
+                "lapsim.ui.app.prepare_one_lap_constraints",
+                side_effect=track_prepared_constraints,
+            ),
+            patch.object(
+                app, "_queue_live_progress", wraps=app._queue_live_progress,
+            ) as progress,
+        ):
+            app._calculate_comparison((
+                ("prius_2026_le", "Prius", VehicleSetup(torque_request_fraction=0.8)),
+                ("repository_baseline", "Repository baseline", None),
+            ), 5.0, 0.8)
+        kind, payload, error = app.result_queue.get_nowait()
+        assert error is None, error
+        assert kind == "comparison"
+        assert len(entry_ceilings_mps) == 2
+        assert abs(entry_ceilings_mps[0] - entry_ceilings_mps[1]) > 5.0
+        common_start_mps = min(entry_ceilings_mps)
+        assert {call.args[0] for call in progress.call_args_list} == {
+            "Prius", "Repository baseline",
+        }
+        outcomes = payload[2]
+        assert len(outcomes) == 2
+        assert all(run.completed for _, run in outcomes)
+        for (_, result), run_id in zip(outcomes, payload[3], strict=True):
+            assert result.starting_speed_mps == pytest.approx(common_start_mps)
+            record_path = tmp_path / f"{run_id}.json"
+            saved = RunRecord.load(record_path).to_dict()
+            assert saved["settings"]["endurance_config"]["starting_speed_mps"] == pytest.approx(
+                common_start_mps
+            )
+            assert replay_lap_record(record_path).model_agreement
+
+        app.result_queue.put((kind, payload, None))
+        app._poll_result()
+        assert len(app._driver_replay_runs) == 2
+        assert app.driver_playback is not None
+        app._select_driver_replay("B · Repository baseline")
+        assert app.driver_playback is not None
+        assert app.driver_replay_var.get() == "B · Repository baseline"
+        assert app.driver_run_label.get() == "Centerline · Repository baseline"
+        popup = next(child for child in root.winfo_children() if isinstance(child, tk.Toplevel))
+        popup_text = " ".join(
+            child.cget("text") for child in app._walk_widgets(popup)
+            if child.winfo_class() == "Label"
+        )
+        assert "Shared start speed (km/h)" in popup_text
+        assert f"{common_start_mps * 3.6:.1f}" in popup_text
+        assert "Finish speed (km/h)" in popup_text
+        for _, result in outcomes:
+            assert f"{result.ending_speed_mps * 3.6:.1f}" in popup_text
+    finally:
+        root.destroy()
+
+
+def test_car_comparison_reports_preparation_failure_without_saving(
+    tmp_path: Path,
+) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app._select_course(COURSE_OPTIONS[1].label)
+        with (
+            patch("lapsim.ui.app.default_run_directory", return_value=tmp_path),
+            patch(
+                "lapsim.ui.app.prepare_one_lap_constraints",
+                side_effect=ValueError("Cannot prepare comparison limits"),
+            ),
+        ):
+            app._calculate_comparison((
+                ("prius_2026_le", "Prius", VehicleSetup()),
+                ("repository_baseline", "Repository baseline", None),
+            ), 5.0, 0.8)
+        kind, payload, error = app.result_queue.get_nowait()
+        assert kind == "comparison"
+        assert payload is None
+        assert isinstance(error, ValueError)
+        assert "Cannot prepare comparison limits" in str(error)
+        assert not list(tmp_path.glob("*.json"))
+        app.result_queue.put((kind, payload, error))
+        with patch("lapsim.ui.app.messagebox.showerror") as show_error:
+            app._poll_result()
+        show_error.assert_called_once()
+        assert "Cannot prepare comparison limits" in app.status_text.get()
+        assert not app._driver_replay_runs
     finally:
         root.destroy()
 

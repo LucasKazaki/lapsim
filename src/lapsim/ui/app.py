@@ -34,6 +34,7 @@ from .presets import VehicleSetup, make_prius_benchmark
 from .simulation import (
     endurance_run_config,
     path_solver_settings,
+    prepare_one_lap_constraints,
     run_one_lap,
 )
 
@@ -2480,10 +2481,20 @@ class LapSimDesktop:
             solver_track = solver_track_for_course(
                 self.course_spec.course_id, self.track, step_m,
             )
-            outcomes = []
-            run_ids = []
+            prepared = []
             for profile_id, name, setup in plans:
                 vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
+                constraints = prepare_one_lap_constraints(vehicle, solver_track)
+                prepared.append((
+                    profile_id, name, setup, vehicle, manifest, constraints,
+                ))
+            common_start_mps = min(
+                constraints.braking_speed_ceiling_mps[0]
+                for _, _, _, _, _, constraints in prepared
+            )
+            outcomes = []
+            run_ids = []
+            for profile_id, name, setup, vehicle, manifest, constraints in prepared:
                 last_progress_post_s = float("-inf")
 
                 def on_progress(snapshot: Any) -> None:
@@ -2501,6 +2512,8 @@ class LapSimDesktop:
                 result = run_one_lap(
                     vehicle, solver_track,
                     torque_request_fraction=torque_fraction,
+                    constraints=constraints,
+                    starting_speed_mps=common_start_mps,
                     progress_callback=on_progress,
                 )
                 run_id = self._save_run_record(
@@ -2508,6 +2521,7 @@ class LapSimDesktop:
                     solver_track=solver_track, profile_id=profile_id,
                     profile_name=name, setup=setup, step_m=step_m,
                     torque_fraction=torque_fraction,
+                    starting_speed_mps=common_start_mps,
                 )
                 if not result.completed:
                     raise ValueError(
@@ -2956,10 +2970,10 @@ class LapSimDesktop:
         second = summarize_lap(second_result, self.track.length_m)
         window = tk.Toplevel(self.root)
         window.title("LapSim car comparison")
-        window.geometry("760x525")
+        window.geometry("760x585")
         box = tk.Frame(window, padx=12, pady=12)
         box.pack(fill="both", expand=True)
-        tk.Label(box, text="Same course and run settings", font=FONT_TITLE).grid(
+        tk.Label(box, text="Same course, run settings and rolling start", font=FONT_TITLE).grid(
             row=0, column=0, columnspan=4, sticky="w", pady=(0, 5)
         )
         tk.Label(
@@ -2999,6 +3013,25 @@ class LapSimDesktop:
                     relief="solid", bd=1, padx=6, pady=5,
                     font=("Consolas", 10) if column else FONT,
                 ).grid(row=row_number, column=column, sticky="ew", padx=2, pady=2)
+        for row_number, label, a_speed, b_speed in (
+            (9, "Shared start speed (km/h)", first_result.starting_speed_mps,
+             second_result.starting_speed_mps),
+            (10, "Finish speed (km/h)", first_result.ending_speed_mps,
+             second_result.ending_speed_mps),
+        ):
+            speed_cells = (
+                label,
+                f"{a_speed * 3.6:.1f}" if a_speed is not None else "—",
+                f"{b_speed * 3.6:.1f}" if b_speed is not None else "—",
+                f"{(b_speed - a_speed) * 3.6:+.1f}"
+                if a_speed is not None and b_speed is not None else "—",
+            )
+            for column, value in enumerate(speed_cells):
+                tk.Label(
+                    box, text=value, anchor="w" if column == 0 else "e",
+                    relief="solid", bd=1, padx=6, pady=5,
+                    font=("Consolas", 10) if column else FONT,
+                ).grid(row=row_number, column=column, sticky="ew", padx=2, pady=2)
         first_seam = first_result.seam_speed_delta_mps
         second_seam = second_result.seam_speed_delta_mps
         seam_cells = (
@@ -3013,7 +3046,7 @@ class LapSimDesktop:
                 box, text=value, anchor="w" if column == 0 else "e",
                 relief="solid", bd=1, padx=6, pady=5,
                 font=("Consolas", 10) if column else FONT,
-            ).grid(row=9, column=column, sticky="ew", padx=2, pady=2)
+            ).grid(row=11, column=column, sticky="ew", padx=2, pady=2)
         for column in range(4):
             box.grid_columnconfigure(column, weight=1)
         tk.Label(
@@ -3024,12 +3057,12 @@ class LapSimDesktop:
                  + ("synthetic course model comparisons." if self.course_spec.synthetic
                     else "model comparisons on the selected source course."),
             anchor="w", justify="left", wraplength=720,
-        ).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+        ).grid(row=12, column=0, columnspan=4, sticky="ew", pady=(10, 0))
         tk.Label(
             box,
             text=f"Saved records: A {run_ids[0][:16]} · B {run_ids[1][:16]}",
             anchor="w", font=("Consolas", 9),
-        ).grid(row=11, column=0, columnspan=4, sticky="ew", pady=(5, 0))
+        ).grid(row=13, column=0, columnspan=4, sticky="ew", pady=(5, 0))
         self._apply_theme()
 
 

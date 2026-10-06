@@ -77,7 +77,8 @@ it in the local course catalog across launches; see the
 [course-bundle guide](docs/course_bundle_format.md). It offers editable
 2026 Prius LE benchmark inputs, saved
 local car profiles, source-backed TREV5 working scenarios when the external
-data package is present, and a two-car lap comparison. The **Four-wheel lab**
+data package is present, and a two-car lap comparison with one feasible
+rolling-start speed for both cars. The **Four-wheel lab**
 opens a separate top-down torque-allocation comparison with individual wheel
 slip and force displays. It exposes world-frame wind, air density, drag area,
 base grip, and an optional fixed low-grip rectangle for paired sensitivity

@@ -18,7 +18,7 @@ from lapsim.events.endurance import (
     LapProgressSnapshot,
 )
 from lapsim.optimization.torque_profile import PeriodicPiecewiseLinearTorqueProfile
-from lapsim.solvers.path_constraints import PathConstraintSolver
+from lapsim.solvers.path_constraints import PathConstraintSolver, PathSpeedConstraints
 from vehicle_model import Vehicle
 
 
@@ -71,6 +71,22 @@ class SpeedPeriodicLapResult:
         return None
 
 
+@dataclass(frozen=True, slots=True, eq=False)
+class PreparedOneLapConstraints:
+    """Path limits bound to the vehicle used to calculate them."""
+
+    _vehicle: Vehicle
+    _limits: PathSpeedConstraints
+
+    @property
+    def track(self) -> SpatialTrack:
+        return self._limits.track
+
+    @property
+    def braking_speed_ceiling_mps(self) -> tuple[float, ...]:
+        return self._limits.braking_speed_ceiling_mps
+
+
 def load_team_endurance_track() -> SpatialTrack:
     """Load the fused, map-registered endurance lap shipped with the repo."""
 
@@ -120,14 +136,33 @@ def resample_track(track: SpatialTrack, maximum_cell_length_m: float = 1.0) -> S
     )
 
 
+def prepare_one_lap_constraints(
+    vehicle: Vehicle, track: SpatialTrack,
+) -> PreparedOneLapConstraints:
+    """Prepare the same path limits used by an ordinary desktop lap."""
+
+    vehicle.reset_state()
+    return PreparedOneLapConstraints(
+        vehicle,
+        PathConstraintSolver(
+            **path_solver_settings(vehicle),
+        ).solve(track, vehicle),
+    )
+
+
 def run_one_lap(
     vehicle: Vehicle,
     track: SpatialTrack,
     *,
     torque_request_fraction: float,
+    constraints: PreparedOneLapConstraints | None = None,
+    starting_speed_mps: float | None = None,
     progress_callback: Callable[[LapProgressSnapshot], None] | None = None,
 ) -> EnduranceRunResult:
-    """Simulate one lap with path constraints and the brake controller."""
+    """Simulate one lap, optionally reusing path limits and an explicit start.
+
+    Supplied limits must have been prepared for this vehicle and track.
+    """
 
     knot_distance_m = (0.0, track.length_m * 0.5)
     profile = PeriodicPiecewiseLinearTorqueProfile(
@@ -135,15 +170,25 @@ def run_one_lap(
         knot_distance_m=knot_distance_m,
         request_fraction_values=(torque_request_fraction,) * 2,
     )
-    vehicle.reset_state()
-    constraints = PathConstraintSolver(
-        **path_solver_settings(vehicle),
-    ).solve(track, vehicle)
+    if constraints is None:
+        selected_constraints = prepare_one_lap_constraints(vehicle, track)._limits
+    else:
+        if not isinstance(constraints, PreparedOneLapConstraints):
+            raise TypeError("constraints must be PreparedOneLapConstraints")
+        if constraints._vehicle is not vehicle:
+            raise ValueError("supplied path constraints belong to a different vehicle")
+        if constraints.track != track:
+            raise ValueError("supplied path constraints do not match the lap track")
+        vehicle.reset_state()
+        selected_constraints = constraints._limits
     return EnduranceSimulator().run(
         vehicle,
-        constraints,
+        selected_constraints,
         profile,
-        endurance_run_config(vehicle),
+        replace(
+            endurance_run_config(vehicle),
+            starting_speed_mps=starting_speed_mps,
+        ),
         record_telemetry=True,
         progress_callback=progress_callback,
     )
