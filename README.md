@@ -106,8 +106,10 @@ and telemetry. The lap desktop also has an **Assumed road grip** input, default
 force capacities for a sensitivity run. It applies to centerline, AI, and
 two-car comparisons and is saved with each run for replay. It is an assumed
 uniform multiplier, not a measured wet/dry or local-surface model. Changing
-run inputs clears the previous displayed result and playback. The centerline
-solver defaults to a requested maximum 1 m step.
+run inputs clears the previous displayed result and playback. The editable
+**Max cell length** defaults to 1 m and limits generated simulation cells in
+centerline, car-comparison, and optional AI runs. A smaller value uses more
+cells and can take longer; the recorded solver grid shows the actual lengths.
 The fused course is resampled to that step; synthetic and imported coherent
 courses retain their exact source arc cells when the request is at least as
 large as their longest cell. For a finer request, the desktop strictly validates the source's
@@ -116,6 +118,12 @@ cell into analytic straight or circular subarcs. Every original station and
 endpoint remains on the solver grid. A 5,000-cell guard counts the resulting
 subdivisions. This is a check of the numerical solver representation, not a
 survey or evidence of measured course boundaries.
+AI mode independently rebuilds its processed baseline and offset paths until
+their generated cells meet the same requested maximum, or reports its 5,000
+point compute limit. Coherent source arcs can remain finer than the request.
+The fixed **Calculate** strip shows an animated bar during planning and speed
+preparation, then the accepted-cell fraction of the current model pass. It
+does not imply an overall completion percentage for multi-pass AI work.
 See the [desktop guide](docs/simulator_desktop.md) for data and model limits.
 
 The **Driving path** control defaults to the ordinary centerline solver and
@@ -154,15 +162,15 @@ The optional **Synthetic loop · AI demo** course is a 195.398224 m rounded rect
 two 40 m and two 20 m straights joined by four 12 m radius quarter-circle
 arcs, stored in 0.5 m source cells. Its default AI inputs are an *assumed*
 ±3 m corridor, 1.8 m vehicle width, and 0.2 m safety margin. With the Prius
-benchmark at model torque fraction 0.8 (enter 80 in the desktop's percent box)
-and assumed road grip 100%, a current
+benchmark at model torque fraction 0.8 (enter 80 in the desktop's percent box),
+assumed road grip 100%, and the initial **1 m Max cell length**, a current
 speed-periodic model run gave
-**16.949850 s** on the eligible geometric baseline, **15.691924 s** on an
-eligible half-offset path, and **14.617662 s** on the selected 0.95-offset
-path. The full-offset path failed clearance at an evaluated point by **0.040636 m**
+**17.009011 s** on the eligible geometric baseline, **15.731759 s** on an
+eligible half-offset path, and **14.637831 s** on the selected 0.975-offset
+path. The full-offset path failed clearance at an evaluated point by **0.002672 m**
 and was skipped before the lap calculation; it has no modeled time or replay.
 The fourth path passed its continuous scalar audit with a conservative
-0.053396 m lower bound on modeled clearance and had a **2.331539 s** lead under
+0.044544 m lower bound on modeled clearance and had a **2.371180 s** lead under
 the 0.05 s rule. This is a synthetic software
 demonstration, not a surveyed Formula SAE course or a validated team-car gain.
 
@@ -174,9 +182,10 @@ The starting ±3 m AI half-width is an editable assumption. It has no surveyed
 cones, measured boundaries, passing zones, or official event layout, and its
 computed times are not competition predictions. The fused team recording
 remains the startup course and **Centerline** remains the default driving path.
-With the built-in Prius and 80% torque request on this analytic course, the
-optional AI comparison selected a 0.975-offset path at **59.859115 s** against
-its eligible processed baseline at **60.154777 s**. The **0.295661 s** modeled
+With the built-in Prius, 80% torque request, and initial 1 m Max cell length
+on this analytic course, the optional AI comparison selected the full-offset
+path at **60.038711 s** against its eligible processed baseline at
+**60.362615 s**. The **0.323904 s** modeled
 lead is a software scenario result under the assumed corridor.
 
 The default recorded course has no surveyed widths, and its x/y map does not agree

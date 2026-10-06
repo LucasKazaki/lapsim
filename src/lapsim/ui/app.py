@@ -157,6 +157,11 @@ class LapSimDesktop:
         )
         self.run_started_at = 0.0
         self.run_in_progress = False
+        self.calculation_progress_text = tk.StringVar(value="Calculations · idle")
+        self._calculation_progress_mode = "idle"
+        self._calculation_progress_fraction = 0.0
+        self._calculation_progress_tick = 0
+        self._calculation_progress_after_id: str | None = None
         self.is_dark = tk.BooleanVar(value=False)
         self.profile_store = ProfileStore()
         self.saved_profiles: dict[str, SavedCarProfile] = {
@@ -294,6 +299,7 @@ class LapSimDesktop:
                 # Tk may already have retired a callback during destruction.
                 pass
         self._owned_after_ids.clear()
+        self._calculation_progress_after_id = None
 
     def _show_course_load_warnings(self) -> None:
         count = len(self.course_load_warnings)
@@ -342,6 +348,11 @@ class LapSimDesktop:
         left_scroll = tk.Scrollbar(left, orient="vertical", command=left_canvas.yview)
         left_scroll.grid(row=0, column=1, sticky="ns")
         left_canvas.configure(yscrollcommand=left_scroll.set)
+        calculation_panel = tk.LabelFrame(
+            left, text="Calculate", font=FONT_BOLD, padx=8, pady=6,
+            bd=1, relief="solid",
+        )
+        calculation_panel.grid(row=1, column=0, columnspan=2, sticky="ew")
         input_panel = tk.Frame(left_canvas)
         panel_window = left_canvas.create_window((0, 0), window=input_panel, anchor="nw")
         input_panel.bind(
@@ -359,6 +370,7 @@ class LapSimDesktop:
 
         self._build_profiles(input_panel)
         self._build_inputs(input_panel)
+        self._build_run_controls(calculation_panel)
         self._build_outputs(input_panel)
         for widget in (left_canvas, input_panel, *self._walk_widgets(input_panel)):
             widget.bind(
@@ -441,7 +453,7 @@ class LapSimDesktop:
             ("Drag area CdA", "drag_area_m2", "m²"),
             ("Speed limit", "top_speed_kph", "km/h"),
             ("Driver request", "torque_request_percent", "%"),
-            ("Max solver step", "solver_step_m", "m"),
+            ("Max cell length", "solver_step_m", "m"),
         )
         self.input_entries.clear()
         for row, (label, key, unit) in enumerate(rows, start=2):
@@ -466,26 +478,6 @@ class LapSimDesktop:
                 row=row, column=2, sticky="w", padx=(5, 0), pady=2
             )
         box.grid_columnconfigure(1, weight=1)
-
-        self.run_button = tk.Button(
-            box,
-            text="Run one lap",
-            command=self._start_run,
-            relief="raised",
-            bd=1,
-            padx=8,
-            pady=5,
-            font=FONT_BOLD,
-        )
-        self.run_button.grid(row=11, column=0, columnspan=3, sticky="ew", pady=(9, 3))
-        self.status_text = tk.StringVar(value="Ready")
-        tk.Label(
-            box,
-            textvariable=self.status_text,
-            anchor="w",
-            justify="left",
-            wraplength=350,
-        ).grid(row=12, column=0, columnspan=3, sticky="ew", pady=(4, 0))
 
         path_box = tk.LabelFrame(
             parent, text="Driving path", font=FONT_BOLD,
@@ -540,16 +532,54 @@ class LapSimDesktop:
             path_box,
             text=("AI mode uses a deterministic path optimizer and an assumed "
                   "uniform corridor. No measured course widths are available. "
-                  "It uses a 2 m path grid and up to four paths, with two "
+                  "It uses the Max cell length above for its path grid and "
+                  "up to four paths, with two "
                   "speed-seam passes per path. Its fourth path can follow "
                   "the selected car's eligible lap times. "
                   "Its rebuilt x/y course has different lap times from the "
-                  "default source-curvature course. Solver step above applies "
-                  "to centerline mode. Synthetic straights/arcs retain their "
+                  "default source-curvature course. Smaller cells can take "
+                  "longer. Synthetic straights/arcs retain their "
                   "exact geometry at 0.5 m or finer cells."),
             justify="left", anchor="w", wraplength=350, font=("Segoe UI", 9),
         ).grid(row=6, column=0, columnspan=3, sticky="ew", pady=(6, 0))
         self._on_driving_mode_change()
+
+    def _build_run_controls(self, parent: tk.Widget) -> None:
+        """Keep the run action and its progress visible while inputs scroll."""
+
+        self.run_button = tk.Button(
+            parent,
+            text="Run one lap",
+            command=self._start_run,
+            relief="raised",
+            bd=1,
+            padx=8,
+            pady=5,
+            font=FONT_BOLD,
+        )
+        self.run_button.grid(row=0, column=0, sticky="ew", pady=(0, 3))
+        tk.Label(
+            parent, textvariable=self.calculation_progress_text,
+            anchor="w", justify="left", wraplength=350,
+        ).grid(row=1, column=0, sticky="ew", pady=(3, 2))
+        self.calculation_progress_bar = tk.Canvas(
+            parent, height=15, bd=1, relief="solid", highlightthickness=0,
+        )
+        self.calculation_progress_bar.grid(
+            row=2, column=0, sticky="ew",
+        )
+        self.calculation_progress_bar.bind(
+            "<Configure>", lambda _event: self._draw_calculation_progress(),
+        )
+        self.status_text = tk.StringVar(value="Ready")
+        tk.Label(
+            parent,
+            textvariable=self.status_text,
+            anchor="w",
+            justify="left",
+            wraplength=350,
+        ).grid(row=3, column=0, sticky="ew", pady=(4, 0))
+        parent.grid_columnconfigure(0, weight=1)
 
     def _build_outputs(self, parent: tk.Widget) -> None:
         box = tk.LabelFrame(
@@ -1607,6 +1637,70 @@ class LapSimDesktop:
     def _theme_colors(self) -> tuple[str, str]:
         return ("#000000", "#ffffff") if self.is_dark.get() else ("#ffffff", "#000000")
 
+    def _draw_calculation_progress(self) -> None:
+        """Draw one plain bar; percentages describe only accepted cells in a pass."""
+
+        canvas = self.calculation_progress_bar
+        background, foreground = self._theme_colors()
+        canvas.configure(background=background)
+        canvas.delete("all")
+        width = max(
+            canvas.winfo_width() if canvas.winfo_width() > 1
+            else int(canvas.cget("width")), 2,
+        )
+        height = max(
+            canvas.winfo_height() if canvas.winfo_height() > 1
+            else int(canvas.cget("height")), 2,
+        )
+        interior_width = max(width - 2, 0)
+        if self._calculation_progress_mode in {"determinate", "complete"}:
+            fill_width = round(interior_width * self._calculation_progress_fraction)
+            if fill_width:
+                canvas.create_rectangle(
+                    1, 1, 1 + fill_width, height - 1,
+                    fill=foreground, outline="",
+                )
+        elif self._calculation_progress_mode == "indeterminate":
+            segment_width = min(interior_width, max(12, round(interior_width * 0.18)))
+            span = max(interior_width - segment_width, 0)
+            phase = (self._calculation_progress_tick * 8) % max(2 * span, 1)
+            left = 1 + (phase if phase <= span else 2 * span - phase)
+            canvas.create_rectangle(
+                left, 1, left + segment_width, height - 1,
+                fill=foreground, outline="",
+            )
+
+    def _animate_calculation_progress(self) -> None:
+        self._calculation_progress_after_id = None
+        if self._closed or not self.run_in_progress or self._calculation_progress_mode != "indeterminate":
+            return
+        self._calculation_progress_tick += 1
+        self._draw_calculation_progress()
+        self._calculation_progress_after_id = self._schedule_after(
+            80, self._animate_calculation_progress,
+        )
+
+    def _set_calculation_progress(
+        self, mode: str, description: str, *, fraction: float = 0.0,
+    ) -> None:
+        if self._calculation_progress_after_id is not None:
+            try:
+                self.root.after_cancel(self._calculation_progress_after_id)
+            except tk.TclError:
+                pass
+            self._owned_after_ids.discard(self._calculation_progress_after_id)
+            self._calculation_progress_after_id = None
+        self._calculation_progress_mode = mode
+        self._calculation_progress_fraction = min(1.0, max(0.0, fraction))
+        self.calculation_progress_text.set(description)
+        if mode == "indeterminate":
+            self._calculation_progress_tick = 0
+            if self.run_in_progress:
+                self._calculation_progress_after_id = self._schedule_after(
+                    80, self._animate_calculation_progress,
+                )
+        self._draw_calculation_progress()
+
     def _walk_widgets(self, parent: tk.Widget):
         for child in parent.winfo_children():
             yield child
@@ -1664,6 +1758,7 @@ class LapSimDesktop:
         self._switch_tab(self._active_tab)
         self._draw_plots(preserve_course_view=True)
         self._draw_driver_view()
+        self._draw_calculation_progress()
 
     def _draw_plots(self, *, preserve_course_view: bool = False) -> None:
         if self.figure is None or self.canvas is None:
@@ -1891,6 +1986,8 @@ class LapSimDesktop:
         self._pending_input_invalidation = False
         if expected_generation is not None and expected_generation != self._result_generation:
             return
+        if not self.run_in_progress and self._calculation_progress_mode in {"complete", "stopped"}:
+            self._set_calculation_progress("idle", "Inputs changed · run again")
         if self.run_in_progress or (not force and not any((
             self._last_result is not None,
             self._comparison_results is not None,
@@ -1945,15 +2042,15 @@ class LapSimDesktop:
             torque_fraction = float(self.inputs["torque_request_percent"].get()) / 100.0
             solver_step_m = float(self.inputs["solver_step_m"].get())
         except ValueError as error:
-            raise ValueError("Enter numeric driver request and solver step values.") from error
+            raise ValueError("Enter numeric driver request and Max cell length values.") from error
         if not np.isfinite(torque_fraction) or not 0.0 <= torque_fraction <= 1.0:
             raise ValueError("Driver request must be between 0 and 100%.")
         if not np.isfinite(solver_step_m) or not 0.0 < solver_step_m <= self.track.length_m:
-            raise ValueError("Solver step must be finite and within the course length.")
+            raise ValueError("Max cell length must be finite and within the course length.")
         if solver_cell_count_for_course(
             self.course_spec.course_id, self.track, solver_step_m,
         ) > 5000:
-            raise ValueError("Requested solver grid exceeds the 5000-cell compute cap.")
+            raise ValueError("This Max cell length would exceed the 5000-cell compute cap.")
         return torque_fraction, solver_step_m
 
     def _read_run_inputs(self) -> tuple[VehicleSetup | None, float, float]:
@@ -2016,10 +2113,15 @@ class LapSimDesktop:
             )
         self._on_driving_mode_change()
 
-    def _begin_live_calculation(self, name: str) -> None:
+    def _begin_live_calculation(
+        self, name: str, *, preparing: str = "Preparing course and speed limits",
+    ) -> None:
         """Clear old results before accepted model cells arrive."""
 
         self.progress_queue = queue.Queue(maxsize=1)
+        self._set_calculation_progress(
+            "indeterminate", f"{preparing} · pass progress unavailable",
+        )
         self._last_result = None
         self._displayed_road_grip_multiplier = None
         self._comparison_results = None
@@ -2110,6 +2212,16 @@ class LapSimDesktop:
             f"{name} · {phase} · accepted cell "
             f"{snapshot.cell_index + 1}/{snapshot.cell_count} · reference path"
         )
+        cell_number = snapshot.cell_index + 1
+        cell_count = snapshot.cell_count
+        if cell_count > 0 and 1 <= cell_number <= cell_count:
+            fraction = cell_number / cell_count
+            self._set_calculation_progress(
+                "determinate",
+                f"Current pass · {name}: {phase} · "
+                f"{cell_number}/{cell_count} cells ({fraction:.0%})",
+                fraction=fraction,
+            )
         self._render_driver_frame()
         phase_complete = snapshot.cell_index + 1 == snapshot.cell_count
         # A completed AI trial may start a dry seam-speed pass.  A longer
@@ -2136,6 +2248,14 @@ class LapSimDesktop:
             f"{name} · {phase} complete · model work continuing"
             if phase_complete else
             f"{name} · last accepted {phase} step · waiting for model"
+        )
+        self._set_calculation_progress(
+            "indeterminate",
+            (
+                f"{name}: {phase} pass complete · preparing next work"
+                if phase_complete else
+                f"{name}: {phase} · waiting for next accepted cell"
+            ),
         )
         self._draw_driver_view()
 
@@ -2217,11 +2337,17 @@ class LapSimDesktop:
                 self.ai_compare_button.configure(state="disabled")
         self._active_run_input_signature = self._run_input_signature()
         self._set_busy(True)
-        self._begin_live_calculation(profile_name)
+        self._begin_live_calculation(
+            profile_name,
+            preparing=(
+                "Planning AI path and preparing model"
+                if ai_assumptions else "Preparing course and speed limits"
+            ),
+        )
         self.run_started_at = time.perf_counter()
         self.status_text.set(
             f"Calculating {profile_name}"
-            + (" with experimental AI path…" if ai_assumptions else f" at {step_m:g} m maximum step…")
+            + (" with experimental AI path…" if ai_assumptions else f" at {step_m:g} m Max cell length…")
         )
         worker = threading.Thread(
             target=self._calculate_ai_single if ai_assumptions else self._calculate_single,
@@ -2255,10 +2381,12 @@ class LapSimDesktop:
             plans.append((profile_id, self.profile_id_to_display[profile_id], setup))
         self._active_run_input_signature = self._run_input_signature()
         self._set_busy(True)
-        self._begin_live_calculation("Car comparison")
+        self._begin_live_calculation(
+            "Car comparison", preparing="Preparing two cars and common speed limits",
+        )
         self.run_started_at = time.perf_counter()
         self.status_text.set(
-            f"Comparing two cars on the same course at {step_m:g} m maximum step…"
+            f"Comparing two cars on the same course at {step_m:g} m Max cell length…"
         )
         threading.Thread(
             target=self._calculate_comparison,
@@ -2346,13 +2474,9 @@ class LapSimDesktop:
                 right_width_m=half_width_m,
                 vehicle_width_m=vehicle_width_m,
                 safety_margin_m=safety_margin_m,
-                source=(
-                    "user-assumed synthetic demo half-width; no surveyed boundaries"
-                    if self.course_spec.synthetic else
-                    "user-assumed uniform half-width; no surveyed boundaries"
-                ),
+                source="user-assumed uniform half-width; no surveyed boundaries",
             )
-            planner = RacingLinePlanner()
+            planner = RacingLinePlanner(maximum_cell_length_m=step_m)
             plan = planner.plan(self.track, corridor)
             last_progress_post_s = float("-inf")
             last_progress_phase = ""
@@ -2486,7 +2610,12 @@ class LapSimDesktop:
                     selected_track.geometry_audit()
                 ),
                 "user_requested_centerline_step_m": step_m,
+                "user_requested_maximum_cell_length_m": step_m,
                 "planner_sample_spacing_m": planner.sample_spacing_m,
+                "planner_actual_sample_count": len(plan.offset_m),
+                "planner_actual_sample_spacing_m": (
+                    self.track.length_m / len(plan.offset_m)
+                ),
                 "actual_maximum_cell_length_m": max(selected_track.cell_length_m),
                 "planner_control_count": planner.control_count,
                 "planner_smoothing_m": planner.smoothing_m,
@@ -2579,7 +2708,7 @@ class LapSimDesktop:
                     result=result, vehicle=vehicle, manifest=manifest,
                     solver_track=track, profile_id=profile_id,
                     profile_name=profile_name, setup=setup,
-                    step_m=max(track.cell_length_m),
+                    step_m=step_m,
                     torque_fraction=torque_fraction,
                     road_grip_multiplier=road_grip_multiplier,
                     track_id=ai_track_id,
@@ -2594,6 +2723,8 @@ class LapSimDesktop:
                         "synthetic_course": self.course_spec.synthetic,
                         "comparison_role": role,
                         "offset_strength": strength,
+                        "user_requested_maximum_cell_length_m": step_m,
+                        "actual_maximum_cell_length_m": max(track.cell_length_m),
                         "lap_start_policy": path_planning["lap_start_policy"],
                         "speed_seam_tolerance_mps": path_planning["speed_seam_tolerance_mps"],
                         "maximum_lap_passes_per_trial": path_planning["maximum_lap_passes_per_trial"],
@@ -2718,7 +2849,7 @@ class LapSimDesktop:
                 result=selected_run, vehicle=vehicle, manifest=manifest,
                 solver_track=selected_track, profile_id=profile_id,
                 profile_name=profile_name, setup=setup,
-                step_m=max(selected_track.cell_length_m),
+                step_m=step_m,
                 torque_fraction=torque_fraction,
                 road_grip_multiplier=road_grip_multiplier,
                 track_id=ai_track_id,
@@ -2823,6 +2954,7 @@ class LapSimDesktop:
         )
         self._active_run_input_signature = None
         if stale_inputs:
+            self._set_calculation_progress("idle", "Inputs changed · run again")
             self._invalidate_stale_result(force=True)
             self.status_text.set(
                 "Inputs changed during calculation · saved run is not displayed; run again"
@@ -2841,6 +2973,19 @@ class LapSimDesktop:
                 )
             self._draw_driver_view()
         elapsed_s = time.perf_counter() - self.run_started_at
+        if error is not None or (
+            kind == "single" and not payload[2].completed
+        ) or (
+            kind == "ai_single" and not payload[1].completed
+        ) or (
+            kind == "comparison"
+            and any(not result.completed for _, result in payload[2])
+        ):
+            self._set_calculation_progress("stopped", "Calculation stopped · see status")
+        else:
+            self._set_calculation_progress(
+                "complete", "Calculation finished", fraction=1.0,
+            )
         if error is not None:
             self._set_driver_replay_options({}, selected="—")
             self.status_text.set(f"Calculation failed: {error}")
@@ -2860,7 +3005,7 @@ class LapSimDesktop:
                 )
                 self.status_text.set(
                     f"{profile_name} completed in {elapsed_s:.1f} s · "
-                    f"{step_m:g} m requested maximum step · assumed grip "
+                    f"{step_m:g} m requested Max cell length · assumed grip "
                     f"{road_grip_multiplier * 100:g}% · saved run {run_id[:12]}"
                 )
             else:
@@ -3275,7 +3420,7 @@ class LapSimDesktop:
         )
         tk.Label(
             box,
-            text=f"Course: {self.course_spec.label} · Requested max solver step: {step_m:g} m · driver request: "
+            text=f"Course: {self.course_spec.label} · Requested Max cell length: {step_m:g} m · driver request: "
                  f"{torque_fraction * 100:g}% · assumed uniform road grip: "
                  f"{road_grip_multiplier * 100:g}% · "
                  "Δ = B − A; positive lap-time Δ is slower",

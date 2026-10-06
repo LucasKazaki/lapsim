@@ -69,8 +69,13 @@ and speed limit. **Save current** creates another named local profile in
 The repository and source-backed profiles are read-only so source values and
 inherited model defaults remain distinguishable from edited assumptions.
 
-Driver request applies to every run; **Max solver step** applies to standard
-centerline runs. AI mode builds its separate nominal 2 m geometric grid.
+Driver request applies to every run. **Max cell length** is an editable
+upper bound for the generated physics cells in centerline, two-car comparison,
+and optional AI runs. The desktop starts at 1 m. AI builds a separate
+x/y-derived path grid and adds samples until its processed baseline and full
+offset meet that bound; fractional offsets then fit it too. A smaller request
+can increase planning and lap time, and a request needing more than 5,000
+points is refused. The saved grid's individual lengths are authoritative.
 **Assumed road grip** defaults to 100% and uniformly multiplies the selected
 tire model's longitudinal and lateral force capacities. It applies to ordinary
 laps, AI trials, and both cars in a profile comparison. A value below 100%
@@ -83,8 +88,8 @@ clears displayed outputs and playback so prior numbers cannot be read as the
 new setup.
 Invalid or non-finite values are rejected before a run begins, and requests
 producing more than 5,000 actual cells are refused. For either synthetic course,
-the guard counts subdivisions of each original straight or arc cell. The default
-requested maximum is 1 m. The fused course is resampled at the requested
+the guard counts subdivisions of each original straight or arc cell. The fused
+course is resampled at the requested
 maximum, which may average
 curvature across original cell boundaries and change lap time. The synthetic
 courses keep their exact generated straight/circular-arc cells (at most 0.5 m)
@@ -111,6 +116,15 @@ driven tire slip, or battery power against distance or time. The top-down
 course map stays fixed rather than moving with the car. In the map,
 left-drag pans, the mouse wheel zooms around the cursor, and **Fit course**
 restores the full view.
+
+The fixed **Calculate** strip remains visible when the input panel scrolls.
+Its monochrome bar animates during path planning, speed-limit preparation,
+AI dry passes, and waits without accepted cells because those stages do not
+report a reliable total step count. During a recorded physics pass it fills
+from that pass's accepted-cell index and labels the active car/path and cell
+count. The displayed percentage describes **the current pass only**; AI can
+run several passes and return to preparation. Completion, failure, or changed
+inputs update the bar's label and state.
 
 The right side has **Analysis**, **Driver view**, and **Timed sessions · WIP**
 tabs. Analysis remains the startup view. When a lap starts, Driver view first
@@ -174,7 +188,7 @@ and safety margin. On either synthetic course, the boxes initially show an
 switching back restores the default recorded course's scenario inputs. The
 app has no measured boundaries and does not infer
 vehicle body width from the car profile. A deterministic, bounded planner
-proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
+proposes one smooth lateral-offset line on a separate grid, using nominal 2 m samples only when the requested maximum allows it; it increases samples until generated cells meet the bound. It runs the same car and
 torque request through a newly derived geometric centerline, then checks
 full- and half-offset candidates. When the centerline audit is valid, a
 candidate failing its path audit is skipped before physics. If all three paths have eligible audits and times,
@@ -242,26 +256,31 @@ not steer a closed-loop car, and the vehicle model has simplified tire and
 controller physics. See [AI racer design and checks](ai_racer_design.md) for
 the objective, validation checks, and local benchmark results.
 
-For the default fused course's assumed ±2 m Prius case with desktop torque
-request 100% (model fraction 1.0), 1.78308 m car width, and 0.3 m margin, baseline/full/half/three-quarter laps complete in
-**88.2468936756/88.0083862976/88.0305817762/87.9983373607 s** under the current exit-force check, but all four are starred diagnostics:
+An earlier unconstrained nominal-2 m API run on the fused course used assumed
+±2 m width, Prius torque request 100% (model fraction 1.0), 1.78308 m car
+width, and 0.3 m margin. Its baseline/full/half/three-quarter laps completed
+in **88.2468936756/88.0083862976/88.0305817762/87.9983373607 s** under
+the current exit-force check, but all four were starred diagnostics:
 observed usable-corridor excess is **0.095506/0.908195/0.501981/0.705117 m** and the
 position seam misses by roughly **0.75–0.77 m**. No AI path is selected from
-those runs. Ordinary centerline remains the default driving mode; the exit-force check applies to it too.
+those runs. These are historical grid-specific numbers, not timing predictions
+for the desktop's new 1 m AI default. Ordinary centerline remains the default
+driving mode; the exit-force check applies to it too.
 The failed baseline audit makes the fourth strength fall back to 0.75 in this
 example; its completed time remains diagnostic.
 
 For a controlled AI demonstration, choose **Synthetic loop · AI demo**, the
 Prius benchmark, desktop torque request **80% (enter 80; model fraction 0.8)**, and its initial assumed ±3 m
 half-width, 1.8 m vehicle width, and 0.2 m margin. Leave assumed uniform road
-grip at **100%** for the stated numbers. The current speed-periodic
-model comparison produced an eligible **16.9498498135 s** geometric baseline,
-**15.6919244487 s** half-offset, and **14.6176615029 s** 0.95-offset
+grip at **100%** and **Max cell length** at its initial **1 m** for the stated
+numbers. The current speed-periodic model comparison produced an eligible
+**17.0090108038 s** geometric baseline,
+**15.7317585066 s** half-offset, and **14.6378307024 s** 0.975-offset
 candidate. Those three continuous scalar audits passed; the full-offset
-path failed at an evaluated point by **0.0406357308 m** and was skipped before
-physics. It therefore has no time, saved run, or replay. The 0.95 path has a
-conservative certified clearance lower bound of **0.05339622659 m** and was
-selected on a **2.3321883106 s** modeled lead. These are synthetic model
+path failed at an evaluated point by **0.0026717805 m** and was skipped before
+physics. It therefore has no time, saved run, or replay. The 0.975 path has a
+conservative certified clearance lower bound of **0.0445441230 m** and was
+selected on a **2.3711801014 s** modeled lead. These are synthetic model
 numbers, not surveyed-course or team-car performance. An on-demand fixed-path
 `SpatialTrack.refine(1.0)` probe made before the continuous certificate and
 exit-speed combined-grip gate gave
@@ -271,6 +290,15 @@ offset; all completed and closed speed. The 0.95 line retained about
 **0.449 s** over the old fallback, but refined path clearance was not re-audited.
 This is a timing-sensitivity probe, not a new eligible comparison or proof of
 grid convergence.
+
+On **Synthetic FSAE-style · practice** at the same assumed ±3 m width, Prius
+80% torque request, and initial **1 m** cell limit, the current comparison
+uses **829** processed cells. Its eligible processed baseline took
+**60.3626147273 s** and the selected full-offset path **60.0387107423 s**,
+a **0.3239039850 s** modeled lead. All four tested paths passed the scalar
+clearance audit; the selected path's conservative minimum assumed clearance
+was **0.1173201189 m**. These are software scenario numbers for an analytic
+practice shape, not a surveyed event course or calibrated vehicle.
 
 The primary AI run record includes every tested offset strength and its
 reported eligible or diagnostic result and audit status. It stores its own

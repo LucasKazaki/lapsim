@@ -270,9 +270,9 @@ def test_assumed_grip_reaches_every_ai_trial_record(tmp_path: Path) -> None:
         comparison = payload[5]
         assert comparison.trials
         assert comparison.rank_status == "candidate_selected"
-        assert comparison.candidate_strength == 0.95
-        assert comparison.baseline_time_s == pytest.approx(19.843762, abs=0.002)
-        assert comparison.candidate_time_s == pytest.approx(17.140844, abs=0.002)
+        assert comparison.candidate_strength == 0.975
+        assert comparison.baseline_time_s == pytest.approx(19.871195, abs=0.002)
+        assert comparison.candidate_time_s == pytest.approx(17.182903, abs=0.002)
         records = [RunRecord.load(path).to_dict() for path in tmp_path.glob("*.json")]
         assert len(records) >= 2
         for record in records:
@@ -368,12 +368,16 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         assert comparison.rank_status == "invalid_processed_baseline"
         assert comparison.baseline_time_s is None
         assert comparison.candidate_time_s is None
-        assert comparison.baseline_diagnostic_time_s == pytest.approx(88.246894, abs=0.001)
-        assert comparison.candidate_diagnostic_time_s == pytest.approx(87.998337, abs=0.001)
-        assert comparison.candidate_strength == 0.75
+        assert comparison.baseline_diagnostic_time_s is not None
+        assert comparison.candidate_diagnostic_time_s is not None
+        assert 80.0 < comparison.baseline_diagnostic_time_s < 100.0
+        assert 80.0 < comparison.candidate_diagnostic_time_s < 100.0
+        assert comparison.candidate_strength == 1.0
+        assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5, 0.75)
         assert comparison.baseline_path_audit is not None
-        assert comparison.baseline_path_audit.maximum_corridor_excess_m > 0.09
-        assert comparison.baseline_path_audit.seam_position_error_m > 0.75
+        assert comparison.baseline_path_audit.maximum_corridor_excess_m == 0.0
+        assert comparison.baseline_path_audit.seam_position_error_m > 0.01
+        assert comparison.baseline_path_audit.clearance_status == "seam_failure"
         assert all(trial.lap_time_s is None for trial in comparison.trials)
         assert all(trial.diagnostic_lap_time_s is not None for trial in comparison.trials)
         assert app._last_result is None
@@ -420,7 +424,9 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         )
         assert planning["processed_baseline_geometry_audit"][
             "curvature_integrated_closure_gap_m"
-        ] == pytest.approx(0.750897, abs=0.001)
+        ] == pytest.approx(
+            comparison.baseline_path_audit.seam_position_error_m, abs=1e-6
+        )
         assert planning["baseline_sampled_path_audit"]["valid"] is False
         assert len(planning["candidate_trials"]) == 3
         assert all(trial["sampled_path_audit"]["valid"] is False
@@ -460,7 +466,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         )
         assert replay_lap_record(selected_path).model_agreement
         assert replay_lap_record(counterpart_path).model_agreement
-        app._select_driver_replay("Best tested AI path · 0.75x offset · diagnostic")
+        app._select_driver_replay("Best tested AI path · 1x offset · diagnostic")
         assert app.driver_playback is not None
         assert app.driver_playback.track.length_m == pytest.approx(
             comparison.candidate_track.length_m
@@ -522,9 +528,9 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         plan, comparison = payload[4], payload[5]
         assert payload[3] == "candidate"
         assert comparison.rank_status == "candidate_selected"
-        assert comparison.candidate_strength == 0.95
-        assert comparison.baseline_time_s == pytest.approx(16.949850, abs=0.002)
-        assert comparison.candidate_time_s == pytest.approx(14.617662, abs=0.002)
+        assert comparison.candidate_strength == 0.975
+        assert comparison.baseline_time_s == pytest.approx(17.009011, abs=0.002)
+        assert comparison.candidate_time_s == pytest.approx(14.637831, abs=0.002)
         assert comparison.baseline_path_audit is not None
         assert comparison.baseline_path_audit.valid
         assert comparison.candidate_path_audit is not None
@@ -558,6 +564,12 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         primary_path = tmp_path / f"{payload[7]}.json"
         primary = RunRecord.load(primary_path).to_dict()
         planning = primary["settings"]["path_planning"]
+        assert primary["settings"]["solver"]["requested_maximum_cell_length_m"] == 1.0
+        assert planning["user_requested_maximum_cell_length_m"] == 1.0
+        assert planning["actual_maximum_cell_length_m"] <= 1.0
+        assert planning["planner_actual_sample_count"] == len(plan.offset_m)
+        assert max(plan.baseline_track.cell_length_m) <= 1.0
+        assert max(plan.candidate_track.cell_length_m) <= 1.0
         source_course = primary["settings"]["track"]["source_course"]
         assert source_course["selected_course_id"] == SYNTHETIC_DEMO_COURSE_ID
         assert source_course["revision"] == "generator_v1"
@@ -574,6 +586,9 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         counterpart = RunRecord.load(tmp_path / f"{counterpart_id}.json").to_dict()
         assert counterpart["settings"]["track"]["source_course"] == source_course
         counterpart_planning = counterpart["settings"]["path_planning"]
+        assert counterpart["settings"]["solver"]["requested_maximum_cell_length_m"] == 1.0
+        assert counterpart_planning["user_requested_maximum_cell_length_m"] == 1.0
+        assert counterpart_planning["actual_maximum_cell_length_m"] <= 1.0
         assert counterpart_planning["algorithm"] == planning["algorithm"]
         assert counterpart_planning["fourth_strength_policy"] == (
             planning["fourth_strength_policy"]
@@ -581,7 +596,7 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert planning["comparison_is_valid"] is True
         assert planning["diagnostic_only"] is False
         assert planning["selected_mode"] == "candidate"
-        assert planning["selected_offset_strength"] == 0.95
+        assert planning["selected_offset_strength"] == 0.975
         assert planning["trial_record_manifest_version"] == 1
         assert planning["baseline_record"]["run_id"] == counterpart_id
         assert planning["baseline_record"]["record_role"] == "comparison_counterpart"

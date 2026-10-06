@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from math import pi
 from types import SimpleNamespace
 
@@ -24,6 +24,7 @@ from lapsim.optimization.racing_line import (
     compare_lines_with_lap_model,
 )
 from lapsim.profiles import build_vehicle, list_profiles
+from lapsim.ui.course_catalog import SYNTHETIC_FSAE_COURSE_ID, load_course
 from lapsim.ui.presets import VehicleSetup, make_prius_benchmark
 from lapsim.ui.simulation import load_team_endurance_track, run_speed_periodic_lap
 
@@ -109,6 +110,91 @@ def test_generated_paths_recompute_arc_length_and_curvature() -> None:
             float(np.sum(turns)), abs=1e-9
         )
         assert abs(float(turns[-1])) < 0.2  # finite, smooth closure at this test seam
+
+
+def test_requested_maximum_cell_length_bounds_both_ai_solver_paths() -> None:
+    track = _rounded_rectangle()
+    corridor = _corridor(track)
+    legacy = RacingLinePlanner().plan(track, corridor)
+    requested_maximum_m = 1.0
+    bounded = RacingLinePlanner(
+        maximum_cell_length_m=requested_maximum_m,
+    ).plan(track, corridor)
+    assert len(bounded.offset_m) > len(legacy.offset_m)
+    assert bounded.baseline_track.cell_count > track.length_m / requested_maximum_m
+    assert max(bounded.baseline_track.cell_length_m) <= requested_maximum_m + 1e-10
+    assert max(bounded.candidate_track.cell_length_m) <= requested_maximum_m + 1e-10
+    if bounded.status == "candidate":
+        halfway = _scaled_candidate_track(bounded, 0.5)
+        assert max(halfway.cell_length_m) <= requested_maximum_m + 1e-10
+    assert bounded.baseline_track.cell_count == bounded.candidate_track.cell_count
+    assert bounded.source_station_m == track.distance_m
+
+
+def test_ai_grid_tries_compute_cap_before_rejecting_margin_overshoot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    track = _rounded_rectangle()
+    # The first attempt has 4,990 samples. Its slight bound miss would need
+    # just one more sample, but the planner's 1% margin asks for over 5,000.
+    requested_maximum_m = track.length_m / 4989.5
+    planner = RacingLinePlanner(maximum_cell_length_m=requested_maximum_m)
+    attempted_counts: list[int] = []
+
+    @dataclass(frozen=True)
+    class GridPlan:
+        baseline_track: SimpleNamespace
+        candidate_track: SimpleNamespace
+        compute_time_s: float = 0.0
+
+    def plan_at_count(
+        _track: SpatialTrack, _corridor: TrackCorridor, count: int,
+    ) -> GridPlan:
+        attempted_counts.append(count)
+        maximum_m = requested_maximum_m * 4990.5 / count
+        path = SimpleNamespace(cell_length_m=(maximum_m,))
+        return GridPlan(path, path)
+
+    monkeypatch.setattr(planner, "_plan_at_count", plan_at_count)
+    result = planner.plan(track, _corridor(track))
+    assert attempted_counts == [4990, 5000]
+    assert max(result.baseline_track.cell_length_m) <= requested_maximum_m
+
+
+def test_practice_course_one_meter_grid_certifies_lap_seam() -> None:
+    """One-ulp source/processed endpoint differences must not reject a lap."""
+
+    track = load_course(SYNTHETIC_FSAE_COURSE_ID)
+    corridor = TrackCorridor.constant(
+        track, left_width_m=3.0, right_width_m=3.0,
+        vehicle_width_m=1.8, safety_margin_m=0.2,
+        source="assumed practice-course corridor",
+    )
+    plan = RacingLinePlanner(maximum_cell_length_m=1.0).plan(track, corridor)
+    count = plan.baseline_track.cell_count
+    assert count == 829
+    assert np.arange(count + 1, dtype=float)[-1] * track.length_m / count < track.length_m
+
+    for path in (plan.baseline_track, plan.candidate_track):
+        audit = _audit_curvature_path(
+            path, plan.baseline_track, plan.source_station_m, corridor,
+        )
+        assert audit.valid
+        assert audit.continuous_clearance_certified
+        assert audit.clearance_status == "certified"
+        assert audit.minimum_corridor_slack_m > 0.1
+
+
+@pytest.mark.parametrize("value", (0.0, -1.0, float("nan"), float("inf"), True))
+def test_requested_ai_cell_length_rejects_invalid_values(value: float) -> None:
+    with pytest.raises(ValueError, match="maximum_cell_length_m"):
+        RacingLinePlanner(maximum_cell_length_m=value)
+
+
+def test_requested_ai_cell_length_respects_compute_cap() -> None:
+    track = _rounded_rectangle()
+    with pytest.raises(ValueError, match="5000-point compute cap"):
+        RacingLinePlanner(maximum_cell_length_m=0.01).plan(track, _corridor(track))
 
 
 def test_variable_widths_are_respected_at_every_planner_station() -> None:

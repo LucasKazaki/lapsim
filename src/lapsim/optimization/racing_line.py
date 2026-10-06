@@ -16,7 +16,7 @@ the proposed path with this repository's actual vehicle-dependent lap model.
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from math import atan2, ceil, cos, hypot, isfinite, pi, sin
 from numbers import Real
 from time import perf_counter
@@ -399,6 +399,11 @@ class RacingLinePlanner:
 
     ``length_penalty`` has units 1/m². It multiplies relative path-length
     change so both terms in the geometric objective have units 1/m².
+    ``maximum_cell_length_m`` optionally bounds the actual physics cells in
+    both generated paths. The generated geometry can be locally longer than
+    its nominal station spacing, so the planner increases its sample count
+    and rebuilds the paths when necessary. Omitting it preserves the legacy
+    nominal-spacing behavior.
     """
 
     def __init__(
@@ -409,6 +414,7 @@ class RacingLinePlanner:
         smoothing_m: float = 0.8,
         maximum_iterations: int = 60,
         length_penalty: float = 0.01,
+        maximum_cell_length_m: float | None = None,
     ) -> None:
         if not isfinite(sample_spacing_m) or sample_spacing_m <= 0.0:
             raise ValueError("sample_spacing_m must be finite and positive")
@@ -420,11 +426,19 @@ class RacingLinePlanner:
             raise ValueError("maximum_iterations must be 1 through 200")
         if not isfinite(length_penalty) or length_penalty < 0.0:
             raise ValueError("length_penalty must be finite and nonnegative")
+        if maximum_cell_length_m is not None and (
+            isinstance(maximum_cell_length_m, bool)
+            or not isinstance(maximum_cell_length_m, Real)
+            or not isfinite(maximum_cell_length_m)
+            or maximum_cell_length_m <= 0.0
+        ):
+            raise ValueError("maximum_cell_length_m must be finite and positive")
         self.sample_spacing_m = sample_spacing_m
         self.control_count = control_count
         self.smoothing_m = smoothing_m
         self.maximum_iterations = maximum_iterations
         self.length_penalty = length_penalty
+        self.maximum_cell_length_m = maximum_cell_length_m
 
     def plan(self, track: SpatialTrack, corridor: TrackCorridor) -> RacingLinePlan:
         """Return candidate and baseline; no car simulation is run here.
@@ -435,16 +449,52 @@ class RacingLinePlanner:
         unmeasured pavement or physical track survey quality.
         """
 
-        start = perf_counter()
         if not track.closed:
             raise ValueError("racing-line planning requires a closed course")
         if track.cell_count < 4:
             raise ValueError("racing-line planning requires at least four geometry cells")
         if len(corridor.left_width_m) != track.cell_count:
             raise ValueError("corridor widths must match reference track cells")
-        count = max(ceil(track.length_m / self.sample_spacing_m), 4 * self.control_count, 32)
+        spacing_m = (
+            self.sample_spacing_m if self.maximum_cell_length_m is None
+            else min(self.sample_spacing_m, self.maximum_cell_length_m)
+        )
+        count = max(ceil(track.length_m / spacing_m), 4 * self.control_count, 32)
         if count > 5000:
             raise ValueError("planner grid exceeds its 5000-point compute cap")
+        total_start = perf_counter()
+        for _ in range(8):
+            plan = self._plan_at_count(track, corridor, count)
+            if self.maximum_cell_length_m is None:
+                return plan
+            actual_maximum_m = max(
+                max(plan.baseline_track.cell_length_m),
+                max(plan.candidate_track.cell_length_m),
+            )
+            if actual_maximum_m <= self.maximum_cell_length_m + 1e-10:
+                return replace(plan, compute_time_s=perf_counter() - total_start)
+            if count == 5000:
+                raise ValueError(
+                    "AI path cannot meet the requested maximum cell length "
+                    "within the 5000-point compute cap"
+                )
+            # Uniform source stations do not imply uniformly long offset
+            # chords. Increase the count based on the longest actual cell,
+            # with a small margin to avoid roundoff-triggered repeat solves.
+            # Try the cap itself before rejecting a margin-induced overshoot.
+            count = min(5000, max(
+                count + 1,
+                ceil(count * actual_maximum_m / self.maximum_cell_length_m * 1.01),
+            ))
+        raise ValueError(
+            "AI path cannot meet the requested maximum cell length "
+            "within eight bounded planning attempts"
+        )
+
+    def _plan_at_count(
+        self, track: SpatialTrack, corridor: TrackCorridor, count: int,
+    ) -> RacingLinePlan:
+        start = perf_counter()
         source_station = np.asarray(track.distance_m, dtype=float)
         station = np.arange(count, dtype=float) * track.length_m / count
         source_x = np.asarray(track.x_m, dtype=float)
@@ -898,6 +948,11 @@ def _audit_curvature_path(
         # width boundary can also lie extremely close to it. Snapping both
         # would erase a real interval and falsely certify its interior.
         cell_stations = np.arange(count + 1, dtype=float) * source_stations[-1] / count
+        # The final product/division can differ by one ulp from the exact
+        # source endpoint. Both denote the same physical lap seam; use the
+        # supplied endpoint so a tiny final audit interval stays in the last
+        # modeled cell instead of being falsely classified as crossing it.
+        cell_stations[-1] = source_stations[-1]
         maximum_extra_samples = min(50_000, max(1_024, 2 * len(planner_station)))
         maximum_depth = 10
         recursive_samples = 0
