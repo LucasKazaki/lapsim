@@ -8,7 +8,7 @@ import queue
 import threading
 import time
 import tkinter as tk
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from tkinter import messagebox, simpledialog
 from typing import Any
 
@@ -368,7 +368,8 @@ class LapSimDesktop:
             path_box,
             text=("AI mode uses a deterministic path optimizer and an assumed "
                   "uniform corridor. No measured course widths are available. "
-                  "It uses a 2 m path grid and up to two model lap evaluations. "
+                  "It uses a 2 m path grid and up to three paths, with two "
+                  "speed-seam passes per path. "
                   "Its rebuilt x/y course has different lap times from the "
                   "default source-curvature course. Solver step above applies "
                   "to centerline mode."),
@@ -422,8 +423,8 @@ class LapSimDesktop:
             box,
             text=(
                 "*Equivalent battery model; not measured Prius fuel or battery use. "
-                "Entry and exit speeds may differ: this is one initial-condition lap, "
-                "not a periodic steady-state lap."
+                "Default centerline is one initial-condition pass. AI comparison "
+                "closes seam speed only; neither is full-state periodic."
             ),
             anchor="w",
             justify="left",
@@ -1581,6 +1582,7 @@ class LapSimDesktop:
         setup: VehicleSetup | None, step_m: float, torque_fraction: float,
         track_id: str = "team_endurance_fused_gnss_imu",
         path_planning: dict[str, Any] | None = None,
+        starting_speed_mps: float | None = None,
     ) -> str:
         """Persist the exact effective setup and aligned lap telemetry."""
 
@@ -1590,7 +1592,10 @@ class LapSimDesktop:
             solver_step_m=step_m,
             solver_settings=path_solver_settings(vehicle),
             torque_request_fraction=torque_fraction,
-            endurance_config=endurance_run_config(vehicle),
+            endurance_config=replace(
+                endurance_run_config(vehicle),
+                starting_speed_mps=starting_speed_mps,
+            ),
             profile_id=profile_id,
             profile_label=profile_name,
             path_planning=path_planning,
@@ -1780,6 +1785,7 @@ class LapSimDesktop:
             comparison = compare_lines_with_lap_model(
                 vehicle, plan, torque_request_fraction=torque_fraction,
                 progress_callback=on_progress,
+                speed_periodic=True,
             )
             selected_mode = comparison.selected_mode
             selected_run = comparison.selected_run
@@ -1788,7 +1794,7 @@ class LapSimDesktop:
             if (
                 not baseline_valid
                 and comparison.candidate_run is not None
-                and comparison.candidate_run.completed
+                and comparison.candidate_time_s is not None
             ):
                 # Show the completed candidate, but never call it a time gain.
                 selected_mode = "candidate_only_baseline_failed"
@@ -1802,7 +1808,7 @@ class LapSimDesktop:
                     plan.baseline_track if comparison.baseline_run is not None
                     else comparison.candidate_track
                 )
-                selected_mode = "no_completed_path"
+                selected_mode = "no_comparable_path"
             if selected_run is None:
                 raise ValueError(
                     "Neither geometric path returned a lap record: "
@@ -1822,6 +1828,10 @@ class LapSimDesktop:
             path_planning = {
                 "mode": "experimental_racing_line",
                 "algorithm": "periodic_cubic_minimum_curvature_slsqp_v3_winding_three_trial",
+                "record_role": "selected_result",
+                "lap_start_policy": "speed_only_periodic_fixed_initial_vehicle_state",
+                "speed_seam_tolerance_mps": 0.005,
+                "maximum_lap_passes_per_trial": 2,
                 "selected_mode": selected_mode,
                 "candidate_offset_strength": comparison.candidate_strength,
                 "selected_offset_strength": (
@@ -1881,6 +1891,47 @@ class LapSimDesktop:
                 "planner_compute_time_s": plan.compute_time_s,
                 "lap_comparison_compute_time_s": comparison.compute_time_s,
             }
+            if selected_run is comparison.baseline_run:
+                counterpart_run = comparison.candidate_run
+                counterpart_track = comparison.candidate_track
+                counterpart_role = "candidate_trial"
+                counterpart_strength = (
+                    comparison.candidate_strength
+                    if comparison.candidate_strength is not None
+                    else 1.0 if counterpart_track is plan.candidate_track else 0.5
+                )
+            else:
+                counterpart_run = comparison.baseline_run
+                counterpart_track = plan.baseline_track
+                counterpart_role = "geometric_centerline"
+                counterpart_strength = 0.0
+            counterpart_run_id = None
+            if counterpart_run is not None and counterpart_run is not selected_run:
+                counterpart_run_id = self._save_run_record(
+                    result=counterpart_run, vehicle=vehicle, manifest=manifest,
+                    solver_track=counterpart_track, profile_id=profile_id,
+                    profile_name=profile_name, setup=setup,
+                    step_m=max(counterpart_track.cell_length_m),
+                    torque_fraction=torque_fraction,
+                    track_id="team_endurance_xy_derived_assumed_corridor",
+                    path_planning={
+                        "mode": "experimental_racing_line",
+                        "algorithm": path_planning["algorithm"],
+                        "record_role": "comparison_counterpart",
+                        "comparison_role": counterpart_role,
+                        "offset_strength": counterpart_strength,
+                        "lap_start_policy": path_planning["lap_start_policy"],
+                        "speed_seam_tolerance_mps": path_planning["speed_seam_tolerance_mps"],
+                        "maximum_lap_passes_per_trial": path_planning["maximum_lap_passes_per_trial"],
+                        "source_geometry_sha256": source_hash,
+                        "corridor": path_planning["corridor"],
+                    },
+                    starting_speed_mps=counterpart_run.starting_speed_mps,
+                )
+            path_planning["comparison_counterpart_run_id"] = counterpart_run_id
+            path_planning["comparison_counterpart_role"] = (
+                counterpart_role if counterpart_run_id is not None else None
+            )
             run_id = self._save_run_record(
                 result=selected_run, vehicle=vehicle, manifest=manifest,
                 solver_track=selected_track, profile_id=profile_id,
@@ -1889,6 +1940,7 @@ class LapSimDesktop:
                 torque_fraction=torque_fraction,
                 track_id="team_endurance_xy_derived_assumed_corridor",
                 path_planning=path_planning,
+                starting_speed_mps=selected_run.starting_speed_mps,
             )
             self.result_queue.put((
                 "ai_single",
@@ -2018,8 +2070,8 @@ class LapSimDesktop:
             for key, value in values.items():
                 self.ai_output_values[key].configure(text=value)
             half_width_m, vehicle_width_m, margin_m = assumptions
-            if selected_mode == "no_completed_path":
-                selection = "Neither geometric path completed. A failed run was saved for diagnosis."
+            if selected_mode == "no_comparable_path":
+                selection = "Neither geometric path produced a valid timed lap. A diagnostic run was saved."
             elif selected_mode == "candidate":
                 selection = (
                     f"Faster AI path selected at {comparison.candidate_strength:g}× "
@@ -2033,23 +2085,34 @@ class LapSimDesktop:
             elif candidate_time is not None:
                 selection = "Best tested AI path was slower; geometric centerline selected."
             else:
-                selection = "No completed faster AI candidate; geometric centerline selected."
+                selection = "No valid faster AI candidate; geometric centerline selected."
+            if (
+                baseline_time is not None and candidate_time is not None
+                and abs(candidate_time - baseline_time) < 0.05
+            ):
+                selection += (
+                    " This gap is under 0.05 s; check a finer solver grid "
+                    "before trusting the rank."
+                )
             self.ai_result_text.set(
                 f"{selection} Assumed ±{half_width_m:g} m corridor, "
                 f"{vehicle_width_m:g} m car, {margin_m:g} m margin. "
                 f"Proposed max offset {plan.max_abs_offset_m:.2f} m; "
                 f"{len(comparison.trials)} candidate trial(s). "
                 f"source map length differs by {plan.source_vs_processed_length_fraction:+.1%}. "
-                "Compare only the two times in this box; the default lap uses "
-                "different source curvature. These are assumed model scenarios."
+                "Compare only these two x/y-derived times; the default lap "
+                "uses different source curvature. A trial receives a comparison "
+                "time only when its rolling-start speed closes within 0.005 m/s. "
+                "This uses a fixed initial car and pack state; other states "
+                "need not be periodic."
             )
-            if result.completed:
+            if result.completed and selected_mode != "no_comparable_path":
                 self._selected_path_track = selected_track
                 self._last_result = result
                 runs = []
-                if comparison.baseline_run is not None and comparison.baseline_run.completed:
+                if comparison.baseline_time_s is not None and comparison.baseline_run is not None:
                     runs.append(("Geometric centerline", comparison.baseline_run))
-                if comparison.candidate_run is not None and comparison.candidate_run.completed:
+                if comparison.candidate_time_s is not None and comparison.candidate_run is not None:
                     runs.append(("Best tested AI path", comparison.candidate_run))
                 self._comparison_results = tuple(runs) if len(runs) == 2 else None
                 self._show_result(result, track_length_m=selected_track.length_m)
@@ -2064,11 +2127,14 @@ class LapSimDesktop:
                     f"{elapsed_s:.1f} s · saved run {run_id[:12]}"
                 )
             else:
-                detail = comparison.baseline_error or result.failure_reason
-                self.status_text.set(
-                    f"Experimental path did not complete: {detail} · saved run {run_id[:12]}"
+                detail = (
+                    comparison.baseline_error or comparison.candidate_error
+                    or result.failure_reason or "No valid timed lap"
                 )
-                messagebox.showerror("Lap did not complete", str(detail), parent=self.root)
+                self.status_text.set(
+                    f"Experimental path had no valid timed lap: {detail} · saved run {run_id[:12]}"
+                )
+                messagebox.showerror("No valid timed lap", str(detail), parent=self.root)
         else:
             step_m, torque_fraction, outcomes, run_ids = payload
             self._comparison_results = outcomes
@@ -2187,7 +2253,8 @@ class LapSimDesktop:
             text=("Widths and vehicle envelope are assumptions. The source x/y map "
                   "and recorded curvature disagree; these times are comparable model "
                   "scenarios, not validated Terps lap predictions. Seam speed Δ is "
-                  "finish minus start; these one-pass laps need not be periodic."),
+                  "finish minus start; the timed AI trials close it within "
+                  "0.005 m/s at a fixed initial car and pack state."),
             anchor="w", justify="left", wraplength=755,
         ).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(10, 0))
         self._apply_theme()

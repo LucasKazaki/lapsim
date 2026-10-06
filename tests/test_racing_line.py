@@ -372,6 +372,134 @@ def test_full_strength_win_is_retained_after_half_trial(_adaptive_plan, monkeypa
     assert tuple(trial.lap_time_s for trial in comparison.trials) == (99.0, 99.5)
 
 
+def test_opt_in_speed_periodic_comparison_uses_converged_lap_only(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    plan = _adaptive_plan
+    calls = []
+
+    def fake_periodic(vehicle, track, **kwargs):
+        calls.append((track, kwargs))
+        time_s = 100.0 if track is plan.baseline_track else (
+            99.0 if track is plan.candidate_track else 98.0
+        )
+        run = SimpleNamespace(completed=True, driving_time_s=time_s,
+                              failure_reason=None)
+        return SimpleNamespace(run=run, converged=True, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_speed_periodic_lap", fake_periodic)
+    comparison = compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.7, speed_periodic=True,
+    )
+
+    assert len(calls) == 3
+    assert [track for track, _ in calls[:2]] == [
+        plan.baseline_track, plan.candidate_track,
+    ]
+    assert all(options == {
+        "torque_request_fraction": 0.7,
+        "maximum_lap_passes": 2,
+        "speed_tolerance_mps": 0.005,
+    } for _, options in calls)
+    assert comparison.baseline_time_s == 100.0
+    assert comparison.candidate_time_s == 98.0
+    assert comparison.candidate_strength == 0.5
+    assert comparison.selected_mode == "candidate"
+
+
+def test_opt_in_speed_periodic_rejects_nonconverged_trials_but_keeps_runs(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    plan = _adaptive_plan
+    received = []
+
+    def fake_periodic(vehicle, track, **kwargs):
+        del vehicle
+        assert kwargs["maximum_lap_passes"] == 2
+        snapshot = object()
+        kwargs["progress_callback"](snapshot)
+        received.append((track, snapshot))
+        time_s = 100.0 if track is plan.baseline_track else (
+            90.0 if track is plan.candidate_track else 99.0
+        )
+        run = SimpleNamespace(completed=True, driving_time_s=time_s,
+                              failure_reason=None)
+        converged = track is not plan.candidate_track
+        return SimpleNamespace(
+            run=run, converged=converged,
+            failure_reason=None if converged else "seam delta +0.050 m/s",
+        )
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_speed_periodic_lap", fake_periodic)
+    phases = []
+    comparison = compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.7, speed_periodic=True,
+        progress_callback=lambda phase, track, snapshot: phases.append(
+            (phase, track, snapshot)
+        ),
+    )
+
+    assert [phase for phase, _, _ in phases] == ["baseline", "full", "half"]
+    assert all(observed_track is emitted_track and observed_snapshot is snapshot
+               for (_, observed_track, observed_snapshot), (emitted_track, snapshot)
+               in zip(phases, received, strict=True))
+    assert comparison.baseline_time_s == 100.0
+    assert comparison.trials[0].lap_time_s is None
+    assert comparison.trials[0].error == "seam delta +0.050 m/s"
+    assert comparison.candidate_time_s == 99.0
+    assert comparison.candidate_strength == 0.5
+    assert comparison.selected_mode == "candidate"
+
+
+def test_opt_in_speed_periodic_requires_converged_baseline_for_selection(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    plan = _adaptive_plan
+
+    def fake_periodic(vehicle, track, **kwargs):
+        del vehicle, kwargs
+        run = SimpleNamespace(completed=True, driving_time_s=95.0,
+                              failure_reason=None)
+        converged = track is not plan.baseline_track
+        return SimpleNamespace(
+            run=run, converged=converged,
+            failure_reason=None if converged else "baseline seam not periodic",
+        )
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_speed_periodic_lap", fake_periodic)
+    comparison = compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.7, speed_periodic=True,
+    )
+
+    assert comparison.baseline_run is not None
+    assert comparison.baseline_time_s is None
+    assert comparison.baseline_error == "baseline seam not periodic"
+    assert comparison.candidate_time_s == 95.0
+    assert comparison.selected_mode == "centerline"
+    assert comparison.selected_run is None
+
+
+def test_opt_in_speed_periodic_real_short_path_reports_closed_seam(
+    _adaptive_plan,
+) -> None:
+    plan = replace(
+        _adaptive_plan,
+        status="centerline",
+        candidate_track=_adaptive_plan.baseline_track,
+    )
+    comparison = compare_lines_with_lap_model(
+        make_prius_benchmark(VehicleSetup()), plan,
+        torque_request_fraction=0.8, speed_periodic=True,
+    )
+
+    assert comparison.baseline_error is None
+    assert comparison.baseline_time_s is not None
+    assert comparison.baseline_run is comparison.selected_run
+    assert comparison.baseline_run.seam_speed_delta_mps is not None
+    assert abs(comparison.baseline_run.seam_speed_delta_mps) <= 0.005
+    assert comparison.trials == ()
+
+
 def test_half_trial_can_improve_even_when_full_beats_baseline(
     _adaptive_plan, monkeypatch,
 ) -> None:

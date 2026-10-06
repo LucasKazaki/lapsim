@@ -42,10 +42,11 @@ longer distances.
 
 The numeric outputs are lap time, peak speed, average speed, distance, net
 equivalent-pack energy, peak lateral acceleration in g, and lap entry/exit
-speeds. Different entry and exit speeds at the same closed-course seam mean
-this is a one-pass initial-condition lap rather than a periodic steady-state
-flying lap. The car and AI path comparison windows show the signed seam-speed
-difference alongside their other numbers. The trace selector
+speeds. The default centerline is a one-pass initial-condition lap: entry and
+exit speeds may differ at the closed-course seam. Optional AI path timing
+checks speed closure separately; neither mode establishes a full-state
+steady endurance lap. The car and AI path comparison windows show the signed
+seam-speed difference alongside their other numbers. The trace selector
 shows speed, longitudinal or lateral acceleration, drive or braking force,
 driven tire slip, or battery power against distance or time. The top-down
 course map stays fixed rather than moving with the car. In the map,
@@ -59,7 +60,9 @@ prepass. As the physics solver accepts cells, Driver view shows its latest
 elapsed time, station, speed, and lateral acceleration on a driver-centered
 top-down **reference map**. The desktop keeps only the newest update and draws
 at roughly 10 updates per second, so it does not slow the solver to real time.
-AI mode labels geometric baseline, full line, and half line separately.
+AI mode labels geometric baseline, full line, and half line separately. Its
+dry seam-speed probe sends no live updates; Driver view shows accepted cells
+from the final recorded pass for each path.
 Rejected cells are not shown as completed movement. After a completed lap,
 the app starts a 1× replay with Play/Pause, Start, time scrub, playback rate,
 and wheel zoom. The course rotates around a fixed car marker. The replay uses
@@ -79,11 +82,17 @@ and safety margin. The app has no measured boundaries and does not infer
 vehicle body width from the car profile. A deterministic, bounded planner
 proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
 torque request through a newly derived geometric centerline, the full-offset
-candidate, and a validated half-offset path, for at most three full physics
-laps. Evaluating both strengths can catch an interior line that is faster
+candidate, and a validated half-offset path. For each path it makes one dry
+seam-speed probe and one final recorded lap, starting each from the same fresh
+initial car and pack state. The final pass starts at the probe's exit speed;
+its finish-minus-start speed must be within **0.005 m/s** to receive a
+comparison time. This is at most six full physics passes across three paths.
+It checks speed closure only; pack charge and other states need not match at
+the seam. Evaluating both strengths can catch an interior line that is faster
 than the full path even when the full path already beats centerline.
 It selects the best tested candidate only if that path and the baseline both
-complete and the candidate is faster. The left panel shows the two times, signed difference,
+have valid comparison times and the candidate is faster. The left panel shows
+the available times, signed difference,
 selected path length, and assumptions; **Compare path numbers** shows time,
 distance, speed, equivalent energy, and lateral acceleration side by side.
 The selected path is used for the course plot, Driver view, and saved run
@@ -99,9 +108,13 @@ not steer a closed-loop car, and the vehicle model has simplified tire and
 controller physics. See [AI racer design and checks](ai_racer_design.md) for
 the objective, validation checks, and local benchmark results.
 
-The saved AI run includes every tested offset strength, its result or error,
-the selected strength, and the exact selected path geometry. It does not yet
-save the other trials' full telemetry as a linked A/B package.
+The selected AI run record includes every tested offset strength and its
+reported result or error, the selected strength, and exact selected path
+geometry and telemetry, including the explicit starting speed of its final
+pass. When a second physics trial returned a run, the app
+also saves one comparison counterpart with its own geometry and telemetry;
+the selected record names its run ID and role. A third trial may have only its
+summary saved. These records do not provide a full ghost/session replay.
 
 The Timed sessions tab is explicitly a design placeholder for a future
 versioned Terps vehicle/controller, timed drive, ghost, full control capture,

@@ -82,14 +82,18 @@ The **Driving path** control defaults to the ordinary centerline solver and
 does no path optimization. Its optional **AI racing line (experimental)** mode
 uses an assumed track half-width, vehicle width, and margin to propose one
 smooth line and compare it with a geometric centerline using the same car and
-physics solver. It also tests a half-offset line for a valid candidate,
-with a hard limit of three full physics laps. The app selects a candidate
-only when both it and the baseline complete and it is faster. The packaged
+physics solver. It also tests a half-offset line for a valid candidate.
+Each of at most three paths receives one dry speed-seam pass and one recorded
+pass; only paths whose start and finish speeds agree within 0.005 m/s receive
+a comparison time. The app selects a candidate only when its valid time beats
+the baseline's. The packaged
 course has no surveyed widths, and its x/y map does not agree with its stored
 solver curvature; the Analysis tab displays the measured inconsistency. AI-mode times should be
 compared only with the AI-mode geometric baseline, not the ordinary centerline
 lap. The **Driver view** shows accepted solver-step progress on a reference
-path, then plays back numeric telemetry after a completed lap. **Timed sessions · WIP** is a disabled
+path, then plays back numeric telemetry after a completed lap. AI comparisons
+save linked selected and counterpart run records when both paths return runs.
+**Timed sessions · WIP** is a disabled
 placeholder for a future ghost, complete control recording, and replay check.
 
 ## Basic use

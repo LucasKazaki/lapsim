@@ -142,15 +142,25 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
         assert app.output_values["entry_speed"]["text"] != "—"
         assert app.output_values["exit_speed"]["text"] != "—"
         assert "different source curvature" in app.ai_result_text.get()
+        assert "rolling-start speed closes within 0.005 m/s" in app.ai_result_text.get()
+        assert "other states need not be periodic" in app.ai_result_text.get()
         records = list(tmp_path.glob("*.json"))
-        assert len(records) == 1
-        record = RunRecord.load(records[0]).to_dict()
+        assert len(records) == 2
+        assert payload[3] == "candidate"
+        record = RunRecord.load(tmp_path / f"{payload[7]}.json").to_dict()
         assert record["result"]["seam_speed_delta_mps"] == pytest.approx(
             record["result"]["ending_speed_mps"]
             - record["result"]["starting_speed_mps"]
         )
         planning = record["settings"]["path_planning"]
         assert planning["mode"] == "experimental_racing_line"
+        assert planning["record_role"] == "selected_result"
+        assert planning["lap_start_policy"] == "speed_only_periodic_fixed_initial_vehicle_state"
+        assert planning["speed_seam_tolerance_mps"] == 0.005
+        assert record["settings"]["endurance_config"]["starting_speed_mps"] == pytest.approx(
+            record["result"]["starting_speed_mps"]
+        )
+        assert abs(record["result"]["seam_speed_delta_mps"]) <= 0.005
         assert planning["algorithm"].endswith("v3_winding_three_trial")
         assert len(planning["candidate_trials"]) == 2
         assert planning["corridor_fold_ratio_max"] < 0.98
@@ -160,6 +170,24 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
         )
         assert record["settings"]["track"]["length_m"] == pytest.approx(
             app.driver_playback.track.length_m
+        )
+        counterpart_id = planning["comparison_counterpart_run_id"]
+        assert counterpart_id and counterpart_id != payload[7]
+        assert planning["comparison_counterpart_role"] == "geometric_centerline"
+        counterpart = RunRecord.load(tmp_path / f"{counterpart_id}.json").to_dict()
+        counterpart_planning = counterpart["settings"]["path_planning"]
+        assert counterpart_planning["record_role"] == "comparison_counterpart"
+        assert counterpart_planning["comparison_role"] == "geometric_centerline"
+        assert counterpart_planning["offset_strength"] == 0.0
+        assert counterpart["settings"]["endurance_config"]["starting_speed_mps"] == pytest.approx(
+            counterpart["result"]["starting_speed_mps"]
+        )
+        assert abs(counterpart["result"]["seam_speed_delta_mps"]) <= 0.005
+        assert counterpart["settings"]["track"]["length_m"] == pytest.approx(
+            payload[4].baseline_track.length_m
+        )
+        assert counterpart["result"]["lap_times_s"] == pytest.approx(
+            payload[5].baseline_run.lap_times_s
         )
         app._show_path_comparison()
         root.update()
@@ -187,6 +215,23 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
             tmp_path / f"{half_payload[7]}.json"
         ).to_dict()
         half_planning = half_record["settings"]["path_planning"]
+        assert len(list(tmp_path.glob("*.json"))) == 4
+        assert half_planning["record_role"] == "selected_result"
+        half_counterpart_id = half_planning["comparison_counterpart_run_id"]
+        assert half_counterpart_id not in (None, counterpart_id, payload[7], half_payload[7])
+        half_counterpart = RunRecord.load(
+            tmp_path / f"{half_counterpart_id}.json"
+        ).to_dict()
+        assert half_planning["comparison_counterpart_role"] == "geometric_centerline"
+        assert half_counterpart["settings"]["path_planning"]["record_role"] == (
+            "comparison_counterpart"
+        )
+        assert half_counterpart["settings"]["track"]["length_m"] == pytest.approx(
+            half_payload[4].baseline_track.length_m
+        )
+        assert half_counterpart["result"]["lap_times_s"] == pytest.approx(
+            half_payload[5].baseline_run.lap_times_s
+        )
         assert half_planning["selected_offset_strength"] == 0.5
         assert [trial["offset_strength"] for trial in half_planning["candidate_trials"]] == [
             1.0, 0.5,

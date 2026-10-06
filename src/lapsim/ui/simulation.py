@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from copy import deepcopy
+from dataclasses import dataclass, replace
+from math import isfinite
 from pathlib import Path
 
 import numpy as np
@@ -23,6 +26,49 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 ENDURANCE_TRACK_PATH = (
     REPOSITORY_ROOT / "analysis" / "data" / "track" / "gnss_imu_endurance_track.csv"
 )
+
+
+@dataclass(frozen=True, slots=True)
+class SpeedPeriodicLapResult:
+    """One-lap speed shooting result at a fixed initial vehicle/pack state.
+
+    Only speed at the closed-course seam is tested for periodicity. Battery
+    charge, temperatures, and other component states need not match there.
+    ``vehicle`` is the independent copy advanced by the final pass.
+    """
+
+    run: EnduranceRunResult
+    vehicle: Vehicle
+    passes: int
+    speed_tolerance_mps: float
+
+    @property
+    def final_starting_speed_mps(self) -> float | None:
+        return self.run.starting_speed_mps
+
+    @property
+    def speed_residual_mps(self) -> float | None:
+        return self.run.seam_speed_delta_mps
+
+    @property
+    def converged(self) -> bool:
+        residual_mps = self.speed_residual_mps
+        return residual_mps is not None and abs(residual_mps) <= self.speed_tolerance_mps
+
+    @property
+    def failure_reason(self) -> str | None:
+        if self.run.failure_reason is not None:
+            return self.run.failure_reason
+        if not self.converged:
+            residual_mps = self.speed_residual_mps
+            if residual_mps is None:
+                return "Speed-only seam convergence could not be checked"
+            return (
+                f"Speed-only lap seam did not converge after {self.passes} passes: "
+                f"finish minus start speed {residual_mps:+.6f} m/s exceeds "
+                f"{self.speed_tolerance_mps:.6f} m/s"
+            )
+        return None
 
 
 def load_team_endurance_track() -> SpatialTrack:
@@ -100,6 +146,93 @@ def run_one_lap(
         endurance_run_config(vehicle),
         record_telemetry=True,
         progress_callback=progress_callback,
+    )
+
+
+def run_speed_periodic_lap(
+    vehicle: Vehicle,
+    track: SpatialTrack,
+    *,
+    torque_request_fraction: float,
+    speed_tolerance_mps: float = 0.005,
+    maximum_lap_passes: int = 2,
+    progress_callback: Callable[[LapProgressSnapshot], None] | None = None,
+) -> SpeedPeriodicLapResult:
+    """Shoot for a closed-course seam speed with bounded full-model laps.
+
+    This optional desktop helper keeps the ordinary one-lap behavior intact.
+    Path constraints are solved once. Every pass starts from an independent
+    copy of the same initial vehicle and pack state. Earlier passes have no
+    telemetry or progress callbacks; only the final pass is recorded and
+    observed. The default allows one probe plus one final pass. A third pass
+    can be requested for an additional dry probe before the final pass.
+
+    The returned ``converged`` flag is about speed alone. The final explicit
+    start speed must be persisted with the run for faithful replay.
+    """
+
+    if not isfinite(speed_tolerance_mps) or speed_tolerance_mps <= 0.0:
+        raise ValueError("speed_tolerance_mps must be finite and positive")
+    if type(maximum_lap_passes) is not int or not 2 <= maximum_lap_passes <= 3:
+        raise ValueError("maximum_lap_passes must be 2 or 3")
+    if not track.closed:
+        raise ValueError("speed-periodic lap requires a closed course")
+
+    template_vehicle = deepcopy(vehicle)
+    template_vehicle.reset_state()
+    constraints = PathConstraintSolver(
+        **path_solver_settings(template_vehicle),
+    ).solve(track, template_vehicle)
+    profile = PeriodicPiecewiseLinearTorqueProfile(
+        track_length_m=track.length_m,
+        knot_distance_m=(0.0, track.length_m * 0.5),
+        request_fraction_values=(torque_request_fraction,) * 2,
+    )
+    start_speed_mps = constraints.braking_speed_ceiling_mps[0]
+    simulator = EnduranceSimulator()
+    for pass_number in range(1, maximum_lap_passes):
+        probe_vehicle = deepcopy(template_vehicle)
+        probe_result = simulator.run(
+            probe_vehicle,
+            constraints,
+            profile,
+            replace(
+                endurance_run_config(probe_vehicle),
+                starting_speed_mps=start_speed_mps,
+            ),
+        )
+        if not probe_result.completed:
+            return SpeedPeriodicLapResult(
+                run=probe_result,
+                vehicle=probe_vehicle,
+                passes=pass_number,
+                speed_tolerance_mps=speed_tolerance_mps,
+            )
+        start_speed_mps = probe_vehicle.speed_mps
+        probe_residual_mps = probe_result.seam_speed_delta_mps
+        if (
+            probe_residual_mps is not None
+            and abs(probe_residual_mps) <= speed_tolerance_mps
+        ):
+            break
+
+    final_vehicle = deepcopy(template_vehicle)
+    final_result = simulator.run(
+        final_vehicle,
+        constraints,
+        profile,
+        replace(
+            endurance_run_config(final_vehicle),
+            starting_speed_mps=start_speed_mps,
+        ),
+        record_telemetry=True,
+        progress_callback=progress_callback,
+    )
+    return SpeedPeriodicLapResult(
+        run=final_result,
+        vehicle=final_vehicle,
+        passes=pass_number + 1,
+        speed_tolerance_mps=speed_tolerance_mps,
     )
 
 

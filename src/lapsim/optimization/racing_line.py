@@ -621,19 +621,22 @@ def compare_lines_with_lap_model(
     *,
     torque_request_fraction: float,
     progress_callback: Callable[[str, SpatialTrack, LapProgressSnapshot], None] | None = None,
+    speed_periodic: bool = False,
 ) -> RacingLineComparison:
-    """Evaluate a candidate and its baseline with the unchanged lap physics.
+    """Evaluate a candidate and its baseline with the same lap physics.
 
     The vehicle is copied before each run because a lap mutates pack and
     chassis state. The full geometric candidate and a validated half-offset
-    path are both tried. Thus at most three full laps run, and the ordinary
-    centerline path still avoids this module entirely. A candidate is selected only if
-    both it and the baseline complete and it is faster. Errors remain explicit.
+    path are both tried. The default evaluates one lap per path; opt-in
+    ``speed_periodic`` permits one dry seam-speed probe plus one final lap per
+    path, at a fixed initial vehicle/pack state. This checks speed at the
+    closed-course seam, not full-state periodicity. A candidate is selected
+    only if both it and the baseline yield acceptable times. Errors remain explicit.
     With a callback, accepted-cell snapshots carry a phase label and the exact
-    track being simulated; no callback keyword is passed in the default case.
+    track being simulated; periodic probes do not emit callbacks.
     """
 
-    from lapsim.ui.simulation import run_one_lap
+    from lapsim.ui.simulation import run_one_lap, run_speed_periodic_lap
 
     start = perf_counter()
     baseline_time: float | None = None
@@ -650,17 +653,42 @@ def compare_lines_with_lap_model(
         track: SpatialTrack, phase: str,
     ) -> tuple[EnduranceRunResult | None, float | None, str | None]:
         try:
-            if progress_callback is None:
-                result = run_one_lap(
-                    deepcopy(vehicle), track,
+            if speed_periodic:
+                periodic_options = dict(
                     torque_request_fraction=torque_request_fraction,
+                    maximum_lap_passes=2,
+                    speed_tolerance_mps=0.005,
                 )
+                if progress_callback is None:
+                    periodic = run_speed_periodic_lap(
+                        vehicle, track, **periodic_options,
+                    )
+                else:
+                    periodic = run_speed_periodic_lap(
+                        vehicle, track, **periodic_options,
+                        progress_callback=lambda snapshot: progress_callback(
+                            phase, track, snapshot,
+                        ),
+                    )
+                result = periodic.run
+                if not periodic.converged:
+                    return result, None, periodic.failure_reason or (
+                        "Speed-only lap seam did not converge"
+                    )
             else:
-                result = run_one_lap(
-                    deepcopy(vehicle), track,
-                    torque_request_fraction=torque_request_fraction,
-                    progress_callback=lambda snapshot: progress_callback(phase, track, snapshot),
-                )
+                if progress_callback is None:
+                    result = run_one_lap(
+                        deepcopy(vehicle), track,
+                        torque_request_fraction=torque_request_fraction,
+                    )
+                else:
+                    result = run_one_lap(
+                        deepcopy(vehicle), track,
+                        torque_request_fraction=torque_request_fraction,
+                        progress_callback=lambda snapshot: progress_callback(
+                            phase, track, snapshot,
+                        ),
+                    )
         except (ValueError, RuntimeError, ArithmeticError, OverflowError) as error:
             return None, None, f"{type(error).__name__}: {error}"
         if result.completed and isfinite(result.driving_time_s) and result.driving_time_s > 0.0:
