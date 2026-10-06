@@ -185,6 +185,41 @@ motivates checking future bend speeds against available braking distance.
 This is a basic feedback experiment, not a learned
 driver or an implementation of those projects' complete controller stacks.
 
+After the future bend/grip target, an assumed-edge rule can only lower that
+target. Let `s` be the current minimum projected slack of the four sampled
+axle-span body corners inside the assumed corridor. It subtracts **0.5 s**
+times outward CG lateral speed relative to the reference tangent, plus a
+conservative yaw-rate/body-corner contribution, and clamps the predicted
+slack at zero. It blends between `min(prior target, 2.0 m/s)` at zero predicted
+slack and the prior target at **0.8 m** predicted slack using the square root
+of the slack fraction. This speed response is specific to LapSim. The
+[TORCS steering tutorial](https://torcs.sourceforge.net/api/robot_tutorial_chapter_4.html)
+motivates checking car corners and reducing speed near a road edge, but it
+uses its own edge rule and warns that current corner samples do not prove
+swept clearance. LapSim's corridor is an assumed reference-path width, not
+TORCS road-edge data or measured Racing Terps cones.
+
+The WIP tab's **Initial lateral offset (m)** starts the car at
+`(x_ref,y_ref) + e_0 (-sin(psi_0), cos(psi_0))`; positive `e_0` is left of
+travel, negative is right, and the default is zero. The input accepts finite
+values within the nominal **±1.9 m** CG allowance and is frozen for the
+worker; changing it while idle clears an old pose preview only. The actual
+four-corner footprint check remains authoritative: a nominally accepted
+**−1.9 m** start on this curved synthetic start is already outside the
+sampled assumed corridor and stops before a control step. The edge rule is a
+slowdown heuristic, not a geometric steering or safety certificate. In the
+focused synthetic runs, starts at **±1.8 m** reached 80 m on both uniform and
+patch roads with positive sampled slack and replay agreement. The same
+starts without the edge cap also completed and had the same minimum sampled
+slack, which occurred initially; the cap's observed effect was more braking
+and longer model time, not a demonstrated safety gain. One deliberately long
+**3.0 s** lookahead regression with a **+1.8 m** start and extended
+**25 s / 500-control-step / 80,000-substep** budget is a bounded
+counterexample: the nominal edge rule reached 80 m with positive sampled
+slack, while a virtually inactive edge rule left the assumed corridor near
+40.64 m. Both traces replayed numerically. This demonstrates an effect in
+one synthetic setting, not a general prevention of road exits.
+
 Default limits are **80 m** target progress, **20 s** simulated time,
 **400** control steps, and **60,000** internal integration substeps. The
 assumed ±3 m corridor, 1.8 m vehicle width, and 0.2 m margin give a
@@ -217,6 +252,15 @@ synthetic trace; it is not a saved full session, ghost, or vehicle validation.
 | Car adaptability | Repeat on built-in and saved profiles without assuming one motor topology; reject unsupported or failing profile scenarios explicitly |
 | Presentation | Show a simple top-down line/driver preview, numbers, and explicit “synthetic corridor” labeling |
 | Pose preview | Bound work and progress, show simulated pose with a separate model/time label, compare replayed states within stated tolerances, and retain the WIP session boundary |
+
+The end-to-end profile check in `tests/test_ai_profile_e2e.py` selects the
+partial source-backed TREV working profile (when its local source bundle is
+available) and, separately, a locally saved Prius with user overrides. It
+starts the desktop's optional AI worker on the analytic demo course, inspects
+the selected effective vehicle and exact solver path in each saved JSON,
+shows that path in Driver view, and checks recorded-control model replay.
+This checks profile-to-result wiring and reproducibility, not real-car lap
+accuracy or a measured course.
 
 Further development should be driven by failed checks and team data. Measured track boundaries, cone positions, tire limits, and synchronized vehicle logs are higher priority than a more complex learned policy. A future team-car closed-loop controller can then be compared against this simple planner without changing the default engineering baseline; the bounded synthetic pose preview is an isolated first step.
 

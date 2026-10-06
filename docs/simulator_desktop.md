@@ -227,8 +227,8 @@ arc's curvature, the linearly interpolated reference and normal, and an
 adaptive interval subdivision. Intervals that cannot be certified within
 the bounded work budget make the time ineligible. Shared width boundaries use
 the narrower adjacent width, including where the first and last cells meet.
-The scalar corridor excess allowance is **1e-8 m**, and the integrated end
-the integrated path and both saved polygon endpoints must close within **0.01 m**. A certified minimum slack is a
+The scalar corridor excess allowance is **1e-8 m**. The integrated path and
+both saved polygon endpoints must close within **0.01 m**. A certified minimum slack is a
 conservative lower bound for this continuous scalar inequality under the
 supplied piecewise-width model. It is not a swept-body, world-frame
 containment, or surveyed cone-clearance certificate. If the processed baseline
@@ -250,6 +250,15 @@ comparison retains its source label after the main course selection changes.
 A failed run returned by the solver is saved for diagnosis. Its record labels
 the last checked cell's time, distance, speed, and SOC separately from the
 vehicle state after an attempted rejected cell; partial times cannot be ranked.
+
+The optional AI worker uses the car selected in **Vehicle profile**. A
+desktop-level regression selects the partial source-backed TREV working
+profile when its local source bundle is available, and a separately saved
+Prius with explicit user overrides on the analytic demo course. It checks
+that each selected setup and the exact
+computed path appear in the saved result and that the recorded cell controls
+replay with numerical agreement. This checks the app's profile-to-result
+flow; it does not validate either car's real lap time.
 
 This AI mode rebuilds arc length and curvature from the selected course's x/y
 geometry. On the default fused course, ordinary centerline mode uses its
@@ -337,19 +346,29 @@ synthetic flag, and exact source-geometry hash. These records do not provide a
 full ghost/session replay.
 
 The **Timed sessions · WIP** tab has an enabled **Run 80 m synthetic pose
-preview** button and a **Road condition** selector; **Start timed session**
+preview** button, a **Road condition** selector, and an **Initial lateral
+offset (m)** box; **Start timed session**
 remains disabled. **Uniform base grip (1.0×)** is the initial choice. **Assumed
 bend patch (0.3×)** adds one world-fixed rectangle on the first synthetic
 bend, x 36–55 m and y −3–16 m, with a local friction multiplier of 0.3. The
-preview runs the separate time-domain four-wheel car on the coherent
+offset defaults to zero; positive starts left of travel and negative right.
+The box accepts finite values through the nominal **±1.9 m** CG allowance
+under the assumed width. This is an input bound, not a promise that the whole
+car starts inside the corridor: at **−1.9 m** on the curved synthetic start,
+the sampled axle-span rectangle is outside and the model stops before issuing
+controls. The preview runs the separate time-domain four-wheel car on the coherent
 synthetic loop using rear-axle pure-pursuit steering, a bounded future
 curvature/road-grip speed target, and bounded drive/brake requests. The
 controller samples reference-path grip ahead of the car so it can request
-braking before the assumed patch. Both choices are synthetic sensitivity
-scenarios; neither is a measured dry/wet tire or road map. The chosen scenario
-is frozen for the worker and identified in its live status and replay. Changing
-the selector clears only an old pose preview, not an ordinary lap replay. The
-pose preview is limited by
+braking before the assumed patch. It also reduces that prior target as the
+sampled assumed body-corner slack and predicted outward motion approach the
+edge. The edge rule is a conservative speed response; the focused offset
+cases also completed without it, so these runs do not establish improved
+clearance. Both choices are synthetic sensitivity scenarios; neither is a
+measured dry/wet tire or road map. The chosen scenario and starting offset
+are frozen for the worker and identified in its live status and replay.
+Changing either while idle clears only an old pose preview, not an ordinary
+lap replay. The pose preview is limited by
 target progress, simulated time, control-step count, and internal integration
 steps. It opens Driver view immediately and shows the latest simulated planar
 x/y and heading while solving, then plays the complete trace. This differs
@@ -451,6 +470,9 @@ slack, projection validity, and stop status under explicit tolerances, and
 checks road-validity agreement. This is numerical replay of a short synthetic
 maneuver, distinct from the saved
 v2 endurance-lap record replay and from a persistent full-session record.
+It starts from the trace's recorded initial planar state; it does not
+independently reconstruct that state from the offset box or establish
+measured corridor clearance.
 
 **Four-wheel lab** opens a separate top-down, time-domain experiment. It
 compares two allocations of the same total requested wheel torque on one

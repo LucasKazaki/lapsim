@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
+from math import isfinite
 from pathlib import Path
 import queue
 import threading
@@ -23,7 +24,9 @@ from lapsim.dynamics.conditions import (
 )
 from lapsim.dynamics.planar import PlanarState
 from lapsim.experiments import LapRunSettings, RunRecord, capture_lap_run, default_run_directory
-from lapsim.optimization.pose_driver import PoseDriverRun, PoseDriverSample, run_pose_driver
+from lapsim.optimization.pose_driver import (
+    PoseDriverRun, PoseDriverSample, PoseDriverSettings, run_pose_driver,
+)
 from lapsim.profiles import build_vehicle, browse_records, list_profiles
 
 from .comparison import summarize_lap
@@ -358,6 +361,9 @@ class LapSimDesktop:
         self.pose_scenario_var = tk.StringVar(value=POSE_SCENARIO_UNIFORM)
         self.pose_scenario_menu: tk.OptionMenu | None = None
         self._active_pose_scenario = POSE_SCENARIO_UNIFORM
+        self.pose_offset_var = tk.StringVar(value="0.0")
+        self.pose_offset_entry: tk.Entry | None = None
+        self._active_pose_offset_m = 0.0
         self.pose_preview_button: tk.Button | None = None
         self.driver_speed_var = tk.StringVar(value="1×")
         self.driver_progress_var = tk.DoubleVar(value=0.0)
@@ -395,6 +401,9 @@ class LapSimDesktop:
         self._build_window()
         self.pose_scenario_var.trace_add(
             "write", lambda *_change: self._on_pose_scenario_change(),
+        )
+        self.pose_offset_var.trace_add(
+            "write", lambda *_change: self._on_pose_offset_change(),
         )
         self._refresh_profile_menus()
         self._select_profile("prius_2026_le")
@@ -1642,11 +1651,21 @@ class LapSimDesktop:
         )
         self.pose_scenario_menu.configure(relief="raised", bd=1, font=FONT)
         self.pose_scenario_menu.pack(side="left")
+        tk.Label(scenario_controls, text="Initial lateral offset (m)").pack(
+            side="left", padx=(16, 6),
+        )
+        self.pose_offset_entry = tk.Entry(
+            scenario_controls, textvariable=self.pose_offset_var,
+            width=8, relief="sunken", bd=1, font=FONT,
+        )
+        self.pose_offset_entry.pack(side="left")
         tk.Label(
             parent,
             text=("Optional assumed patch on the first synthetic bend: world "
                   "x 36–55 m, y −3–16 m; road grip 0.3× the base. "
-                  "No measured dry or wet-road calibration."),
+                  "No measured dry or wet-road calibration. Initial offset "
+                  f"range: ±{PoseDriverSettings().usable_half_width_m:.1f} m "
+                  "from center; positive is left of travel."),
             justify="left", anchor="w", wraplength=760,
         ).grid(row=8, column=0, sticky="ew", pady=(0, 8))
         self.pose_preview_button = tk.Button(
@@ -1668,9 +1687,49 @@ class LapSimDesktop:
         scenario = self.pose_scenario_var.get()
         if scenario not in (POSE_SCENARIO_UNIFORM, POSE_SCENARIO_PATCH):
             return
+        try:
+            offset_m = self._read_pose_offset_m()
+            offset_label = f" · initial offset {offset_m:+.2f} m"
+        except ValueError:
+            offset_label = " · check initial offset"
         self.pose_preview_status.set(
-            f"Selected {scenario}; run the synthetic 80 m pose preview."
+            f"Selected {scenario}{offset_label}; run the synthetic 80 m pose preview."
         )
+        self._clear_pose_preview_playback(
+            f"scenario changed · {scenario}{offset_label}"
+        )
+
+    def _read_pose_offset_m(self) -> float:
+        try:
+            offset_m = float(self.pose_offset_var.get())
+        except ValueError as error:
+            raise ValueError("Initial lateral offset must be a finite number in meters") from error
+        limit_m = PoseDriverSettings().usable_half_width_m
+        if not isfinite(offset_m) or abs(offset_m) > limit_m:
+            raise ValueError(
+                f"Initial lateral offset must be finite and within ±{limit_m:.1f} m"
+            )
+        return offset_m
+
+    def _on_pose_offset_change(self) -> None:
+        if self.run_in_progress:
+            if self.pose_offset_var.get() != f"{self._active_pose_offset_m:g}":
+                self.pose_offset_var.set(f"{self._active_pose_offset_m:g}")
+            return
+        scenario = self.pose_scenario_var.get()
+        try:
+            offset_m = self._read_pose_offset_m()
+            self.pose_preview_status.set(
+                f"Selected {scenario} · initial offset {offset_m:+.2f} m; "
+                "run the synthetic 80 m pose preview."
+            )
+            change_label = f"initial offset changed · {scenario} · {offset_m:+.2f} m"
+        except ValueError as error:
+            self.pose_preview_status.set(str(error))
+            change_label = f"initial offset changed · {scenario} · invalid value"
+        self._clear_pose_preview_playback(change_label)
+
+    def _clear_pose_preview_playback(self, change_label: str) -> None:
         if not isinstance(self.driver_playback,
                           (PoseDriverPlayback, PoseDriverLivePlayback)):
             return
@@ -1680,7 +1739,7 @@ class LapSimDesktop:
         self._pose_live_mode = False
         self._driver_stream_active = False
         self._driver_playback_time_s = 0.0
-        self.driver_run_label.set(f"Synthetic pose scenario changed · {scenario}")
+        self.driver_run_label.set(f"Synthetic pose {change_label}")
         self.driver_progress_var.set(0.0)
         self.driver_progress.configure(state="disabled")
         if self.driver_play_button is not None:
@@ -1746,6 +1805,12 @@ class LapSimDesktop:
         for label, title in zip(self.driver_decision_title_labels, titles, strict=True):
             label.configure(text=title)
 
+    def _active_pose_description(self) -> str:
+        return (
+            f"{self._active_pose_scenario} · "
+            f"initial offset {self._active_pose_offset_m:+.2f} m"
+        )
+
     def _activate_pose_preview(self, run: PoseDriverRun) -> None:
         """Show simulated pose while keeping its model separate from lap results."""
 
@@ -1762,7 +1827,7 @@ class LapSimDesktop:
         self.driver_decision_title.set("Pose model · recorded controls and tracking values")
         self.driver_playback = PoseDriverPlayback(run)
         self.driver_run_label.set(
-            f"Synthetic pose model · {self._active_pose_scenario} · {run.status} · "
+            f"Synthetic pose model · {self._active_pose_description()} · {run.status} · "
             f"{run.samples[-1].progress_m:.1f} m / {run.settings.target_progress_m:.0f} m"
         )
         if self.driver_play_button is not None:
@@ -2520,6 +2585,8 @@ class LapSimDesktop:
             self.pose_preview_button.configure(state=state)
         if self.pose_scenario_menu is not None:
             self.pose_scenario_menu.configure(state=state)
+        if self.pose_offset_entry is not None:
+            self.pose_offset_entry.configure(state=state)
         if self.saved_runs_button is not None:
             self.saved_runs_button.configure(
                 state="disabled" if busy or not self._displayed_run_records else "normal"
@@ -2758,7 +2825,14 @@ class LapSimDesktop:
         scenario = self.pose_scenario_var.get()
         if scenario not in (POSE_SCENARIO_UNIFORM, POSE_SCENARIO_PATCH):
             raise ValueError(f"Unknown synthetic pose scenario: {scenario!r}")
+        try:
+            offset_m = self._read_pose_offset_m()
+        except ValueError as error:
+            messagebox.showerror("Check pose preview offset", str(error), parent=self.root)
+            return
         self._active_pose_scenario = scenario
+        self._active_pose_offset_m = offset_m
+        description = self._active_pose_description()
         self.progress_queue = queue.Queue(maxsize=1)
         self.pose_progress_queue = queue.Queue(maxsize=1)
         self._set_busy(True)
@@ -2776,7 +2850,7 @@ class LapSimDesktop:
         self._set_driver_box_mode(pose=True)
         self.driver_decision_title.set("Live pose and tracking · controls after replay")
         self.driver_run_label.set(
-            f"Synthetic pose model · {scenario} · preparing 80 m preview"
+            f"Synthetic pose model · {description} · preparing 80 m preview"
         )
         self.driver_progress_var.set(0.0)
         self.driver_progress.configure(state="disabled")
@@ -2788,20 +2862,20 @@ class LapSimDesktop:
             value.set("—")
         self._set_calculation_progress(
             "indeterminate",
-            f"Synthetic pose preview · {scenario} · preparing four-wheel model",
+            f"Synthetic pose preview · {description} · preparing four-wheel model",
         )
         self.pose_preview_status.set(
-            f"Running 80 m synthetic pose preview · {scenario}; "
+            f"Running 80 m synthetic pose preview · {description}; "
             "engineering lap outputs are separate."
         )
         self.run_started_at = time.perf_counter()
         self._switch_tab("Driver view")
         self._draw_driver_view()
         threading.Thread(
-            target=self._calculate_pose_preview, args=(scenario,), daemon=True,
+            target=self._calculate_pose_preview, args=(scenario, offset_m), daemon=True,
         ).start()
 
-    def _calculate_pose_preview(self, scenario: str) -> None:
+    def _calculate_pose_preview(self, scenario: str, offset_m: float) -> None:
         try:
             track = load_course(SYNTHETIC_DEMO_COURSE_ID)
             environment = _pose_preview_environment(scenario)
@@ -2822,6 +2896,7 @@ class LapSimDesktop:
 
             run = run_pose_driver(
                 track=track, environment=environment,
+                settings=PoseDriverSettings(initial_lateral_offset_m=offset_m),
                 progress_callback=on_progress,
             )
             self.result_queue.put(("pose_preview", run, None))
@@ -2842,7 +2917,7 @@ class LapSimDesktop:
         fraction = min(max(sample.progress_m / target_m, 0.0), 1.0)
         self._set_calculation_progress(
             "determinate",
-            f"Synthetic pose preview · {self._active_pose_scenario} · "
+            f"Synthetic pose preview · {self._active_pose_description()} · "
             f"{sample.progress_m:.1f}/{target_m:.0f} m "
             f"({fraction:.0%} of target distance)",
             fraction=fraction,
@@ -2850,7 +2925,7 @@ class LapSimDesktop:
         self.driver_playback = PoseDriverLivePlayback(track, sample, state)
         self._driver_playback_time_s = sample.time_s
         self.driver_run_label.set(
-            f"Synthetic pose model · {self._active_pose_scenario} · live · "
+            f"Synthetic pose model · {self._active_pose_description()} · live · "
             f"{sample.progress_m:.1f}/{target_m:.0f} m"
         )
         self._render_driver_frame()
@@ -3490,29 +3565,30 @@ class LapSimDesktop:
             self._set_busy(False)
             self._pose_live_mode = False
             self._driver_stream_active = False
+            description = self._active_pose_description()
             if error is not None:
                 self._driver_live_mode = False
                 self.driver_playback = None
                 self.driver_run_label.set(
-                    f"Synthetic pose preview · {self._active_pose_scenario} · failed"
+                    f"Synthetic pose preview · {description} · failed"
                 )
                 self._draw_driver_view()
                 self._set_calculation_progress(
                     "stopped",
-                    f"Synthetic pose preview · {self._active_pose_scenario} · stopped",
+                    f"Synthetic pose preview · {description} · stopped",
                 )
                 self.pose_preview_status.set(
-                    f"Pose preview · {self._active_pose_scenario} · failed: {error}"
+                    f"Pose preview · {description} · failed: {error}"
                 )
-                self.status_text.set(f"Pose preview failed: {error}")
+                self.status_text.set(f"Pose preview · {description} · failed: {error}")
             else:
                 run: PoseDriverRun = payload
                 completed = run.completed
                 self._set_calculation_progress(
                     "complete" if completed else "stopped",
-                    (f"Synthetic pose preview · {self._active_pose_scenario} · finished"
+                    (f"Synthetic pose preview · {description} · finished"
                      if completed else
-                     f"Synthetic pose preview · {self._active_pose_scenario} · "
+                     f"Synthetic pose preview · {description} · "
                      f"stopped: {run.status}"),
                     fraction=1.0 if completed else min(
                         max(run.samples[-1].progress_m / run.settings.target_progress_m,
@@ -3520,7 +3596,7 @@ class LapSimDesktop:
                     ),
                 )
                 self.pose_preview_status.set(
-                    f"{self._active_pose_scenario} · {run.status}: "
+                    f"{description} · {run.status}: "
                     f"{run.samples[-1].progress_m:.1f} m in "
                     f"{run.elapsed_pose_model_time_s:.2f} s pose-model time; "
                     f"maximum center error {run.maximum_absolute_cross_track_error_m:.2f} m; "
@@ -3529,7 +3605,7 @@ class LapSimDesktop:
                     "This is not an engineering lap time."
                 )
                 self.status_text.set(
-                    f"Synthetic pose preview · {self._active_pose_scenario} · "
+                    f"Synthetic pose preview · {description} · "
                     f"{run.status} · separate four-wheel model"
                 )
                 if len(run.states) > 1:
@@ -3538,7 +3614,7 @@ class LapSimDesktop:
                     self._driver_live_mode = False
                     self.driver_playback = None
                     self.driver_run_label.set(
-                        f"Synthetic pose model · {self._active_pose_scenario} · "
+                        f"Synthetic pose model · {description} · "
                         f"{run.status} · no driven step"
                     )
                     self._draw_driver_view()

@@ -1,7 +1,7 @@
 """Focused checks for the optional synthetic pose-driving experiment."""
 
 from dataclasses import replace
-from math import pi
+from math import cos, pi, sin
 
 import pytest
 
@@ -37,6 +37,14 @@ def test_synthetic_driver_follows_a_bend_inside_assumed_corridor(segment_run):
     assert len(run.states) == len(run.controls) + 1 == len(run.samples)
     assert run.maximum_absolute_cross_track_error_m < 1.0
     assert run.minimum_assumed_boundary_slack_m > 0.0
+    # The edge cap is inactive for the centered, default-corridor case.
+    assert run.minimum_assumed_boundary_slack_m > run.settings.edge_slowdown_slack_m
+    negligible_cap = run_pose_driver(settings=replace(
+        run.settings, edge_slowdown_slack_m=1e-6,
+        edge_outward_prediction_s=1e-6,
+    ))
+    assert run.times_s == negligible_cap.times_s
+    assert run.states == negligible_cap.states
     assert any(abs(control.steering_angles_rad[0]) > 0.04 for control in run.controls)
 
 
@@ -194,6 +202,145 @@ def test_local_grip_changes_closed_loop_commands():
     )
     assert base_grip == patch_grip == 1.0
     assert sum(patch_controls.brake_torques_nm) > sum(base_controls.brake_torques_nm)
+
+
+@pytest.mark.parametrize("offset_m", (1.5, -1.5))
+def test_initial_lateral_offset_uses_start_path_normal_and_bounded_work(offset_m):
+    settings = replace(
+        PoseDriverSettings(), initial_lateral_offset_m=offset_m,
+        maximum_control_steps=2,
+    )
+    run = run_pose_driver(settings=settings)
+    first = run.states[0]
+    assert first.x_m == pytest.approx(
+        run.track.x_m[0] - sin(first.heading_rad) * offset_m,
+    )
+    assert first.y_m == pytest.approx(
+        run.track.y_m[0] + cos(first.heading_rad) * offset_m,
+    )
+    assert run.samples[0].cross_track_error_m == pytest.approx(offset_m, abs=0.001)
+    assert 0.0 < run.samples[0].minimum_assumed_boundary_slack_m < 0.5
+    assert sum(run.controls[0].brake_torques_nm) > 0.0
+    assert run.status == "maximum_control_steps"
+    assert len(run.controls) == 2
+    assert run.internal_substeps <= settings.maximum_internal_substeps
+    assert replay_pose_driver(run).passed
+
+
+def test_nominal_offset_limit_can_still_start_outside_curved_footprint():
+    # A CG offset can satisfy the static width bound while the front/rear
+    # body corners cross the reference corridor on the curved starting cell.
+    run = run_pose_driver(settings=replace(
+        PoseDriverSettings(), initial_lateral_offset_m=-1.9,
+    ))
+    assert run.status == "outside_assumed_corridor"
+    assert run.minimum_assumed_boundary_slack_m < 0.0
+    assert len(run.controls) == 0
+    assert replay_pose_driver(run).passed
+
+
+@pytest.mark.parametrize("offset_m", (1.8, -1.8))
+@pytest.mark.parametrize("with_patch", (False, True))
+def test_near_edge_pose_run_recovers_on_declared_synthetic_road(
+    offset_m, with_patch,
+):
+    environment = PlanarEnvironment(road=PlanarRoad(patches=(
+        RectangularGripPatch(36.0, 55.0, -3.0, 16.0, 0.3),
+    ))) if with_patch else PlanarEnvironment()
+    run = run_pose_driver(
+        settings=replace(PoseDriverSettings(), initial_lateral_offset_m=offset_m),
+        environment=environment,
+    )
+    assert run.completed
+    assert run.minimum_assumed_boundary_slack_m > 0.0
+    assert run.samples[-1].progress_m >= 80.0
+    assert abs(run.samples[-1].cross_track_error_m) < 0.5
+    assert run.internal_substeps <= run.settings.maximum_internal_substeps
+    assert replay_pose_driver(run).passed
+
+
+def test_edge_cap_retains_corridor_in_one_long_lookahead_experiment():
+    # This deliberately challenging controller setting is an example, not a
+    # guarantee for other paths or grip maps. Tiny positive parameters make
+    # the edge cap effectively inactive while preserving validated settings.
+    base = replace(
+        PoseDriverSettings(), initial_lateral_offset_m=1.8,
+        lookahead_seconds=3.0, maximum_simulated_time_s=25.0,
+        maximum_control_steps=500, maximum_internal_substeps=80_000,
+    )
+    negligible_cap = run_pose_driver(settings=replace(
+        base, edge_slowdown_slack_m=1e-6,
+        edge_outward_prediction_s=1e-6,
+    ))
+    recovery_cap = run_pose_driver(settings=base)
+    assert negligible_cap.status == "outside_assumed_corridor"
+    assert negligible_cap.minimum_assumed_boundary_slack_m < 0.0
+    assert recovery_cap.completed
+    assert recovery_cap.minimum_assumed_boundary_slack_m > 0.0
+    assert recovery_cap.elapsed_pose_model_time_s > negligible_cap.elapsed_pose_model_time_s
+    assert replay_pose_driver(negligible_cap).passed
+    assert replay_pose_driver(recovery_cap).passed
+
+
+@pytest.mark.parametrize("side", (1.0, -1.0))
+def test_edge_speed_cap_responds_to_outward_velocity_and_future_low_grip(
+    segment_run, side,
+):
+    run = segment_run
+    options = run.settings
+    wheel_speed_rad_s = options.initial_speed_mps / run.vehicle_config.wheel_radius_m
+
+    def brake_at(x_m, world_side_speed_mps, environment):
+        state = PlanarState(
+            x_m=x_m, y_m=side * 1.5, u_mps=options.initial_speed_mps,
+            v_mps=world_side_speed_mps,
+            wheel_speeds_rad_s=(wheel_speed_rad_s,) * 4,
+        )
+        projection = pose_driver._project_local(
+            run.track, state.x_m, state.y_m, x_m,
+            options.local_projection_window_m,
+        )
+        slack = pose_driver._assumed_footprint_slack(
+            run.track, run.vehicle_config, options, state,
+            projection.station_m,
+        )
+        command, _ = pose_driver._controller(
+            run.track, run.vehicle_config, environment, options,
+            state, projection, slack,
+        )
+        return sum(command.brake_torques_nm)
+
+    base_road = PlanarEnvironment()
+    inward_brake = brake_at(0.0, -side * 0.8, base_road)
+    still_brake = brake_at(0.0, 0.0, base_road)
+    outward_brake = brake_at(0.0, side * 0.8, base_road)
+    # Nonzero inward body speed also changes total speed and the independent
+    # bend preview; only the outward-versus-inward ordering is guaranteed by
+    # the additional edge cap at these fixed states.
+    assert outward_brake > inward_brake
+    assert outward_brake > still_brake
+
+    patch = PlanarEnvironment(road=PlanarRoad(patches=(
+        RectangularGripPatch(36.0, 55.0, -3.0, 16.0, 0.3),
+    )))
+    assert brake_at(33.0, 0.0, patch) > brake_at(33.0, 0.0, base_road)
+
+
+@pytest.mark.parametrize(("field", "value"), [
+    ("initial_lateral_offset_m", float("nan")),
+    ("initial_lateral_offset_m", float("inf")),
+    ("initial_lateral_offset_m", 1.901),
+    ("initial_lateral_offset_m", -1.901),
+    ("edge_slowdown_slack_m", 0.0),
+    ("edge_slowdown_slack_m", float("inf")),
+    ("edge_outward_prediction_s", -0.1),
+    ("edge_outward_prediction_s", float("nan")),
+    ("edge_rejoin_speed_mps", 0.0),
+    ("edge_rejoin_speed_mps", float("inf")),
+])
+def test_offset_and_recovery_settings_are_finite_and_bounded(field, value):
+    with pytest.raises(ValueError):
+        replace(PoseDriverSettings(), **{field: value})
 
 
 def test_local_projection_preserves_seam_and_large_window_results(segment_run):

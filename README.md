@@ -168,6 +168,13 @@ geometric baseline is strictly greater than 0.05 s. A smaller positive gain
 is an unresolved numerical tie; the 0.05 s margin is a provisional selection
 heuristic, not a proven error bound.
 
+An end-to-end desktop regression exercises a partial source-backed TREV
+working profile when its local source bundle is available and a locally
+saved Prius setup through the optional AI
+worker, exact-path run record, Driver view, and recorded-control replay. It
+checks software wiring and reproducibility on an analytic course, not measured
+car performance.
+
 The optional **Synthetic loop · AI demo** course is a 195.398224 m rounded rectangle:
 two 40 m and two 20 m straights joined by four 12 m radius quarter-circle
 arcs, stored in 0.5 m source cells. Its default AI inputs are an *assumed*
@@ -247,7 +254,14 @@ distance and sample count, control steps, and integration work are bounded;
 the ±3 m corridor is assumed. In **Timed sessions · WIP**, choose **Uniform
 base grip (1.0×)** or **Assumed bend patch (0.3×)** before running. The optional
 patch occupies synthetic world x 36–55 m and y −3–16 m, and is not measured
-road data. Its default target is **80 m of progress**, not a complete lap.
+road data. **Initial lateral offset (m)** starts the synthetic car to the
+left (positive) or right (negative) of the path; zero is the default. Its
+nominal accepted range is ±1.9 m under the assumed width, but a start near
+that limit can fail the actual sampled footprint check on a curved road.
+Near the assumed corridor edge, a separate speed rule lowers the bend/grip
+target using sampled body-corner slack and outward motion. This is a
+conservative synthetic response, not a clearance guarantee. The preview's
+default target is **80 m of progress**, not a complete lap.
 Driver view shows its actual simulated planar x/y and heading during
 calculation and can replay it, labeled
 **synthetic four-wheel pose experiment**. Its elapsed time is a pose-model

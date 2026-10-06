@@ -63,7 +63,11 @@ class PoseDriverSettings:
     vehicle_width_m: float = 1.8
     safety_margin_m: float = 0.2
     initial_speed_mps: float = 4.5
+    initial_lateral_offset_m: float = 0.0
     cruise_speed_mps: float = 5.5
+    edge_slowdown_slack_m: float = 0.8
+    edge_outward_prediction_s: float = 0.5
+    edge_rejoin_speed_mps: float = 2.0
     lookahead_base_m: float = 2.5
     lookahead_seconds: float = 0.45
     maximum_steering_rad: float = 0.30
@@ -77,7 +81,9 @@ class PoseDriverSettings:
         positive = (
             "output_step_s", "target_progress_m", "maximum_simulated_time_s",
             "assumed_half_width_m", "vehicle_width_m", "initial_speed_mps",
-            "cruise_speed_mps", "lookahead_base_m", "lookahead_seconds",
+            "cruise_speed_mps", "edge_slowdown_slack_m",
+            "edge_outward_prediction_s", "edge_rejoin_speed_mps",
+            "lookahead_base_m", "lookahead_seconds",
             "maximum_steering_rad", "maximum_rear_drive_torque_nm",
             "maximum_wheel_brake_torque_nm", "drive_gain_nm_per_mps",
             "brake_gain_nm_per_mps", "local_projection_window_m",
@@ -90,6 +96,9 @@ class PoseDriverSettings:
             raise ValueError("safety_margin_m must be finite and nonnegative")
         if self.usable_half_width_m <= 0.0:
             raise ValueError("assumed corridor must exceed half vehicle width and margin")
+        if (not isfinite(self.initial_lateral_offset_m) or
+                abs(self.initial_lateral_offset_m) > self.usable_half_width_m):
+            raise ValueError("initial_lateral_offset_m must be finite and inside the assumed usable half-width")
         if self.maximum_steering_rad >= pi / 2:
             raise ValueError("maximum_steering_rad must be below pi/2")
         for name in ("maximum_control_steps", "maximum_internal_substeps"):
@@ -406,10 +415,52 @@ def _assumed_footprint_slack(
     return minimum_slack
 
 
+def _edge_speed_target(
+    config: PlanarVehicleConfig, settings: PoseDriverSettings,
+    state: PlanarState, projection: _Projection,
+    footprint_slack_m: float, prior_target_mps: float,
+) -> float:
+    """Reduce speed near an assumed edge while retaining slow rejoin motion.
+
+    This is a bounded synthetic recovery heuristic, not swept-path clearance.
+    The footprint slack is sampled at the four axle-span body corners. The CG
+    lateral velocity is measured relative to the projected path tangent; a
+    yaw-rate bound covers the sampled axle-span body corners. Outward
+    travel over the declared response time is subtracted from current slack.
+    """
+
+    relative_heading = state.heading_rad - projection.heading_rad
+    lateral_velocity_mps = (
+        state.u_mps * sin(relative_heading) +
+        state.v_mps * cos(relative_heading)
+    )
+    if abs(projection.cross_track_m) <= 1e-9:
+        outward_velocity_mps = abs(lateral_velocity_mps)
+    else:
+        side = 1.0 if projection.cross_track_m > 0.0 else -1.0
+        outward_velocity_mps = max(0.0, side * lateral_velocity_mps)
+    outward_velocity_mps += (
+        abs(state.yaw_rate_rad_s) *
+        hypot(
+            max(config.cg_to_front_axle_m, config.cg_to_rear_axle_m),
+            settings.vehicle_width_m / 2.0,
+        )
+    )
+    predicted_slack_m = max(
+        0.0,
+        footprint_slack_m -
+        settings.edge_outward_prediction_s * outward_velocity_mps,
+    )
+    fraction = sqrt(min(1.0, predicted_slack_m / settings.edge_slowdown_slack_m))
+    slow_target_mps = min(prior_target_mps, settings.edge_rejoin_speed_mps)
+    return slow_target_mps + fraction * (prior_target_mps - slow_target_mps)
+
+
 def _controller(
     track: SpatialTrack, config: PlanarVehicleConfig,
     environment: PlanarEnvironment, settings: PoseDriverSettings,
     state: PlanarState, projection: _Projection,
+    current_footprint_slack_m: float | None = None,
 ) -> tuple[PlanarControls, float]:
     speed_mps = hypot(state.u_mps, state.v_mps)
     lookahead_m = min(
@@ -438,6 +489,14 @@ def _controller(
     target_speed = _preview_speed_target(
         track, config, environment, settings, projection.station_m,
         speed_mps, grip,
+    )
+    if current_footprint_slack_m is None:
+        current_footprint_slack_m = _assumed_footprint_slack(
+            track, config, settings, state, projection.station_m,
+        )
+    target_speed = _edge_speed_target(
+        config, settings, state, projection,
+        current_footprint_slack_m, target_speed,
     )
     speed_error = target_speed - speed_mps
     drive = min(settings.maximum_rear_drive_torque_nm,
@@ -489,7 +548,9 @@ def run_pose_driver(
     )
     wheel_speed = options.initial_speed_mps / car.wheel_radius_m
     initial = PlanarState(
-        x_m=course.x_m[0], y_m=course.y_m[0], heading_rad=start_heading,
+        x_m=course.x_m[0] - sin(start_heading) * options.initial_lateral_offset_m,
+        y_m=course.y_m[0] + cos(start_heading) * options.initial_lateral_offset_m,
+        heading_rad=start_heading,
         u_mps=options.initial_speed_mps,
         wheel_speeds_rad_s=(wheel_speed,) * 4,
     )
@@ -500,6 +561,7 @@ def run_pose_driver(
     initial_slack = _assumed_footprint_slack(
         course, car, options, initial, projection.station_m,
     )
+    current_footprint_slack_m = initial_slack
     times = [0.0]
     states = [initial]
     controls: list[PlanarControls] = []
@@ -524,8 +586,10 @@ def run_pose_driver(
             status = "maximum_internal_substeps"
             break
         try:
-            command, _ = _controller(course, car, conditions, options,
-                                     simulator.state, projection)
+            command, _ = _controller(
+                course, car, conditions, options,
+                simulator.state, projection, current_footprint_slack_m,
+            )
         except ValueError:
             status = "projection_lost"
             break
@@ -548,6 +612,7 @@ def run_pose_driver(
             footprint_slack = _assumed_footprint_slack(
                 course, car, options, simulator.state, projection.station_m,
             )
+            current_footprint_slack_m = footprint_slack
         except ValueError:
             # A model step has already completed and cannot be rolled back.
             # Retain its state with an explicitly invalid station sample.

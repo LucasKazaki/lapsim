@@ -17,6 +17,7 @@ from lapsim.ui.app import (
 from lapsim.ui.course_catalog import (
     COURSE_OPTIONS, SYNTHETIC_DEMO_COURSE_ID, load_course,
 )
+from lapsim.ui.driver_view import DriverPlayback
 from lapsim.ui.pose_driver_playback import PoseDriverLivePlayback, PoseDriverPlayback
 
 
@@ -40,12 +41,16 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         assert app.run_in_progress
         assert app.pose_preview_button.cget("state") == "disabled"
         assert app.pose_scenario_menu.cget("state") == "disabled"
+        assert app.pose_offset_entry.cget("state") == "disabled"
+        assert app.pose_offset_var.get() == "0.0"
+        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_UNIFORM, 0.0)
         assert app.pose_scenario_var.get() == POSE_SCENARIO_UNIFORM
         assert app._displayed_run_records == ()
         assert app._active_tab == "Driver view"
         assert app.driver_playback is None
         assert "Synthetic pose model" in app.driver_run_label.get()
         assert POSE_SCENARIO_UNIFORM in app.driver_run_label.get()
+        assert "initial offset +0.00 m" in app.driver_run_label.get()
         assert app.driver_play_button.cget("state") == "disabled"
         assert app.driver_heading_title_label.cget("text") == "VEHICLE HEADING (°)"
 
@@ -58,6 +63,7 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         app.pose_progress_queue.put((track, sample, state))
         app._poll_pose_progress()
         assert "40.0/80 m" in app.calculation_progress_text.get()
+        assert "initial offset +0.00 m" in app.calculation_progress_text.get()
         assert app._calculation_progress_fraction == pytest.approx(0.5)
         assert isinstance(app.driver_playback, PoseDriverLivePlayback)
         frame = app.driver_playback.frame_at(sample.time_s)
@@ -88,8 +94,10 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         activate.assert_called_once_with(run)
         assert not app.run_in_progress
         assert app.pose_preview_button.cget("state") == "normal"
+        assert app.pose_offset_entry.cget("state") == "normal"
         assert "not an engineering lap time" in app.pose_preview_status.get()
         assert POSE_SCENARIO_UNIFORM in app.pose_preview_status.get()
+        assert "initial offset +0.00 m" in app.pose_preview_status.get()
         assert app._displayed_run_records == ()
     finally:
         root.destroy()
@@ -105,8 +113,9 @@ def test_pose_scenario_passes_selected_road_to_worker(
     root, app = _desktop()
     try:
         with patch("lapsim.ui.app.run_pose_driver", return_value=object()) as driver:
-            app._calculate_pose_preview(scenario)
+            app._calculate_pose_preview(scenario, 0.75)
         environment = driver.call_args.kwargs["environment"]
+        assert driver.call_args.kwargs["settings"].initial_lateral_offset_m == 0.75
         assert environment.road.query(40.0, 0.0).friction_multiplier == expected_grip
         assert environment.road.query(20.0, 0.0).friction_multiplier == 1.0
         if scenario == POSE_SCENARIO_PATCH:
@@ -123,14 +132,14 @@ def test_pose_scenario_passes_selected_road_to_worker(
 def test_pose_scenario_change_clears_only_old_pose_playback() -> None:
     root, app = _desktop()
     try:
-        reference_playback = object()
+        reference_playback = object.__new__(DriverPlayback)
         app.driver_playback = reference_playback
         app.pose_scenario_var.set(POSE_SCENARIO_PATCH)
         assert app.driver_playback is reference_playback
         assert POSE_SCENARIO_PATCH in app.pose_preview_status.get()
         with patch("lapsim.ui.app.threading.Thread") as thread:
             app._start_pose_preview()
-        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_PATCH,)
+        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_PATCH, 0.0)
         assert POSE_SCENARIO_PATCH in app.driver_run_label.get()
         assert app.pose_scenario_menu.cget("state") == "disabled"
         app.pose_scenario_var.set(POSE_SCENARIO_UNIFORM)
@@ -174,6 +183,7 @@ def test_pose_playback_labels_separate_model_and_reference_mode_restores_note() 
         assert app.driver_heading_title_label.cget("text") == "VEHICLE HEADING (°)"
         assert "recorded controls and tracking values" in app.driver_decision_title.get()
         assert "Synthetic pose model" in app.driver_run_label.get()
+        assert "initial offset +0.00 m" in app.driver_run_label.get()
         assert app.driver_decision_title_labels[0].cget("text") == "STEER FRONT (°)"
 
         with (
@@ -187,6 +197,66 @@ def test_pose_playback_labels_separate_model_and_reference_mode_restores_note() 
         assert app.driver_heading_title_label.cget("text") == "MAP HEADING (°)"
         assert app.driver_decision_title_labels[0].cget("text") == "NEXT ENTRY (km/h)"
         assert "not a tracked vehicle pose" in app.driver_note_var.get()
+    finally:
+        root.destroy()
+
+
+def test_pose_offset_freezes_at_start_and_only_clears_pose_playback() -> None:
+    root, app = _desktop()
+    try:
+        reference_playback = object.__new__(DriverPlayback)
+        app.driver_playback = reference_playback
+        app.pose_offset_var.set("1.25")
+        assert app.driver_playback is reference_playback
+        assert "initial offset +1.25 m" in app.pose_preview_status.get()
+        with patch("lapsim.ui.app.threading.Thread") as thread:
+            app._start_pose_preview()
+        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_UNIFORM, 1.25)
+        assert app.pose_offset_entry.cget("state") == "disabled"
+        assert "initial offset +1.25 m" in app.driver_run_label.get()
+        app.pose_offset_var.set("-0.5")
+        assert app.pose_offset_var.get() == "1.25"
+        app._set_busy(False)
+        app.driver_playback = object.__new__(PoseDriverPlayback)
+        app.driver_play_button.configure(state="normal")
+        app.driver_values["speed"].set("5.0")
+        app.pose_offset_var.set("-0.5")
+        assert app.driver_playback is None
+        assert app.driver_play_button.cget("state") == "disabled"
+        assert app.driver_values["speed"].get() == "—"
+        assert "initial offset -0.50 m" in app.pose_preview_status.get()
+        assert "initial offset changed" in app.driver_run_label.get()
+    finally:
+        root.destroy()
+
+
+@pytest.mark.parametrize("value", ["", "bad", "nan", "inf", "-inf", "1.90001", "-1.90001"])
+def test_pose_offset_rejects_invalid_input_before_launch(value: str) -> None:
+    root, app = _desktop()
+    try:
+        app.pose_offset_var.set(value)
+        with (
+            patch("lapsim.ui.app.messagebox.showerror") as showerror,
+            patch("lapsim.ui.app.threading.Thread") as thread,
+        ):
+            app._start_pose_preview()
+        showerror.assert_called_once()
+        thread.assert_not_called()
+        assert not app.run_in_progress
+        assert app.pose_offset_entry.cget("state") == "normal"
+    finally:
+        root.destroy()
+
+
+@pytest.mark.parametrize("value", ["1.9", "-1.9"])
+def test_pose_offset_accepts_assumed_center_limit(value: str) -> None:
+    root, app = _desktop()
+    try:
+        app.pose_offset_var.set(value)
+        assert app._read_pose_offset_m() == float(value)
+        with patch("lapsim.ui.app.threading.Thread") as thread:
+            app._start_pose_preview()
+        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_UNIFORM, float(value))
     finally:
         root.destroy()
 

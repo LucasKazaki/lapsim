@@ -407,7 +407,7 @@ Research basis: TUM FTM's trajectory planner and the TORCS robot tutorial. LapSi
 | Trace selector | Speed, acceleration, drive/braking forces, inferred driven slip, or battery power from named telemetry channels, against time or distance |
 | Course map | Selected source x/y reference, fixed top-down; mouse drag pans and wheel zooms; the fused course displays its geometry warning while the synthetic choices are labeled as assumed examples |
 | Driver view tab | Static labeled source-course preview while preparing; latest accepted physics cell on the exact trial grid during a solve; then timed top-down replay on each run's saved solver-grid x/y with fixed car marker, play/pause, scrub, rate, wheel zoom, cell control/force number boxes, and a Replay lap menu for completed comparisons; the separately labeled synthetic pose preview uses simulated x/y and heading |
-| Timed sessions · WIP tab | Optional bounded 80 m synthetic four-wheel pose preview with uniform base grip or a labeled assumed 0.3× first-bend patch; the versioned team controller, ghost, full session capture, and comparison workflow remain unavailable |
+| Timed sessions · WIP tab | Optional bounded 80 m synthetic four-wheel pose preview with uniform base grip or a labeled assumed 0.3× first-bend patch, plus a signed initial lateral offset inside a nominal ±1.9 m input bound; the versioned team controller, ghost, full session capture, and comparison workflow remain unavailable |
 | Saved run details | Read-only text window for the currently displayed lap or A/B result: full content IDs and files, profile, result, source/boundary status, solver path, AI rank/assumptions, and available linked AI trial records |
 | Source data / model notes | Inspect reviewed records, origins, model use, and caveats; inspection does not change the active vehicle |
 | Dark mode | Reverses white/black Tk and Matplotlib surfaces; it does not change a simulation parameter |
@@ -429,10 +429,14 @@ unavailable in that callback and display dashes. The WIP **Road condition**
 selector defaults to **Uniform base grip (1.0×)**. Its other option, **Assumed
 bend patch (0.3×)**, freezes an environment with one world-fixed x 36–55 m,
 y −3–16 m rectangle on the first synthetic bend. It is not measured dry or
-wet-road data. The worker receives the selected label before starting; live
-status, replay, and result text identify it. Changing the selection while
-idle clears an old pose preview and its boxes, without discarding an ordinary
-lap replay. It cannot be changed during the calculation.
+wet-road data. The adjacent **Initial lateral offset (m)** input defaults to
+zero and is signed along the start path's left normal: positive starts left
+of travel. The worker receives both selected values before starting; live
+status, replay, and result text identify them. Changing either while idle
+clears an old pose preview and its boxes, without discarding an ordinary lap
+replay. Neither can be changed during the calculation. The nominal ±1.9 m
+input range is derived from the assumed half-width, car width, and margin;
+the sampled body footprint can still start outside the curved corridor.
 
 `EnduranceSimulator.run` accepts an optional `progress_callback`. After a cell passes the path, speed, traversal, time, and stall checks, it emits an immutable `LapProgressSnapshot` with zero-based lap/cell indices, cell count, elapsed model time, current-lap station, total model distance, speed, and lateral acceleration. A cell rejected by those checks emits no snapshot. A cell that reaches zero pack SOC at its endpoint is present in both telemetry and progress before the event stops with a depletion failure. `ui/simulation.py::run_one_lap` forwards the callback, and `compare_lines_with_lap_model` adds the phase (`baseline`, `full`, `half`, `three_quarter` fallback, or `adaptive` fourth) and exact trial track for AI runs. The normal core API pays only a conditional branch when no observer is supplied; callback tests compare observed values with recorded telemetry and unchanged final lap time/energy.
 
@@ -609,6 +613,46 @@ up to **80 N·m** brake on each wheel at gain **35 N·m/(m/s)** otherwise.
 These gains do not guarantee exact tracking of the target. Neither source
 calibrates this car or establishes tire-force feasibility.
 
+The **Initial lateral offset (m)** setting uses `e_0=0` by default. The
+initial CG position is `(X_ref-e_0 sin(psi_0),
+Y_ref+e_0 cos(psi_0))`, so positive is left of travel. A finite input with
+`|e_0| <= 3.0 - 1.8/2 - 0.2 = 1.9 m` passes the nominal CG-offset input
+check. This is not the four-corner footprint check: the body can overlap the
+assumed corridor at a curved start even when the CG offset is admissible.
+The initial footprint is checked before issuing any control. In the
+regression's **−1.9 m** case it is already outside and the run records
+`outside_assumed_corridor` with zero controls.
+
+The controller then applies a separate assumed-edge speed rule to the
+future bend/grip target `v_prior`. Let `S` be the current smallest projected
+slack from the four axle-span body corners. With path-tangent heading
+`psi_ref`, CG cross-track error `e`, body velocities `(u,v)`, yaw rate `r`,
+front/rear CG-to-axle distances `l_f,l_r`, and assumed body width `w`:
+
+```text
+v_lat = u sin(psi-psi_ref) + v cos(psi-psi_ref)
+v_out_cg = abs(v_lat)                    when abs(e) <= 1e-9 m
+           max(0,sign(e)*v_lat)          otherwise
+v_out = v_out_cg + abs(r) hypot(max(l_f,l_r), w/2)
+S_pred = max(0, S - (0.5 s)*v_out)
+f = sqrt(min(1, S_pred/(0.8 m)))
+v_low = min(v_prior, 2.0 m/s)
+v_final = v_low + f*(v_prior-v_low)
+```
+
+The yaw term bounds a sampled body corner's contribution to lateral
+motion; it is not an integrated future body path. At or beyond zero
+predicted slack, the target is at most 2.0 m/s; at 0.8 m or more, the edge
+rule leaves the previous target unchanged. The rule cannot raise a lower
+bend/grip target and does not alter the pure-pursuit steering target. The
+[TORCS steering tutorial](https://torcs.sourceforge.net/api/robot_tutorial_chapter_4.html)
+motivates minimum four-corner clearance and reducing a previous speed
+target near an edge, while warning that sampled corners do not certify the
+swept path. LapSim's square-root blend and short outward-motion estimate
+are its own heuristic, applied to assumed corridor geometry rather than
+measured road edges. The requested speed can still differ from achieved
+speed because force, grip, and control gains are modeled separately.
+
 Default bounds are **0.05 s** per control step, **20 s** modeled time,
 **400** control steps, and **60,000** internal substeps. The assumed corridor
 is ±3 m with 1.8 m body width and 0.2 m margin. At each output sample, the
@@ -628,7 +672,9 @@ replayed states and declared course/environment. Default sample tolerances are
 error, and **1e-10** grip multiplier. Projection validity and derived stop
 status must agree exactly. These are numerical replay tolerances for the short
 synthetic trace, not measured tracking accuracy or a persistent full-session
-record.
+record. Replay starts from the recorded initial `PlanarState`; it does not
+independently regenerate that state from `initial_lateral_offset_m` or verify
+the assumed corridor against an external survey.
 
 ## 11. Report II upgrade: wind and road conditions
 
@@ -805,7 +851,7 @@ Keep derivative evaluations pure during RK4 and commit thermal, charge, wear, or
 
 Coarse prescribed-path skidpad regressions require a radius-5 m circle split into one or four cells to reject acceleration beyond its modeled corner limit, while an ordinary within-limit skidpad still scores. A newer circle regression checks the combined longitudinal/lateral force margin at every accepted exit on both 4-cell and 64-cell grids; an explicit 50 N·m request that passes the pure lateral speed ceiling but lacks about 102 N of exit grip must fail. The legacy unconstrained nominal-2 m AI API regression requires a 0.95-strength continuous scalar-audit pass and a completed **14.617662 s** Prius trial under the current exit-grip physics; new maximum-cell tests check a distinct finer-grid desktop scenario. An earlier fixed-path 1 m probe retained roughly 0.449 s over the old 0.75 fallback under the prior cell-force policy. The Windows preflight also draws a TkAgg canvas and checks the shipped course before launch. On a separate synthetic radius-25 m circle with the repository-baseline car and torque request 0.8, an **earlier pre-exit-grip** sensitivity run changed assumed uniform road grip from 100% to 70%, reduced the path-entry ceiling from **19.827545 to 16.555945 m/s**, and increased the completed lap from **8.073551 to 9.637759 s**. Those lap times are historical; the prepass and lap both respond to the same grip factor, but this is not a calibrated wet-track prediction.
 
-On 6 October 2026, the checked-in `scripts/check_all.ps1` ran all **50 repository test files** in isolated one-module pytest processes and reported **545 passed, 666 subtests, and one transient Tk initialization skip**. The skipped imported-course AI interface test passed when rerun alone against the same code; the desktop startup check also passed. Splitting the files avoided this workstation's Windows commit-memory limit; each process used one OpenBLAS, OMP, and MKL thread and explicit Tcl/Tk library paths. The Driver view checks compare every live accepted-cell value with same-cell telemetry, verify replay's active-cell boundary timing and independent missing-channel handling, and confirm the desktop numbers and unit conversions. New desktop tests also start a new run with an old Analysis trace visible, then fail the new calculation and verify the old plot and result references remain cleared. Failed-run checks cover rejection before a cell update, rejection after the first and a later attempted update, last accepted telemetry alignment, complete-run equality, record serialization and contradictions, and consistent battery-depletion progress. A/B tests use cars with markedly different independent first-cell ceilings, require one common start and one preparation per car, replay both saved records, inspect live/replay/popup behavior, and reject a different vehicle or track when reusing limits. The new cyclic-braking regression reproduces a four-cell closing-straight case: with a loose tolerance, the prior one-pass 43.112 m/s closing-cell ceiling exceeded its 23.254 m/s braking-feasible entry; the corrected solver continues its sweep or raises at the pass bound. It also rejects nonfinite tolerance settings. At the declared minimum **1080 × 720** window, the decision grid requests **620 px** inside a **660 px** panel and the course canvas remains **264 px** high. Course checks include exact catalog-source identity for both synthetic IDs, analytic per-cell endpoint and closed-heading validation, original-station-preserving subarcs, and a valid coarse two-semicircle loop whose polygon chord winding aliases the true turn. They also cover bounded versioned JSON and CSV loading, duplicate/nonfinite/malformed input rejection, source and manifest hashes, local catalog reload and revision conflicts, imported centerline and AI runs, linked trial records, and model replay of those records. These are numerical and software checks, not a track survey or measured-boundary validation.
+On 6 October 2026, the checked-in `scripts/check_all.ps1` ran all **51 repository test files** in isolated one-module pytest processes and reported **578 passed, 666 subtests, and no skips**. The desktop startup check also passed. Splitting the files avoided this workstation's Windows commit-memory limit; each process used one OpenBLAS, OMP, and MKL thread and explicit Tcl/Tk library paths. The Driver view checks compare every live accepted-cell value with same-cell telemetry, verify replay's active-cell boundary timing and independent missing-channel handling, and confirm the desktop numbers and unit conversions. New desktop tests also start a new run with an old Analysis trace visible, then fail the new calculation and verify the old plot and result references remain cleared. Failed-run checks cover rejection before a cell update, rejection after the first and a later attempted update, last accepted telemetry alignment, complete-run equality, record serialization and contradictions, and consistent battery-depletion progress. A/B tests use cars with markedly different independent first-cell ceilings, require one common start and one preparation per car, replay both saved records, inspect live/replay/popup behavior, and reject a different vehicle or track when reusing limits. The new cyclic-braking regression reproduces a four-cell closing-straight case: with a loose tolerance, the prior one-pass 43.112 m/s closing-cell ceiling exceeded its 23.254 m/s braking-feasible entry; the corrected solver continues its sweep or raises at the pass bound. It also rejects nonfinite tolerance settings. At the declared minimum **1080 × 720** window, the decision grid requests **620 px** inside a **660 px** panel and the course canvas remains **264 px** high. Course checks include exact catalog-source identity for both synthetic IDs, analytic per-cell endpoint and closed-heading validation, original-station-preserving subarcs, and a valid coarse two-semicircle loop whose polygon chord winding aliases the true turn. They also cover bounded versioned JSON and CSV loading, duplicate/nonfinite/malformed input rejection, source and manifest hashes, local catalog reload and revision conflicts, imported centerline and AI runs, linked trial records, and model replay of those records. These are numerical and software checks, not a track survey or measured-boundary validation.
 
 The new cell-length regressions verify that the planner bounds generated baseline and candidate physics cells, tries the allowed 5,000-point grid before rejecting a tight request, and handles a one-ulp final-station discrepancy on the FSAE-style practice course without relaxing its clearance checks. Desktop progress regressions verify current-pass accepted-cell fractions, indeterminate preparation and gap states, completion/failure reset, dark-mode contrast, and cancellation of pending animation callbacks at window close.
 
@@ -825,6 +871,50 @@ scenario, and clearing only pose replay on a later selector change. Saved-run UI
 checks show full content IDs and paths for one lap, AI-linked trials, and A/B
 records, then clear stale evidence after input changes. These do not establish
 measured course width, driver quality, or real-car agreement.
+
+New focused pose checks place the synthetic car at both **+1.5 m** and
+**−1.5 m** along the start path's left normal and check the first control's
+braking request, step bound, and in-memory replay. Full **±1.8 m** starts on
+both uniform and assumed-patch roads reach the 80 m target with positive
+sampled slack and replay agreement. Separate fixed-state checks require an
+outward lateral velocity to request more braking than an inward one near
+either side of the assumed corridor, and require the future patch to lower
+the target at the same current pose. Invalid nonfinite/out-of-range inputs
+are rejected. UI checks verify that offset and scenario are frozen while the
+worker runs and that changing either while idle clears only pose playback.
+An accepted nominal **−1.9 m** input on the curved start produces negative
+four-corner slack and zero controls, demonstrating why input range and
+actual footprint validity are separate. In an exploratory comparison with
+the edge cap bypassed, the same ±1.8 m starts also finished with the same
+minimum sampled slack at time zero; the new cap slowed those model runs by
+about half a second. This confirms a conservative braking response in these
+cases, not improved clearance or prevention of an exit.
+
+One harder, deliberately configured regression tests the edge rule at a
+**+1.8 m** start with `lookahead_seconds=3.0` instead of the default 0.45.
+The experiment extends the finite budget to **25 s**, **500** controls, and
+**80,000** integration substeps. With the nominal edge rule, it reached
+**80.19 m** in **20.20 s** of pose-model time and retained **+0.04884 m**
+minimum sampled assumed slack. With the rule made effectively inactive by
+setting its slack threshold and outward-prediction time to `1e-6` each, it
+stopped outside the assumed corridor at **40.64 m** with **−0.01351 m**
+minimum sampled slack. Both recorded traces passed numerical replay. This
+shows one reproducible controller tradeoff on an analytic road; it does not
+prove the rule prevents exits on other tracks, offsets, grips, or lookaheads.
+
+`tests/test_ai_profile_e2e.py` now exercises the optional AI route from the
+desktop's selected profile through its worker, recorded result, Driver view,
+and `replay_lap_record`. On the compact analytic synthetic course, one case
+chooses the partial source-backed `trev5_working_geometry` intake when its
+local source bundle is available; another saves and chooses a Prius setup
+with explicit 1,510 kg mass, 125 kW peak power, and `mu=0.82` overrides.
+The test checks the frozen profile ID and requested 2 m maximum cell length,
+the effective vehicle configuration and source or override provenance in the
+JSON, the exact selected solver-grid distance/x/y/curvature arrays, and replay
+agreement. It verifies wiring and record reproducibility for two kinds of
+profiles. The TREV intake is a partial working scenario and the Prius edits
+are user assumptions; neither test establishes measured vehicle behavior or
+track-boundary safety.
 
 In the fixed synthetic x 36–55 m, y −3–16 m, 0.3× first-bend scenario, the
 updated pose controller first requested braking at **29.726 m** of projected
@@ -882,7 +972,7 @@ Important current bounds and gaps:
 | Source x/y and curvature disagree | Stored turn is 3.657937 rad versus 6.283185 rad map winding; default and AI paths cannot be compared for a racing-line gain |
 | Default lap speed need not close at the course seam | The default starts at a cyclic braking ceiling for one pass; AI trials separately require speed closure within 0.005 m/s, but no route enforces periodic charge or other full state |
 | Main-lap Driver view maps solved station onto reference x/y | The lap marker is not the dynamically integrated vehicle pose; the separate WIP pose preview displays a four-wheel model state on a synthetic course |
-| Synthetic pose preview has sampled assumed-corridor checks | Its 80 m model duration is not an endurance lap time; axle-span sample checks and state replay do not establish swept cone clearance or a full session |
+| Synthetic pose preview has sampled assumed-corridor checks and edge slowdown | Its 80 m model duration is not an endurance lap time; a nominally valid initial offset may already be outside at a curve, and the speed cap plus axle-span sample/replay checks do not establish swept cone clearance, safer driving, or a full session |
 | Main lap uses flat, still air and an assumed uniform grip factor | The entered factor scales tire force capacity across the lap; lab wind and local road patches do not change lap time |
 | Main tire is capacity-based with inferred slip | The uniform grip factor changes its capacity but supplies no measured tire/road calibration, independent wheel transient, or temperature prediction |
 | Lab uses static Fz and synthetic linear/circular tire | It demonstrates yaw/force coupling, not a calibrated car |
