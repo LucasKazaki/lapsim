@@ -16,7 +16,10 @@ from lapsim.experiments.pose_run_record import (
     POSE_RUN_RECORD_SCHEMA_VERSION,
     PoseRunRecord,
 )
-from lapsim.optimization.pose_driver import PoseDriverSettings, run_pose_driver
+from lapsim.optimization.pose_driver import (
+    PoseDriverSettings, check_pose_controller_agreement, replay_pose_driver,
+    run_pose_driver,
+)
 from lapsim.optimization.racing_line import _track_from_closed_points
 from lapsim.ui.course_catalog import SYNTHETIC_DEMO_COURSE_ID, load_course
 from lapsim.ui.pose_driver_playback import PoseDriverPlayback
@@ -49,6 +52,11 @@ def test_uniform_record_round_trip_preserves_exact_inputs_and_replay(
     assert loaded.run == short_run
     assert loaded.replay_report.passed
     assert loaded.replay().passed
+    assert record.controller_report is not None
+    assert loaded.controller_report is not None
+    assert loaded.controller_report.passed
+    assert loaded.controller_report.checked_controls == len(short_run.controls)
+    assert loaded.controller_report.first_mismatch_step is None
     assert loaded.run.track is not short_run.track
     assert len(loaded.run.evaluations) == len(loaded.run.controls)
     assert (
@@ -104,6 +112,9 @@ def test_assumed_grip_patch_and_interrupted_road_are_replayable(tmp_path):
     assert len(loaded_stopped.run.states) == 1
     assert not loaded_stopped.run.road_valid
     assert loaded_stopped.replay_report.passed
+    assert loaded_stopped.controller_report is not None
+    assert loaded_stopped.controller_report.passed
+    assert loaded_stopped.controller_report.checked_controls == 0
 
 
 def test_sampled_polyline_record_replays_and_rejects_geometry_mode_tamper(tmp_path):
@@ -121,6 +132,8 @@ def test_sampled_polyline_record_replays_and_rejects_geometry_mode_tamper(tmp_pa
     assert loaded.run.settings.reference_geometry == "sampled_polyline"
     assert loaded.run == run
     assert loaded.replay_report.passed
+    assert loaded.controller_report is not None
+    assert loaded.controller_report.passed
 
     _write_changed_record(saved_path, record, lambda data: data["inputs"]["settings"].__setitem__(
         "reference_geometry", "coherent_arcs",
@@ -145,6 +158,44 @@ def test_legacy_v1_pose_record_still_loads(short_run, tmp_path):
     assert loaded.to_dict() == payload
     assert loaded.run.settings.reference_geometry == "coherent_arcs"
     assert loaded.replay_report.passed
+    assert loaded.controller_report is None
+
+    # Legacy v1 checks recorded-control dynamics only. A controller setting
+    # that cannot explain the saved command is not retrospectively certified.
+    payload["inputs"]["settings"]["cruise_speed_mps"] = 2.0
+    payload.pop("content_id")
+    payload["content_id"] = pose_run_record._content_id(payload)
+    path.write_text(json.dumps(payload, allow_nan=False), encoding="utf-8")
+    legacy_changed = PoseRunRecord.load(path)
+    assert legacy_changed.replay_report.passed
+    assert legacy_changed.controller_report is None
+
+
+def test_v2_record_rejects_settings_that_could_not_issue_saved_controls(
+    short_run, tmp_path,
+):
+    changed = replace(
+        short_run,
+        settings=replace(short_run.settings, cruise_speed_mps=2.0),
+    )
+    # Recorded-input dynamics replay remains valid: the saved controls still
+    # produce the saved states. The declared controller would brake instead.
+    assert replay_pose_driver(changed).passed
+    controller = check_pose_controller_agreement(changed)
+    assert not controller.passed
+    assert controller.first_mismatch_step == 0
+    assert controller.maximum_drive_torque_error_nm >= 40.0
+    assert controller.maximum_brake_torque_error_nm >= 80.0
+    with pytest.raises(ValueError, match="controls disagree with declared controller"):
+        PoseRunRecord.capture(changed)
+
+    original = PoseRunRecord.capture(short_run)
+    path = tmp_path / "changed-controller-settings.json"
+    _write_changed_record(path, original, lambda data: data["inputs"]["settings"].__setitem__(
+        "cruise_speed_mps", 2.0,
+    ))
+    with pytest.raises(ValueError, match="controls disagree with declared controller"):
+        PoseRunRecord.load(path)
 
 
 def test_content_hash_and_numerical_gate_reject_tampering(short_run, tmp_path):

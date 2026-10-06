@@ -261,15 +261,18 @@ QA method neither performs analytic subarc subdivision nor certifies that x/y,
 stations, and curvature agree.
 
 `diagnose_paired_grid_stability` in `optimization/grid_stability.py` packages
-a bounded, **API-only** paired timing check for already eligible baseline and
+a bounded, opt-in paired timing check for already eligible baseline and
 candidate paths. It preflights each refined grid against 5,000 cells, reruns
 the same selected car and start policy on both fixed paths, and reports whether
-the candidate-minus-baseline sign or 0.05 s margin crossing changes. It does
-not re-audit corridor clearance or select a different path. If given an
-original per-cell grip schedule, it repeats each value through that original
-cell's subdivisions; it does **not** remap a world-fixed rectangle on the
-refined geometry. It can add four lap-model passes and is intentionally
-outside the normal desktop calculation.
+the candidate-minus-baseline sign or 0.05 s margin crossing changes. The
+desktop's **Check finer grid (optional)** action uses the frozen effective
+pre-run car and only enables for two eligible completed uniform-road paths;
+its worker can add at most four lap-model passes. It reports the sensitivity
+without changing the selection. It does not re-audit corridor clearance or
+prove convergence. The API can repeat an original per-cell grip schedule
+through that cell's subdivisions, but this does **not** remap a world-fixed
+rectangle on the refined geometry, so the desktop disables the action for
+patch trials. Ordinary centerline and AI runs incur no finer-grid work.
 
 ## Bounded synthetic pose-aware driver experiment
 
@@ -418,8 +421,15 @@ time/state, pre-step dynamics evaluations, pose samples, status, and runtime
 and source identity. A SHA-256 content ID detects content changes unless
 the ID is recalculated; load also rejects unknown fields, malformed or
 oversized JSON, misaligned traces, inconsistent starting pose, changed
-evaluations, and
-numerical recorded-control replay mismatches. Recomputed evaluation floats
+evaluations, and numerical recorded-control replay mismatches.
+Schema-v2 capture/load also reconstructs each controller decision from the
+saved pose, settings, reference, and road. A record whose controls disagree
+with that declared controller is rejected even when its recorded-control
+dynamics replay still passes. `controller_report` exposes the number of
+commands checked and maximum steering and torque differences; it is `None`
+for legacy schema-v1 records, which retain their original dynamics-only gate.
+No controller choice is attested for a zero-control stop.
+Recomputed evaluation floats
 allow at most `1e-9` absolute or `1e-10` relative difference through the
 standard closeness rule; evaluation field names, array lengths, material
 IDs, and other discrete values must match exactly. Pose states and path

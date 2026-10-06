@@ -211,6 +211,23 @@ class PoseReplayReport:
 
 
 @dataclass(frozen=True, slots=True)
+class PoseControllerAgreementReport:
+    """Agreement of saved inputs with the declared synthetic controller.
+
+    This is separate from recorded-control dynamics replay. A record with no
+    driven controls has a vacuously passing check and ``checked_controls=0``.
+    """
+
+    passed: bool
+    checked_controls: int
+    maximum_steering_error_rad: float
+    maximum_drive_torque_error_nm: float
+    maximum_brake_torque_error_nm: float
+    auxiliary_controls_agree: bool
+    first_mismatch_step: int | None
+
+
+@dataclass(frozen=True, slots=True)
 class _Projection:
     station_m: float
     cross_track_m: float
@@ -1003,8 +1020,93 @@ def replay_pose_driver(
     )
 
 
+def check_pose_controller_agreement(
+    run: PoseDriverRun, *, steering_tolerance_rad: float = 1e-9,
+    torque_tolerance_nm: float = 1e-7,
+) -> PoseControllerAgreementReport:
+    """Recreate each declared control from recorded state and prior projection.
+
+    Call this after recorded-control dynamics replay when validating a saved
+    run. It attests only deterministic controller provenance within the stated
+    tolerances, not a measured car, road, or track boundary.
+    """
+
+    if not isinstance(run, PoseDriverRun):
+        raise TypeError("run must be PoseDriverRun")
+    for name, tolerance in (
+        ("steering_tolerance_rad", steering_tolerance_rad),
+        ("torque_tolerance_nm", torque_tolerance_nm),
+    ):
+        if not isfinite(tolerance) or tolerance < 0.0:
+            raise ValueError(f"{name} must be finite and nonnegative")
+    if len(run.states) != len(run.controls) + 1:
+        raise ValueError("recorded controls and states are not aligned")
+    projection = _project_local(
+        run.track, run.states[0].x_m, run.states[0].y_m, 0.0,
+        run.settings.local_projection_window_m,
+    )
+    slack_m = _assumed_footprint_slack(
+        run.track, run.vehicle_config, run.settings, run.states[0],
+        projection.station_m,
+    )
+    maximum_steering = maximum_drive = maximum_brake = 0.0
+    auxiliary_agrees = True
+    first_mismatch: int | None = None
+    for index, recorded in enumerate(run.controls):
+        expected, _ = _controller(
+            run.track, run.vehicle_config, run.environment, run.settings,
+            run.states[index], projection, slack_m,
+        )
+        steering_error = max(abs(actual - target) for actual, target in zip(
+            recorded.steering_angles_rad, expected.steering_angles_rad, strict=True,
+        ))
+        drive_error = max(abs(actual - target) for actual, target in zip(
+            recorded.drive_torques_nm, expected.drive_torques_nm, strict=True,
+        ))
+        brake_error = max(abs(actual - target) for actual, target in zip(
+            recorded.brake_torques_nm, expected.brake_torques_nm, strict=True,
+        ))
+        auxiliary_step_agrees = (
+            recorded.normal_loads_n == expected.normal_loads_n and
+            recorded.external_force_x_n == expected.external_force_x_n and
+            recorded.external_force_y_n == expected.external_force_y_n and
+            recorded.external_yaw_moment_nm == expected.external_yaw_moment_nm
+        )
+        maximum_steering = max(maximum_steering, steering_error)
+        maximum_drive = max(maximum_drive, drive_error)
+        maximum_brake = max(maximum_brake, brake_error)
+        auxiliary_agrees &= auxiliary_step_agrees
+        if first_mismatch is None and (
+            steering_error > steering_tolerance_rad or
+            drive_error > torque_tolerance_nm or
+            brake_error > torque_tolerance_nm or
+            not auxiliary_step_agrees
+        ):
+            first_mismatch = index
+        if index + 1 < len(run.controls):
+            projection = _project_local(
+                run.track, run.states[index + 1].x_m,
+                run.states[index + 1].y_m, projection.station_m,
+                run.settings.local_projection_window_m,
+            )
+            slack_m = _assumed_footprint_slack(
+                run.track, run.vehicle_config, run.settings,
+                run.states[index + 1], projection.station_m,
+            )
+    return PoseControllerAgreementReport(
+        passed=first_mismatch is None,
+        checked_controls=len(run.controls),
+        maximum_steering_error_rad=maximum_steering,
+        maximum_drive_torque_error_nm=maximum_drive,
+        maximum_brake_torque_error_nm=maximum_brake,
+        auxiliary_controls_agree=auxiliary_agrees,
+        first_mismatch_step=first_mismatch,
+    )
+
+
 __all__ = [
     "POSE_MODEL_LABEL", "PoseDriverSettings", "PoseDriverSample",
     "PoseDriverRun", "PoseReplayTolerances", "PoseReplayReport",
+    "PoseControllerAgreementReport", "check_pose_controller_agreement",
     "synthetic_pose_vehicle", "run_pose_driver", "replay_pose_driver",
 ]

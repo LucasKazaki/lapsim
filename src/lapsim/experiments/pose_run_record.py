@@ -2,10 +2,12 @@
 
 This format is separate from endurance lap records.  It freezes the exact
 piecewise course, assumed road, synthetic vehicle, controller settings, held
-inputs, state boundaries, and diagnostics.  Loading checks both numerical
+inputs, state boundaries, and diagnostics. Loading checks numerical recorded-
 control replay and every saved start-of-interval dynamics evaluation within
-explicit small numerical tolerances. Neither
-check validates a measured vehicle, surface, cone boundary, or FSAE lap time.
+explicit small numerical tolerances. Schema v2 also checks that the declared
+controller and settings issue the saved controls; legacy v1 records retain
+recorded-control replay only. None of these checks validates a measured
+vehicle, surface, cone boundary, or FSAE lap time.
 """
 
 from __future__ import annotations
@@ -30,8 +32,10 @@ from lapsim.dynamics.planar import (
     PlanarControls, PlanarState, PlanarVehicleConfig, evaluate_planar_dynamics,
 )
 from lapsim.optimization.pose_driver import (
-    PoseDriverRun, PoseDriverSample, PoseDriverSettings, PoseReplayReport,
-    _reference_start_heading, _validate_sampled_polyline, replay_pose_driver,
+    PoseControllerAgreementReport, PoseDriverRun, PoseDriverSample,
+    PoseDriverSettings, PoseReplayReport, _reference_start_heading,
+    _validate_sampled_polyline, check_pose_controller_agreement,
+    replay_pose_driver,
 )
 
 
@@ -399,7 +403,9 @@ def _validate_runtime(value: Any) -> None:
                 raise ValueError(f"runtime {key}.{field_name} must be text or null")
 
 
-def _run_from_payload(payload: dict[str, Any]) -> tuple[PoseDriverRun, PoseReplayReport]:
+def _run_from_payload(
+    payload: dict[str, Any],
+) -> tuple[PoseDriverRun, PoseReplayReport, PoseControllerAgreementReport | None]:
     _mapping(payload, {
         "schema_version", "record_type", "simulation_mode", "evidence_level",
         "controller", "runtime", "inputs", "trace", "validity",
@@ -502,17 +508,35 @@ def _run_from_payload(payload: dict[str, Any]) -> tuple[PoseDriverRun, PoseRepla
     report = replay_pose_driver(run)
     if not report.passed:
         raise ValueError("pose record disagrees with numerical recorded-control replay")
-    return run, report
+    controller_report = None
+    if payload["schema_version"] == POSE_RUN_RECORD_SCHEMA_VERSION:
+        controller_report = check_pose_controller_agreement(run)
+        if not controller_report.passed:
+            raise ValueError(
+                "pose record controls disagree with declared controller "
+                f"at step {controller_report.first_mismatch_step}"
+            )
+    # Legacy v1 records retain only their original recorded-control dynamics
+    # replay gate; controller decisions are not retrospectively attested.
+    return run, report, controller_report
 
 
 @dataclass(frozen=True, slots=True)
 class PoseRunRecord:
-    """Content-identified JSON record and its verified typed pose run."""
+    """Content-identified JSON record and its verified typed pose run.
+
+    ``replay_report`` checks saved-control dynamics. ``controller_report``
+    separately checks declared-controller decisions for schema v2 and is
+    ``None`` for legacy v1 records that never carried this attestation.
+    """
 
     content_id: str
     _payload_json: str = field(repr=False)
     _run: PoseDriverRun = field(repr=False, compare=False)
     replay_report: PoseReplayReport = field(repr=False, compare=False)
+    controller_report: PoseControllerAgreementReport | None = field(
+        repr=False, compare=False,
+    )
 
     @property
     def run(self) -> PoseDriverRun:
@@ -587,10 +611,10 @@ class PoseRunRecord:
         # loader will see after its list conversion and strict finite check.
         canonical = _canonical_json(payload)
         payload = json.loads(canonical)
-        typed, report = _run_from_payload(payload)
+        typed, report, controller_report = _run_from_payload(payload)
         content_id = _content_id(payload)
         _file_json({**payload, "content_id": content_id})
-        return cls(content_id, canonical, typed, report)
+        return cls(content_id, canonical, typed, report, controller_report)
 
     @classmethod
     def load(cls, path: str | Path) -> PoseRunRecord:
@@ -615,10 +639,11 @@ class PoseRunRecord:
         if not isinstance(content_id, str) or content_id != _content_id(payload):
             raise ValueError("pose-record content hash does not match")
         try:
-            typed, report = _run_from_payload(payload)
+            typed, report, controller_report = _run_from_payload(payload)
         except (KeyError, TypeError, IndexError, OverflowError) as error:
             raise ValueError("pose record has missing or invalid fields") from error
-        return cls(content_id, _canonical_json(payload), typed, report)
+        return cls(content_id, _canonical_json(payload), typed, report,
+                   controller_report)
 
 
 def default_pose_run_directory() -> Path:

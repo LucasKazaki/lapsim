@@ -15,12 +15,275 @@ import pytest
 from lapsim.experiments import RunRecord, replay_lap_record
 from lapsim.events.endurance import LapProgressSnapshot
 from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.dynamics.conditions import PlanarRoad, RectangularGripPatch
+from lapsim.optimization.grid_stability import PairedGridStabilityReport
 from lapsim.ui.app import (
     AI_ROAD_PATCH, LapSimDesktop, _course_geometry_warning,
 )
 from lapsim.ui.course_catalog import COURSE_OPTIONS, SYNTHETIC_DEMO_COURSE_ID
 from lapsim.ui.presets import VehicleSetup
 from lapsim.ui.simulation import prepare_one_lap_constraints
+from vehicle_model import Vehicle
+
+
+def _install_eligible_ai_grid_result(app: LapSimDesktop) -> SimpleNamespace:
+    """Put a completed uniform-road AI pair in the desktop without a solve."""
+
+    app.driving_mode_var.set("AI racing line (experimental)")
+    app.root.update_idletasks()
+    complete = SimpleNamespace(completed=True)
+    valid = SimpleNamespace(valid=True)
+    comparison = SimpleNamespace(
+        baseline_time_s=100.0,
+        candidate_time_s=99.8,
+        baseline_run=complete,
+        candidate_run=complete,
+        baseline_path_audit=valid,
+        candidate_path_audit=valid,
+        candidate_track=app.track,
+        selection_margin_s=0.05,
+    )
+    app._path_comparison = (
+        SimpleNamespace(baseline_track=app.track), comparison, (3.0, 1.8, 0.2),
+    )
+    vehicle = Vehicle()
+    vehicle.tire.road_grip_multiplier = 0.7
+    app._ai_grid_check_inputs = (vehicle, 0.8)
+    app._ai_grid_source_signature = app._run_input_signature()
+    app._displayed_ai_road = None
+    app._update_ai_grid_check_button()
+    return comparison
+
+
+def _completed_grid_report() -> PairedGridStabilityReport:
+    return PairedGridStabilityReport(
+        status="completed",
+        original_baseline_time_s=100.0,
+        original_candidate_time_s=99.8,
+        original_candidate_minus_baseline_s=-0.2,
+        refined_baseline_time_s=99.9,
+        refined_candidate_time_s=99.73,
+        refined_candidate_minus_baseline_s=-0.17,
+        sign_stable=True,
+        selection_margin_stable=True,
+        selection_margin_s=0.05,
+        maximum_refined_cell_length_m=0.5,
+        original_baseline_cells=100,
+        original_candidate_cells=100,
+        refined_baseline_cells=200,
+        refined_candidate_cells=240,
+    )
+
+
+def test_ai_grid_check_is_optional_and_requires_eligible_uniform_pair() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        assert app.driving_mode_var.get() == "Centerline (default)"
+        assert app.ai_grid_check_button["state"] == "disabled"
+        comparison = _install_eligible_ai_grid_result(app)
+        assert app.ai_grid_check_button["state"] == "normal"
+
+        app._displayed_ai_road = PlanarRoad(patches=(
+            RectangularGripPatch(1.0, 2.0, 1.0, 2.0, 0.3),
+        ))
+        app._update_ai_grid_check_button()
+        assert app.ai_grid_check_button["state"] == "disabled"
+        app._displayed_ai_road = None
+        comparison.candidate_path_audit = SimpleNamespace(valid=False)
+        app._update_ai_grid_check_button()
+        assert app.ai_grid_check_button["state"] == "disabled"
+        comparison.candidate_path_audit = SimpleNamespace(valid=True)
+        comparison.baseline_time_s = None
+        app._update_ai_grid_check_button()
+        assert app.ai_grid_check_button["state"] == "disabled"
+    finally:
+        root.destroy()
+
+
+def test_ai_grid_check_uses_frozen_car_and_does_not_reselect_path() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        comparison = _install_eligible_ai_grid_result(app)
+        car = app._ai_grid_check_inputs[0]
+        observed: list[tuple[Vehicle, SpatialTrack, SpatialTrack, dict[str, object]]] = []
+
+        def fake_diagnostic(
+            vehicle: Vehicle, baseline: SpatialTrack, candidate: SpatialTrack,
+            **kwargs: object,
+        ) -> PairedGridStabilityReport:
+            observed.append((vehicle, baseline, candidate, kwargs))
+            return _completed_grid_report()
+
+        with patch("lapsim.ui.app.threading.Thread") as thread_class:
+            app._start_ai_grid_check()
+        assert app.run_in_progress
+        assert app.ai_grid_check_button["state"] == "disabled"
+        assert "Finer-grid check" in app.calculation_progress_text.get()
+        worker = thread_class.call_args.kwargs
+        car.tire.road_grip_multiplier = 0.3
+        with patch(
+            "lapsim.optimization.grid_stability.diagnose_paired_grid_stability",
+            side_effect=fake_diagnostic,
+        ):
+            worker["target"](*worker["args"])
+        app._poll_result()
+
+        assert observed[0][0] is not car
+        assert observed[0][0].tire.road_grip_multiplier == 0.7
+        assert observed[0][1] is app.track
+        assert observed[0][2] is app.track
+        assert observed[0][3]["torque_request_fraction"] == 0.8
+        assert observed[0][3]["speed_periodic"] is True
+        assert observed[0][3]["selection_margin_s"] == 0.05
+        assert app._path_comparison[1] is comparison
+        assert app.ai_grid_check_button["state"] == "normal"
+        assert "-0.200 s original" in app.ai_grid_check_text.get()
+        assert "-0.170 s" in app.ai_grid_check_text.get()
+        assert "One refinement does not certify convergence" in app.ai_grid_check_text.get()
+        assert not app.run_in_progress
+    finally:
+        root.destroy()
+
+
+def test_ai_grid_check_discards_result_after_input_change() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        _install_eligible_ai_grid_result(app)
+        with patch("lapsim.ui.app.threading.Thread") as thread_class:
+            app._start_ai_grid_check()
+        worker = thread_class.call_args.kwargs
+        app.inputs["torque_request_percent"].set("75")
+        with patch(
+            "lapsim.optimization.grid_stability.diagnose_paired_grid_stability",
+            return_value=_completed_grid_report(),
+        ):
+            worker["target"](*worker["args"])
+        app._poll_result()
+        assert app._path_comparison is None
+        assert app.ai_grid_check_button["state"] == "disabled"
+        assert "-0.170 s" not in app.ai_grid_check_text.get()
+        assert app.status_text.get() == "Inputs changed · run again"
+    finally:
+        root.destroy()
+
+
+def test_ai_grid_check_refuses_stale_result_before_idle_invalidation() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        _install_eligible_ai_grid_result(app)
+        assert app.ai_grid_check_button["state"] == "normal"
+        app.inputs["torque_request_percent"].set("75")
+        assert app._pending_input_invalidation
+        assert app.ai_grid_check_button["state"] == "disabled"
+        with patch("lapsim.ui.app.threading.Thread") as thread_class:
+            app._start_ai_grid_check()
+        thread_class.assert_not_called()
+        assert not app.run_in_progress
+        assert app._path_comparison is not None
+
+        # The saved AI signature also gates a changed input independently of
+        # the scheduled idle callback.
+        app._pending_input_invalidation = False
+        assert not app._ai_grid_check_eligible()
+        with patch("lapsim.ui.app.threading.Thread") as thread_class:
+            app._start_ai_grid_check()
+        thread_class.assert_not_called()
+        root.update_idletasks()
+        assert app._path_comparison is None
+    finally:
+        root.destroy()
+
+
+def test_ai_grid_check_cell_cap_reports_without_changing_displayed_result() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        comparison = _install_eligible_ai_grid_result(app)
+        capped = replace(
+            _completed_grid_report(), status="cell_cap_exceeded",
+            refined_baseline_time_s=None, refined_candidate_time_s=None,
+            refined_candidate_minus_baseline_s=None,
+            sign_stable=None, selection_margin_stable=None,
+            refined_baseline_cells=None, refined_candidate_cells=None,
+            failure_reason="At least one refined path would exceed 5000 cells",
+        )
+        app.result_queue.put((
+            "ai_grid_check", (app._ai_grid_check_serial, comparison, capped), None,
+        ))
+        app._active_run_input_signature = app._run_input_signature()
+        app._poll_result()
+        assert app._path_comparison[1] is comparison
+        assert "exceed 5000 cells" in app.ai_grid_check_text.get()
+        assert "selection is unchanged" in app.ai_grid_check_text.get().lower()
+        assert app.ai_grid_check_button["state"] == "normal"
+    finally:
+        root.destroy()
+
+
+def test_real_synthetic_ai_desktop_finer_grid_check(tmp_path: Path) -> None:
+    """Run the real optional planner and paired diagnostic through Tk wiring."""
+
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app._select_course(COURSE_OPTIONS[1].label)
+        app.driving_mode_var.set("AI racing line (experimental)")
+        app.inputs["torque_request_percent"].set("80")
+        root.update_idletasks()
+        with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
+            with patch("lapsim.ui.app.threading.Thread") as thread_class:
+                app._start_run()
+                ai_worker = thread_class.call_args.kwargs
+            ai_worker["target"](*ai_worker["args"])
+            app._poll_result()
+            assert app._path_comparison is not None
+            comparison = app._path_comparison[1]
+            assert comparison.rank_status == "candidate_selected"
+            assert app.ai_grid_check_button["state"] == "normal"
+            original_selected_run = comparison.selected_run
+
+            with patch("lapsim.ui.app.threading.Thread") as thread_class:
+                app._start_ai_grid_check()
+                check_worker = thread_class.call_args.kwargs
+            check_worker["target"](*check_worker["args"])
+            app._poll_result()
+        assert app._path_comparison[1] is comparison
+        assert comparison.selected_run is original_selected_run
+        assert app.ai_grid_check_button["state"] == "normal"
+        assert "Sign stable: yes" in app.ai_grid_check_text.get()
+        assert "0.05 s selection margin stable: yes" in app.ai_grid_check_text.get()
+        assert "Selection is unchanged" in app.ai_grid_check_text.get()
+        assert "Finer-grid sensitivity checked" in app.status_text.get()
+    finally:
+        root.destroy()
 
 
 def test_course_warning_includes_arc_chord_mismatch_without_chord_excess() -> None:

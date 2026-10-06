@@ -299,6 +299,16 @@ show their signed difference and allow **Compare path numbers** for time,
 distance, speed, equivalent energy, and lateral acceleration. That window
 names the selected course, as does the two-car comparison window, so an open
 comparison retains its source label after the main course selection changes.
+For two eligible completed paths on the uniform road setting, **Check finer
+grid (optional)** runs a separate paired sensitivity check on the same fixed
+paths and the frozen effective car. It reports both candidate-minus-centerline
+time differences, refined cell counts, sign stability, and whether the
+provisional 0.05 s selection decision crosses its threshold. It never
+reselects the path. It is disabled for the world-fixed patch because the
+current fixed-path checker would repeat coarse cell grip instead of remapping
+the rectangle. Each refined path is capped at 5,000 cells and can require
+two additional speed-seam passes. One extra grid is not a convergence proof
+or a renewed path-clearance audit.
 A failed run returned by the solver is saved for diagnosis. Its record labels
 the last checked cell's time, distance, speed, and SOC separately from the
 vehicle state after an attempted rejected cell; partial times cannot be ranked.
@@ -475,6 +485,10 @@ control/time/state history, pre-step force evaluations, pose samples,
 termination status, and source/runtime identity. Capture computes a
 SHA-256 content ID; load checks it. Both check the saved evaluations against
 current model equations and run recorded-control numerical replay.
+Schema-v2 files additionally recompute each declared controller choice from
+the saved state, settings, and assumed road, and reject controls that could
+not have been issued by that controller. A zero-control stop has no decisions
+to check; legacy schema-v1 files retain recorded-control dynamics replay only.
 Evaluation floats allow `1e-9` absolute or `1e-10` relative drift, while
 field names, array lengths, and discrete values must match exactly; pose
 states have separate replay tolerances. A

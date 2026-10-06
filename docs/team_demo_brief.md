@@ -13,9 +13,15 @@ For a fresh Windows clone, run `setup_lapsim.cmd` once before this walkthrough; 
 
 ### Optional follow-ups
 
+- On the eligible uniform-road synthetic AI result, click **Check finer grid
+  (optional)**. The same fixed baseline/candidate paths and frozen car are
+  rerun once at finer spacing; the current example's modeled difference
+  changes from about **−2.371 s** to **−2.352 s** while retaining its sign and
+  0.05 s selection-margin crossing. The selected line is unchanged. This is
+  one numerical sensitivity check, not convergence or boundary validation.
 - Return to **Fused GNSS/IMU · default** in AI mode at 1 m, 100% Prius driver request, assumed half-width 2.0 m, vehicle width 1.78308 m, safety margin 0.3 m, and 100% assumed road grip. Read the *current* diagnostic status from the run: the processed baseline fails the path audit, completed times are starred diagnostics, **Compare path numbers** is disabled, and no AI winner is selected. **Saved run details** exposes the primary and linked trial files; Driver view can replay completed diagnostics. Changing course clears the previous result and evidence button.
 - Switch back to **Centerline (default)** and use **Run comparison** for two saved or built-in profiles. Read B-minus-A values and the shared rolling start, then open **Saved run details** for both full record IDs and files. Each car has one initial-condition lap; the source-backed TREV entries are partial working scenarios.
-- Open **Timed sessions · WIP** and, if time permits, run its **80 m synthetic pose preview**. Driver view then plays actual modeled x/y and heading, with boxes for steering, wheel torque, tracking error, grip, and assumed clearance. Its duration is pose-model time for a separate synthetic car, not the endurance lap time. The tab cannot start a full timed session or ghost yet. A separate Python checker can rerun a completed saved lap's cell controls and report numerical agreement with the current model.
+- Open **Timed sessions · WIP** and, if time permits, run its **80 m synthetic pose preview**. After an eligible synthetic AI result, its second button can preview that selected polygon with the separate synthetic car. Driver view then plays actual modeled x/y and heading, with boxes for steering, wheel torque, tracking error, grip, and assumed clearance. Its duration is pose-model time, not the endurance lap time. A saved v2 pose trace checks both recorded-input dynamics replay and whether the declared controller issued its controls; a zero-step trace has no controller choices to check. The tab cannot start a full timed session or ghost yet.
 
 For a longer course demonstration, select **Synthetic FSAE-style · practice**
 and run a fresh centerline lap or an experimental AI comparison. This is an

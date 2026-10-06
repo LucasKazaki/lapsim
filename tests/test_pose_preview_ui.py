@@ -525,7 +525,10 @@ def test_synthetic_trace_save_uses_frozen_run_and_reports_replay(tmp_path: Path)
         assert app.pose_save_button.cget("state") == "disabled"
         assert app.pose_load_button.cget("state") == "disabled"
 
-        fake_record = SimpleNamespace(content_id="a" * 64, save=lambda path: None)
+        fake_record = SimpleNamespace(
+            content_id="a" * 64, save=lambda path: None,
+            controller_report=SimpleNamespace(checked_controls=12),
+        )
         with patch("lapsim.ui.app.PoseRunRecord.capture", return_value=fake_record) as capture:
             app._write_pose_record(run, destination)
         capture.assert_called_once_with(run)
@@ -533,6 +536,7 @@ def test_synthetic_trace_save_uses_frozen_run_and_reports_replay(tmp_path: Path)
         assert not app.run_in_progress
         assert app.pose_save_button.cget("state") == "normal"
         assert "numerical replay passed" in app.pose_record_status.get()
+        assert "declared controller agrees on 12 controls" in app.pose_record_status.get()
         assert "pose.json" in app.pose_record_status.get()
     finally:
         root.destroy()
@@ -564,7 +568,10 @@ def test_synthetic_trace_load_checks_record_before_playback(tmp_path: Path) -> N
             status="target_reached",
             elapsed_pose_model_time_s=15.0,
         )
-        record = SimpleNamespace(run=run, content_id="b" * 64)
+        record = SimpleNamespace(
+            run=run, content_id="b" * 64,
+            controller_report=SimpleNamespace(checked_controls=16),
+        )
         with patch("lapsim.ui.app.PoseRunRecord.load", return_value=record) as load:
             app._read_pose_record(destination)
         load.assert_called_once_with(destination)
@@ -576,12 +583,22 @@ def test_synthetic_trace_load_checks_record_before_playback(tmp_path: Path) -> N
         assert app._active_pose_offset_m == 0.75
         assert app.pose_save_button.cget("state") == "normal"
         assert "numerical replay passed" in app.pose_record_status.get()
+        assert "declared controller agrees on 16 controls" in app.pose_record_status.get()
         assert "recorded pose grid" in app.pose_preview_status.get()
         assert "recorded sampled polyline" in app.pose_preview_status.get()
         assert "pose-model time" in app.pose_preview_status.get()
         assert "requested Cell size" not in app.pose_preview_status.get()
     finally:
         root.destroy()
+
+
+def test_pose_record_status_does_not_invent_controller_decisions() -> None:
+    assert "legacy controller decisions not checked" == (
+        LapSimDesktop._pose_controller_check_label(None)
+    )
+    assert "no driven controls; no controller decisions to check" == (
+        LapSimDesktop._pose_controller_check_label(0)
+    )
 
 
 def test_zero_step_synthetic_trace_load_has_no_invented_motion(tmp_path: Path) -> None:

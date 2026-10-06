@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from hashlib import sha256
 import json
 from math import ceil, isfinite
@@ -386,6 +387,11 @@ class LapSimDesktop:
         self.ai_entries: list[tk.Entry] = []
         self.ai_output_box: tk.LabelFrame | None = None
         self.ai_compare_button: tk.Button | None = None
+        self.ai_grid_check_button: tk.Button | None = None
+        self.ai_grid_check_text = tk.StringVar(value="")
+        self._ai_grid_check_inputs: tuple[Any, float] | None = None
+        self._ai_grid_source_signature: tuple[str, ...] | None = None
+        self._ai_grid_check_serial = 0
         self._path_comparison: tuple[Any, Any, tuple[float, float, float]] | None = None
         self._selected_path_track: Any = None
         self.compare_a_var = tk.StringVar()
@@ -1083,6 +1089,19 @@ class LapSimDesktop:
             relief="raised", bd=1,
         )
         self.ai_compare_button.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(6, 0))
+        self.ai_grid_check_button = tk.Button(
+            self.ai_output_box, text="Check finer grid (optional)",
+            command=self._start_ai_grid_check, state="disabled",
+            relief="raised", bd=1,
+        )
+        self.ai_grid_check_button.grid(
+            row=4, column=0, columnspan=2, sticky="ew", pady=(5, 0),
+        )
+        tk.Label(
+            self.ai_output_box, textvariable=self.ai_grid_check_text,
+            anchor="w", justify="left", wraplength=345,
+            font=("Segoe UI", 9),
+        ).grid(row=5, column=0, columnspan=2, sticky="ew", padx=2, pady=(4, 0))
 
     def _build_workspace_tabs(self, parent: tk.Widget) -> None:
         tab_bar = tk.Frame(parent)
@@ -1295,6 +1314,7 @@ class LapSimDesktop:
             value.set("—")
         self._set_driver_replay_options({}, selected="—")
         self._path_comparison = None
+        self._clear_ai_grid_check()
         self._selected_path_track = None
         self._update_pose_ai_preview_availability()
         self._last_result = None
@@ -2758,6 +2778,7 @@ class LapSimDesktop:
         if self.run_in_progress or self._pending_input_invalidation:
             return
         self._pending_input_invalidation = True
+        self._update_ai_grid_check_button()
         # One idle callback observes the final values after a profile or
         # course selector has populated several StringVars programmatically.
         generation = self._result_generation
@@ -2797,6 +2818,7 @@ class LapSimDesktop:
         self._displayed_ai_road = None
         self._comparison_results = None
         self._path_comparison = None
+        self._clear_ai_grid_check()
         self._selected_path_track = None
         self._set_driver_replay_options({}, selected="—")
         self._update_pose_ai_preview_availability()
@@ -2971,6 +2993,7 @@ class LapSimDesktop:
                 state="disabled" if busy or (key in CAR_INPUT_KEYS and not editable) else "normal"
             )
         self._on_driving_mode_change()
+        self._update_ai_grid_check_button()
 
     def _begin_live_calculation(
         self, name: str, *, preparing: str = "Preparing course and speed limits",
@@ -2988,6 +3011,7 @@ class LapSimDesktop:
         self._comparison_results = None
         self._selected_path_track = None
         self._path_comparison = None
+        self._clear_ai_grid_check()
         self._update_pose_ai_preview_availability()
         if self.ai_compare_button is not None:
             self.ai_compare_button.configure(state="disabled")
@@ -3375,9 +3399,9 @@ class LapSimDesktop:
             return
         run = self._latest_pose_run
         self._set_busy(True)
-        self.pose_record_status.set("Checking replay and saving synthetic trace…")
+        self.pose_record_status.set("Checking dynamics and controller; saving trace…")
         self._set_calculation_progress(
-            "indeterminate", "Saving synthetic pose trace · checking replay",
+            "indeterminate", "Saving synthetic pose trace · checking controls",
         )
         threading.Thread(
             target=self._write_pose_record, args=(run, Path(path)), daemon=True,
@@ -3387,9 +3411,24 @@ class LapSimDesktop:
         try:
             record = PoseRunRecord.capture(run)
             record.save(path)
-            self.result_queue.put(("pose_record_saved", (path, record.content_id), None))
+            controller_report = getattr(record, "controller_report", None)
+            checked_controls = (
+                controller_report.checked_controls
+                if controller_report is not None else None
+            )
+            self.result_queue.put((
+                "pose_record_saved", (path, record.content_id, checked_controls), None,
+            ))
         except Exception as error:
             self.result_queue.put(("pose_record_saved", None, error))
+
+    @staticmethod
+    def _pose_controller_check_label(checked_controls: int | None) -> str:
+        if checked_controls is None:
+            return "legacy controller decisions not checked"
+        if checked_controls == 0:
+            return "no driven controls; no controller decisions to check"
+        return f"declared controller agrees on {checked_controls:,} controls"
 
     def _load_pose_record(self) -> None:
         if self.run_in_progress:
@@ -3405,7 +3444,7 @@ class LapSimDesktop:
         self._set_busy(True)
         self.pose_record_status.set("Loading and checking synthetic trace…")
         self._set_calculation_progress(
-            "indeterminate", "Loading synthetic pose trace · checking replay",
+            "indeterminate", "Loading synthetic pose trace · checking controls",
         )
         threading.Thread(
             target=self._read_pose_record, args=(Path(path),), daemon=True,
@@ -3608,6 +3647,8 @@ class LapSimDesktop:
             half_width_m, vehicle_width_m, safety_margin_m = assumptions
             vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
             apply_uniform_road_grip(vehicle, road_grip_multiplier)
+            # Freeze the exact effective pre-run car for optional sensitivity QA.
+            grid_check_vehicle = deepcopy(vehicle)
             corridor = TrackCorridor.constant(
                 self.track,
                 left_width_m=half_width_m,
@@ -4088,7 +4129,7 @@ class LapSimDesktop:
                 "ai_single",
                 (profile_name, selected_run, selected_track, selected_mode,
                  plan, comparison, assumptions, run_id, road_grip_multiplier,
-                 road),
+                 road, grid_check_vehicle, torque_fraction),
                 None,
             ))
         except Exception as error:
@@ -4182,6 +4223,45 @@ class LapSimDesktop:
             self._schedule_after(100, self._poll_result)
             return
 
+        if kind == "ai_grid_check":
+            serial, comparison, report = payload
+            if (
+                serial != self._ai_grid_check_serial
+                or self._path_comparison is None
+                or self._path_comparison[1] is not comparison
+            ):
+                self._schedule_after(100, self._poll_result)
+                return
+            self._result_generation += 1
+            self._set_busy(False)
+            stale_inputs = (
+                self._active_run_input_signature != self._run_input_signature()
+            )
+            self._active_run_input_signature = None
+            if stale_inputs:
+                self._set_calculation_progress("idle", "Inputs changed · run again")
+                self._invalidate_stale_result(force=True)
+            elif error is not None:
+                self._set_calculation_progress("stopped", "Finer-grid check failed")
+                self.ai_grid_check_text.set(f"Finer-grid check failed: {error}")
+                self.status_text.set("Finer-grid check failed; displayed runs are unchanged")
+            else:
+                self.ai_grid_check_text.set(self._ai_grid_check_summary(report))
+                self._set_calculation_progress(
+                    "complete" if report.status == "completed" else "stopped",
+                    ("Finer-grid check finished" if report.status == "completed"
+                     else "Finer-grid check could not compare both paths"),
+                    fraction=1.0 if report.status == "completed" else 0.0,
+                )
+                self.status_text.set(
+                    "Finer-grid sensitivity checked; displayed path selection unchanged"
+                    if report.status == "completed" else
+                    "Finer-grid sensitivity unavailable; displayed runs unchanged"
+                )
+            self._update_ai_grid_check_button()
+            self._schedule_after(100, self._poll_result)
+            return
+
         if kind in ("pose_record_saved", "pose_record_loaded"):
             if kind == "pose_record_loaded" and error is None:
                 self._latest_pose_run = payload[1].run
@@ -4196,15 +4276,16 @@ class LapSimDesktop:
                 )
                 self.status_text.set(f"Synthetic trace {action} failed: {error}")
             elif kind == "pose_record_saved":
-                path, content_id = payload
+                path, content_id, checked_controls = payload
                 self._set_calculation_progress(
-                    "complete", "Synthetic pose trace saved and replay checked",
+                    "complete", "Synthetic pose trace saved and checked",
                     fraction=1.0,
                 )
                 self.pose_record_status.set(
-                    f"Saved {path.name} · ID {content_id[:12]} · numerical replay passed"
+                    f"Saved {path.name} · ID {content_id[:12]} · numerical replay passed · "
+                    f"{self._pose_controller_check_label(checked_controls)}"
                 )
-                self.status_text.set("Synthetic pose trace saved and replay checked")
+                self.status_text.set("Synthetic pose trace saved and checked")
             else:
                 path, record = payload
                 run = record.run
@@ -4232,12 +4313,17 @@ class LapSimDesktop:
                     if isinstance(recorded_track, SpatialTrack) else ""
                 )
                 self._set_calculation_progress(
-                    "complete", "Synthetic pose trace loaded and replay checked",
+                    "complete", "Synthetic pose trace loaded and checked",
                     fraction=1.0,
                 )
+                controller_report = getattr(record, "controller_report", None)
                 self.pose_record_status.set(
                     f"Loaded {path.name} · ID {record.content_id[:12]} · "
-                    "numerical replay passed"
+                    "numerical replay passed · "
+                    + self._pose_controller_check_label(
+                        controller_report.checked_controls
+                        if controller_report is not None else None
+                    )
                 )
                 self.pose_preview_status.set(
                     f"Recorded {self._active_pose_description()} · {run.status}: "
@@ -4245,7 +4331,7 @@ class LapSimDesktop:
                     f"{run.elapsed_pose_model_time_s:.2f} s pose-model time. "
                     "This is not an engineering lap time."
                 )
-                self.status_text.set("Synthetic pose trace loaded and replay checked")
+                self.status_text.set("Synthetic pose trace loaded and checked")
                 if len(run.states) > 1:
                     self._activate_pose_preview(run)
                 else:
@@ -4347,6 +4433,7 @@ class LapSimDesktop:
             self._active_run_input_signature is not None
             and self._active_run_input_signature != self._run_input_signature()
         )
+        completed_input_signature = self._active_run_input_signature
         self._active_run_input_signature = None
         if stale_inputs:
             self._set_calculation_progress("idle", "Inputs changed · run again")
@@ -4422,6 +4509,17 @@ class LapSimDesktop:
             self._displayed_road_grip_multiplier = road_grip_multiplier
             self._displayed_ai_road = grip_setting[1] if len(grip_setting) > 1 else None
             self._path_comparison = (plan, comparison, assumptions)
+            self._ai_grid_check_inputs = (
+                (grip_setting[2], grip_setting[3])
+                if len(grip_setting) >= 4 else None
+            )
+            self._ai_grid_source_signature = completed_input_signature
+            self.ai_grid_check_text.set(
+                "Optional finer-grid check is available for eligible uniform-road paths."
+                if self._ai_grid_check_eligible() else
+                "Finer-grid check requires two eligible completed paths on uniform road."
+            )
+            self._update_ai_grid_check_button()
             if self.ai_compare_button is not None:
                 self.ai_compare_button.configure(
                     state=("normal" if comparison.baseline_time_s is not None
@@ -4727,6 +4825,123 @@ class LapSimDesktop:
         for key, value in values.items():
             self.output_values[key].configure(text=value)
         self._draw_plots(preserve_course_view=True)
+
+    def _ai_grid_check_eligible(self) -> bool:
+        if (
+            not self._ai_mode_selected()
+            or self._path_comparison is None
+            or self._ai_grid_check_inputs is None
+            or self._pending_input_invalidation
+            or self._ai_grid_source_signature is None
+            or self._ai_grid_source_signature != self._run_input_signature()
+        ):
+            return False
+        if self._displayed_ai_road is not None:
+            # The existing diagnostic repeats per-cell grip. That is not a
+            # fresh mapping of a world-fixed patch on the finer path.
+            return False
+        plan, comparison, _assumptions = self._path_comparison
+        return bool(
+            isinstance(plan.baseline_track, SpatialTrack)
+            and isinstance(comparison.candidate_track, SpatialTrack)
+            and comparison.baseline_time_s is not None
+            and comparison.candidate_time_s is not None
+            and comparison.baseline_run is not None
+            and comparison.baseline_run.completed
+            and comparison.candidate_run is not None
+            and comparison.candidate_run.completed
+            and comparison.baseline_path_audit is not None
+            and comparison.baseline_path_audit.valid
+            and comparison.candidate_path_audit is not None
+            and comparison.candidate_path_audit.valid
+        )
+
+    def _update_ai_grid_check_button(self) -> None:
+        if self.ai_grid_check_button is not None:
+            self.ai_grid_check_button.configure(
+                state=("normal" if not self.run_in_progress
+                       and self._ai_grid_check_eligible() else "disabled"),
+            )
+
+    def _clear_ai_grid_check(self) -> None:
+        self._ai_grid_check_serial += 1
+        self._ai_grid_check_inputs = None
+        self._ai_grid_source_signature = None
+        self.ai_grid_check_text.set("")
+        self._update_ai_grid_check_button()
+
+    def _start_ai_grid_check(self) -> None:
+        """Optionally test fixed eligible paths at a finer numerical grid."""
+
+        if self.run_in_progress or not self._ai_grid_check_eligible():
+            return
+        assert self._path_comparison is not None
+        assert self._ai_grid_check_inputs is not None
+        assert self._ai_grid_source_signature is not None
+        plan, comparison, _assumptions = self._path_comparison
+        vehicle, torque_fraction = self._ai_grid_check_inputs
+        self._ai_grid_check_serial += 1
+        serial = self._ai_grid_check_serial
+        self._active_run_input_signature = self._ai_grid_source_signature
+        self._set_busy(True)
+        self._set_calculation_progress(
+            "indeterminate",
+            "Finer-grid check · two fixed paths · pass progress unavailable",
+        )
+        self.ai_grid_check_text.set("Checking numerical sensitivity on the same fixed paths…")
+        self.status_text.set("Checking eligible AI path times on a finer grid…")
+        threading.Thread(
+            target=self._calculate_ai_grid_check,
+            args=(
+                serial, comparison, deepcopy(vehicle), plan.baseline_track,
+                comparison.candidate_track, comparison.baseline_time_s,
+                comparison.candidate_time_s, torque_fraction,
+                comparison.selection_margin_s,
+            ),
+            daemon=True,
+        ).start()
+
+    def _calculate_ai_grid_check(
+        self, serial: int, comparison: Any, vehicle: Any,
+        baseline_track: SpatialTrack, candidate_track: SpatialTrack,
+        baseline_time_s: float, candidate_time_s: float,
+        torque_fraction: float, selection_margin_s: float,
+    ) -> None:
+        try:
+            from lapsim.optimization.grid_stability import diagnose_paired_grid_stability
+
+            report = diagnose_paired_grid_stability(
+                vehicle, baseline_track, candidate_track,
+                original_baseline_time_s=baseline_time_s,
+                original_candidate_time_s=candidate_time_s,
+                torque_request_fraction=torque_fraction,
+                speed_periodic=True,
+                selection_margin_s=selection_margin_s,
+            )
+            self.result_queue.put(("ai_grid_check", (serial, comparison, report), None))
+        except Exception as error:
+            self.result_queue.put(("ai_grid_check", (serial, comparison, None), error))
+
+    @staticmethod
+    def _ai_grid_check_summary(report: Any) -> str:
+        if report.status != "completed":
+            return (
+                f"Finer-grid check {report.status.replace('_', ' ')}: "
+                f"{report.failure_reason or 'no refined comparison available'}. "
+                "Displayed path selection is unchanged."
+            )
+        sign = "yes" if report.sign_stable else "no"
+        margin = "yes" if report.selection_margin_stable else "no"
+        return (
+            "Fixed-path grid sensitivity: candidate − centerline "
+            f"{report.original_candidate_minus_baseline_s:+.3f} s original, "
+            f"{report.refined_candidate_minus_baseline_s:+.3f} s at "
+            f"max {report.maximum_refined_cell_length_m:.3g} m "
+            f"({report.refined_baseline_cells:,}/{report.refined_candidate_cells:,} cells). "
+            f"Sign stable: {sign}; {report.selection_margin_s:.2f} s selection "
+            f"margin stable: {margin}. Selection is unchanged. One refinement "
+            "does not certify convergence, corridor clearance, or real-car time."
+        )
 
     def _show_path_comparison(self) -> None:
         if self._path_comparison is None:
