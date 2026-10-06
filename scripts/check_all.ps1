@@ -32,7 +32,9 @@ $testFiles = @(Get-ChildItem -LiteralPath (Join-Path $projectRoot "tests") -File
 if ($testFiles.Count -eq 0) {
     throw "No repository test files were found."
 }
-$chunkSize = 15
+# A single test module per process stays below the commit limit even when a
+# local model or other engineering tools are already using memory.
+$chunkSize = 1
 
 Push-Location $projectRoot
 try {

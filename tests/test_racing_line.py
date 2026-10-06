@@ -14,6 +14,7 @@ from lapsim.courses.track import Curve, Straight, Track
 from lapsim.optimization.racing_line import (
     RacingLinePlanner,
     TrackCorridor,
+    _audit_interval_coordinates,
     _continuous_offset_violation,
     _corridor_bounds_at,
     _audit_curvature_path,
@@ -315,6 +316,7 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
     assert comparison.trials[1].path_audit.valid
     assert comparison.trials[2].path_audit is not None
     assert comparison.trials[2].path_audit.valid
+    assert comparison.trials[2].path_audit.continuous_clearance_certified
     assert comparison.trials[2].path_audit.minimum_corridor_slack_m >= 0.02
     assert comparison.trials[2].lap_time_s < comparison.trials[1].lap_time_s
     for phase, active_track, run in (
@@ -361,9 +363,10 @@ def test_speed_periodic_prius_selects_stronger_feasible_path() -> None:
     assert not comparison.trials[0].path_audit.valid
     assert comparison.trials[2].path_audit is comparison.candidate_path_audit
     assert comparison.trials[2].path_audit.valid
+    assert comparison.trials[2].path_audit.continuous_clearance_certified
     assert comparison.trials[2].path_audit.minimum_corridor_slack_m > 0.02
     assert comparison.trials[2].path_audit.minimum_corridor_slack_m < 0.06
-    assert comparison.candidate_time_s == pytest.approx(14.556611, abs=0.002)
+    assert comparison.candidate_time_s == pytest.approx(14.556630, abs=0.002)
     near_boundary_audit = _audit_curvature_path(
         _scaled_candidate_track(plan, 0.975), plan.baseline_track,
         plan.source_station_m, corridor,
@@ -450,6 +453,133 @@ def test_curvature_arc_audit_uses_exact_heading_for_coherent_arc_cells() -> None
     assert audit.seam_position_error_m < 1e-8
     assert audit.maximum_corridor_excess_m == 0.0
     assert audit.valid
+    assert audit.continuous_clearance_certified
+
+
+def test_continuous_arc_clearance_rejects_between_quarter_excursion() -> None:
+    """A coherent arc can leave a narrow corridor between audit samples."""
+
+    radius_m = 10.0
+    count = 8
+    angles = np.linspace(0.0, 2.0 * pi, count + 1)
+    stations = tuple(radius_m * angles)
+    x = radius_m * np.cos(angles)
+    y = radius_m * np.sin(angles)
+    modeled = SpatialTrack(
+        stations, tuple(x), tuple(y), (1.0 / radius_m,) * count, True,
+    )
+    reference_x = x.copy()
+    reference_y = y.copy()
+    reference_x[1] *= 1.05
+    reference_y[1] *= 1.05
+    reference = SpatialTrack(
+        stations, tuple(reference_x), tuple(reference_y),
+        (1.0 / radius_m,) * count, True,
+    )
+    corridor = TrackCorridor(
+        left_width_m=(2.0,) * count,
+        right_width_m=(2.0, 1.04, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0),
+        vehicle_width_m=1.0,
+        source="coherent arc between-quarter regression",
+    )
+
+    # Independent normal-coordinate calculation: the quarter-cell samples
+    # remain inside the −0.54 m usable right bound, while the arc does not.
+    reference_points = np.column_stack((reference_x[:-1], reference_y[:-1]))
+    tangent = np.roll(reference_points, -1, axis=0) - np.roll(
+        reference_points, 1, axis=0,
+    )
+    normals = np.column_stack((-tangent[:, 1], tangent[:, 0]))
+    normals /= np.linalg.norm(normals, axis=1)[:, None]
+
+    def lateral_at(fraction: float) -> float:
+        blended = (1.0 - fraction) * normals[1] + fraction * normals[2]
+        blended /= np.linalg.norm(blended)
+        reference_at = (
+            (1.0 - fraction) * reference_points[1]
+            + fraction * reference_points[2]
+        )
+        angle = angles[1] + fraction * (angles[2] - angles[1])
+        driven_at = radius_m * np.asarray((np.cos(angle), np.sin(angle)))
+        return float((driven_at - reference_at) @ blended)
+
+    assert min(lateral_at(f) for f in (0.0, 0.25, 0.5, 0.75, 1.0)) > -0.54
+    assert lateral_at(0.58188) == pytest.approx(-0.55342172, abs=1e-6)
+    audit = _audit_curvature_path(modeled, reference, stations, corridor)
+    assert not audit.valid
+    assert not audit.continuous_clearance_certified
+    assert audit.clearance_status == "between_sample_excess"
+    assert audit.maximum_corridor_excess_m > 0.007
+    assert audit.minimum_corridor_slack_m < 0.0
+    assert audit.sample_count > 35
+
+
+def test_nearby_source_boundary_keeps_positive_audit_interval_span() -> None:
+    """Distinct source widths beside a planner boundary cannot be snapped away."""
+
+    lap_length = 20.0 * pi
+    cell_stations = np.arange(9) * lap_length / 8.0
+    planner_boundary = float(cell_stations[1])
+    nearby_source_boundary = planner_boundary * (1.0 + 1e-11)
+    assert nearby_source_boundary > planner_boundary
+    index, a, b = _audit_interval_coordinates(
+        cell_stations, planner_boundary, nearby_source_boundary,
+    )
+    assert index == 1
+    assert a == 0.0
+    assert b - a == pytest.approx(1e-11, rel=1e-4)
+
+    nearby_before = planner_boundary * (1.0 - 1e-11)
+    index, a, b = _audit_interval_coordinates(
+        cell_stations, nearby_before, planner_boundary,
+    )
+    assert index == 0
+    assert b == 1.0
+    assert b - a == pytest.approx(1e-11, rel=1e-4)
+
+    angles = np.linspace(0.0, 2.0 * pi, 9)
+    circle = SpatialTrack(
+        tuple(10.0 * angles), tuple(10.0 * np.cos(angles)),
+        tuple(10.0 * np.sin(angles)), (0.1,) * 8, True,
+    )
+    source_stations = list(circle.distance_m)
+    source_stations[1] = nearby_source_boundary
+    corridor = TrackCorridor.constant(
+        circle, left_width_m=2.0, right_width_m=2.0,
+        vehicle_width_m=1.0, source="nearby source boundary regression",
+    )
+    audit = _audit_curvature_path(
+        circle, circle, tuple(source_stations), corridor,
+    )
+    assert audit.valid
+    assert audit.continuous_clearance_certified
+    assert audit.clearance_status == "certified"
+
+
+def test_arc_touching_corridor_is_explicitly_unresolved_with_bounded_work() -> None:
+    """A zero-slack tangency may be conservatively rejected, never approved."""
+
+    radius_m = 10.0
+    count = 8
+    angles = np.linspace(0.0, 2.0 * pi, count + 1)
+    circle = SpatialTrack(
+        tuple(radius_m * angles), tuple(radius_m * np.cos(angles)),
+        tuple(radius_m * np.sin(angles)), (1.0 / radius_m,) * count, True,
+    )
+    sagitta_m = radius_m * (1.0 - np.cos(pi / count))
+    corridor = TrackCorridor.constant(
+        circle, left_width_m=2.0, right_width_m=0.5 + sagitta_m,
+        vehicle_width_m=1.0, source="exact right-bound tangency",
+    )
+    audit = _audit_curvature_path(
+        circle, circle, circle.distance_m, corridor,
+    )
+    assert not audit.valid
+    assert audit.clearance_status == "unresolved_clearance"
+    assert audit.unresolved_clearance_intervals == 1
+    assert not audit.continuous_clearance_certified
+    assert audit.maximum_corridor_excess_m < audit.allowed_numerical_excess_m
+    assert audit.sample_count < 200
 
 
 def test_modeled_arc_audit_samples_a_narrow_source_cell_between_quarters() -> None:

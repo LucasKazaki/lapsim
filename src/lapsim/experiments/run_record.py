@@ -8,10 +8,12 @@ the exact effective vehicle configuration without implying vehicle validation.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from copy import deepcopy
 from hashlib import sha256
 from importlib.metadata import PackageNotFoundError, version as distribution_version
 import json
 from math import isfinite, isnan
+from numbers import Real
 import os
 from pathlib import Path
 import platform
@@ -52,6 +54,28 @@ def _validated_mapping(value: Mapping[str, Any], name: str) -> dict[str, Any]:
         return json.loads(_canonical_json(dict(value)))
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{name} must contain finite JSON values") from exc
+
+
+def _road_grip_multiplier(value: Any) -> float:
+    if (
+        isinstance(value, bool) or not isinstance(value, Real)
+        or not isfinite(value) or value <= 0.0
+    ):
+        raise ValueError("road_grip_multiplier must be finite and positive")
+    return float(value)
+
+
+def _saved_road_grip_multiplier(settings: Mapping[str, Any]) -> float:
+    """Old v2 records without conditions use the original reference grip."""
+
+    conditions = settings.get("conditions")
+    if conditions is None:
+        return 1.0
+    if not isinstance(conditions, dict) or set(conditions) != {
+        "road_grip_multiplier", "source"
+    } or conditions.get("source") != "assumed_uniform_surface_sensitivity":
+        raise ValueError("saved run conditions are invalid")
+    return _road_grip_multiplier(conditions["road_grip_multiplier"])
 
 
 def _runtime_identity() -> dict[str, Any]:
@@ -147,6 +171,7 @@ class LapRunSettings:
         solver_settings: Mapping[str, Any],
         torque_request_fraction: float,
         endurance_config: EnduranceRunConfig,
+        road_grip_multiplier: float = 1.0,
         profile_id: str | None = None,
         profile_label: str | None = None,
         path_planning: Mapping[str, Any] | None = None,
@@ -160,6 +185,7 @@ class LapRunSettings:
             raise ValueError("solver_step_m must be finite and positive")
         if not isfinite(torque_request_fraction) or not 0.0 <= torque_request_fraction <= 1.0:
             raise ValueError("torque_request_fraction must be finite and in [0, 1]")
+        selected_road_grip = _road_grip_multiplier(road_grip_multiplier)
         if not isinstance(endurance_config, EnduranceRunConfig) or endurance_config.laps != 1:
             raise ValueError("endurance_config must describe exactly one lap")
         if profile_id is not None and (not isinstance(profile_id, str) or not profile_id.strip()):
@@ -190,6 +216,10 @@ class LapRunSettings:
                 "path_constraint_settings": solver,
             },
             "driver": {"torque_request_fraction": torque_request_fraction},
+            "conditions": {
+                "road_grip_multiplier": selected_road_grip,
+                "source": "assumed_uniform_surface_sensitivity",
+            },
             "endurance_config": asdict(endurance_config),
             "profile_id": profile_id,
             "profile_label": profile_label,
@@ -495,10 +525,27 @@ def capture_lap_run(
     base_manifest = manifest.to_dict()
     effective_vehicle = snapshot_vehicle_config(actual_vehicle)
     base_config = base_manifest["model_config"]
-    config_changed = _canonical_json(base_config) != _canonical_json(effective_vehicle)
-    if config_changed and overrides is None:
-        raise ValueError("actual vehicle differs from base manifest; supply user_overrides")
     run_settings = settings.to_dict()
+    road_grip_multiplier = _saved_road_grip_multiplier(run_settings)
+    try:
+        tire_fields = effective_vehicle["fields"]["tire"]["fields"]
+        base_tire_fields = base_config["fields"]["tire"]["fields"]
+        if tire_fields["road_grip_multiplier"] != road_grip_multiplier:
+            raise ValueError("effective vehicle road grip disagrees with run settings")
+        base_grip = base_tire_fields["road_grip_multiplier"]
+    except (KeyError, TypeError) as exc:
+        raise ValueError("vehicle snapshot has no road-grip setting") from exc
+    config_changed = _canonical_json(base_config) != _canonical_json(effective_vehicle)
+    effective_without_run_condition = deepcopy(effective_vehicle)
+    effective_without_run_condition["fields"]["tire"]["fields"][
+        "road_grip_multiplier"
+    ] = base_grip
+    profile_fields_changed = (
+        _canonical_json(base_config)
+        != _canonical_json(effective_without_run_condition)
+    )
+    if profile_fields_changed and overrides is None:
+        raise ValueError("actual vehicle differs from base manifest; supply user_overrides")
     summary = _result_payload(result)
     telemetry = _trace_payload(result)
     if telemetry["sample_count"] and "accepted_time_s" in summary:
@@ -559,6 +606,7 @@ def capture_lap_run(
             "effective_vehicle_config": effective_vehicle,
             "effective_vehicle_config_sha256": _sha256_json(effective_vehicle),
             "effective_config_differs_from_base": config_changed,
+            "profile_fields_differ_from_base": profile_fields_changed,
         },
         "settings": run_settings,
         "result": summary,

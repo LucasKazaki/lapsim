@@ -99,6 +99,52 @@ class RunRecordTests(unittest.TestCase):
             self.assertNotIn("NaN", text)
             self.assertIn('"run_id"', text)
 
+    def test_assumed_grip_is_separate_from_source_profile_and_recorded(self) -> None:
+        self.vehicle.tire.road_grip_multiplier = 0.7
+        settings = LapRunSettings.from_track(
+            self.track, track_id="synthetic_loop", solver_step_m=1.0,
+            solver_settings={"maximum_passes": 120},
+            torque_request_fraction=0.8,
+            endurance_config=EnduranceRunConfig(laps=1),
+            road_grip_multiplier=0.7,
+        )
+        payload = capture_lap_run(
+            self._result(), self.manifest, settings, actual_vehicle=self.vehicle,
+        ).to_dict()
+        self.assertEqual(payload["settings"]["conditions"], {
+            "road_grip_multiplier": 0.7,
+            "source": "assumed_uniform_surface_sensitivity",
+        })
+        self.assertIsNone(payload["configuration"]["user_overrides"])
+        self.assertTrue(payload["configuration"]["effective_config_differs_from_base"])
+        self.assertFalse(payload["configuration"]["profile_fields_differ_from_base"])
+        self.assertEqual(
+            payload["configuration"]["base_profile_manifest"]["model_config"]
+            ["fields"]["tire"]["fields"]["road_grip_multiplier"], 1.0,
+        )
+        self.assertEqual(
+            payload["configuration"]["effective_vehicle_config"]
+            ["fields"]["tire"]["fields"]["road_grip_multiplier"], 0.7,
+        )
+        with self.assertRaisesRegex(ValueError, "road grip disagrees"):
+            capture_lap_run(
+                self._result(), self.manifest, self.settings,
+                actual_vehicle=self.vehicle,
+            )
+
+    def test_assumed_grip_setting_rejects_invalid_factor(self) -> None:
+        for invalid in (False, "bad", 0.0, -1.0, float("nan"), float("inf")):
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(
+                ValueError, "road_grip_multiplier"
+            ):
+                LapRunSettings.from_track(
+                    self.track, track_id="synthetic_loop", solver_step_m=1.0,
+                    solver_settings={"maximum_passes": 120},
+                    torque_request_fraction=0.8,
+                    endurance_config=EnduranceRunConfig(laps=1),
+                    road_grip_multiplier=invalid,
+                )
+
     def test_measured_seam_speeds_are_in_the_saved_result(self) -> None:
         observed = replace(
             self._result(self._telemetry()),

@@ -8,9 +8,11 @@ from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Track
 from lapsim.core.controls import Controls
 from lapsim.solvers.path_constraints import PathConstraintSolver
+from lapsim.profiles import build_vehicle
 from lapsim.ui.presets import TOYOTA_2026_PRIUS_SPECS, VehicleSetup, make_prius_benchmark
 from lapsim.ui.simulation import (
-    prepare_one_lap_constraints, resample_track, run_one_lap,
+    apply_uniform_road_grip, prepare_one_lap_constraints, resample_track,
+    run_one_lap,
 )
 from vehicle_model import Vehicle
 from vehicle_model.mech.loads import TireNormalLoads
@@ -18,6 +20,63 @@ from vehicle_model.mech.tire import Tire
 
 
 class DesktopSimulationMathTests(TestCase):
+    def test_source_profile_uniform_grip_reduces_limits_and_lap_speed(self) -> None:
+        track = SpatialTrack.from_track(
+            Track.from_segments([Curve(25.0, 2.0 * pi)]),
+            maximum_cell_length_m=5.0,
+        )
+        reference, manifest = build_vehicle("repository_baseline")
+        reduced, _ = build_vehicle("repository_baseline")
+        self.assertIsNone(reference.tire.constant_friction_coefficient)
+        apply_uniform_road_grip(reduced, 0.7)
+        self.assertEqual(
+            manifest.to_dict()["model_config"]["fields"]["tire"]["fields"][
+                "road_grip_multiplier"
+            ], 1.0,
+        )
+        reference_limits = prepare_one_lap_constraints(reference, track)
+        reduced_limits = prepare_one_lap_constraints(reduced, track)
+        self.assertLess(
+            reduced_limits.braking_speed_ceiling_mps[0],
+            reference_limits.braking_speed_ceiling_mps[0],
+        )
+        reference_run = run_one_lap(
+            reference, track, torque_request_fraction=0.8,
+            constraints=reference_limits,
+        )
+        reduced_run = run_one_lap(
+            reduced, track, torque_request_fraction=0.8,
+            constraints=reduced_limits,
+        )
+        self.assertTrue(reference_run.completed, reference_run.failure_reason)
+        self.assertTrue(reduced_run.completed, reduced_run.failure_reason)
+        self.assertGreater(reduced_run.driving_time_s, reference_run.driving_time_s)
+        self.assertEqual(
+            reduced_run.telemetry["tire.road_grip_multiplier"],
+            (0.7,) * track.cell_count,
+        )
+
+    def test_prepared_constraints_reject_a_changed_road_grip(self) -> None:
+        track = SpatialTrack.from_track(
+            Track.from_segments([Curve(25.0, 2.0 * pi)]),
+            maximum_cell_length_m=5.0,
+        )
+        vehicle = Vehicle()
+        limits = prepare_one_lap_constraints(vehicle, track)
+        apply_uniform_road_grip(vehicle, 0.7)
+        with self.assertRaisesRegex(ValueError, "different road grip"):
+            run_one_lap(
+                vehicle, track, torque_request_fraction=0.8,
+                constraints=limits,
+            )
+
+    def test_uniform_grip_api_rejects_invalid_factor(self) -> None:
+        for invalid in (True, "bad", 0.0, -1.0, float("nan"), float("inf")):
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(
+                ValueError, "road_grip_multiplier"
+            ):
+                apply_uniform_road_grip(Vehicle(), invalid)
+
     def test_prepared_constraints_reuse_one_grid_with_an_explicit_start(self) -> None:
         track = SpatialTrack.from_track(
             Track.from_segments([Curve(25.0, 2.0 * pi)]),

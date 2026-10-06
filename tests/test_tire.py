@@ -1,6 +1,6 @@
 """Tests for the default lateral and longitudinal tire models."""
 
-from math import radians
+from math import radians, sqrt
 from unittest import TestCase
 
 from lapsim import Controls
@@ -146,6 +146,67 @@ class PacejkaLateralTests(TestCase):
 
 class FourCornerTireTests(TestCase):
     loads = TireNormalLoads(500.0, 900.0, 700.0, 1_100.0)
+
+    def test_uniform_road_grip_scales_peak_forces_without_erasing_tire_fit(self) -> None:
+        reference = Tire()
+        reduced = Tire(road_grip_multiplier=0.7)
+        self.assertIsNone(reduced.constant_friction_coefficient)
+        for load_n in (500.0, 1_100.0):
+            self.assertAlmostEqual(
+                reduced.lateral_force_capacity_n(load_n),
+                0.7 * reference.lateral_force_capacity_n(load_n),
+            )
+            self.assertAlmostEqual(
+                reduced.longitudinal_force_capacity_n(load_n),
+                0.7 * reference.longitudinal_force_capacity_n(load_n),
+            )
+        self.assertNotEqual(
+            reduced.lateral_coefficient(500.0),
+            reduced.lateral_coefficient(1_100.0),
+        )
+        self.assertAlmostEqual(
+            reduced.maximum_longitudinal_coefficient,
+            0.7 * reference.maximum_longitudinal_coefficient,
+        )
+        lateral_n = 0.5 * reduced.lateral_force_capacity_n(900.0)
+        self.assertAlmostEqual(
+            reduced.combined_longitudinal_force_capacity_n(900.0, lateral_n),
+            reduced.longitudinal_force_capacity_n(900.0) * sqrt(0.75),
+        )
+
+    def test_uniform_road_grip_scales_pacejka_capacity_and_force(self) -> None:
+        reference = Tire(
+            pacejka_lateral=Pacejka61LateralModel(),
+            pacejka_longitudinal=Pacejka52UpcR20LongitudinalModel(),
+        )
+        reduced = Tire(
+            pacejka_lateral=Pacejka61LateralModel(),
+            pacejka_longitudinal=Pacejka52UpcR20LongitudinalModel(),
+            road_grip_multiplier=0.7,
+        )
+        self.assertAlmostEqual(
+            reduced.lateral_force_capacity_n(800.0),
+            0.7 * reference.lateral_force_capacity_n(800.0),
+        )
+        self.assertAlmostEqual(
+            reduced.longitudinal_force_capacity_n(800.0),
+            0.7 * reference.longitudinal_force_capacity_n(800.0),
+        )
+        self.assertAlmostEqual(
+            reduced.maximum_longitudinal_coefficient,
+            0.7 * reference.maximum_longitudinal_coefficient,
+        )
+        self.assertAlmostEqual(
+            reduced.pure_lateral_force_n(800.0, radians(5.0)),
+            0.7 * reference.pure_lateral_force_n(800.0, radians(5.0)),
+        )
+
+    def test_uniform_road_grip_rejects_invalid_multiplier(self) -> None:
+        for invalid in (False, "bad", 0.0, -0.2, float("nan"), float("inf")):
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(
+                ValueError, "road_grip_multiplier"
+            ):
+                Tire(road_grip_multiplier=invalid)
 
     def test_each_tire_resolves_its_own_load_force_capacity_and_slip(self) -> None:
         tire = Tire()

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from math import atan2, ceil, hypot, isfinite, pi
+from math import atan2, ceil, cos, hypot, isfinite, pi, sin
 from numbers import Real
 from time import perf_counter
 from typing import Callable
@@ -116,16 +116,19 @@ class RacingLinePlan:
 
 @dataclass(frozen=True, slots=True)
 class CurvaturePathAudit:
-    """Sampled clearance of the path actually integrated from cell curvature.
+    """Clearance of the path actually integrated from cell curvature.
 
     The trajectory starts at the proposed path's first point, with its initial
     heading inferred from the first chord and half the start-vertex turn. Four
     points per cell are compared with the planner's processed reference and
-    declared normal-coordinate corridor. The integrated end position must
-    also close near the start. ``minimum_corridor_slack_m`` is the smallest
-    sampled distance from a usable lateral bound (negative outside). This is
-    a deterministic screen, not a continuous swept-body or surveyed-boundary
-    certificate.
+    declared normal-coordinate corridor. The intervals between those points
+    are certified with a conservative second-derivative bound, subdividing
+    near a boundary. The integrated end position must also close near the
+    start. On a certified path, ``minimum_corridor_slack_m`` is a conservative
+    lower bound on clearance over every interval; on a failed path it includes
+    the observed violation or unresolved interval bound. The certificate is
+    for the declared scalar normal-coordinate model, not the vehicle's swept
+    body or a surveyed pavement boundary.
     """
 
     valid: bool
@@ -140,6 +143,9 @@ class CurvaturePathAudit:
     safety_margin_m: float
     initial_heading_policy: str
     minimum_corridor_slack_m: float = 0.0
+    continuous_clearance_certified: bool = False
+    unresolved_clearance_intervals: int = 0
+    clearance_status: str = "unavailable"
 
 
 @dataclass(frozen=True, slots=True)
@@ -152,7 +158,8 @@ class RacingLineComparison:
     not necessarily the full-strength geometric proposal. If no candidate is
     eligible, its run/track retain a completed diagnostic trial when available.
     Eligible times require a completed model run, the requested speed-seam
-    rule when enabled, and a passing sampled curvature-path corridor audit.
+    rule when enabled, and a passing continuous scalar curvature-path
+    corridor audit.
     Completed but ineligible times remain in ``*_diagnostic_time_s``.
     ``selected_*`` uses the candidate only when its modeled time beats the
     baseline by more than ``selection_margin_s``. This margin is a conservative
@@ -675,6 +682,43 @@ def _scaled_candidate_track(plan: RacingLinePlan, strength: float) -> SpatialTra
     return track
 
 
+def _audit_interval_coordinates(
+    cell_stations: np.ndarray, start_station: float, end_station: float,
+) -> tuple[int, float, float]:
+    """Locate a distinct audit interval without snapping source boundaries.
+
+    Fractions are formed from the *station difference* so a source-width
+    boundary an ulp from a generated planner boundary keeps positive span.
+    A caller must conservatively reject intervals that cannot be represented
+    without crossing a modeled cell or collapsing under floating arithmetic.
+    """
+
+    if end_station <= start_station:
+        raise ValueError("audit interval has no positive physical span")
+    count = len(cell_stations) - 1
+    index = min(int(np.searchsorted(
+        cell_stations, start_station, side="right",
+    ) - 1), count - 1)
+    cell_start = float(cell_stations[index])
+    cell_end = float(cell_stations[index + 1])
+    if end_station > cell_end:
+        raise ValueError("audit interval crosses a modeled cell boundary")
+    cell_span = cell_end - cell_start
+    interval_span = (end_station - start_station) / cell_span
+    if end_station == cell_end:
+        b = 1.0
+        a = b - interval_span
+    elif start_station == cell_start:
+        a = 0.0
+        b = interval_span
+    else:
+        a = (start_station - cell_start) / cell_span
+        b = a + interval_span
+    if not 0.0 <= a < b <= 1.0:
+        raise ValueError("audit interval fractions cannot be represented")
+    return index, a, b
+
+
 def _audit_curvature_path(
     track: SpatialTrack,
     reference: SpatialTrack,
@@ -688,8 +732,12 @@ def _audit_curvature_path(
     following every prescribed curvature does not generally visit the polygon
     vertices. Sample each modeled arc at quarter-cell intervals, and also at
     each source-corridor boundary and midpoint, in the same processed
-    normal-coordinate frame used to bound the proposed spline.
-    This deliberately does not certify the continuous swept vehicle envelope.
+    normal-coordinate frame used to bound the proposed spline. For every
+    interval left by those samples, bound the interpolation error of the
+    lateral coordinate and bisect intervals close to a corridor boundary.
+    This certifies the scalar normal-coordinate inequality continuously, or
+    conservatively rejects an interval that cannot be certified within the
+    bounded work budget. It does not certify the swept vehicle envelope.
     """
 
     count = track.cell_count
@@ -798,13 +846,14 @@ def _audit_curvature_path(
     minimum_slack = float(np.min(np.minimum(
         lateral_offset - lower, upper - lateral_offset,
     )))
+    maximum_lateral_offset = float(np.max(np.abs(lateral_offset)))
     seam_error = hypot(
         float(entry_x[-1] + exit_dx[-1] - x[-1]),
         float(entry_y[-1] + exit_dy[-1] - y[-1]),
     )
     if not all(isfinite(value) for value in (
         maximum_excess, minimum_slack, seam_error,
-        float(np.max(np.abs(lateral_offset))),
+        maximum_lateral_offset,
     )):
         raise ValueError("curvature-path audit produced a nonfinite result")
     # Roundoff only for declared clearance. A generated closed solver path
@@ -813,14 +862,204 @@ def _audit_curvature_path(
     # survey uncertainty or a vehicle tracking accuracy claim.
     numerical_epsilon_m = 1e-8
     seam_tolerance_m = 0.01
+    clearance_certified = False
+    unresolved_intervals = 0
+    extra_samples = 0
+    clearance_status = (
+        "sampled_excess" if maximum_excess > numerical_epsilon_m
+        else "seam_failure" if seam_error > seam_tolerance_m
+        else "certified"
+    )
+    if maximum_excess <= numerical_epsilon_m and seam_error <= seam_tolerance_m:
+        # Within each interval the reference point is linear, the arc position
+        # has |P''| = length**2 * |curvature|, and the normal is the normalized
+        # blend of its two endpoint normals. Let g=(P-R) dot n. The bound below
+        # follows from g''=D'' dot n + 2 D' dot n' + D dot n'', with
+        # |D'| <= length+|R'|, |n'| <= |N'|/min|N| and
+        # |n''| <= 3|N'|**2/min|N|**2. Thus g differs from the straight line
+        # between two samples by at most max|g''| * (b-a)**2 / 8.
+        reference_dx = np.diff(reference_x)
+        reference_dy = np.diff(reference_y)
+        interval_lower, interval_upper = _corridor_bounds_at(
+            0.5 * (planner_station[:-1] + planner_station[1:]),
+            source_stations, corridor, half_vehicle_plus_margin,
+        )
+        # Assign intervals from physical stations, not the floating product
+        # station * count / length. An exact generated cell boundary can land
+        # a few ulps below an integer after that product; a distinct source
+        # width boundary can also lie extremely close to it. Snapping both
+        # would erase a real interval and falsely certify its interior.
+        cell_stations = np.arange(count + 1, dtype=float) * source_stations[-1] / count
+        maximum_extra_samples = min(50_000, max(1_024, 2 * len(planner_station)))
+        maximum_depth = 10
+        recursive_samples = 0
+
+        def interval_error_bound(
+            index: int, a: float, b: float,
+            da_x: float, da_y: float, db_x: float, db_y: float,
+        ) -> float:
+            span = b - a
+            if span <= 0.0 or b > 1.0 + 1e-9:
+                return float("inf")
+            ndx = normal_x[(index + 1) % count] - normal_x[index]
+            ndy = normal_y[(index + 1) % count] - normal_y[index]
+            na_x = normal_x[index] + a * ndx
+            na_y = normal_y[index] + a * ndy
+            normal_derivative_squared = ndx * ndx + ndy * ndy
+            if normal_derivative_squared > 0.0:
+                minimum_at = max(0.0, min(span,
+                    -(na_x * ndx + na_y * ndy) / normal_derivative_squared,
+                ))
+            else:
+                minimum_at = 0.0
+            minimum_normal = hypot(
+                na_x + minimum_at * ndx, na_y + minimum_at * ndy,
+            )
+            if minimum_normal <= 1e-8:
+                return float("inf")
+            normal_derivative = hypot(ndx, ndy)
+            reference_derivative = hypot(reference_dx[index], reference_dy[index])
+            displacement_derivative = length[index] + reference_derivative
+            displacement_max = max(hypot(da_x, da_y), hypot(db_x, db_y)) + (
+                displacement_derivative * span / 2.0
+            )
+            second_derivative_bound = (
+                length[index] ** 2 * abs(curvature[index])
+                + 2.0 * displacement_derivative * normal_derivative / minimum_normal
+                + 3.0 * displacement_max * normal_derivative**2 / minimum_normal**2
+            )
+            return float(second_derivative_bound * span**2 / 8.0)
+
+        def point_at(index: int, fraction: float) -> tuple[float, float, float]:
+            half = 0.5 * cell_turn[index] * fraction
+            sinc = (1.0 - half**2 / 6.0 + half**4 / 120.0
+                    if abs(half) < 1e-5 else sin(half) / half)
+            magnitude = length[index] * fraction * sinc
+            px = entry_x[index] + magnitude * cos(entry_heading[index] + half)
+            py = entry_y[index] + magnitude * sin(entry_heading[index] + half)
+            dx = px - reference_x[index] - fraction * reference_dx[index]
+            dy = py - reference_y[index] - fraction * reference_dy[index]
+            nx = normal_x[index] + fraction * (
+                normal_x[(index + 1) % count] - normal_x[index]
+            )
+            ny = normal_y[index] + fraction * (
+                normal_y[(index + 1) % count] - normal_y[index]
+            )
+            norm = hypot(nx, ny)
+            if norm <= 1e-8:
+                return float(dx), float(dy), float("nan")
+            return float(dx), float(dy), float((dx * nx + dy * ny) / norm)
+
+        point_cache: dict[tuple[int, float], tuple[float, float, float]] = {}
+
+        def endpoint_at(
+            index: int, station: float, fraction: float,
+        ) -> tuple[float, float, float]:
+            nonlocal extra_samples
+            key = index, station
+            if key not in point_cache:
+                point_cache[key] = point_at(index, fraction)
+                extra_samples += 1
+            return point_cache[key]
+
+        clearance_certified = True
+        for interval in range(len(planner_station) - 1):
+            start_station = float(planner_station[interval])
+            end_station = float(planner_station[interval + 1])
+            low = float(interval_lower[interval])
+            high = float(interval_upper[interval])
+            try:
+                index, a, b = _audit_interval_coordinates(
+                    cell_stations, start_station, end_station,
+                )
+            except ValueError:
+                clearance_certified = False
+                unresolved_intervals += 1
+                clearance_status = "unresolved_clearance"
+                break
+            left_dx, left_dy, left_g = endpoint_at(index, start_station, a)
+            right_dx, right_dy, right_g = endpoint_at(index, end_station, b)
+            if not isfinite(left_g) or not isfinite(right_g):
+                clearance_certified = False
+                unresolved_intervals += 1
+                clearance_status = "undefined_reference_normal"
+                break
+            maximum_lateral_offset = max(
+                maximum_lateral_offset, abs(left_g), abs(right_g),
+            )
+            endpoint_slack = min(
+                left_g - low, high - left_g,
+                right_g - low, high - right_g,
+            )
+            minimum_slack = min(minimum_slack, endpoint_slack)
+            maximum_excess = max(maximum_excess, -endpoint_slack)
+            if endpoint_slack < -numerical_epsilon_m:
+                clearance_certified = False
+                clearance_status = "interval_endpoint_excess"
+                break
+            stack = [(
+                a, b, left_g, right_g,
+                left_dx, left_dy, right_dx, right_dy, 0,
+            )]
+            while stack:
+                left_f, right_f, left_g, right_g, left_dx, left_dy, right_dx, right_dy, depth = stack.pop()
+                error_bound = interval_error_bound(
+                    index, left_f, right_f, left_dx, left_dy, right_dx, right_dy,
+                )
+                endpoint_slack = min(
+                    left_g - low, high - left_g,
+                    right_g - low, high - right_g,
+                )
+                interval_slack_bound = endpoint_slack - error_bound
+                if (
+                    min(left_g, right_g) - error_bound >= low - numerical_epsilon_m
+                    and max(left_g, right_g) + error_bound <= high + numerical_epsilon_m
+                ):
+                    minimum_slack = min(minimum_slack, interval_slack_bound)
+                    continue
+                if depth >= maximum_depth or recursive_samples >= maximum_extra_samples:
+                    clearance_certified = False
+                    unresolved_intervals += 1
+                    clearance_status = "unresolved_clearance"
+                    if isfinite(interval_slack_bound):
+                        minimum_slack = min(minimum_slack, interval_slack_bound)
+                    break
+                midpoint = 0.5 * (left_f + right_f)
+                middle_dx, middle_dy, middle_g = point_at(index, midpoint)
+                extra_samples += 1
+                recursive_samples += 1
+                if not isfinite(middle_g):
+                    clearance_certified = False
+                    unresolved_intervals += 1
+                    clearance_status = "undefined_reference_normal"
+                    break
+                maximum_lateral_offset = max(maximum_lateral_offset, abs(middle_g))
+                middle_slack = min(middle_g - low, high - middle_g)
+                minimum_slack = min(minimum_slack, middle_slack)
+                maximum_excess = max(maximum_excess, -middle_slack)
+                if middle_slack < -numerical_epsilon_m:
+                    clearance_certified = False
+                    clearance_status = "between_sample_excess"
+                    break
+                stack.append((
+                    midpoint, right_f, middle_g, right_g,
+                    middle_dx, middle_dy, right_dx, right_dy, depth + 1,
+                ))
+                stack.append((
+                    left_f, midpoint, left_g, middle_g,
+                    left_dx, left_dy, middle_dx, middle_dy, depth + 1,
+                ))
+            if not clearance_certified:
+                break
     return CurvaturePathAudit(
-        valid=(
+        valid=bool(
             maximum_excess <= numerical_epsilon_m
             and seam_error <= seam_tolerance_m
+            and clearance_certified
         ),
-        sample_count=len(lateral_offset),
-        maximum_lateral_offset_m=float(np.max(np.abs(lateral_offset))),
-        maximum_corridor_excess_m=maximum_excess,
+        sample_count=len(lateral_offset) + extra_samples,
+        maximum_lateral_offset_m=maximum_lateral_offset,
+        maximum_corridor_excess_m=float(maximum_excess),
         allowed_numerical_excess_m=numerical_epsilon_m,
         seam_position_error_m=seam_error,
         allowed_seam_position_error_m=seam_tolerance_m,
@@ -828,7 +1067,10 @@ def _audit_curvature_path(
         vehicle_width_m=corridor.vehicle_width_m,
         safety_margin_m=corridor.safety_margin_m,
         initial_heading_policy=heading_policy,
-        minimum_corridor_slack_m=minimum_slack,
+        minimum_corridor_slack_m=float(minimum_slack),
+        continuous_clearance_certified=clearance_certified,
+        unresolved_clearance_intervals=unresolved_intervals,
+        clearance_status=clearance_status,
     )
 
 
@@ -888,9 +1130,10 @@ def _clearance_aware_fourth_strength(
     A clear half-strength model win is evidence to probe farther along the
     same offset, but the invalid full-strength lap cannot be ranked. Check a
     fixed, descending grid of intermediate strengths with geometry and the
-    existing sampled path audit before spending the one remaining model run.
+    existing curvature-path clearance audit before spending the one remaining
+    model run.
     A 2 cm *additional selection buffer* avoids deliberately choosing a path
-    at the declared sampled boundary. It is not surveyed road clearance or a
+    in the declared normal-coordinate corridor. It is not surveyed road clearance or a
     continuous swept-body guarantee. No monotonic feasibility is assumed.
     """
 
@@ -932,7 +1175,7 @@ def compare_lines_with_lap_model(
     The vehicle is copied before each run because a lap mutates pack and
     chassis state. The full geometric candidate and a validated half-offset
     path are tried first. One bounded fourth strength is chosen from their
-    eligible car-specific times. If the full path fails its sampled audit but
+    eligible car-specific times. If the full path fails its clearance audit but
     the half path wins clearly, a few cheap geometry-only clearance probes
     can move the fourth model trial closer to full strength. Otherwise it
     defaults to three-quarter offset. The default evaluates one lap per path;
@@ -942,9 +1185,10 @@ def compare_lines_with_lap_model(
     closed-course seam, not full-state periodicity. A candidate is selected
     only if both it and the baseline yield acceptable times and the gain is
     larger than ``minimum_selection_gain_s``. A planner-created path is also
-    screened by a sampled integration of the curvature that the vehicle model
-    follows. The screen checks the declared clearance around the processed
-    reference, but is not a continuous swept-body certificate. When the
+    screened by integration of the curvature that the vehicle model follows.
+    The screen certifies scalar lateral clearance around the processed
+    reference with adaptive interval bounds, but is not a swept-body
+    certificate. When the
     processed baseline is valid, a failed candidate screen skips that
     candidate's expensive model run; its trial retains the geometric error.
     If the baseline itself fails, all trial model runs remain diagnostic so
@@ -984,19 +1228,24 @@ def compare_lines_with_lap_model(
 
     def audit_trial(track: SpatialTrack) -> tuple[CurvaturePathAudit | None, str | None]:
         if plan.corridor is None or plan.source_station_m is None:
-            return None, "Sampled curvature-path corridor audit unavailable: corridor or source stations missing"
+            return None, "Curvature-path corridor audit unavailable: corridor or source stations missing"
         try:
             audit = _audit_curvature_path(
                 track, plan.baseline_track, plan.source_station_m, plan.corridor,
             )
         except ValueError as error:
-            return None, f"Sampled curvature-path corridor audit unavailable: {error}"
+            return None, f"Curvature-path corridor audit unavailable: {error}"
         if not audit.valid:
             reasons = []
             if audit.maximum_corridor_excess_m > audit.allowed_numerical_excess_m:
                 reasons.append(
-                    "sampled modeled curvature path exceeds declared centerline "
+                    "modeled curvature path exceeds declared centerline "
                     f"clearance by {audit.maximum_corridor_excess_m:.6f} m"
+                )
+            if audit.unresolved_clearance_intervals:
+                reasons.append(
+                    "continuous normal-coordinate clearance could not be "
+                    "certified within the bounded interval budget"
                 )
             if audit.seam_position_error_m > audit.allowed_seam_position_error_m:
                 reasons.append(
@@ -1006,7 +1255,7 @@ def compare_lines_with_lap_model(
                 )
             return audit, (
                 "; ".join(reasons)
-                + f" ({audit.sample_count} arc samples; no continuous swept-body certificate)"
+                + f" ({audit.sample_count} arc evaluations; no swept-body certificate)"
             )
         return audit, None
 
@@ -1072,14 +1321,14 @@ def compare_lines_with_lap_model(
     def run_ai_trial(
         track: SpatialTrack, phase: str, path_audit: CurvaturePathAudit | None,
     ) -> tuple[EnduranceRunResult | None, float | None, str | None]:
-        # A failed sampled path cannot become selectable by running physics.
+        # A failed clearance path cannot become selectable by running physics.
         # Preserve diagnostic runs when the processed baseline also fails,
         # because those runs expose the source-course mismatch.
         if (
             baseline_path_error is None
             and path_audit is not None and not path_audit.valid
         ):
-            return None, None, "Model run skipped after failed sampled path audit"
+            return None, None, "Model run skipped after failed path audit"
         return run_trial(track, phase)
 
     baseline_run, baseline_model_time, baseline_run_error = run_trial(
@@ -1091,7 +1340,7 @@ def compare_lines_with_lap_model(
     )
     baseline_error = combined_error(baseline_path_error, baseline_run_error)
     baseline_comparison_error = (
-        "Processed baseline path failed the sampled corridor audit; candidate "
+        "Processed baseline path failed the corridor audit; candidate "
         "time is diagnostic only"
         if baseline_path_error is not None else None
     )

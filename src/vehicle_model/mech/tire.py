@@ -3,6 +3,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from math import copysign, exp, isfinite, sqrt
+from numbers import Real
 from typing import Literal
 
 from utils.units import inches_to_meters, pounds_force_to_newtons
@@ -159,6 +160,9 @@ class Tire:
     camber_angle_rad: float = 0.0
     inflation_pressure_pa: float = 98_000.0
     constant_friction_coefficient: float | None = None
+    # Run-level, uniform surface sensitivity. It scales peak tire force for
+    # every supported tire fit without replacing the selected car's tire data.
+    road_grip_multiplier: float = 1.0
     peak_longitudinal_slip_ratio: float = DEFAULT_PEAK_LONGITUDINAL_SLIP_RATIO
     longitudinal_slip_relaxation_length_m: float = 0.0
     current_states: TireStates = field(init=False, default_factory=TireStates)
@@ -202,6 +206,13 @@ class Tire:
             and self.constant_friction_coefficient <= 0
         ):
             raise ValueError("constant_friction_coefficient must be positive")
+        if (
+            isinstance(self.road_grip_multiplier, bool)
+            or not isinstance(self.road_grip_multiplier, Real)
+            or not isfinite(self.road_grip_multiplier)
+            or self.road_grip_multiplier <= 0.0
+        ):
+            raise ValueError("road_grip_multiplier must be finite and positive")
         if not 0.0 <= self.peak_longitudinal_slip_ratio < 1.0:
             raise ValueError("peak_longitudinal_slip_ratio must be in [0, 1)")
         if self.longitudinal_slip_relaxation_length_m < 0.0:
@@ -228,12 +239,12 @@ class Tire:
                 self.pacejka_longitudinal.nominal_load_n
                 * self.pacejka_longitudinal.nominal_load_scale
             )
-            return self.pacejka_longitudinal.peak_force_n(
+            return self.road_grip_multiplier * self.pacejka_longitudinal.peak_force_n(
                 reference_load_n,
                 camber_angle_rad=self.camber_angle_rad,
                 inflation_pressure_pa=self.inflation_pressure_pa,
             ) / reference_load_n
-        return (
+        return self.road_grip_multiplier * (
             self.constant_friction_coefficient
             if self.constant_friction_coefficient is not None
             else max(self.longitudinal_coefficients)
@@ -277,6 +288,7 @@ class Tire:
                 "tire.constant_friction_coefficient": (
                     self.constant_friction_coefficient or 0.0
                 ),
+                "tire.road_grip_multiplier": self.road_grip_multiplier,
             }
         )
         for position, state in zip(TIRE_POSITIONS, states.all, strict=True):
@@ -305,29 +317,33 @@ class Tire:
         """Return lateral friction coefficient at one tire's normal load."""
 
         if self.constant_friction_coefficient is not None:
-            return self.constant_friction_coefficient
+            return self.road_grip_multiplier * self.constant_friction_coefficient
         if self.pacejka_lateral is not None:
             if normal_load_n <= 0.0:
                 return 0.0
             return self.lateral_force_capacity_n(normal_load_n) / normal_load_n
-        return self._interpolate(normal_load_n, self.lateral_coefficients)
+        return self.road_grip_multiplier * self._interpolate(
+            normal_load_n, self.lateral_coefficients
+        )
 
     def longitudinal_coefficient(self, normal_load_n: float) -> float:
         """Return longitudinal friction coefficient at one tire's normal load."""
 
         if self.constant_friction_coefficient is not None:
-            return self.constant_friction_coefficient
+            return self.road_grip_multiplier * self.constant_friction_coefficient
         if self.pacejka_longitudinal is not None:
             if normal_load_n <= 0.0:
                 return 0.0
             return self.longitudinal_force_capacity_n(normal_load_n) / normal_load_n
-        return self._interpolate(normal_load_n, self.longitudinal_coefficients)
+        return self.road_grip_multiplier * self._interpolate(
+            normal_load_n, self.longitudinal_coefficients
+        )
 
     def lateral_force_capacity_n(self, normal_load_n: float) -> float:
         """Return one tire's lateral force capacity."""
 
         if self.constant_friction_coefficient is None and self.pacejka_lateral:
-            return self.pacejka_lateral.peak_force_n(
+            return self.road_grip_multiplier * self.pacejka_lateral.peak_force_n(
                 normal_load_n,
                 camber_angle_rad=self.camber_angle_rad,
                 inflation_pressure_pa=self.inflation_pressure_pa,
@@ -346,7 +362,7 @@ class Tire:
 
         if self.pacejka_lateral is None:
             raise RuntimeError("pure lateral force requires a Pacejka lateral model")
-        return self.pacejka_lateral.force_n(
+        return self.road_grip_multiplier * self.pacejka_lateral.force_n(
             normal_load_n,
             slip_angle_rad,
             camber_angle_rad=(
@@ -365,7 +381,7 @@ class Tire:
         """Return one tire's longitudinal force capacity."""
 
         if self.constant_friction_coefficient is None and self.pacejka_longitudinal:
-            return self.pacejka_longitudinal.peak_force_n(
+            return self.road_grip_multiplier * self.pacejka_longitudinal.peak_force_n(
                 normal_load_n,
                 camber_angle_rad=self.camber_angle_rad,
                 inflation_pressure_pa=self.inflation_pressure_pa,
@@ -386,7 +402,7 @@ class Tire:
             raise RuntimeError(
                 "pure longitudinal force requires a Pacejka longitudinal model"
             )
-        return self.pacejka_longitudinal.force_n(
+        return self.road_grip_multiplier * self.pacejka_longitudinal.force_n(
             normal_load_n,
             slip_ratio,
             camber_angle_rad=(

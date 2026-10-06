@@ -101,7 +101,13 @@ opens a separate top-down torque-allocation comparison with individual wheel
 slip and force displays. It exposes world-frame wind, air density, drag area,
 base grip, and an optional fixed low-grip rectangle for paired sensitivity
 studies. Completed and interrupted lap runs save local JSON records of inputs
-and telemetry. The centerline solver defaults to a requested maximum 1 m step.
+and telemetry. The lap desktop also has an **Assumed road grip** input, default
+100%, that uniformly scales the selected tire model's lateral and longitudinal
+force capacities for a sensitivity run. It applies to centerline, AI, and
+two-car comparisons and is saved with each run for replay. It is an assumed
+uniform multiplier, not a measured wet/dry or local-surface model. Changing
+run inputs clears the previous displayed result and playback. The centerline
+solver defaults to a requested maximum 1 m step.
 The fused course is resampled to that step; synthetic and imported coherent
 courses retain their exact source arc cells when the request is at least as
 large as their longest cell. For a finer request, the desktop strictly validates the source's
@@ -122,20 +128,23 @@ skips its physics pass when the geometric baseline is valid. If all three
 paths have eligible audits and times,
 and half beats both endpoints by more than 0.05 s, a convex quadratic through
 those times chooses the nearest safeguarded fourth strength from 0.25, 0.375,
-0.625, 0.75, or 0.875. If full offset fails its sampled audit but eligible half
+0.625, 0.75, or 0.875. If full offset fails its path audit but eligible half
 offset clearly beats the baseline, a short geometry-only search tries a stronger
-fourth offset with at least 0.02 m of additional **sampled** clearance. In other
+fourth offset with at least 0.02 m of certified scalar clearance. In other
 cases the fourth strength is 0.75. Each path admitted to physics receives one
 dry speed-seam pass and one recorded pass, for at most eight lap-model passes
 across four paths. A
 completed lap is eligible for a path comparison only when its start
-and finish speeds agree within 0.005 m/s and a sampled integration of its
-prescribed curvature passes the assumed clearance and position-closure
-checks. The audit samples four positions per modeled cell plus every source
-corridor-cell boundary and midpoint; a shared boundary uses the narrower
-adjacent width, including at the closed seam. Allowable corridor excess is
-1e-8 m and the integrated seam gap must be at most 0.01 m. These checks do
-not certify the continuous swept vehicle body or surveyed cone clearance.
+and finish speeds agree within 0.005 m/s and its integrated prescribed-curvature
+path passes the declared clearance and position-closure checks. The audit
+evaluates four positions per modeled cell plus every source corridor-cell
+boundary and midpoint, then bounds lateral clearance between evaluations and
+subdivides close intervals. An unresolved interval is ineligible. A shared
+boundary uses the narrower adjacent width, including at the closed seam.
+Allowable scalar corridor excess is 1e-8 m and the integrated seam gap must be
+at most 0.01 m. The certificate covers this continuous *normal-coordinate*
+inequality under the supplied width model. It does not certify the swept
+vehicle body, world-frame containment, or surveyed cone clearance.
 For eligible paths, the app selects a candidate only when its gain over the
 geometric baseline is strictly greater than 0.05 s. A smaller positive gain
 is an unresolved numerical tie; the 0.05 s margin is a provisional selection
@@ -145,14 +154,15 @@ The optional **Synthetic loop · AI demo** course is a 195.398224 m rounded rect
 two 40 m and two 20 m straights joined by four 12 m radius quarter-circle
 arcs, stored in 0.5 m source cells. Its default AI inputs are an *assumed*
 ±3 m corridor, 1.8 m vehicle width, and 0.2 m safety margin. With the Prius
-benchmark at model torque fraction 0.8 (enter 80% in the desktop), a current
+benchmark at model torque fraction 0.8 (enter 80 in the desktop's percent box)
+and assumed road grip 100%, a current
 speed-periodic model run gave
-**16.885573 s** on the eligible geometric baseline, **15.624285 s** on an
-eligible half-offset path, and **14.556611 s** on the selected 0.95-offset
-path. The full-offset path failed sampled clearance by **0.040636 m**
+**16.885573 s** on the eligible geometric baseline, **15.624937 s** on an
+eligible half-offset path, and **14.556630 s** on the selected 0.95-offset
+path. The full-offset path failed clearance at an evaluated point by **0.040636 m**
 and was skipped before the lap calculation; it has no modeled time or replay.
-The fourth path passed its sampled audit with
-0.053411 m of additional modeled clearance and had a **2.328961 s** lead under
+The fourth path passed its continuous scalar audit with a conservative
+0.053396 m lower bound on modeled clearance and had a **2.328943 s** lead under
 the 0.05 s rule. This is a synthetic software
 demonstration, not a surveyed Formula SAE course or a validated team-car gain.
 
@@ -166,7 +176,7 @@ The AI processed geometric baseline also has a 0.750897 m integrated closure
 gap because its polygon chords and constant-curvature arcs disagree. On the
 shipped course with an assumed ±2 m corridor, 1.78308 m car width, and 0.3 m
 margin, completed Prius baseline and
-offset laps currently fail the sampled path audit; displayed starred times
+offset laps currently fail the path audit; displayed starred times
 are diagnostic only, the time difference is blank, and there is no selected
 AI winner. The ordinary centerline mode is unchanged. AI-mode eligible times,
 when available on a coherent course, should be compared only with the AI-mode

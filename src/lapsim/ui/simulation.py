@@ -6,6 +6,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass, replace
 from math import isfinite
+from numbers import Real
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +21,7 @@ from lapsim.events.endurance import (
 from lapsim.optimization.torque_profile import PeriodicPiecewiseLinearTorqueProfile
 from lapsim.solvers.path_constraints import PathConstraintSolver, PathSpeedConstraints
 from vehicle_model import Vehicle
+from vehicle_model.mech.tire import Tire
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
@@ -77,6 +79,7 @@ class PreparedOneLapConstraints:
 
     _vehicle: Vehicle
     _limits: PathSpeedConstraints
+    _road_grip_multiplier: float
 
     @property
     def track(self) -> SpatialTrack:
@@ -91,6 +94,28 @@ def load_team_endurance_track() -> SpatialTrack:
     """Load the fused, map-registered endurance lap shipped with the repo."""
 
     return SpatialTrack.from_csv(ENDURANCE_TRACK_PATH, closed=True)
+
+
+def apply_uniform_road_grip(
+    vehicle: Vehicle, road_grip_multiplier: float,
+) -> None:
+    """Set a uniform assumed road-grip scenario on one run vehicle.
+
+    Build a fresh vehicle for each run before calling this helper. The source
+    profile and its manifest stay at their selected reference tire fit.
+    """
+
+    if (
+        isinstance(road_grip_multiplier, bool)
+        or not isinstance(road_grip_multiplier, Real)
+        or not isfinite(road_grip_multiplier)
+        or road_grip_multiplier <= 0.0
+    ):
+        raise ValueError("road_grip_multiplier must be finite and positive")
+    if not isinstance(vehicle, Vehicle) or not isinstance(vehicle.tire, Tire):
+        raise TypeError("uniform road grip requires a Vehicle with the Tire model")
+    vehicle.tire.road_grip_multiplier = float(road_grip_multiplier)
+    vehicle.validate()
 
 
 def resample_track(track: SpatialTrack, maximum_cell_length_m: float = 1.0) -> SpatialTrack:
@@ -147,6 +172,7 @@ def prepare_one_lap_constraints(
         PathConstraintSolver(
             **path_solver_settings(vehicle),
         ).solve(track, vehicle),
+        vehicle.tire.road_grip_multiplier,
     )
 
 
@@ -179,6 +205,8 @@ def run_one_lap(
             raise ValueError("supplied path constraints belong to a different vehicle")
         if constraints.track != track:
             raise ValueError("supplied path constraints do not match the lap track")
+        if constraints._road_grip_multiplier != vehicle.tire.road_grip_multiplier:
+            raise ValueError("supplied path constraints use a different road grip")
         vehicle.reset_state()
         selected_constraints = constraints._limits
     return EnduranceSimulator().run(

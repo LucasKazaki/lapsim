@@ -32,6 +32,7 @@ from .driver_view import DriverCellDecision, DriverPlayback
 from .garage import CAR_INPUT_KEYS, ProfileStore, SavedCarProfile
 from .presets import VehicleSetup, make_prius_benchmark
 from .simulation import (
+    apply_uniform_road_grip,
     endurance_run_config,
     path_solver_settings,
     prepare_one_lap_constraints,
@@ -194,6 +195,7 @@ class LapSimDesktop:
             "torque_request_percent": tk.StringVar(
                 value=f"{VehicleSetup().torque_request_fraction * 100:.0f}"
             ),
+            "road_grip_percent": tk.StringVar(value="100"),
             "solver_step_m": tk.StringVar(value="1.0"),
         }
         self.input_entries: list[tk.Entry] = []
@@ -208,6 +210,7 @@ class LapSimDesktop:
             float, float, tuple[float, float], tuple[float, float]
         ] | None = None
         self._last_result: Any = None
+        self._displayed_road_grip_multiplier: float | None = None
         self._comparison_results: tuple[tuple[str, Any], tuple[str, Any]] | None = None
         self._active_tab = "Analysis"
         self.tab_buttons: dict[str, tk.Button] = {}
@@ -238,10 +241,14 @@ class LapSimDesktop:
         self._driver_look_ahead_m = 80.0
         self._driver_live_mode = False
         self._driver_stream_active = False
+        self._pending_input_invalidation = False
+        self._result_generation = 0
+        self._active_run_input_signature: tuple[str, ...] | None = None
         self._build_window()
         self._refresh_profile_menus()
         self._select_profile("prius_2026_le")
         self._apply_theme()
+        self._watch_run_inputs()
         self.root.after(100, self._poll_result)
         if self.course_load_warnings:
             self.root.after(150, self._show_course_load_warnings)
@@ -463,11 +470,21 @@ class LapSimDesktop:
         )
         self.driving_mode_menu.configure(relief="raised", bd=1, anchor="w", font=FONT)
         self.driving_mode_menu.grid(row=1, column=1, columnspan=2, sticky="ew", pady=(0, 5))
+        tk.Label(path_box, text="Assumed road grip", anchor="w").grid(
+            row=2, column=0, sticky="w", pady=2,
+        )
+        road_grip_entry = tk.Entry(
+            path_box, textvariable=self.inputs["road_grip_percent"],
+            width=11, justify="right", relief="solid", bd=1, font=FONT,
+        )
+        road_grip_entry.grid(row=2, column=1, sticky="ew", pady=2)
+        self.entry_by_key["road_grip_percent"] = road_grip_entry
+        tk.Label(path_box, text="%").grid(row=2, column=2, sticky="w", padx=(5, 0))
         for row, (label, variable) in enumerate((
             ("Assumed half-width", self.ai_half_width_var),
             ("Vehicle width", self.ai_vehicle_width_var),
             ("Safety margin", self.ai_margin_var),
-        ), start=2):
+        ), start=3):
             tk.Label(path_box, text=label, anchor="w").grid(row=row, column=0, sticky="w", pady=2)
             entry = tk.Entry(
                 path_box, textvariable=variable, width=11, justify="right",
@@ -489,7 +506,7 @@ class LapSimDesktop:
                   "to centerline mode. Synthetic straights/arcs retain their "
                   "exact geometry at 0.5 m or finer cells."),
             justify="left", anchor="w", wraplength=350, font=("Segoe UI", 9),
-        ).grid(row=5, column=0, columnspan=3, sticky="ew", pady=(6, 0))
+        ).grid(row=6, column=0, columnspan=3, sticky="ew", pady=(6, 0))
         self._on_driving_mode_change()
 
     def _build_outputs(self, parent: tk.Widget) -> None:
@@ -788,6 +805,7 @@ class LapSimDesktop:
         self._path_comparison = None
         self._selected_path_track = None
         self._last_result = None
+        self._displayed_road_grip_multiplier = None
         self._comparison_results = None
         self._pan_origin = None
         for value in self.output_values.values():
@@ -1734,6 +1752,93 @@ class LapSimDesktop:
         )
         self.canvas.draw_idle()
 
+    def _watch_run_inputs(self) -> None:
+        """Retire displayed runs after a user changes their defining inputs."""
+
+        variables = (
+            *self.inputs.values(), self.profile_var, self.driving_mode_var,
+            self.ai_half_width_var, self.ai_vehicle_width_var, self.ai_margin_var,
+            self.compare_a_var, self.compare_b_var,
+        )
+        for variable in variables:
+            variable.trace_add("write", self._schedule_input_invalidation)
+
+    def _run_input_signature(self) -> tuple[str, ...]:
+        return (
+            self.course_spec.course_id, self.profile_var.get(),
+            self.driving_mode_var.get(), self.compare_a_var.get(),
+            self.compare_b_var.get(),
+            *(value.get() for value in self.inputs.values()),
+            self.ai_half_width_var.get(), self.ai_vehicle_width_var.get(),
+            self.ai_margin_var.get(),
+        )
+
+    def _schedule_input_invalidation(self, *_change: str) -> None:
+        if self.run_in_progress or self._pending_input_invalidation:
+            return
+        self._pending_input_invalidation = True
+        # One idle callback observes the final values after a profile or
+        # course selector has populated several StringVars programmatically.
+        generation = self._result_generation
+        self.root.after_idle(
+            lambda: self._invalidate_stale_result(expected_generation=generation)
+        )
+
+    def _invalidate_stale_result(
+        self, *, force: bool = False, expected_generation: int | None = None,
+    ) -> None:
+        self._pending_input_invalidation = False
+        if expected_generation is not None and expected_generation != self._result_generation:
+            return
+        if self.run_in_progress or (not force and not any((
+            self._last_result is not None,
+            self._comparison_results is not None,
+            self._path_comparison is not None,
+            self.driver_playback is not None,
+        ))):
+            return
+        self._pause_driver_playback()
+        self.driver_playback = None
+        self._live_decision = None
+        self._driver_live_mode = False
+        self._driver_stream_active = False
+        self._last_result = None
+        self._displayed_road_grip_multiplier = None
+        self._comparison_results = None
+        self._path_comparison = None
+        self._selected_path_track = None
+        self._set_driver_replay_options({}, selected="—")
+        self._driver_playback_time_s = 0.0
+        self.driver_progress_var.set(0.0)
+        self.driver_progress.configure(state="disabled")
+        if self.driver_play_button is not None:
+            self.driver_play_button.configure(state="disabled")
+        self.driver_run_label.set("Inputs changed · run a lap to load playback")
+        self.driver_decision_title.set("Solved cell values")
+        for value in self.driver_values.values():
+            value.set("—")
+        for value in self.driver_decision_values.values():
+            value.set("—")
+        for value in self.output_values.values():
+            value.configure(text="—")
+        for value in self.ai_output_values.values():
+            value.configure(text="—")
+        self.ai_result_text.set("Inputs changed · run the optional AI mode again.")
+        if self.ai_compare_button is not None:
+            self.ai_compare_button.configure(state="disabled")
+        self.status_text.set("Inputs changed · run again")
+        self._draw_plots(preserve_course_view=True)
+        self._draw_driver_view()
+
+    def _read_road_grip_multiplier(self) -> float:
+        try:
+            grip_percent = float(self.inputs["road_grip_percent"].get())
+        except ValueError as error:
+            raise ValueError("Enter a numeric assumed road grip percent.") from error
+        if not np.isfinite(grip_percent) or grip_percent <= 0.0:
+            raise ValueError("Assumed road grip must be finite and above 0%.")
+        return grip_percent / 100.0
+
     def _read_run_settings(self) -> tuple[float, float]:
         try:
             torque_fraction = float(self.inputs["torque_request_percent"].get()) / 100.0
@@ -1815,6 +1920,7 @@ class LapSimDesktop:
 
         self.progress_queue = queue.Queue(maxsize=1)
         self._last_result = None
+        self._displayed_road_grip_multiplier = None
         self._comparison_results = None
         self._selected_path_track = None
         self._path_comparison = None
@@ -1914,6 +2020,7 @@ class LapSimDesktop:
         self, *, result: Any, vehicle: Any, manifest: Any,
         solver_track: Any, profile_id: str, profile_name: str,
         setup: VehicleSetup | None, step_m: float, torque_fraction: float,
+        road_grip_multiplier: float = 1.0,
         track_id: str | None = None,
         path_planning: dict[str, Any] | None = None,
         starting_speed_mps: float | None = None,
@@ -1926,6 +2033,7 @@ class LapSimDesktop:
             solver_step_m=step_m,
             solver_settings=path_solver_settings(vehicle),
             torque_request_fraction=torque_fraction,
+            road_grip_multiplier=road_grip_multiplier,
             endurance_config=replace(
                 endurance_run_config(vehicle),
                 starting_speed_mps=starting_speed_mps,
@@ -1960,6 +2068,7 @@ class LapSimDesktop:
             return
         try:
             setup, step_m, torque_fraction = self._read_run_inputs()
+            road_grip_multiplier = self._read_road_grip_multiplier()
             ai_assumptions = self._read_ai_assumptions() if self._ai_mode_selected() else None
         except ValueError as error:
             messagebox.showerror("Check vehicle inputs", str(error), parent=self.root)
@@ -1973,6 +2082,7 @@ class LapSimDesktop:
             )
             if self.ai_compare_button is not None:
                 self.ai_compare_button.configure(state="disabled")
+        self._active_run_input_signature = self._run_input_signature()
         self._set_busy(True)
         self._begin_live_calculation(profile_name)
         self.run_started_at = time.perf_counter()
@@ -1983,7 +2093,8 @@ class LapSimDesktop:
         worker = threading.Thread(
             target=self._calculate_ai_single if ai_assumptions else self._calculate_single,
             args=(profile_id, profile_name, setup, step_m, torque_fraction)
-                 + ((ai_assumptions,) if ai_assumptions else ()),
+                 + ((ai_assumptions,) if ai_assumptions else ())
+                 + (road_grip_multiplier,),
             daemon=True,
         )
         worker.start()
@@ -1993,6 +2104,7 @@ class LapSimDesktop:
             return
         try:
             torque_fraction, step_m = self._read_run_settings()
+            road_grip_multiplier = self._read_road_grip_multiplier()
             first_id = self.profile_display_to_id[self.compare_a_var.get()]
             second_id = self.profile_display_to_id[self.compare_b_var.get()]
             if first_id == second_id:
@@ -2008,6 +2120,7 @@ class LapSimDesktop:
                 if profile_id == "prius_2026_le" else None
             )
             plans.append((profile_id, self.profile_id_to_display[profile_id], setup))
+        self._active_run_input_signature = self._run_input_signature()
         self._set_busy(True)
         self._begin_live_calculation("Car comparison")
         self.run_started_at = time.perf_counter()
@@ -2016,7 +2129,7 @@ class LapSimDesktop:
         )
         threading.Thread(
             target=self._calculate_comparison,
-            args=(tuple(plans), step_m, torque_fraction),
+            args=(tuple(plans), step_m, torque_fraction, road_grip_multiplier),
             daemon=True,
         ).start()
 
@@ -2027,12 +2140,14 @@ class LapSimDesktop:
         setup: VehicleSetup | None,
         step_m: float,
         torque_fraction: float,
+        road_grip_multiplier: float = 1.0,
     ) -> None:
         try:
             solver_track = solver_track_for_course(
                 self.course_spec.course_id, self.track, step_m,
             )
             vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
+            apply_uniform_road_grip(vehicle, road_grip_multiplier)
             last_progress_post_s = float("-inf")
 
             def on_progress(snapshot: Any) -> None:
@@ -2060,9 +2175,13 @@ class LapSimDesktop:
                 solver_track=solver_track, profile_id=profile_id,
                 profile_name=profile_name, setup=setup, step_m=step_m,
                 torque_fraction=torque_fraction,
+                road_grip_multiplier=road_grip_multiplier,
             )
             self.result_queue.put(
-                ("single", (profile_name, step_m, result, run_id, solver_track), None)
+                ("single", (
+                    profile_name, step_m, result, run_id, solver_track,
+                    road_grip_multiplier,
+                ), None)
             )
         except Exception as error:
             self.result_queue.put(("single", None, error))
@@ -2075,6 +2194,7 @@ class LapSimDesktop:
         step_m: float,
         torque_fraction: float,
         assumptions: tuple[float, float, float],
+        road_grip_multiplier: float = 1.0,
     ) -> None:
         """Compare geometry-derived paths without changing the default lap."""
 
@@ -2086,6 +2206,7 @@ class LapSimDesktop:
 
             half_width_m, vehicle_width_m, safety_margin_m = assumptions
             vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
+            apply_uniform_road_grip(vehicle, road_grip_multiplier)
             corridor = TrackCorridor.constant(
                 self.track,
                 left_width_m=half_width_m,
@@ -2184,8 +2305,8 @@ class LapSimDesktop:
             )
             path_planning = {
                 "mode": "experimental_racing_line",
-                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v6_clearance_probe",
-                "fourth_strength_policy": "eligible_quadratic_or_clearance_probe_v2_fallback_0.75",
+                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v7_continuous_scalar_clearance",
+                "fourth_strength_policy": "eligible_quadratic_or_certified_clearance_probe_v3_fallback_0.75",
                 "record_role": "selected_result",
                 "source_course_id": self.course_spec.course_id,
                 "source_course_label": self.course_spec.label,
@@ -2327,6 +2448,7 @@ class LapSimDesktop:
                     profile_name=profile_name, setup=setup,
                     step_m=max(track.cell_length_m),
                     torque_fraction=torque_fraction,
+                    road_grip_multiplier=road_grip_multiplier,
                     track_id=ai_track_id,
                     path_planning={
                         "mode": "experimental_racing_line",
@@ -2465,6 +2587,7 @@ class LapSimDesktop:
                 profile_name=profile_name, setup=setup,
                 step_m=max(selected_track.cell_length_m),
                 torque_fraction=torque_fraction,
+                road_grip_multiplier=road_grip_multiplier,
                 track_id=ai_track_id,
                 path_planning=path_planning,
                 starting_speed_mps=selected_run.starting_speed_mps,
@@ -2472,7 +2595,7 @@ class LapSimDesktop:
             self.result_queue.put((
                 "ai_single",
                 (profile_name, selected_run, selected_track, selected_mode,
-                 plan, comparison, assumptions, run_id),
+                 plan, comparison, assumptions, run_id, road_grip_multiplier),
                 None,
             ))
         except Exception as error:
@@ -2483,6 +2606,7 @@ class LapSimDesktop:
         plans: tuple[tuple[str, str, VehicleSetup | None], ...],
         step_m: float,
         torque_fraction: float,
+        road_grip_multiplier: float = 1.0,
     ) -> None:
         try:
             solver_track = solver_track_for_course(
@@ -2491,6 +2615,7 @@ class LapSimDesktop:
             prepared = []
             for profile_id, name, setup in plans:
                 vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
+                apply_uniform_road_grip(vehicle, road_grip_multiplier)
                 constraints = prepare_one_lap_constraints(vehicle, solver_track)
                 prepared.append((
                     profile_id, name, setup, vehicle, manifest, constraints,
@@ -2528,6 +2653,7 @@ class LapSimDesktop:
                     solver_track=solver_track, profile_id=profile_id,
                     profile_name=name, setup=setup, step_m=step_m,
                     torque_fraction=torque_fraction,
+                    road_grip_multiplier=road_grip_multiplier,
                     starting_speed_mps=common_start_mps,
                 )
                 if not result.completed:
@@ -2541,7 +2667,7 @@ class LapSimDesktop:
             self.result_queue.put((
                 "comparison", (
                     step_m, torque_fraction, tuple(outcomes), tuple(run_ids),
-                    solver_track,
+                    solver_track, road_grip_multiplier,
                 ),
                 None,
             ))
@@ -2556,7 +2682,20 @@ class LapSimDesktop:
             self.root.after(100, self._poll_result)
             return
 
+        self._result_generation += 1
         self._set_busy(False)
+        stale_inputs = (
+            self._active_run_input_signature is not None
+            and self._active_run_input_signature != self._run_input_signature()
+        )
+        self._active_run_input_signature = None
+        if stale_inputs:
+            self._invalidate_stale_result(force=True)
+            self.status_text.set(
+                "Inputs changed during calculation · saved run is not displayed; run again"
+            )
+            self.root.after(100, self._poll_result)
+            return
         if self._driver_live_mode:
             self._driver_stream_active = False
             if self.driver_playback is None:
@@ -2572,9 +2711,11 @@ class LapSimDesktop:
             self.status_text.set(f"Calculation failed: {error}")
             messagebox.showerror("Lap calculation failed", str(error), parent=self.root)
         elif kind == "single":
-            profile_name, step_m, result, run_id, solver_track = payload
+            profile_name, step_m, result, run_id, solver_track, *grip_setting = payload
+            road_grip_multiplier = grip_setting[0] if grip_setting else 1.0
             self._set_driver_replay_options({}, selected="—")
             if result.completed:
+                self._displayed_road_grip_multiplier = road_grip_multiplier
                 self._comparison_results = None
                 self._last_result = result
                 self._selected_path_track = None
@@ -2584,7 +2725,8 @@ class LapSimDesktop:
                 )
                 self.status_text.set(
                     f"{profile_name} completed in {elapsed_s:.1f} s · "
-                    f"{step_m:g} m requested maximum step · saved run {run_id[:12]}"
+                    f"{step_m:g} m requested maximum step · assumed grip "
+                    f"{road_grip_multiplier * 100:g}% · saved run {run_id[:12]}"
                 )
             else:
                 self.status_text.set(
@@ -2596,7 +2738,9 @@ class LapSimDesktop:
                 )
         elif kind == "ai_single":
             (profile_name, result, selected_track, selected_mode,
-             plan, comparison, assumptions, run_id) = payload
+             plan, comparison, assumptions, run_id, *grip_setting) = payload
+            road_grip_multiplier = grip_setting[0] if grip_setting else 1.0
+            self._displayed_road_grip_multiplier = road_grip_multiplier
             self._path_comparison = (plan, comparison, assumptions)
             if self.ai_compare_button is not None:
                 self.ai_compare_button.configure(
@@ -2639,25 +2783,25 @@ class LapSimDesktop:
             ):
                 selection = (
                     "No eligible path is selected: the modeled AI path fails "
-                    "the sampled clearance or closure check, and the geometric "
+                    "the modeled-path clearance or closure check, and the geometric "
                     "centerline did not produce an eligible timed lap. Starred "
                     "times are diagnostic only."
                 )
             elif comparison.rank_status == "invalid_processed_baseline":
                 selection = (
                     "AI paths cannot be ranked: the modeled geometric centerline "
-                    "fails the sampled path clearance or closure check. "
+                    "fails the modeled-path clearance or closure check. "
                     "Starred times are diagnostic only."
                 )
             elif comparison.rank_status == "invalid_candidate_path":
                 selection = (
-                    "The modeled AI path fails the sampled path clearance or "
+                    "The modeled AI path fails the modeled-path clearance or "
                     "closure check; geometric centerline selected. "
                     "A starred candidate time is diagnostic only."
                 )
             elif comparison.rank_status == "path_audit_unavailable":
                 selection = (
-                    "AI paths cannot be ranked because the sampled path audit "
+                    "AI paths cannot be ranked because the modeled-path audit "
                     "could not run. Starred times are diagnostic only."
                 )
             elif selected_mode == "no_comparable_path":
@@ -2720,14 +2864,15 @@ class LapSimDesktop:
                 ("SYNTHETIC AI DEMO. " if self.course_spec.synthetic else "")
                 + f"{selection} Assumed ±{half_width_m:g} m corridor, "
                 f"{vehicle_width_m:g} m car, {margin_m:g} m margin. "
+                f"Assumed uniform road grip {road_grip_multiplier * 100:g}%. "
                 f"Proposed max offset {plan.max_abs_offset_m:.2f} m; "
                 f"{len(comparison.trials)} candidate trial(s). "
                 f"source map length differs by {plan.source_vs_processed_length_fraction:+.1%}."
                 f"{audit_text} {comparison_note}{source_curvature_note} "
                 "A trial receives a comparison time only when "
                 "its rolling-start speed closes within 0.005 m/s and its "
-                "sampled modeled path passes the declared clearance and closure "
-                "checks. The sample check is not a continuous collision proof. "
+                "modeled path passes its continuous scalar-clearance and closure "
+                "checks. This is not a swept-body collision proof. "
                 "This uses a fixed initial car and pack state; other states "
                 "need not be periodic."
             )
@@ -2822,7 +2967,9 @@ class LapSimDesktop:
                 )
                 messagebox.showerror("No valid timed lap", str(detail), parent=self.root)
         else:
-            step_m, torque_fraction, outcomes, run_ids, solver_track = payload
+            step_m, torque_fraction, outcomes, run_ids, solver_track, *grip_setting = payload
+            road_grip_multiplier = grip_setting[0] if grip_setting else 1.0
+            self._displayed_road_grip_multiplier = road_grip_multiplier
             self._comparison_results = outcomes
             self._last_result = outcomes[0][1]
             self._selected_path_track = None
@@ -2837,9 +2984,13 @@ class LapSimDesktop:
             self._set_driver_replay_options(
                 replay_options, selected=next(iter(replay_options)),
             )
-            self._show_comparison(outcomes, step_m, torque_fraction, run_ids)
+            self._show_comparison(
+                outcomes, step_m, torque_fraction, run_ids,
+                road_grip_multiplier=road_grip_multiplier,
+            )
             self.status_text.set(
                 f"Comparison completed in {elapsed_s:.1f} s · "
+                f"assumed grip {road_grip_multiplier * 100:g}% · "
                 f"saved A {run_ids[0][:10]}, B {run_ids[1][:10]}"
             )
         self.root.after(100, self._poll_result)
@@ -2900,7 +3051,9 @@ class LapSimDesktop:
             body,
             text=(f"Course: {course_label}. One car, one geometric source, "
                   f"assumed ±{assumptions[0]:g} m "
-                  f"corridor. Best tested AI path uses {comparison.candidate_strength:g}× "
+                   f"corridor and uniform road grip "
+                   f"{(self._displayed_road_grip_multiplier or 1.0) * 100:g}%. "
+                   f"Best tested AI path uses {comparison.candidate_strength:g}× "
                   "proposed offset. Candidate − centerline; negative lap-time Δ is faster."),
             anchor="w", justify="left", wraplength=755,
         ).grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 10))
@@ -2970,6 +3123,7 @@ class LapSimDesktop:
     def _show_comparison(
         self, outcomes: tuple[tuple[str, Any], ...], step_m: float,
         torque_fraction: float, run_ids: tuple[str, ...],
+        road_grip_multiplier: float = 1.0,
     ) -> None:
         first_name, first_result = outcomes[0]
         second_name, second_result = outcomes[1]
@@ -2986,7 +3140,8 @@ class LapSimDesktop:
         tk.Label(
             box,
             text=f"Course: {self.course_spec.label} · Requested max solver step: {step_m:g} m · driver request: "
-                 f"{torque_fraction * 100:g}% · "
+                 f"{torque_fraction * 100:g}% · assumed uniform road grip: "
+                 f"{road_grip_multiplier * 100:g}% · "
                  "Δ = B − A; positive lap-time Δ is slower",
             anchor="w", justify="left", wraplength=720,
         ).grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 12))

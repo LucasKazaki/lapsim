@@ -66,6 +66,16 @@ inherited model defaults remain distinguishable from edited assumptions.
 
 Driver request applies to every run; **Max solver step** applies to standard
 centerline runs. AI mode builds its separate nominal 2 m geometric grid.
+**Assumed road grip** defaults to 100% and uniformly multiplies the selected
+tire model's longitudinal and lateral force capacities. It applies to ordinary
+laps, AI trials, and both cars in a profile comparison. A value below 100%
+is a sensitivity scenario; it is not a calibrated wet-road model, a local
+surface map, or a claim about actual course conditions. Each saved lap records
+the multiplier alongside the effective tire configuration. The engineering
+replay checker restores both; older v2 records without this condition use
+the original 100% grip. Editing a run input or changing the selected profile
+clears displayed outputs and playback so prior numbers cannot be read as the
+new setup.
 Invalid or non-finite values are rejected before a run begins, and requests
 producing more than 5,000 actual cells are refused. For the synthetic course,
 the guard counts subdivisions of each original straight or arc cell. The default
@@ -113,7 +123,7 @@ Rejected cells are not shown as completed movement. After a completed lap,
 the app starts a 1× replay with Play/Pause, Start, time scrub, playback rate,
 and wheel zoom. **Replay lap** lets you switch between A and B after a
 completed two-car comparison, or among completed AI trials. A candidate
-rejected by the sampled path audit when the processed baseline is valid has no
+rejected by the modeled-path audit when the processed baseline is valid has no
 model run or replay. Completed runs that failed the modeled-path audit because
 the baseline is invalid are labeled **diagnostic**. Each choice uses that run's
 recorded telemetry and exact saved solver-grid x/y. This includes ordinary
@@ -157,13 +167,13 @@ vehicle body width from the car profile. A deterministic, bounded planner
 proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
 torque request through a newly derived geometric centerline, then checks
 full- and half-offset candidates. When the centerline audit is valid, a
-candidate failing its sampled path audit is skipped before physics. If all three paths have eligible audits and times,
+candidate failing its path audit is skipped before physics. If all three paths have eligible audits and times,
 and half beats both endpoints by more than **0.05 s**, a convex quadratic
 through their times estimates an interior best strength. The fourth path uses
 the nearest safeguarded choice from **0.25, 0.375, 0.625, 0.75, 0.875**;
-if full offset fails its sampled path audit while eligible half offset clearly
+if full offset fails its path audit while eligible half offset clearly
 beats the baseline, a short geometry-only screen instead tries stronger
-offsets and requires at least **0.02 m** of extra sampled clearance beyond the
+offsets and requires at least **0.02 m** of certified scalar clearance beyond the
 entered vehicle width and margin. Other cases fall back to **0.75**. This is a bounded probe for the selected
 car, not a learned or closed-loop controller. For each path admitted to physics it makes one dry seam-speed probe and one
 final recorded lap, starting each from the same fresh
@@ -174,14 +184,20 @@ match at the seam. The fourth path has the same modeled-path and speed-seam
 eligibility requirements as every other path.
 
 Before a time can be compared, the app integrates each solver path's saved
-constant-curvature cells and samples **four positions per modeled cell**, plus
+constant-curvature cells and evaluates **four positions per modeled cell**, plus
 every source-corridor cell boundary and midpoint, against the declared usable
-corridor around the processed geometric baseline. A shared boundary uses the
-narrower adjacent width, including where the first and last cells meet.
-Sampled clearance may exceed the usable corridor by no more than **1e-8 m**, and the
-integrated end position must close within **0.01 m**. The check is deliberately
-conservative and does not certify the continuous swept body or real cone
-clearance. If the processed baseline fails, all completed times in that run
+corridor around the processed geometric baseline. It then bounds the change
+in lateral normal-coordinate offset between evaluations using each modeled
+arc's curvature, the linearly interpolated reference and normal, and an
+adaptive interval subdivision. Intervals that cannot be certified within
+the bounded work budget make the time ineligible. Shared width boundaries use
+the narrower adjacent width, including where the first and last cells meet.
+The scalar corridor excess allowance is **1e-8 m**, and the integrated end
+position must close within **0.01 m**. A certified minimum slack is a
+conservative lower bound for this continuous scalar inequality under the
+supplied piecewise-width model. It is not a swept-body, world-frame
+containment, or surveyed cone-clearance certificate. If the processed baseline
+fails, all completed times in that run
 are **diagnostic only**. The left panel adds `*` to those times, leaves their
 difference blank, disables **Compare path numbers**, and states the excess and
 seam gap. Driver view still offers diagnostic replay, and linked JSON records
@@ -216,10 +232,10 @@ not steer a closed-loop car, and the vehicle model has simplified tire and
 controller physics. See [AI racer design and checks](ai_racer_design.md) for
 the objective, validation checks, and local benchmark results.
 
-For the default fused course's assumed ±2 m Prius case with 1.78308 m car
-width and 0.3 m margin, baseline/full/half/three-quarter laps complete in
+For the default fused course's assumed ±2 m Prius case with desktop torque
+request 100% (model fraction 1.0), 1.78308 m car width, and 0.3 m margin, baseline/full/half/three-quarter laps complete in
 **87.618366/87.377773/87.403816/87.3655968872 s**, but all four are starred diagnostics:
-sampled usable-corridor excess is **0.095506/0.908195/0.501981/0.705117 m** and the
+observed usable-corridor excess is **0.095506/0.908195/0.501981/0.705117 m** and the
 position seam misses by roughly **0.75–0.77 m**. No AI path is selected from
 those runs. This does not change the ordinary centerline calculation.
 The failed baseline audit makes the fourth strength fall back to 0.75 in this
@@ -227,15 +243,18 @@ example; its completed time remains diagnostic.
 
 For a controlled AI demonstration, choose **Synthetic loop · AI demo**, the
 Prius benchmark, desktop torque request **80% (enter 80; model fraction 0.8)**, and its initial assumed ±3 m
-half-width, 1.8 m vehicle width, and 0.2 m margin. The current speed-periodic
+half-width, 1.8 m vehicle width, and 0.2 m margin. Leave assumed uniform road
+grip at **100%** for the stated numbers. The current speed-periodic
 model comparison produced an eligible **16.8855728415 s** geometric baseline,
-**15.6242848232 s** half-offset, and **14.5566114677 s** 0.95-offset
-candidate. Those three sampled modeled-path audits passed; the full-offset
-path failed sampled clearance by **0.0406357247 m** and was skipped before
-physics. It therefore has no time, saved run, or replay. The 0.95 path passed with **0.053411 m** of additional
-sampled clearance and was selected on a **2.3289613738 s** modeled lead. These are synthetic model
+**15.6249368146 s** half-offset, and **14.5566299045 s** 0.95-offset
+candidate. Those three continuous scalar audits passed; the full-offset
+path failed at an evaluated point by **0.0406357308 m** and was skipped before
+physics. It therefore has no time, saved run, or replay. The 0.95 path has a
+conservative certified clearance lower bound of **0.05339622659 m** and was
+selected on a **2.3289429370 s** modeled lead. These are synthetic model
 numbers, not surveyed-course or team-car performance. An on-demand fixed-path
-`SpatialTrack.refine(1.0)` probe gave **16.882064565 s** baseline,
+`SpatialTrack.refine(1.0)` probe made before the continuous certificate gave
+**16.882064565 s** baseline,
 **15.000468902 s** old 0.75 offset, and **14.551839123 s** selected 0.95
 offset; all completed and closed speed. The 0.95 line retained about
 **0.449 s** over the old fallback, but refined path clearance was not re-audited.
@@ -245,9 +264,9 @@ grid convergence.
 The primary AI run record includes every tested offset strength and its
 reported eligible or diagnostic result and audit status. It stores its own
 exact solver geometry and telemetry, including the explicit starting speed of
-its final pass. Its `settings.path_planning.algorithm` ends in `v6_clearance_probe`;
+its final pass. Its `settings.path_planning.algorithm` ends in `v7_continuous_scalar_clearance`;
 `fourth_strength_policy` names the bounded quadratic, clearance screen, and 0.75 fallback.
-Read `candidate_trials[].offset_strength`, sampled audit, and eligible versus
+Read `candidate_trials[].offset_strength`, path audit, and eligible versus
 diagnostic time for the actual fourth probe; its position in the trial list
 does not imply a fixed 0.75 strength or an eligible result. Every completed
 AI trial has its own content-identified record with exact solver geometry,

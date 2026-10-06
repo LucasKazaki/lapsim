@@ -166,6 +166,148 @@ def test_new_calculation_clears_previous_analysis_trace_even_if_it_fails(
         root.destroy()
 
 
+@pytest.mark.parametrize(
+    ("input_name", "changed_value"),
+    (("torque_request_percent", "75"),
+     ("road_grip_percent", "70"),
+     ("solver_step_m", "2")),
+)
+def test_editing_run_input_invalidates_old_numbers_plot_and_replay(
+    input_name: str, changed_value: str,
+) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        previous = SimpleNamespace(telemetry={
+            "vehicle.distance_m": (0.0, 1.0),
+            "vehicle.speed_mps": (1.0, 2.0),
+        })
+        app._last_result = previous
+        app.output_values["lap_time"].configure(text="old lap")
+        app._draw_plots()
+        assert app.speed_ax.lines
+        app.inputs[input_name].set(changed_value)
+        root.update_idletasks()
+        assert app._last_result is None
+        assert not app.speed_ax.lines
+        assert app.output_values["lap_time"]["text"] == "—"
+        assert app.driver_playback is None
+        assert app.status_text.get() == "Inputs changed · run again"
+    finally:
+        root.destroy()
+
+
+def test_switching_car_profile_invalidates_old_lap() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app._last_result = SimpleNamespace(telemetry={
+            "vehicle.distance_m": (0.0, 1.0),
+            "vehicle.speed_mps": (1.0, 2.0),
+        })
+        app._draw_plots()
+        app._select_profile("repository_baseline")
+        root.update_idletasks()
+        assert app._last_result is None
+        assert not app.speed_ax.lines
+        assert app.entry_by_key["road_grip_percent"]["state"] == "normal"
+    finally:
+        root.destroy()
+
+
+def test_input_changed_during_worker_cannot_display_its_old_result() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        with patch("lapsim.ui.app.threading.Thread"):
+            app._start_run()
+        assert app.run_in_progress
+        app.inputs["road_grip_percent"].set("70")
+        app.result_queue.put((
+            "single", ("old scenario", 1.0, object(), "saved-id", app.track), None,
+        ))
+        app._poll_result()
+        assert app._last_result is None
+        assert all(label["text"] == "—" for label in app.output_values.values())
+        assert "not displayed" in app.status_text.get()
+    finally:
+        root.destroy()
+
+
+def test_assumed_grip_reaches_every_ai_trial_record(tmp_path: Path) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app._select_course(COURSE_OPTIONS[1].label)
+        app.inputs["road_grip_percent"].set("70")
+        assert app._read_road_grip_multiplier() == pytest.approx(0.7)
+        with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
+            app._calculate_ai_single(
+                "prius_2026_le", "Prius grip sensitivity",
+                VehicleSetup(torque_request_fraction=0.8), 1.0, 0.8,
+                (3.0, 1.8, 0.2), 0.7,
+            )
+        kind, payload, error = app.result_queue.get_nowait()
+        assert error is None, error
+        assert kind == "ai_single"
+        assert payload[8] == 0.7
+        assert payload[5].trials
+        records = [RunRecord.load(path).to_dict() for path in tmp_path.glob("*.json")]
+        assert len(records) >= 2
+        for record in records:
+            assert record["settings"]["conditions"]["road_grip_multiplier"] == 0.7
+            assert record["configuration"]["effective_vehicle_config"]["fields"]["tire"]["fields"]["road_grip_multiplier"] == 0.7
+            assert record["configuration"]["base_profile_manifest"]["model_config"]["fields"]["tire"]["fields"]["road_grip_multiplier"] == 1.0
+        selected = tmp_path / f"{payload[7]}.json"
+        assert replay_lap_record(selected).model_agreement
+    finally:
+        root.destroy()
+
+
+def test_assumed_grip_is_shared_by_car_comparison(tmp_path: Path) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        app._select_course(COURSE_OPTIONS[1].label)
+        with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
+            app._calculate_comparison((
+                ("prius_2026_le", "Prius", VehicleSetup(torque_request_fraction=0.8)),
+                ("repository_baseline", "Repository baseline", None),
+            ), 5.0, 0.8, 0.7)
+        kind, payload, error = app.result_queue.get_nowait()
+        assert error is None, error
+        assert kind == "comparison"
+        assert payload[5] == 0.7
+        for run_id in payload[3]:
+            path = tmp_path / f"{run_id}.json"
+            record = RunRecord.load(path).to_dict()
+            assert record["settings"]["conditions"]["road_grip_multiplier"] == 0.7
+            assert record["configuration"]["effective_vehicle_config"]["fields"]["tire"]["fields"]["road_grip_multiplier"] == 0.7
+            assert replay_lap_record(path).model_agreement
+    finally:
+        root.destroy()
+
+
 def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> None:
     try:
         root = tk.Tk()
@@ -196,7 +338,9 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         with patch("lapsim.ui.app.threading.Thread") as worker:
             app._start_run()
             assert worker.call_args.kwargs["target"].__name__ == "_calculate_ai_single"
-            assert worker.call_args.kwargs["args"][-1] == (2.0, 1.8, 0.2)
+            assert worker.call_args.kwargs["args"][-2:] == (
+                (2.0, 1.8, 0.2), 1.0,
+            )
         app._set_busy(False)
         with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
             app._calculate_ai_single(
@@ -255,7 +399,7 @@ def test_ai_path_keeps_invalid_model_trials_as_diagnostics(tmp_path: Path) -> No
         assert source_course["revision"] == "legacy_unversioned"
         assert source_course["source_artifact_sha256"]["fused_csv"]
         assert planning["mode"] == "experimental_racing_line"
-        assert planning["algorithm"].endswith("v6_clearance_probe")
+        assert planning["algorithm"].endswith("v7_continuous_scalar_clearance")
         assert planning["selected_mode"] == "no_comparable_path"
         assert planning["diagnostic_only"] is True
         assert planning["rank_status"] == "invalid_processed_baseline"
@@ -375,7 +519,7 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         assert comparison.rank_status == "candidate_selected"
         assert comparison.candidate_strength == 0.95
         assert comparison.baseline_time_s == pytest.approx(16.885573, abs=0.002)
-        assert comparison.candidate_time_s == pytest.approx(14.556611, abs=0.002)
+        assert comparison.candidate_time_s == pytest.approx(14.556630, abs=0.002)
         assert comparison.baseline_path_audit is not None
         assert comparison.baseline_path_audit.valid
         assert comparison.candidate_path_audit is not None
@@ -415,9 +559,9 @@ def test_synthetic_course_switch_and_eligible_ai_demo(tmp_path: Path) -> None:
         )
         assert planning["source_course_id"] == SYNTHETIC_DEMO_COURSE_ID
         assert planning["synthetic_course"] is True
-        assert planning["algorithm"].endswith("v6_clearance_probe")
+        assert planning["algorithm"].endswith("v7_continuous_scalar_clearance")
         assert planning["fourth_strength_policy"] == (
-            "eligible_quadratic_or_clearance_probe_v2_fallback_0.75"
+            "eligible_quadratic_or_certified_clearance_probe_v3_fallback_0.75"
         )
         counterpart_id = planning["comparison_counterpart_run_id"]
         counterpart = RunRecord.load(tmp_path / f"{counterpart_id}.json").to_dict()

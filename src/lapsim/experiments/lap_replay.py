@@ -7,6 +7,7 @@ not verify the vehicle against measured data or implement a driving session.
 from __future__ import annotations
 
 from bisect import bisect_right
+from copy import deepcopy
 from dataclasses import asdict, dataclass, fields
 from hashlib import sha256
 import json
@@ -28,7 +29,10 @@ from vehicle_model import (
     RCTheveninBattery, Suspension, Tire, Vehicle,
 )
 
-from .run_record import RUN_RECORD_SCHEMA_VERSION, RunRecord, _runtime_identity
+from .run_record import (
+    RUN_RECORD_SCHEMA_VERSION, RunRecord, _runtime_identity,
+    _saved_road_grip_multiplier,
+)
 
 
 _MODEL_CLASSES = {
@@ -80,7 +84,13 @@ def _restore_config(value: Any) -> Any:
                 field.name for field in fields(cls)
                 if field.init and not (cls is Drivetrain and field.name == "tire")
             }
-            if set(value["fields"]) != expected:
+            # A v2 run saved before uniform road-grip scenarios has the same
+            # tire constructor snapshot except for this new defaulted field.
+            legacy_tire = (
+                cls is Tire
+                and set(value["fields"]) == expected - {"road_grip_multiplier"}
+            )
+            if set(value["fields"]) != expected and not legacy_tire:
                 raise ValueError(f"constructor fields do not match {name}")
             try:
                 return cls(**{
@@ -95,6 +105,19 @@ def _restore_config(value: Any) -> Any:
     if isinstance(value, float) and isfinite(value):
         return value
     raise ValueError("model constructor snapshot contains an unsupported value")
+
+
+def _normalized_vehicle_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Add only the new 1.0 tire default for an intact older v2 snapshot."""
+
+    normalized = deepcopy(snapshot)
+    tire = normalized.get("fields", {}).get("tire")
+    if (
+        isinstance(tire, dict) and tire.get("class") == "Tire"
+        and isinstance(tire.get("fields"), dict)
+    ):
+        tire["fields"].setdefault("road_grip_multiplier", 1.0)
+    return normalized
 
 
 @dataclass(frozen=True, slots=True)
@@ -262,10 +285,16 @@ def replay_lap_record(
     if _digest(snapshot) != configuration.get("effective_vehicle_config_sha256"):
         raise ValueError("effective vehicle snapshot hash does not match")
     vehicle = _restore_config(snapshot)
-    if type(vehicle) is not Vehicle or _digest(snapshot_vehicle_config(vehicle)) != _digest(snapshot):
+    if (
+        type(vehicle) is not Vehicle
+        or _digest(snapshot_vehicle_config(vehicle))
+        != _digest(_normalized_vehicle_snapshot(snapshot))
+    ):
         raise ValueError("effective vehicle snapshot cannot be restored exactly")
 
     settings = _required_object(payload, "settings", "settings")
+    if vehicle.tire.road_grip_multiplier != _saved_road_grip_multiplier(settings):
+        raise ValueError("saved road-grip setting disagrees with vehicle snapshot")
     geometry = _required_object(
         _required_object(settings, "track", "track"), "geometry", "track geometry",
     )

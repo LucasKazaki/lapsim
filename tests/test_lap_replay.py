@@ -17,7 +17,7 @@ from lapsim.experiments import (
 )
 from lapsim.profiles import build_vehicle
 from lapsim.ui.simulation import (
-    endurance_run_config, path_solver_settings, run_one_lap,
+    apply_uniform_road_grip, endurance_run_config, path_solver_settings, run_one_lap,
     run_speed_periodic_lap,
 )
 
@@ -98,6 +98,68 @@ def test_plain_centerline_record_replays_without_explicit_start_speed(saved_laps
     report = replay_lap_record(path)
     assert report.model_agreement
     assert report.replayed_sample_count == report.recorded_sample_count
+
+
+def test_assumed_grip_record_replays_with_same_profile_and_condition(tmp_path: Path) -> None:
+    track = SpatialTrack.from_track(
+        Track.from_segments([Curve(25.0, 2.0 * pi)]),
+        maximum_cell_length_m=5.0,
+    )
+    vehicle, manifest = build_vehicle("repository_baseline")
+    apply_uniform_road_grip(vehicle, 0.7)
+    run = run_one_lap(vehicle, track, torque_request_fraction=0.8)
+    assert run.completed, run.failure_reason
+    settings = LapRunSettings.from_track(
+        track, track_id="grip_sensitivity_circle", solver_step_m=5.0,
+        solver_settings=path_solver_settings(vehicle),
+        torque_request_fraction=0.8,
+        endurance_config=endurance_run_config(vehicle),
+        road_grip_multiplier=0.7,
+        profile_id="repository_baseline",
+    )
+    path = capture_lap_run(
+        run, manifest, settings, actual_vehicle=vehicle,
+    ).save(tmp_path / "grip.json")
+    payload = RunRecord.load(path).to_dict()
+    assert payload["settings"]["conditions"]["road_grip_multiplier"] == 0.7
+    assert payload["configuration"]["base_profile_manifest"]["model_config"]["fields"]["tire"]["fields"]["road_grip_multiplier"] == 1.0
+    assert replay_lap_record(path).model_agreement
+
+
+def test_old_v2_tire_snapshot_replays_with_original_default_grip(
+    saved_laps: dict[str, Path], tmp_path: Path,
+) -> None:
+    def remove_new_field(payload: dict) -> None:
+        configuration = payload["configuration"]
+        configuration["effective_vehicle_config"]["fields"]["tire"]["fields"].pop(
+            "road_grip_multiplier"
+        )
+        configuration["base_profile_manifest"]["model_config"]["fields"]["tire"]["fields"].pop(
+            "road_grip_multiplier"
+        )
+        payload["settings"].pop("conditions")
+        snapshot = configuration["effective_vehicle_config"]
+        configuration["effective_vehicle_config_sha256"] = sha256(
+            json.dumps(snapshot, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+        ).hexdigest()
+
+    path = _mutated_record(
+        saved_laps["prius_2026_le"], tmp_path / "prior_v2.json", remove_new_field,
+    )
+    assert replay_lap_record(path).model_agreement
+
+
+def test_replay_rejects_condition_snapshot_mismatch(
+    saved_laps: dict[str, Path], tmp_path: Path,
+) -> None:
+    path = _mutated_record(
+        saved_laps["prius_2026_le"], tmp_path / "mismatch.json",
+        lambda payload: payload["settings"]["conditions"].__setitem__(
+            "road_grip_multiplier", 0.7,
+        ),
+    )
+    with pytest.raises(ValueError, match="road-grip setting disagrees"):
+        replay_lap_record(path)
 
 
 @pytest.mark.parametrize("field", [
