@@ -200,6 +200,25 @@ class Suspension:
         )
         front_without_transfer_n = static_front_axle_n + aero_forces.front_downforce_n
         rear_without_transfer_n = static_rear_axle_n + aero_forces.rear_downforce_n
+        total_normal_load_n = front_without_transfer_n + rear_without_transfer_n
+        # The spatial solver divides by total normal load when estimating
+        # cornering resistance. Treat roundoff-scale contact as unsupported.
+        minimum_total_load_n = max(1e-9, 1e-12 * mass_kg * gravity_mps2)
+        if (
+            not isfinite(total_normal_load_n)
+            or total_normal_load_n <= minimum_total_load_n
+        ):
+            raise ValueError(
+                "aerodynamic lift leaves no supported total tire normal load"
+            )
+        if not isfinite(front_without_transfer_n) or front_without_transfer_n < 0.0:
+            raise ValueError(
+                "aerodynamic lift makes front axle normal load negative"
+            )
+        if not isfinite(rear_without_transfer_n) or rear_without_transfer_n < 0.0:
+            raise ValueError(
+                "aerodynamic lift makes rear axle normal load negative"
+            )
         rearward_transfer_n = (
             mass_kg
             * longitudinal_acceleration_mps2

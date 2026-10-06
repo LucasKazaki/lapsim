@@ -1,5 +1,12 @@
 """Independent-wheel, planar vehicle dynamics for synthetic control studies."""
 
+from .conditions import (
+    PlanarEnvironment,
+    PlanarRoad,
+    RectangularGripPatch,
+    RoadDomain,
+    RoadSample,
+)
 from .planar import (
     WHEEL_NAMES,
     PlanarControls,
@@ -17,6 +24,11 @@ from .planar import (
 
 __all__ = [
     "WHEEL_NAMES",
+    "PlanarEnvironment",
+    "PlanarRoad",
+    "RectangularGripPatch",
+    "RoadDomain",
+    "RoadSample",
     "PlanarControls",
     "PlanarDerivative",
     "PlanarEvaluation",

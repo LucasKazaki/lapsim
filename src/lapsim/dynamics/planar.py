@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from math import atan2, ceil, cos, hypot, isfinite, pi, sin
 from typing import Sequence
 
+from .conditions import DEFAULT_PLANAR_ENVIRONMENT, PlanarEnvironment
+
 
 WHEEL_NAMES = ("front_left", "front_right", "rear_left", "rear_right")
 WheelValues = tuple[float, float, float, float]
@@ -193,6 +195,11 @@ class PlanarWheel:
     body_force_y_n: float
     applied_brake_torque_nm: float
     friction_limit_n: float
+    world_contact_x_m: float
+    world_contact_y_m: float
+    road_material_id: str
+    road_friction_multiplier: float
+    road_valid: bool
 
     @property
     def in_contact(self) -> bool:
@@ -243,6 +250,14 @@ class PlanarEvaluation:
     drive_power_w: float
     brake_power_w: float
     external_power_w: float
+    aero_power_w: float
+    aero_body_force_x_n: float
+    aero_body_force_y_n: float
+    air_relative_body_x_mps: float
+    air_relative_body_y_mps: float
+    apparent_air_speed_mps: float
+    road_valid: bool
+    invalid_road_queries: int
     contact_dissipation_w: float
     energy_balance_residual_w: float
 
@@ -260,15 +275,42 @@ class PlanarRun:
     times_s: tuple[float, ...]
     states: tuple[PlanarState, ...]
     evaluations: tuple[PlanarEvaluation, ...]
+    road_valid: bool = True
+    invalid_road_queries: int = 0
+
+
+def _wheel_world_position(
+    state: PlanarState, position_x_m: float, position_y_m: float
+) -> tuple[float, float]:
+    heading_cosine = cos(state.heading_rad)
+    heading_sine = sin(state.heading_rad)
+    return (
+        state.x_m + heading_cosine * position_x_m - heading_sine * position_y_m,
+        state.y_m + heading_sine * position_x_m + heading_cosine * position_y_m,
+    )
+
+
+def _road_invalid_queries_at_state(
+    config: PlanarVehicleConfig, state: PlanarState, environment: PlanarEnvironment
+) -> int:
+    return sum(
+        not environment.road.query(*_wheel_world_position(state, x_m, y_m)).valid
+        for x_m, y_m in config.wheel_positions_m
+    )
 
 
 def evaluate_planar_dynamics(
     config: PlanarVehicleConfig,
     state: PlanarState,
     controls: PlanarControls,
+    *,
+    environment: PlanarEnvironment | None = None,
 ) -> PlanarEvaluation:
     """Evaluate local tire forces and the ten first-order state derivatives."""
 
+    conditions = DEFAULT_PLANAR_ENVIRONMENT if environment is None else environment
+    if not isinstance(conditions, PlanarEnvironment):
+        raise TypeError("environment must be PlanarEnvironment or None")
     normal_loads_n = (
         config.static_normal_loads_n
         if controls.normal_loads_n is None
@@ -282,8 +324,49 @@ def evaluate_planar_dynamics(
     contact_dissipation_w = 0.0
     drive_power_w = 0.0
     brake_power_w = 0.0
+    invalid_road_queries = 0
+
+    heading_cosine = cos(state.heading_rad)
+    heading_sine = sin(state.heading_rad)
+    wind_body_x_mps = (
+        heading_cosine * conditions.wind_world_x_mps
+        + heading_sine * conditions.wind_world_y_mps
+    )
+    wind_body_y_mps = (
+        -heading_sine * conditions.wind_world_x_mps
+        + heading_cosine * conditions.wind_world_y_mps
+    )
+    air_relative_body_x_mps = state.u_mps - wind_body_x_mps
+    air_relative_body_y_mps = state.v_mps - wind_body_y_mps
+    apparent_air_speed_mps = hypot(
+        air_relative_body_x_mps, air_relative_body_y_mps
+    )
+    drag_scale = (
+        -0.5
+        * conditions.air_density_kgpm3
+        * conditions.drag_area_m2
+        * apparent_air_speed_mps
+    )
+    aero_body_force_x_n = drag_scale * air_relative_body_x_mps
+    aero_body_force_y_n = drag_scale * air_relative_body_y_mps
+    aero_power_w = (
+        aero_body_force_x_n * state.u_mps
+        + aero_body_force_y_n * state.v_mps
+    )
 
     for index, (position_x_m, position_y_m) in enumerate(config.wheel_positions_m):
+        world_contact_x_m = (
+            state.x_m
+            + heading_cosine * position_x_m
+            - heading_sine * position_y_m
+        )
+        world_contact_y_m = (
+            state.y_m
+            + heading_sine * position_x_m
+            + heading_cosine * position_y_m
+        )
+        road_sample = conditions.road.query(world_contact_x_m, world_contact_y_m)
+        invalid_road_queries += not road_sample.valid
         steer_rad = controls.steering_angles_rad[index]
         c = cos(steer_rad)
         s = sin(steer_rad)
@@ -317,7 +400,9 @@ def evaluate_planar_dynamics(
                 -config.cornering_stiffness_n_per_rad * slip_angle_rad
             )
             requested_magnitude_n = hypot(requested_force_x_n, requested_force_y_n)
-            force_limit_n = config.tire_mu * normal_load_n
+            force_limit_n = (
+                config.tire_mu * road_sample.friction_multiplier * normal_load_n
+            )
             scale = (
                 min(1.0, force_limit_n / requested_magnitude_n)
                 if requested_magnitude_n > 0.0
@@ -374,12 +459,23 @@ def evaluate_planar_dynamics(
                 body_force_x_n=wheel_body_force_x_n,
                 body_force_y_n=wheel_body_force_y_n,
                 applied_brake_torque_nm=applied_brake_torque_nm,
-                friction_limit_n=config.tire_mu * normal_load_n,
+                friction_limit_n=(
+                    config.tire_mu * road_sample.friction_multiplier * normal_load_n
+                ),
+                world_contact_x_m=world_contact_x_m,
+                world_contact_y_m=world_contact_y_m,
+                road_material_id=road_sample.material_id,
+                road_friction_multiplier=road_sample.friction_multiplier,
+                road_valid=road_sample.valid,
             )
         )
 
-    total_body_force_x_n = body_force_x_n + controls.external_force_x_n
-    total_body_force_y_n = body_force_y_n + controls.external_force_y_n
+    total_body_force_x_n = (
+        body_force_x_n + controls.external_force_x_n + aero_body_force_x_n
+    )
+    total_body_force_y_n = (
+        body_force_y_n + controls.external_force_y_n + aero_body_force_y_n
+    )
     total_yaw_moment_nm = tire_yaw_moment_nm + controls.external_yaw_moment_nm
     u_dot_mps2 = (
         state.yaw_rate_rad_s * state.v_mps
@@ -431,6 +527,7 @@ def evaluate_planar_dynamics(
         state.u_mps * controls.external_force_x_n
         + state.v_mps * controls.external_force_y_n
         + state.yaw_rate_rad_s * controls.external_yaw_moment_nm
+        + aero_power_w
     )
     energy_balance_residual_w = (
         mechanical_energy_rate_w
@@ -452,6 +549,14 @@ def evaluate_planar_dynamics(
         drive_power_w=drive_power_w,
         brake_power_w=brake_power_w,
         external_power_w=external_power_w,
+        aero_power_w=aero_power_w,
+        aero_body_force_x_n=aero_body_force_x_n,
+        aero_body_force_y_n=aero_body_force_y_n,
+        air_relative_body_x_mps=air_relative_body_x_mps,
+        air_relative_body_y_mps=air_relative_body_y_mps,
+        apparent_air_speed_mps=apparent_air_speed_mps,
+        road_valid=invalid_road_queries == 0,
+        invalid_road_queries=invalid_road_queries,
         contact_dissipation_w=contact_dissipation_w,
         energy_balance_residual_w=energy_balance_residual_w,
     )
@@ -483,17 +588,31 @@ def _rk4_step(
     state: PlanarState,
     controls: PlanarControls,
     dt_s: float,
-) -> PlanarState:
-    k1 = evaluate_planar_dynamics(config, state, controls).derivative
-    k2 = evaluate_planar_dynamics(
-        config, _advance(state, k1, dt_s / 2.0), controls
-    ).derivative
-    k3 = evaluate_planar_dynamics(
-        config, _advance(state, k2, dt_s / 2.0), controls
-    ).derivative
-    k4 = evaluate_planar_dynamics(
-        config, _advance(state, k3, dt_s), controls
-    ).derivative
+    environment: PlanarEnvironment,
+) -> tuple[PlanarState, int]:
+    first = evaluate_planar_dynamics(
+        config, state, controls, environment=environment
+    )
+    k1 = first.derivative
+    second = evaluate_planar_dynamics(
+        config, _advance(state, k1, dt_s / 2.0), controls,
+        environment=environment,
+    )
+    k2 = second.derivative
+    third = evaluate_planar_dynamics(
+        config, _advance(state, k2, dt_s / 2.0), controls,
+        environment=environment,
+    )
+    k3 = third.derivative
+    fourth = evaluate_planar_dynamics(
+        config, _advance(state, k3, dt_s), controls,
+        environment=environment,
+    )
+    k4 = fourth.derivative
+    invalid_road_queries = sum(
+        evaluation.invalid_road_queries
+        for evaluation in (first, second, third, fourth)
+    )
     factor = dt_s / 6.0
     final_state = PlanarState(
         x_m=state.x_m + factor * (
@@ -564,17 +683,16 @@ def _rk4_step(
         v_mps=final_state.v_mps,
         yaw_rate_rad_s=final_state.yaw_rate_rad_s,
         wheel_speeds_rad_s=tuple(wheel_speeds),
-    )
+    ), invalid_road_queries
 
 
-def step_planar_dynamics(
+def _step_planar_with_status(
     config: PlanarVehicleConfig,
     state: PlanarState,
     controls: PlanarControls,
     dt_s: float,
-) -> PlanarState:
-    """Advance one control hold with bounded RK4 substeps."""
-
+    environment: PlanarEnvironment,
+) -> tuple[PlanarState, int]:
     if not isfinite(dt_s) or dt_s <= 0.0:
         raise ValueError("dt_s must be finite and positive")
     substep_count = ceil(dt_s / config.integration_step_limit_s)
@@ -582,8 +700,38 @@ def step_planar_dynamics(
         raise ValueError("dt_s requests too many internal integration steps")
     substep_s = dt_s / substep_count
     result = state
+    invalid_road_queries = 0
     for _ in range(substep_count):
-        result = _rk4_step(config, result, controls, substep_s)
+        result, invalid_in_substep = _rk4_step(
+            config, result, controls, substep_s, environment
+        )
+        invalid_road_queries += invalid_in_substep
+    return result, invalid_road_queries
+
+
+def step_planar_dynamics(
+    config: PlanarVehicleConfig,
+    state: PlanarState,
+    controls: PlanarControls,
+    dt_s: float,
+    *,
+    environment: PlanarEnvironment | None = None,
+) -> PlanarState:
+    """Advance one hold, rejecting any out-of-domain RK force evaluation."""
+
+    conditions = DEFAULT_PLANAR_ENVIRONMENT if environment is None else environment
+    if not isinstance(conditions, PlanarEnvironment):
+        raise TypeError("environment must be PlanarEnvironment or None")
+    result, invalid_road_queries = _step_planar_with_status(
+        config, state, controls, dt_s, conditions
+    )
+    invalid_road_queries += _road_invalid_queries_at_state(
+        config, result, conditions
+    )
+    if invalid_road_queries:
+        raise ValueError(
+            f"road query left the valid domain ({invalid_road_queries} invalid queries)"
+        )
     return result
 
 
@@ -592,9 +740,14 @@ def run_planar_dynamics(
     initial_state: PlanarState,
     controls: Sequence[PlanarControls],
     dt_s: float,
+    *,
+    environment: PlanarEnvironment | None = None,
 ) -> PlanarRun:
-    """Run a finite sequence of held controls at a fixed output interval."""
+    """Run held controls and retain invalid road-query status from RK stages."""
 
+    conditions = DEFAULT_PLANAR_ENVIRONMENT if environment is None else environment
+    if not isinstance(conditions, PlanarEnvironment):
+        raise TypeError("environment must be PlanarEnvironment or None")
     if not isfinite(dt_s) or dt_s <= 0.0:
         raise ValueError("dt_s must be finite and positive")
     if len(controls) > MAX_RUN_STEPS:
@@ -603,13 +756,27 @@ def run_planar_dynamics(
         raise ValueError("run requests too many internal integration steps")
     states = [initial_state]
     evaluations: list[PlanarEvaluation] = []
+    invalid_road_queries = 0
     for command in controls:
-        evaluations.append(evaluate_planar_dynamics(config, states[-1], command))
-        states.append(step_planar_dynamics(config, states[-1], command, dt_s))
+        evaluation = evaluate_planar_dynamics(
+            config, states[-1], command, environment=conditions
+        )
+        evaluations.append(evaluation)
+        invalid_road_queries += evaluation.invalid_road_queries
+        next_state, invalid_in_substeps = _step_planar_with_status(
+            config, states[-1], command, dt_s, conditions
+        )
+        invalid_road_queries += invalid_in_substeps
+        states.append(next_state)
+    invalid_road_queries += _road_invalid_queries_at_state(
+        config, states[-1], conditions
+    )
     return PlanarRun(
         times_s=tuple(index * dt_s for index in range(len(states))),
         states=tuple(states),
         evaluations=tuple(evaluations),
+        road_valid=invalid_road_queries == 0,
+        invalid_road_queries=invalid_road_queries,
     )
 
 
@@ -620,13 +787,36 @@ class PlanarSimulator:
         self,
         config: PlanarVehicleConfig,
         initial_state: PlanarState | None = None,
+        *,
+        environment: PlanarEnvironment | None = None,
     ) -> None:
         self.config = config
         self.state = PlanarState() if initial_state is None else initial_state
+        self.environment = (
+            DEFAULT_PLANAR_ENVIRONMENT if environment is None else environment
+        )
+        if not isinstance(self.environment, PlanarEnvironment):
+            raise TypeError("environment must be PlanarEnvironment or None")
         self.time_s = 0.0
+        self.road_valid = True
+        self.invalid_road_queries = 0
 
     def step(self, controls: PlanarControls, dt_s: float) -> PlanarEvaluation:
-        evaluation = evaluate_planar_dynamics(self.config, self.state, controls)
-        self.state = step_planar_dynamics(self.config, self.state, controls, dt_s)
+        evaluation = evaluate_planar_dynamics(
+            self.config, self.state, controls, environment=self.environment
+        )
+        next_state, invalid_in_substeps = _step_planar_with_status(
+            self.config, self.state, controls, dt_s, self.environment
+        )
+        invalid_in_final_state = _road_invalid_queries_at_state(
+            self.config, next_state, self.environment
+        )
+        self.invalid_road_queries += (
+            evaluation.invalid_road_queries
+            + invalid_in_substeps
+            + invalid_in_final_state
+        )
+        self.road_valid = self.invalid_road_queries == 0
+        self.state = next_state
         self.time_s += dt_s
         return evaluation

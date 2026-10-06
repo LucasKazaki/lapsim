@@ -17,6 +17,9 @@ class AeroTests(TestCase):
         self.assertTrue(isclose(aero.front_downforce_fraction, 0.5269293255))
         self.assertTrue(isclose(aero.drag_area_m2, 1.579199938368))
         self.assertTrue(isclose(aero.downforce_area_m2, 2.3819599070384))
+        self.assertTrue(
+            isclose(aero.downforce_area_m2 / aero.drag_area_m2, 3.62 / 2.4)
+        )
 
     def test_negative_lift_coefficient_produces_positive_downforce(self) -> None:
         aero = Aero()
@@ -91,6 +94,17 @@ class AeroTests(TestCase):
         )
         self.assertEqual(telemetry["aero.roll_limit_deg"], 1.0)
         self.assertLess(telemetry["aero.downforce_multiplier"], 1.0)
+
+    def test_vehicle_rejects_lift_that_unloads_an_axle(self) -> None:
+        vehicle = Vehicle(
+            aero=Aero(lift_coefficient=8.0, front_downforce_fraction=1.0),
+            initial_speed_mps=20.0,
+        )
+
+        with self.assertRaisesRegex(ValueError, "front axle normal load negative"):
+            vehicle.update_state(Controls(), 0.1)
+
+        self.assertEqual(vehicle.distance_m, 0.0)
 
     def test_active_aero_automatically_reduces_drag_and_downforce_on_straights(
         self,

@@ -9,10 +9,12 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from hashlib import sha256
+from importlib.metadata import PackageNotFoundError, version as distribution_version
 import json
 from math import isfinite, isnan
 import os
 from pathlib import Path
+import platform
 from typing import Any, Mapping
 from uuid import uuid4
 
@@ -22,7 +24,9 @@ from lapsim.profiles import ResolvedManifest, snapshot_vehicle_config
 from vehicle_model import Vehicle
 
 
-RUN_RECORD_SCHEMA_VERSION = 1
+RUN_RECORD_SCHEMA_VERSION = 2
+_SUPPORTED_RUN_RECORD_SCHEMAS = frozenset((1, RUN_RECORD_SCHEMA_VERSION))
+_RUNTIME_DEPENDENCIES = ("numpy", "scipy", "matplotlib")
 
 
 def _canonical_json(value: Any) -> str:
@@ -48,6 +52,78 @@ def _validated_mapping(value: Mapping[str, Any], name: str) -> dict[str, Any]:
         return json.loads(_canonical_json(dict(value)))
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{name} must contain finite JSON values") from exc
+
+
+def _runtime_identity() -> dict[str, Any]:
+    """Record the interpreter, host, and installed numerical/plotting builds."""
+
+    dependencies: dict[str, str] = {}
+    for package in _RUNTIME_DEPENDENCIES:
+        try:
+            dependencies[package] = distribution_version(package)
+        except PackageNotFoundError as exc:
+            raise RuntimeError(f"required distribution {package!r} is unavailable") from exc
+    return {
+        "python": {
+            "implementation": platform.python_implementation(),
+            "version": platform.python_version(),
+        },
+        "platform": {
+            "system": platform.system(),
+            "release": platform.release(),
+            "version": platform.version(),
+            "machine": platform.machine(),
+        },
+        "dependencies": dependencies,
+    }
+
+
+def _validate_embedded_track(payload: Mapping[str, Any]) -> None:
+    """Check v2's embedded solver grid independently of the record hash."""
+
+    try:
+        settings = payload["settings"]
+        track = settings["track"]
+        geometry = track["geometry"]
+        if not isinstance(geometry, dict) or set(geometry) != {
+            "closed", "distance_m", "x_m", "y_m", "curvature_per_m"
+        }:
+            raise ValueError("run-record track geometry has invalid channels")
+        if not isinstance(geometry["closed"], bool):
+            raise ValueError("run-record track geometry closed flag is invalid")
+        for channel in ("distance_m", "x_m", "y_m", "curvature_per_m"):
+            values = geometry[channel]
+            if not isinstance(values, list) or any(
+                isinstance(value, bool) or not isinstance(value, (int, float))
+                or not isfinite(value) for value in values
+            ):
+                raise ValueError(f"run-record track geometry channel {channel} is invalid")
+        solver_track = SpatialTrack(
+            distance_m=tuple(geometry["distance_m"]),
+            x_m=tuple(geometry["x_m"]),
+            y_m=tuple(geometry["y_m"]),
+            curvature_per_m=tuple(geometry["curvature_per_m"]),
+            closed=geometry["closed"],
+        )
+        if (
+            not isinstance(track["geometry_sha256"], str)
+            or isinstance(track["cell_count"], bool)
+            or not isinstance(track["cell_count"], int)
+            or isinstance(track["length_m"], bool)
+            or not isinstance(track["length_m"], (int, float))
+            or not isfinite(track["length_m"])
+            or not isinstance(track["closed"], bool)
+        ):
+            raise ValueError("run-record embedded track geometry metadata is invalid")
+        if (
+            track["geometry_sha256"] != _sha256_json(geometry)
+            or track["cell_count"] != solver_track.cell_count
+            or track["length_m"] != solver_track.length_m
+            or track["closed"] is not solver_track.closed
+        ):
+            raise ValueError("run-record embedded track geometry does not match its hash or metadata")
+    except (KeyError, TypeError, AttributeError) as exc:
+        raise ValueError("run-record embedded track geometry is missing or invalid") from exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,6 +178,7 @@ class LapRunSettings:
             "track": {
                 "id": track_id,
                 "geometry_sha256": _sha256_json(geometry),
+                "geometry": geometry,
                 "length_m": track.length_m,
                 "cell_count": track.cell_count,
                 "closed": track.closed,
@@ -157,11 +234,17 @@ class RunRecord:
 
         with Path(path).open("r", encoding="utf-8") as stream:
             payload = json.load(stream, parse_constant=_reject_json_constant)
-        if not isinstance(payload, dict) or payload.get("schema_version") != RUN_RECORD_SCHEMA_VERSION:
+        if (
+            not isinstance(payload, dict)
+            or type(payload.get("schema_version")) is not int
+            or payload["schema_version"] not in _SUPPORTED_RUN_RECORD_SCHEMAS
+        ):
             raise ValueError("unsupported run-record schema")
         run_id = payload.pop("run_id", None)
         if not isinstance(run_id, str) or run_id != _sha256_json(payload):
             raise ValueError("run-record content hash does not match")
+        if payload["schema_version"] == RUN_RECORD_SCHEMA_VERSION:
+            _validate_embedded_track(payload)
         return cls(run_id=run_id, _payload_json=_canonical_json(payload))
 
 
@@ -360,6 +443,7 @@ def capture_lap_run(
         "schema_version": RUN_RECORD_SCHEMA_VERSION,
         "simulation_mode": "prescribed_path_distance_domain",
         "evidence_level": "simulation_model_estimate",
+        "runtime": _runtime_identity(),
         "model_assumptions": [
             "prescribed_course_path",
             "distance_domain_speed_envelope",
@@ -382,6 +466,7 @@ def capture_lap_run(
             "warnings": warnings,
         },
     }
+    _validate_embedded_track(payload)
     return RunRecord(run_id=_sha256_json(payload), _payload_json=_canonical_json(payload))
 
 

@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from hashlib import sha256
+from importlib.metadata import version as distribution_version
+import json
 from math import nan
 from pathlib import Path
+import platform
 from tempfile import TemporaryDirectory
 import unittest
 
@@ -11,6 +15,7 @@ from lapsim.core.telemetry import Telemetry
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.events.endurance import EnduranceRunConfig, EnduranceRunResult
 from lapsim.experiments import LapRunSettings, RunRecord, capture_lap_run
+from lapsim.experiments.run_record import RUN_RECORD_SCHEMA_VERSION
 from lapsim.profiles import build_vehicle
 
 
@@ -55,6 +60,16 @@ class RunRecordTests(unittest.TestCase):
             "component.late_value_w": (nan, 5.0),
         })
 
+    @staticmethod
+    def _write_payload(path: Path, payload: dict) -> None:
+        content = dict(payload)
+        content.pop("run_id", None)
+        canonical = json.dumps(
+            content, sort_keys=True, separators=(",", ":"), allow_nan=False,
+        )
+        content["run_id"] = sha256(canonical.encode("utf-8")).hexdigest()
+        path.write_text(json.dumps(content, allow_nan=False), encoding="utf-8")
+
     def test_record_is_deterministic_detached_and_round_trips(self) -> None:
         record = capture_lap_run(
             self._result(self._telemetry()), self.manifest, self.settings,
@@ -82,6 +97,67 @@ class RunRecordTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             self.assertNotIn("NaN", text)
             self.assertIn('"run_id"', text)
+
+    def test_v2_embeds_exact_solver_grid_and_resolved_runtime(self) -> None:
+        record = capture_lap_run(
+            self._result(self._telemetry()), self.manifest, self.settings,
+            actual_vehicle=self.vehicle,
+        )
+        payload = record.to_dict()
+        self.assertEqual(payload["schema_version"], RUN_RECORD_SCHEMA_VERSION)
+        track = payload["settings"]["track"]
+        self.assertEqual(track["geometry"], {
+            "closed": self.track.closed,
+            "distance_m": list(self.track.distance_m),
+            "x_m": list(self.track.x_m),
+            "y_m": list(self.track.y_m),
+            "curvature_per_m": list(self.track.curvature_per_m),
+        })
+        runtime = payload["runtime"]
+        self.assertEqual(runtime["python"]["version"], platform.python_version())
+        self.assertEqual(runtime["python"]["implementation"], platform.python_implementation())
+        for dependency in ("numpy", "scipy", "matplotlib"):
+            self.assertEqual(
+                runtime["dependencies"][dependency], distribution_version(dependency),
+            )
+
+    def test_load_accepts_an_intact_legacy_v1_record(self) -> None:
+        record = capture_lap_run(
+            self._result(self._telemetry()), self.manifest, self.settings,
+            actual_vehicle=self.vehicle,
+        )
+        legacy = record.to_dict()
+        legacy["schema_version"] = 1
+        legacy.pop("runtime")
+        legacy["settings"]["track"].pop("geometry")
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "legacy.json"
+            self._write_payload(path, legacy)
+            loaded = RunRecord.load(path)
+        self.assertEqual(loaded.to_dict()["schema_version"], 1)
+        self.assertNotIn("geometry", loaded.to_dict()["settings"]["track"])
+
+    def test_load_rejects_embedded_grid_or_hash_tampering_even_with_new_record_id(self) -> None:
+        record = capture_lap_run(
+            self._result(self._telemetry()), self.manifest, self.settings,
+            actual_vehicle=self.vehicle,
+        )
+        for mutation in ("geometry", "geometry_sha256", "length_m", "cell_count"):
+            with self.subTest(mutation=mutation), TemporaryDirectory() as directory:
+                payload = record.to_dict()
+                track = payload["settings"]["track"]
+                if mutation == "geometry":
+                    track["geometry"]["x_m"][1] += 0.1
+                elif mutation == "geometry_sha256":
+                    track["geometry_sha256"] = "0" * 64
+                elif mutation == "length_m":
+                    track["length_m"] += 0.1
+                else:
+                    track["cell_count"] += 1
+                path = Path(directory) / "tampered.json"
+                self._write_payload(path, payload)
+                with self.assertRaisesRegex(ValueError, "embedded track geometry"):
+                    RunRecord.load(path)
 
     def test_missing_optional_sample_keeps_alignment_and_unit_metadata(self) -> None:
         record = capture_lap_run(

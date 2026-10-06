@@ -2,15 +2,23 @@
 
 from dataclasses import replace
 from math import radians
+import queue
 
 import pytest
 
-from lapsim.dynamics import PlanarVehicleConfig
+from lapsim.dynamics import (
+    PlanarEnvironment,
+    PlanarRoad,
+    PlanarVehicleConfig,
+    RectangularGripPatch,
+)
 from lapsim.ui.dynamics_lab import (
+    DynamicsLab,
     SYNTHETIC_CONFIG,
     ManeuverSettings,
     run_maneuver_pair,
 )
+from lapsim.experiments.dynamics_record import DynamicsComparisonRecord
 
 
 def example_settings() -> ManeuverSettings:
@@ -46,3 +54,46 @@ def test_zero_step_maneuver_and_unequal_request_are_rejected() -> None:
 def test_unknown_scenario_is_rejected() -> None:
     with pytest.raises(ValueError, match="A or B"):
         example_settings().controls("C")
+
+
+def test_pair_uses_identical_wind_and_contact_patch_for_both_scenarios() -> None:
+    settings = replace(
+        example_settings(),
+        environment=PlanarEnvironment(
+            wind_world_x_mps=-5.0,
+            drag_area_m2=0.8,
+            road=PlanarRoad(patches=(
+                RectangularGripPatch(-1.0, 1.0, -1.0, 0.0, 0.6),
+            )),
+        ),
+    )
+    first, second = run_maneuver_pair(settings)
+    for run in (first, second):
+        initial = run.evaluations[0]
+        assert initial.apparent_air_speed_mps == pytest.approx(17.0)
+        assert initial.aero_body_force_x_n < 0.0
+        assert [wheel.road_friction_multiplier for wheel in initial.wheels] == [
+            1.0, 0.6, 1.0, 0.6,
+        ]
+        assert run.road_valid
+    assert first.evaluations[0].aero_body_force_x_n == second.evaluations[0].aero_body_force_x_n
+
+
+def test_lab_worker_saves_exact_ab_conditions(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(
+        "lapsim.ui.dynamics_lab.default_dynamics_run_directory", lambda: tmp_path,
+    )
+    lab = DynamicsLab.__new__(DynamicsLab)
+    lab.result_queue = queue.Queue()
+    settings = example_settings()
+    lab._calculate(settings)
+    returned_settings, runs, record_id, error = lab.result_queue.get_nowait()
+    assert error is None
+    assert returned_settings == settings
+    assert runs is not None
+    record = DynamicsComparisonRecord.load(tmp_path / f"{record_id}.json")
+    payload = record.to_dict()
+    assert payload["inputs"]["environment"]["drag_area_m2"] == 0.0
+    assert payload["runs"]["A"]["states"][-1]["yaw_rate_rad_s"] == pytest.approx(
+        runs[0].states[-1].yaw_rate_rad_s,
+    )

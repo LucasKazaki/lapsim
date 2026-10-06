@@ -91,3 +91,40 @@ class SuspensionLoadTransferTests(TestCase):
         self.assertGreaterEqual(min(loads.all_n), 0.0)
         self.assertAlmostEqual(loads.front_axle_n, 0.47 * 300.0 * 9.81)
         self.assertAlmostEqual(loads.rear_axle_n, 0.53 * 300.0 * 9.81)
+
+    def test_modest_positive_lift_preserves_supported_ground_contact(self) -> None:
+        forces = AeroForces(0.0, -100.0, -47.0, -53.0)
+
+        loads = self.suspension.tire_normal_loads_n(
+            300.0, 9.81, forces, self.chassis
+        )
+
+        self.assertGreater(min(loads.all_n), 0.0)
+        self.assertAlmostEqual(loads.total_n, 300.0 * 9.81 - 100.0)
+
+    def test_rejects_negative_axle_load_from_lift(self) -> None:
+        for forces, axle in (
+            (AeroForces(0.0, -2000.0, -1500.0, -500.0), "front"),
+            (AeroForces(0.0, -2000.0, -400.0, -1600.0), "rear"),
+        ):
+            with self.subTest(axle=axle):
+                with self.assertRaisesRegex(
+                    ValueError, f"{axle} axle normal load negative"
+                ):
+                    self.suspension.tire_normal_loads_n(
+                        300.0, 9.81, forces, self.chassis
+                    )
+
+    def test_rejects_zero_total_normal_load(self) -> None:
+        front_load_n = self.chassis.static_front_weight_fraction * 300.0 * 9.81
+        rear_load_n = (
+            (1.0 - self.chassis.static_front_weight_fraction) * 300.0 * 9.81
+        )
+        forces = AeroForces(
+            0.0, -front_load_n - rear_load_n, -front_load_n, -rear_load_n
+        )
+
+        with self.assertRaisesRegex(ValueError, "total tire normal load"):
+            self.suspension.tire_normal_loads_n(
+                300.0, 9.81, forces, self.chassis
+            )

@@ -5,7 +5,7 @@ from __future__ import annotations
 import queue
 import threading
 import tkinter as tk
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from math import degrees, isfinite, radians
 from tkinter import messagebox
 from typing import Any
@@ -15,11 +15,18 @@ from matplotlib.figure import Figure
 
 from lapsim.dynamics import (
     PlanarControls,
+    PlanarEnvironment,
+    PlanarRoad,
     PlanarRun,
     PlanarState,
     PlanarVehicleConfig,
+    RectangularGripPatch,
     evaluate_planar_dynamics,
     run_planar_dynamics,
+)
+from lapsim.experiments.dynamics_record import (
+    capture_dynamics_comparison,
+    default_dynamics_run_directory,
 )
 
 
@@ -51,8 +58,13 @@ class ManeuverSettings:
     torque_a_nm: tuple[float, float, float, float]
     torque_b_nm: tuple[float, float, float, float]
     equal_total_required: bool = True
+    environment: PlanarEnvironment = field(default_factory=PlanarEnvironment)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.config, PlanarVehicleConfig):
+            raise ValueError("config must be PlanarVehicleConfig")
+        if not isinstance(self.environment, PlanarEnvironment):
+            raise ValueError("environment must be PlanarEnvironment")
         if not all(
             isfinite(value)
             for value in (
@@ -117,6 +129,7 @@ def run_maneuver_pair(settings: ManeuverSettings) -> tuple[PlanarRun, PlanarRun]
                 initial_state,
                 (controls,) * settings.step_count,
                 settings.output_step_s,
+                environment=settings.environment,
             )
         )
     return runs[0], runs[1]
@@ -150,10 +163,28 @@ class DynamicsLab:
             for scenario, values in default_torque.items()
         }
         self.equal_total = tk.BooleanVar(value=True)
+        self.environment_vars = {
+            "wind_world_x_mps": tk.StringVar(value="0"),
+            "wind_world_y_mps": tk.StringVar(value="0"),
+            "air_density_kgpm3": tk.StringVar(value="1.225"),
+            "drag_area_m2": tk.StringVar(value="0.8"),
+            "base_friction_multiplier": tk.StringVar(value="1"),
+            "x_min_m": tk.StringVar(value="4"),
+            "x_max_m": tk.StringVar(value="9"),
+            "y_min_m": tk.StringVar(value="-1.5"),
+            "y_max_m": tk.StringVar(value="0"),
+            "patch_friction_multiplier": tk.StringVar(value="0.6"),
+        }
+        self.patch_enabled = tk.BooleanVar(value=False)
         self.inspected_scenario = tk.StringVar(value="A")
         self.status = tk.StringVar(value="Ready · synthetic model, not a team-car calibration")
         self.result_queue: queue.Queue[
-            tuple[ManeuverSettings | None, tuple[PlanarRun, PlanarRun] | None, BaseException | None]
+            tuple[
+                ManeuverSettings | None,
+                tuple[PlanarRun, PlanarRun] | None,
+                str | None,
+                BaseException | None,
+            ]
         ] = queue.Queue()
         self.settings: ManeuverSettings | None = None
         self.runs: tuple[PlanarRun, PlanarRun] | None = None
@@ -253,6 +284,10 @@ class DynamicsLab:
             ("moment", "Yaw moment (Nm)"),
             ("utilization", "Peak tire use (%)"),
             ("residual", "Power residual (W)"),
+            ("airspeed", "Air speed (m/s)"),
+            ("aero_x", "Aero Fx (N)"),
+            ("aero_y", "Aero Fy (N)"),
+            ("road", "Road coverage"),
         )):
             column = index % 4
             row = (index // 4) * 2
@@ -318,6 +353,48 @@ class DynamicsLab:
         torques.grid_columnconfigure(1, weight=1)
         torques.grid_columnconfigure(2, weight=1)
 
+        environment = tk.LabelFrame(
+            parent, text="Wind and road · synthetic", font=FONT_BOLD,
+            padx=7, pady=6, bd=1, relief="solid",
+        )
+        environment.pack(fill="x", pady=(0, 8))
+        condition_labels = (
+            ("Wind world X", "wind_world_x_mps", "m/s"),
+            ("Wind world Y", "wind_world_y_mps", "m/s"),
+            ("Air density", "air_density_kgpm3", "kg/m³"),
+            ("Drag area CdA", "drag_area_m2", "m²"),
+            ("Base grip scale", "base_friction_multiplier", "×"),
+        )
+        for row, (label, key, unit) in enumerate(condition_labels):
+            tk.Label(environment, text=label, anchor="w").grid(row=row, column=0, sticky="w")
+            tk.Entry(
+                environment, textvariable=self.environment_vars[key], width=9,
+                justify="right", relief="solid", bd=1,
+            ).grid(row=row, column=1, sticky="ew", padx=5, pady=2)
+            tk.Label(environment, text=unit, width=7, anchor="w").grid(
+                row=row, column=2, sticky="w",
+            )
+        tk.Checkbutton(
+            environment, text="Enable low-grip rectangle", variable=self.patch_enabled,
+        ).grid(row=5, column=0, columnspan=3, sticky="w", pady=(4, 0))
+        patch_labels = (
+            ("Patch X min", "x_min_m", "m"),
+            ("Patch X max", "x_max_m", "m"),
+            ("Patch Y min", "y_min_m", "m"),
+            ("Patch Y max", "y_max_m", "m"),
+            ("Patch grip scale", "patch_friction_multiplier", "×"),
+        )
+        for row, (label, key, unit) in enumerate(patch_labels, start=6):
+            tk.Label(environment, text=label, anchor="w").grid(row=row, column=0, sticky="w")
+            tk.Entry(
+                environment, textvariable=self.environment_vars[key], width=9,
+                justify="right", relief="solid", bd=1,
+            ).grid(row=row, column=1, sticky="ew", padx=5, pady=2)
+            tk.Label(environment, text=unit, width=7, anchor="w").grid(
+                row=row, column=2, sticky="w",
+            )
+        environment.grid_columnconfigure(1, weight=1)
+
         config = tk.LabelFrame(
             parent, text="Synthetic vehicle and tire", font=FONT_BOLD,
             padx=7, pady=6, bd=1, relief="solid",
@@ -371,8 +448,41 @@ class DynamicsLab:
             }
             torque_a = tuple(float(item.get()) for item in self.torque_vars["A"])
             torque_b = tuple(float(item.get()) for item in self.torque_vars["B"])
+            environment_keys = (
+                "wind_world_x_mps", "wind_world_y_mps", "air_density_kgpm3",
+                "drag_area_m2", "base_friction_multiplier",
+            )
+            if self.patch_enabled.get():
+                environment_keys += (
+                    "x_min_m", "x_max_m", "y_min_m", "y_max_m",
+                    "patch_friction_multiplier",
+                )
+            environment_values = {
+                key: float(self.environment_vars[key].get())
+                for key in environment_keys
+            }
         except ValueError as error:
-            raise ValueError("Enter a number in every maneuver, torque, and car field") from error
+            raise ValueError("Enter a number in every maneuver, torque, car, wind, and road field") from error
+        road_patches = ()
+        if self.patch_enabled.get():
+            road_patches = (RectangularGripPatch(
+                x_min_m=environment_values["x_min_m"],
+                x_max_m=environment_values["x_max_m"],
+                y_min_m=environment_values["y_min_m"],
+                y_max_m=environment_values["y_max_m"],
+                friction_multiplier=environment_values["patch_friction_multiplier"],
+                material_id="assumed_low_grip",
+            ),)
+        environment = PlanarEnvironment(
+            wind_world_x_mps=environment_values["wind_world_x_mps"],
+            wind_world_y_mps=environment_values["wind_world_y_mps"],
+            air_density_kgpm3=environment_values["air_density_kgpm3"],
+            drag_area_m2=environment_values["drag_area_m2"],
+            road=PlanarRoad(
+                base_friction_multiplier=environment_values["base_friction_multiplier"],
+                patches=road_patches,
+            ),
+        )
         return ManeuverSettings(
             config=PlanarVehicleConfig(**config_values),
             initial_speed_mps=maneuver_values["initial_speed_mps"],
@@ -382,6 +492,7 @@ class DynamicsLab:
             torque_a_nm=torque_a,
             torque_b_nm=torque_b,
             equal_total_required=self.equal_total.get(),
+            environment=environment,
         )
 
     def _start_run(self) -> None:
@@ -397,15 +508,27 @@ class DynamicsLab:
     def _calculate(self, settings: ManeuverSettings) -> None:
         try:
             runs = run_maneuver_pair(settings)
-            self.result_queue.put((settings, runs, None))
+            record = capture_dynamics_comparison(
+                config=settings.config,
+                environment=settings.environment,
+                initial_state=runs[0].states[0],
+                controls_a=(settings.controls("A"),) * settings.step_count,
+                controls_b=(settings.controls("B"),) * settings.step_count,
+                output_step_s=settings.output_step_s,
+                run_a=runs[0],
+                run_b=runs[1],
+                equal_total_required=settings.equal_total_required,
+            )
+            record.save(default_dynamics_run_directory() / f"{record.run_id}.json")
+            self.result_queue.put((settings, runs, record.run_id, None))
         except Exception as error:
-            self.result_queue.put((None, None, error))
+            self.result_queue.put((None, None, None, error))
 
     def _poll_result(self) -> None:
         if not self.window.winfo_exists():
             return
         try:
-            settings, runs, error = self.result_queue.get_nowait()
+            settings, runs, record_id, error = self.result_queue.get_nowait()
         except queue.Empty:
             self.window.after(100, self._poll_result)
             return
@@ -425,11 +548,18 @@ class DynamicsLab:
                 abs(item.energy_balance_residual_w)
                 for run in runs for item in run.evaluations
             )
-            self.status.set(
-                f"A final yaw rate {yaw_a:.2f}°/s · B {yaw_b:.2f}°/s · "
-                f"B − A {yaw_b - yaw_a:+.2f}°/s · "
-                f"max equation residual {residual:.2e} W"
-            )
+            if not all(run.road_valid for run in runs):
+                invalid_count = sum(run.invalid_road_queries for run in runs)
+                self.status.set(
+                    f"INVALID ROAD DOMAIN · {invalid_count} wheel-force queries outside "
+                    f"the supported area · A/B ranking withheld · saved {record_id[:12]}"
+                )
+            else:
+                self.status.set(
+                    f"A final yaw rate {yaw_a:.2f}°/s · B {yaw_b:.2f}°/s · "
+                    f"B − A {yaw_b - yaw_a:+.2f}°/s · "
+                    f"max equation residual {residual:.2e} W · saved {record_id[:12]}"
+                )
         self.window.after(100, self._poll_result)
 
     def _theme_colors(self) -> tuple[str, str]:
@@ -494,6 +624,12 @@ class DynamicsLab:
         else:
             selected = 0 if self.inspected_scenario.get() == "A" else 1
             sample_index = min(self.time_index.get(), self.settings.step_count)
+            for patch in self.settings.environment.road.patches:
+                self.ax_path.plot(
+                    [patch.x_min_m, patch.x_max_m, patch.x_max_m, patch.x_min_m, patch.x_min_m],
+                    [patch.y_min_m, patch.y_min_m, patch.y_max_m, patch.y_max_m, patch.y_min_m],
+                    color=foreground, linestyle=":", linewidth=1.0,
+                )
             for name, run, line_style in zip(
                 ("A", "B"), self.runs, ("-", "--"), strict=True
             ):
@@ -521,6 +657,7 @@ class DynamicsLab:
                 self.settings.config,
                 state,
                 self.settings.controls(self.inspected_scenario.get()),
+                environment=self.settings.environment,
             )
             for key, value in {
                 "time": f"{time_s:.3f}",
@@ -531,12 +668,20 @@ class DynamicsLab:
                 "moment": f"{evaluation.total_yaw_moment_nm:.1f}",
                 "utilization": f"{100 * max(wheel.force_utilization for wheel in evaluation.wheels):.1f}",
                 "residual": f"{evaluation.energy_balance_residual_w:.2e}",
+                "airspeed": f"{evaluation.apparent_air_speed_mps:.3f}",
+                "aero_x": f"{evaluation.aero_body_force_x_n:.1f}",
+                "aero_y": f"{evaluation.aero_body_force_y_n:.1f}",
+                "road": (
+                    "ASSUMED" if self.settings.environment.road.valid_domain is None
+                    else ("YES" if run.road_valid else "NO")
+                ),
             }.items():
                 self.metric_values[key].set(value)
             final_evaluation = evaluate_planar_dynamics(
                 self.settings.config,
                 run.states[-1],
                 self.settings.controls(self.inspected_scenario.get()),
+                environment=self.settings.environment,
             )
             for wheel, name, line_style in zip(
                 range(4), WHEEL_ABBREVIATIONS, ("-", "--", ":", "-."), strict=True
@@ -594,7 +739,8 @@ class DynamicsLab:
                 f"{name}  κ={wheel.slip_ratio:+.2f}\n"
                 f"Fx={wheel.local_force_x_n:+.0f} N  "
                 f"Fy={wheel.local_force_y_n:+.0f} N\n"
-                f"Fz={wheel.normal_load_n:.0f} N",
+                f"Fz={wheel.normal_load_n:.0f} N  "
+                f"grip×{wheel.road_friction_multiplier:.2f}",
                 color=foreground, ha="center",
                 va="bottom" if y_m > 0 else "top", fontsize=7,
             )

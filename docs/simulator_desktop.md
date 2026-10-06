@@ -57,7 +57,7 @@ to selected inputs, not validated real-world performance.
 Every lap run, including an interrupted run returned by the solver, saves a
 content-identified JSON record under `%LOCALAPPDATA%\LapSim\runs`. The record
 contains the selected profile manifest, effective car constructor inputs,
-editable overrides, exact resampled-course hash, solver and controller
+editable overrides, exact resampled-course geometry and hash, solver and controller
 settings, result status, and aligned telemetry with units and validity flags.
 The status line shows the start of the record ID; comparison shows both IDs.
 Files stay on your computer and are not added to Git. A record is evidence of
@@ -67,10 +67,16 @@ what the model calculated, not evidence that the real vehicle was calibrated.
 compares two allocations of the same total requested wheel torque on one
 synthetic car and shows paths, yaw rate, four wheel-slip traces, and wheel
 forces at a movable time cursor. Its white/black desktop controls allow
-editing mass, yaw inertia, geometry, tire coefficients, steer, and independent
-wheel torques. The lab is for torque-allocation and equation checks. It has
-no measured tire map, dynamic load transfer, motor/inverter/pack limits, or
-team-car calibration, and its results must not be treated as lap times. See
+editing mass, yaw inertia, geometry, tire coefficients, steer, independent
+wheel torques, world-frame wind, air density, synthetic drag area, base road
+grip, and an optional rectangular lower-grip patch. It displays apparent airspeed,
+aero force, and per-wheel grip multiplier. Each A/B experiment saves one
+linked JSON record under `%LOCALAPPDATA%\LapSim\dynamics_runs`, including exact
+inputs, trajectories, wheel forces, and equation residuals. Road coverage is
+shown as assumed unless a validity domain is supplied through the Python API.
+The lab is for torque-allocation and equation checks. It has no measured tire
+map, dynamic load transfer, motor/inverter/pack limits, or team-car calibration,
+and its results must not be treated as lap times. See
 [Four-wheel dynamics](four_wheel_dynamics.md) for the equations and checks.
 
 The team course file is a 989 m fused GNSS/corrected-IMU recording registered
