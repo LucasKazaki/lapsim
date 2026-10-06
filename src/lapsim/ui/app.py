@@ -24,10 +24,12 @@ from lapsim.dynamics.conditions import (
 )
 from lapsim.dynamics.planar import PlanarState
 from lapsim.experiments import LapRunSettings, RunRecord, capture_lap_run, default_run_directory
+from lapsim.experiments.pose_run_record import PoseRunRecord, default_pose_run_directory
 from lapsim.optimization.pose_driver import (
     PoseDriverRun, PoseDriverSample, PoseDriverSettings, run_pose_driver,
 )
 from lapsim.profiles import build_vehicle, browse_records, list_profiles
+from lapsim.solvers.path_constraints import PathConstraintProgressSnapshot
 
 from .comparison import summarize_lap
 from .course_catalog import (
@@ -358,6 +360,9 @@ class LapSimDesktop:
         self.pose_preview_status = tk.StringVar(value=(
             "Optional 80 m synthetic pose preview has not been run."
         ))
+        self.pose_record_status = tk.StringVar(value=(
+            "No synthetic trace saved or loaded."
+        ))
         self.pose_scenario_var = tk.StringVar(value=POSE_SCENARIO_UNIFORM)
         self.pose_scenario_menu: tk.OptionMenu | None = None
         self._active_pose_scenario = POSE_SCENARIO_UNIFORM
@@ -365,6 +370,9 @@ class LapSimDesktop:
         self.pose_offset_entry: tk.Entry | None = None
         self._active_pose_offset_m = 0.0
         self.pose_preview_button: tk.Button | None = None
+        self.pose_save_button: tk.Button | None = None
+        self.pose_load_button: tk.Button | None = None
+        self._latest_pose_run: PoseDriverRun | None = None
         self.driver_speed_var = tk.StringVar(value="1×")
         self.driver_progress_var = tk.DoubleVar(value=0.0)
         self.driver_values = {
@@ -1610,9 +1618,10 @@ class LapSimDesktop:
             parent,
             text=(
                 "The desktop app can compare car profiles and save modeled lap "
-                "records. Interactive driving, a live ghost, controller versions, "
-                "complete session capture, and an end-to-end replay gate are not "
-                "implemented in this tab yet."
+                "records. Interactive driving, a live ghost, a versioned Terps "
+                "controller, and full-session comparison remain unavailable. "
+                "The bounded synthetic preview can save its own trace and check "
+                "recorded-control replay."
             ),
             justify="left",
             anchor="w",
@@ -1668,16 +1677,33 @@ class LapSimDesktop:
                   "from center; positive is left of travel."),
             justify="left", anchor="w", wraplength=760,
         ).grid(row=8, column=0, sticky="ew", pady=(0, 8))
+        pose_actions = tk.Frame(parent)
+        pose_actions.grid(row=9, column=0, sticky="w")
         self.pose_preview_button = tk.Button(
-            parent, text="Run 80 m synthetic pose preview",
+            pose_actions, text="Run 80 m synthetic pose preview",
             command=self._start_pose_preview,
             relief="raised", bd=1,
         )
-        self.pose_preview_button.grid(row=9, column=0, sticky="w")
+        self.pose_preview_button.pack(side="left")
+        self.pose_save_button = tk.Button(
+            pose_actions, text="Save last synthetic trace…",
+            command=self._save_pose_record, state="disabled",
+            relief="raised", bd=1,
+        )
+        self.pose_save_button.pack(side="left", padx=(8, 0))
+        self.pose_load_button = tk.Button(
+            pose_actions, text="Load synthetic trace…",
+            command=self._load_pose_record, relief="raised", bd=1,
+        )
+        self.pose_load_button.pack(side="left", padx=(8, 0))
         tk.Label(
             parent, textvariable=self.pose_preview_status,
             justify="left", anchor="w", wraplength=760, font=FONT,
         ).grid(row=10, column=0, sticky="ew", pady=(8, 0))
+        tk.Label(
+            parent, textvariable=self.pose_record_status,
+            justify="left", anchor="w", wraplength=760, font=FONT,
+        ).grid(row=11, column=0, sticky="ew", pady=(4, 0))
 
     def _on_pose_scenario_change(self) -> None:
         if self.run_in_progress:
@@ -2583,6 +2609,12 @@ class LapSimDesktop:
         self.run_button.configure(state=state)
         if self.pose_preview_button is not None:
             self.pose_preview_button.configure(state=state)
+        if self.pose_save_button is not None:
+            self.pose_save_button.configure(
+                state="disabled" if busy or self._latest_pose_run is None else "normal"
+            )
+        if self.pose_load_button is not None:
+            self.pose_load_button.configure(state=state)
         if self.pose_scenario_menu is not None:
             self.pose_scenario_menu.configure(state=state)
         if self.pose_offset_entry is not None:
@@ -2684,6 +2716,41 @@ class LapSimDesktop:
         if latest is None or not self.run_in_progress:
             return
         name, phase, track, snapshot = latest
+        if isinstance(snapshot, PathConstraintProgressSnapshot):
+            # Constraint preparation has no accepted vehicle pose. Show the
+            # observed work without inventing an overall time remaining.
+            self._driver_live_update_serial += 1
+            self.driver_playback = None
+            self._live_decision = None
+            self._driver_playback_time_s = 0.0
+            self._driver_preview_track = self.track
+            for value in self.driver_values.values():
+                value.set("—")
+            for value in self.driver_decision_values.values():
+                value.set("—")
+            if snapshot.phase == "local_limits":
+                fraction = snapshot.completed_cells / snapshot.cell_count
+                description = (
+                    f"{name}: {phase} · local speed limits · "
+                    f"{snapshot.completed_cells}/{snapshot.cell_count} cells "
+                    f"({fraction:.0%} of this phase)"
+                )
+                self._set_calculation_progress(
+                    "determinate", description, fraction=fraction,
+                )
+            else:
+                description = (
+                    f"{name}: {phase} · cyclic braking pass "
+                    f"{snapshot.pass_number} · "
+                    f"{snapshot.completed_cells}/{snapshot.cell_count} cells; "
+                    "convergence pending"
+                )
+                self._set_calculation_progress("indeterminate", description)
+            self.driver_run_label.set(
+                f"{name} · preparing path speed limits · no vehicle pose"
+            )
+            self._draw_driver_view()
+            return
         try:
             playback = DriverPlayback(
                 track,
@@ -2832,6 +2899,8 @@ class LapSimDesktop:
             return
         self._active_pose_scenario = scenario
         self._active_pose_offset_m = offset_m
+        self._latest_pose_run = None
+        self.pose_record_status.set("Current synthetic trace has not been saved.")
         description = self._active_pose_description()
         self.progress_queue = queue.Queue(maxsize=1)
         self.pose_progress_queue = queue.Queue(maxsize=1)
@@ -2902,6 +2971,67 @@ class LapSimDesktop:
             self.result_queue.put(("pose_preview", run, None))
         except Exception as error:
             self.result_queue.put(("pose_preview", None, error))
+
+    def _save_pose_record(self) -> None:
+        """Save the last frozen synthetic trace, never an endurance lap."""
+
+        if self.run_in_progress or self._latest_pose_run is None:
+            return
+        record_directory = default_pose_run_directory()
+        record_directory.mkdir(parents=True, exist_ok=True)
+        path = filedialog.asksaveasfilename(
+            parent=self.root, title="Save synthetic pose trace",
+            initialdir=str(record_directory),
+            initialfile="synthetic_pose_trace.json",
+            defaultextension=".json",
+            filetypes=(("JSON record", "*.json"),),
+        )
+        if not path:
+            return
+        run = self._latest_pose_run
+        self._set_busy(True)
+        self.pose_record_status.set("Checking replay and saving synthetic trace…")
+        self._set_calculation_progress(
+            "indeterminate", "Saving synthetic pose trace · checking replay",
+        )
+        threading.Thread(
+            target=self._write_pose_record, args=(run, Path(path)), daemon=True,
+        ).start()
+
+    def _write_pose_record(self, run: PoseDriverRun, path: Path) -> None:
+        try:
+            record = PoseRunRecord.capture(run)
+            record.save(path)
+            self.result_queue.put(("pose_record_saved", (path, record.content_id), None))
+        except Exception as error:
+            self.result_queue.put(("pose_record_saved", None, error))
+
+    def _load_pose_record(self) -> None:
+        if self.run_in_progress:
+            return
+        record_directory = default_pose_run_directory()
+        path = filedialog.askopenfilename(
+            parent=self.root, title="Load synthetic pose trace",
+            initialdir=str(record_directory if record_directory.is_dir() else Path.home()),
+            filetypes=(("JSON record", "*.json"),),
+        )
+        if not path:
+            return
+        self._set_busy(True)
+        self.pose_record_status.set("Loading and checking synthetic trace…")
+        self._set_calculation_progress(
+            "indeterminate", "Loading synthetic pose trace · checking replay",
+        )
+        threading.Thread(
+            target=self._read_pose_record, args=(Path(path),), daemon=True,
+        ).start()
+
+    def _read_pose_record(self, path: Path) -> None:
+        try:
+            record = PoseRunRecord.load(path)
+            self.result_queue.put(("pose_record_loaded", (path, record), None))
+        except Exception as error:
+            self.result_queue.put(("pose_record_loaded", None, error))
 
     def _poll_pose_progress(self) -> None:
         latest = None
@@ -3042,6 +3172,9 @@ class LapSimDesktop:
                 solver_track,
                 torque_request_fraction=torque_fraction,
                 progress_callback=on_progress,
+                constraint_progress_callback=lambda snapshot: self._queue_live_progress(
+                    profile_name, "Centerline model", None, snapshot,
+                ),
             )
             if result.completed:
                 summarize_lap(result, self.track.length_m)
@@ -3120,6 +3253,17 @@ class LapSimDesktop:
             comparison = compare_lines_with_lap_model(
                 vehicle, plan, torque_request_fraction=torque_fraction,
                 progress_callback=on_progress,
+                constraint_progress_callback=lambda phase, snapshot: self._queue_live_progress(
+                    profile_name,
+                    {
+                        "baseline": "Geometric centerline",
+                        "full": "Full AI line",
+                        "half": "Half AI line",
+                        "three_quarter": "Three-quarter AI line",
+                        "adaptive": "Car-adaptive AI line",
+                    }.get(phase, phase),
+                    None, snapshot,
+                ),
                 speed_periodic=True,
                 minimum_selection_gain_s=AI_SELECTION_MARGIN_S,
             )
@@ -3494,7 +3638,13 @@ class LapSimDesktop:
             for profile_id, name, setup in plans:
                 vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
                 apply_uniform_road_grip(vehicle, road_grip_multiplier)
-                constraints = prepare_one_lap_constraints(vehicle, solver_track)
+                constraints = prepare_one_lap_constraints(
+                    vehicle, solver_track,
+                    constraint_progress_callback=lambda snapshot, label=name:
+                        self._queue_live_progress(
+                            label, "Centerline comparison", None, snapshot,
+                        ),
+                )
                 prepared.append((
                     profile_id, name, setup, vehicle, manifest, constraints,
                 ))
@@ -3561,7 +3711,90 @@ class LapSimDesktop:
             self._schedule_after(100, self._poll_result)
             return
 
+        if kind in ("pose_record_saved", "pose_record_loaded"):
+            if kind == "pose_record_loaded" and error is None:
+                self._latest_pose_run = payload[1].run
+            self._set_busy(False)
+            if error is not None:
+                action = "save" if kind == "pose_record_saved" else "load"
+                self._set_calculation_progress(
+                    "stopped", f"Synthetic pose trace · {action} failed",
+                )
+                self.pose_record_status.set(
+                    f"Could not {action} synthetic trace: {error}"
+                )
+                self.status_text.set(f"Synthetic trace {action} failed: {error}")
+            elif kind == "pose_record_saved":
+                path, content_id = payload
+                self._set_calculation_progress(
+                    "complete", "Synthetic pose trace saved and replay checked",
+                    fraction=1.0,
+                )
+                self.pose_record_status.set(
+                    f"Saved {path.name} · ID {content_id[:12]} · numerical replay passed"
+                )
+                self.status_text.set("Synthetic pose trace saved and replay checked")
+            else:
+                path, record = payload
+                run = record.run
+                scenario = next((
+                    name for name in (POSE_SCENARIO_UNIFORM, POSE_SCENARIO_PATCH)
+                    if run.environment == _pose_preview_environment(name)
+                ), "Recorded custom synthetic road")
+                if scenario in (POSE_SCENARIO_UNIFORM, POSE_SCENARIO_PATCH):
+                    self.pose_scenario_var.set(scenario)
+                self.pose_offset_var.set(f"{run.settings.initial_lateral_offset_m:g}")
+                self._active_pose_scenario = scenario
+                self._active_pose_offset_m = run.settings.initial_lateral_offset_m
+                self._set_calculation_progress(
+                    "complete", "Synthetic pose trace loaded and replay checked",
+                    fraction=1.0,
+                )
+                self.pose_record_status.set(
+                    f"Loaded {path.name} · ID {record.content_id[:12]} · "
+                    "numerical replay passed"
+                )
+                self.pose_preview_status.set(
+                    f"Recorded {self._active_pose_description()} · {run.status}: "
+                    f"{run.samples[-1].progress_m:.1f} m in "
+                    f"{run.elapsed_pose_model_time_s:.2f} s pose-model time. "
+                    "This is not an engineering lap time."
+                )
+                self.status_text.set("Synthetic pose trace loaded and replay checked")
+                if len(run.states) > 1:
+                    self._activate_pose_preview(run)
+                else:
+                    self._pause_driver_playback()
+                    self.driver_playback = None
+                    self._live_decision = None
+                    self._driver_live_mode = False
+                    self._pose_live_mode = False
+                    self._driver_stream_active = False
+                    self._driver_preview_track = None
+                    self._driver_live_update_serial += 1
+                    self._driver_playback_time_s = 0.0
+                    self.driver_note_var.set(POSE_DRIVER_NOTE)
+                    self._set_driver_box_mode(pose=True)
+                    self.driver_decision_title.set("Pose model · no driven controls")
+                    self.driver_progress_var.set(0.0)
+                    self.driver_progress.configure(state="disabled")
+                    if self.driver_play_button is not None:
+                        self.driver_play_button.configure(state="disabled")
+                    for value in self.driver_values.values():
+                        value.set("—")
+                    for value in self.driver_decision_values.values():
+                        value.set("—")
+                    self.driver_run_label.set(
+                        f"Synthetic pose model · {self._active_pose_description()} · "
+                        f"{run.status} · no driven step"
+                    )
+                    self._switch_tab("Driver view")
+                    self._draw_driver_view()
+            self._schedule_after(100, self._poll_result)
+            return
+
         if kind == "pose_preview":
+            self._latest_pose_run = payload if error is None else None
             self._set_busy(False)
             self._pose_live_mode = False
             self._driver_stream_active = False

@@ -6,7 +6,7 @@ from math import cos, pi, sin
 import pytest
 
 from lapsim.courses.spatial_track import SpatialTrack
-from lapsim.courses.track import Curve, Track
+from lapsim.courses.track import Curve, Straight, Track
 from lapsim.dynamics.conditions import (
     PlanarEnvironment,
     PlanarRoad,
@@ -20,6 +20,7 @@ from lapsim.optimization.pose_driver import (
     run_pose_driver,
 )
 from lapsim.dynamics.planar import PlanarState
+from lapsim.ui.course_catalog import SYNTHETIC_DEMO_COURSE_ID, load_course
 from lapsim.ui.pose_driver_playback import PoseDriverPlayback
 
 
@@ -385,6 +386,130 @@ def test_local_projection_preserves_seam_and_large_window_results(segment_run):
                              previous_station_m, window_m)
         assert expected is not None
         assert found.station_m == pytest.approx(expected[1], abs=1e-10)
+
+
+def test_local_projection_includes_long_cells_overlapping_a_seam_window():
+    # This course is an exact closed sequence of long straights and arcs.
+    # A cell's midpoint may lie outside a narrow search window even while its
+    # endpoint and the requested projection lie inside that window.
+    segments = tuple(
+        segment
+        for straight_length_m in (40.0, 20.0, 40.0, 20.0)
+        for segment in (Straight(straight_length_m), Curve(12.0, pi / 2.0))
+    )
+    track = SpatialTrack.from_track(
+        Track.from_segments(segments),
+        maximum_cell_length_m=100.0,
+        close_geometry=False,
+    )
+    track.validate_coherent_arcs()
+    assert track.cell_length_m[0] == pytest.approx(40.0)
+
+    for previous_station_m, station_m in (
+        (0.15, 0.30),
+        (track.length_m - 0.15, track.length_m - 0.30),
+        (track.length_m + 0.15, track.length_m + 0.30),
+    ):
+        x_m, y_m = pose_driver._path_point(track, station_m)
+        projection = pose_driver._project_local(
+            track, x_m, y_m, previous_station_m, 0.5,
+        )
+        assert projection.station_m == pytest.approx(station_m, abs=1e-10)
+        assert projection.cross_track_m == pytest.approx(0.0, abs=1e-10)
+
+
+def test_local_projection_clips_station_to_requested_window_on_long_cell():
+    segments = tuple(
+        segment
+        for straight_length_m in (40.0, 20.0, 40.0, 20.0)
+        for segment in (Straight(straight_length_m), Curve(12.0, pi / 2.0))
+    )
+    track = SpatialTrack.from_track(
+        Track.from_segments(segments),
+        maximum_cell_length_m=100.0,
+        close_geometry=False,
+    )
+    track.validate_coherent_arcs()
+    x_m, y_m = pose_driver._path_point(track, 35.0)
+    projection = pose_driver._project_local(track, x_m, y_m, 15.0, 8.0)
+    assert projection.station_m == pytest.approx(23.0, abs=1e-10)
+
+
+def test_local_projection_considers_both_lap_copies_of_a_major_arc():
+    # A coherent circle can have one saved arc longer than half a lap. Near
+    # the seam, both copies of that arc overlap the station search window.
+    track = SpatialTrack.from_track(
+        Track.from_segments((
+            Curve(12.0, 4.0 * pi / 3.0),
+            Curve(12.0, pi / 3.0),
+            Curve(12.0, pi / 3.0),
+        )),
+        maximum_cell_length_m=100.0,
+        close_geometry=False,
+    )
+    track.validate_coherent_arcs()
+    assert track.cell_length_m[0] > track.length_m / 2.0
+    station_m = track.distance_m[1] - 1.0
+    x_m, y_m = pose_driver._path_point(track, station_m)
+    projection = pose_driver._project_local(track, x_m, y_m, 0.0, 30.0)
+    assert projection.station_m == pytest.approx(station_m - track.length_m, abs=1e-10)
+    assert projection.cross_track_m == pytest.approx(0.0, abs=1e-10)
+
+
+def test_pose_driver_refines_coarse_coherent_arcs_before_driving():
+    source = SpatialTrack.from_track(
+        Track.from_segments(tuple(
+            segment
+            for straight_length_m in (40.0, 20.0, 40.0, 20.0)
+            for segment in (Straight(straight_length_m), Curve(12.0, pi / 2.0))
+        )),
+        maximum_cell_length_m=100.0,
+        close_geometry=False,
+    )
+    source.validate_coherent_arcs()
+    arc_midpoint_station_m = source.distance_m[1] + 12.0 * pi / 4.0
+    source_chord_point = pose_driver._path_point(source, arc_midpoint_station_m)
+
+    run = run_pose_driver(source, settings=replace(
+        PoseDriverSettings(), target_progress_m=55.0,
+    ))
+    assert run.completed
+    assert run.track.cell_count > source.cell_count
+    assert max(run.track.cell_length_m) <= 0.5 + 1e-12
+    assert run.track.length_m == pytest.approx(source.length_m)
+    for station_m, x_m, y_m in zip(
+        source.distance_m, source.x_m, source.y_m, strict=True,
+    ):
+        refined_index = run.track.distance_m.index(station_m)
+        assert run.track.x_m[refined_index] == pytest.approx(x_m)
+        assert run.track.y_m[refined_index] == pytest.approx(y_m)
+    refined_point = pose_driver._path_point(run.track, arc_midpoint_station_m)
+    assert refined_point[0] == pytest.approx(40.0 + 12.0 * sin(pi / 4.0), abs=0.01)
+    assert refined_point[1] == pytest.approx(12.0 * (1.0 - cos(pi / 4.0)), abs=0.01)
+    assert ((refined_point[0] - source_chord_point[0])**2 +
+            (refined_point[1] - source_chord_point[1])**2)**0.5 > 3.4
+    assert replay_pose_driver(run).passed
+
+
+def test_pose_driver_preserves_default_fine_grid_identity():
+    source = load_course(SYNTHETIC_DEMO_COURSE_ID)
+    assert max(source.cell_length_m) <= 0.5 + 1e-9
+    run = run_pose_driver(source, settings=replace(
+        PoseDriverSettings(), maximum_control_steps=1,
+    ))
+    assert run.track is source
+    assert replay_pose_driver(run).passed
+
+
+def test_pose_driver_rejects_refinement_above_cell_budget():
+    source = SpatialTrack.from_track(
+        Track.from_segments((Curve(10_000.0, pi / 2.0),) * 4),
+        maximum_cell_length_m=20_000.0,
+        close_geometry=False,
+    )
+    source.validate_coherent_arcs()
+    with pytest.raises(ValueError, match="100000-cell compute cap"):
+        run_pose_driver(source)
 
 
 def test_speed_preview_is_bounded_and_rejects_zero_chord(segment_run):

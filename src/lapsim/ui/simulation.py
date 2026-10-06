@@ -19,7 +19,11 @@ from lapsim.events.endurance import (
     LapProgressSnapshot,
 )
 from lapsim.optimization.torque_profile import PeriodicPiecewiseLinearTorqueProfile
-from lapsim.solvers.path_constraints import PathConstraintSolver, PathSpeedConstraints
+from lapsim.solvers.path_constraints import (
+    PathConstraintProgressSnapshot,
+    PathConstraintSolver,
+    PathSpeedConstraints,
+)
 from vehicle_model import Vehicle
 from vehicle_model.mech.tire import Tire
 
@@ -171,15 +175,22 @@ def resample_track(track: SpatialTrack, maximum_cell_length_m: float = 1.0) -> S
 
 def prepare_one_lap_constraints(
     vehicle: Vehicle, track: SpatialTrack,
+    *, cell_road_grip_multiplier: tuple[float, ...] | None = None,
+    constraint_progress_callback: Callable[[PathConstraintProgressSnapshot], None] | None = None,
 ) -> PreparedOneLapConstraints:
     """Prepare the same path limits used by an ordinary desktop lap."""
 
     vehicle.reset_state()
+    solver = PathConstraintSolver(**path_solver_settings(vehicle))
+    solve_kwargs: dict[str, object] = {}
+    if cell_road_grip_multiplier is not None:
+        solve_kwargs["cell_road_grip_multiplier"] = cell_road_grip_multiplier
+    if constraint_progress_callback is not None:
+        solve_kwargs["progress_callback"] = constraint_progress_callback
+    limits = solver.solve(track, vehicle, **solve_kwargs)
     return PreparedOneLapConstraints(
         vehicle,
-        PathConstraintSolver(
-            **path_solver_settings(vehicle),
-        ).solve(track, vehicle),
+        limits,
         vehicle.tire.road_grip_multiplier,
     )
 
@@ -192,6 +203,8 @@ def run_one_lap(
     constraints: PreparedOneLapConstraints | None = None,
     starting_speed_mps: float | None = None,
     progress_callback: Callable[[LapProgressSnapshot], None] | None = None,
+    cell_road_grip_multiplier: tuple[float, ...] | None = None,
+    constraint_progress_callback: Callable[[PathConstraintProgressSnapshot], None] | None = None,
 ) -> EnduranceRunResult:
     """Simulate one lap, optionally reusing path limits and an explicit start.
 
@@ -205,7 +218,16 @@ def run_one_lap(
         request_fraction_values=(torque_request_fraction,) * 2,
     )
     if constraints is None:
-        selected_constraints = prepare_one_lap_constraints(vehicle, track)._limits
+        prepare_kwargs: dict[str, object] = {}
+        if cell_road_grip_multiplier is not None:
+            prepare_kwargs["cell_road_grip_multiplier"] = cell_road_grip_multiplier
+        if constraint_progress_callback is not None:
+            prepare_kwargs["constraint_progress_callback"] = (
+                constraint_progress_callback
+            )
+        selected_constraints = prepare_one_lap_constraints(
+            vehicle, track, **prepare_kwargs,
+        )._limits
     else:
         if not isinstance(constraints, PreparedOneLapConstraints):
             raise TypeError("constraints must be PreparedOneLapConstraints")
@@ -215,6 +237,11 @@ def run_one_lap(
             raise ValueError("supplied path constraints do not match the lap track")
         if constraints._road_grip_multiplier != vehicle.tire.road_grip_multiplier:
             raise ValueError("supplied path constraints use a different road grip")
+        if (
+            cell_road_grip_multiplier is not None
+            and cell_road_grip_multiplier != constraints._limits.cell_road_grip_multiplier
+        ):
+            raise ValueError("supplied path constraints use a different cell road grip")
         vehicle.reset_state()
         selected_constraints = constraints._limits
     return EnduranceSimulator().run(
@@ -238,6 +265,8 @@ def run_speed_periodic_lap(
     speed_tolerance_mps: float = 0.005,
     maximum_lap_passes: int = 2,
     progress_callback: Callable[[LapProgressSnapshot], None] | None = None,
+    cell_road_grip_multiplier: tuple[float, ...] | None = None,
+    constraint_progress_callback: Callable[[PathConstraintProgressSnapshot], None] | None = None,
 ) -> SpeedPeriodicLapResult:
     """Shoot for a closed-course seam speed with bounded full-model laps.
 
@@ -261,9 +290,13 @@ def run_speed_periodic_lap(
 
     template_vehicle = deepcopy(vehicle)
     template_vehicle.reset_state()
-    constraints = PathConstraintSolver(
-        **path_solver_settings(template_vehicle),
-    ).solve(track, template_vehicle)
+    solver = PathConstraintSolver(**path_solver_settings(template_vehicle))
+    solve_kwargs: dict[str, object] = {}
+    if cell_road_grip_multiplier is not None:
+        solve_kwargs["cell_road_grip_multiplier"] = cell_road_grip_multiplier
+    if constraint_progress_callback is not None:
+        solve_kwargs["progress_callback"] = constraint_progress_callback
+    constraints = solver.solve(track, template_vehicle, **solve_kwargs)
     profile = PeriodicPiecewiseLinearTorqueProfile(
         track_length_m=track.length_m,
         knot_distance_m=(0.0, track.length_m * 0.5),

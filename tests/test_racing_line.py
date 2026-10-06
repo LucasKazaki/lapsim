@@ -1317,3 +1317,38 @@ def test_progress_callback_identifies_phase_and_exact_trial_track(
         assert callback_track is track
         assert callback_snapshot is snapshot
     assert comparison.selected_track is emitted[2][0]
+
+
+def test_constraint_progress_callback_identifies_each_ai_trial(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    plan = _adaptive_plan
+    emitted = []
+    received = []
+
+    def fake_lap(
+        vehicle, track, *, torque_request_fraction,
+        constraint_progress_callback,
+    ):
+        del vehicle, torque_request_fraction
+        snapshot = object()
+        emitted.append((track, snapshot))
+        constraint_progress_callback(snapshot)
+        time_s = 100.0 if track is plan.baseline_track else (
+            102.0 if track is plan.candidate_track else 98.0
+        )
+        return SimpleNamespace(completed=True, driving_time_s=time_s, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.7,
+        constraint_progress_callback=lambda phase, snapshot: received.append((
+            phase, snapshot,
+        )),
+    )
+
+    assert tuple(phase for phase, _ in received) == (
+        "baseline", "full", "half", "adaptive",
+    )
+    for (_, snapshot), (_, callback_snapshot) in zip(emitted, received, strict=True):
+        assert callback_snapshot is snapshot

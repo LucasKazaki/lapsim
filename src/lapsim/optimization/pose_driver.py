@@ -27,6 +27,7 @@ from lapsim.ui.course_catalog import SYNTHETIC_DEMO_COURSE_ID, load_course
 
 
 POSE_MODEL_LABEL = "Synthetic four-wheel pose experiment"
+_MAX_POSE_CELL_LENGTH_M = 0.5
 _MAX_SPEED_PREVIEW_M = 60.0
 _MAX_SPEED_PREVIEW_SAMPLES = 120
 _MAX_STEERING_LOOKAHEAD_M = 30.0
@@ -229,15 +230,22 @@ def _project_local(
     best_distance_sq = float("inf")
     best: _Projection | None = None
     length_m = track.length_m
+    lower_m = previous_station_m - window_m
+    upper_m = previous_station_m + window_m
+    candidate_entries: set[tuple[int, int]] = set()
     if window_m >= length_m / 2.0:
-        candidate_cells = range(track.cell_count)
+        for i in range(track.cell_count):
+            center_station = 0.5 * (track.distance_m[i] + track.distance_m[i + 1])
+            nearest_lap = round((previous_station_m - center_station) / length_m)
+            candidate_entries.add((i, nearest_lap))
+            # A window shorter than one lap can cover both ends of a cell
+            # longer than half a lap. The adjacent copies remain bounded.
+            if window_m < length_m:
+                candidate_entries.add((i, nearest_lap - 1))
+                candidate_entries.add((i, nearest_lap + 1))
     else:
-        # Station and cell boundaries are sorted. Visit only cells whose
-        # centers could fall inside the local window, including a wrap at the
-        # start/finish seam. Sorting preserves the full scan's tie ordering.
-        lower_m = previous_station_m - window_m
-        upper_m = previous_station_m + window_m
-        candidate_indices: set[int] = set()
+        # Station and cell boundaries are sorted. Visit cells that overlap the
+        # local window, including each overlapping lap copy at the seam.
         for lap in range(floor(lower_m / length_m), floor(upper_m / length_m) + 1):
             interval_lower_m = max(0.0, lower_m - lap * length_m)
             interval_upper_m = min(length_m, upper_m - lap * length_m)
@@ -246,19 +254,34 @@ def _project_local(
             first = max(0, bisect_right(track.distance_m, interval_lower_m) - 1)
             last = min(track.cell_count,
                        bisect_right(track.distance_m, interval_upper_m))
-            candidate_indices.update(range(first, last))
-        candidate_cells = sorted(candidate_indices)
-    for i in candidate_cells:
+            candidate_entries.update((i, lap) for i in range(first, last))
+
+    def candidate_order(entry: tuple[int, int]) -> tuple[int, int, float, int]:
+        i, lap = entry
         center_station = 0.5 * (track.distance_m[i] + track.distance_m[i + 1])
-        lap_shift = round((previous_station_m - center_station) / length_m) * length_m
-        if abs(center_station + lap_shift - previous_station_m) > window_m:
+        nearest_lap = round((previous_station_m - center_station) / length_m)
+        return (i, lap != nearest_lap,
+                abs(center_station + lap * length_m - previous_station_m), lap)
+
+    # Cell index remains the primary tie order; the former nearest-center
+    # copy wins physical-distance ties within one cell.
+    for i, lap in sorted(candidate_entries, key=candidate_order):
+        lap_shift = lap * length_m
+        start_station_m = track.distance_m[i] + lap_shift
+        end_station_m = track.distance_m[i + 1] + lap_shift
+        overlap_lower_m = max(start_station_m, lower_m)
+        overlap_upper_m = min(end_station_m, upper_m)
+        if overlap_lower_m > overlap_upper_m:
             continue
         dx = track.x_m[i + 1] - track.x_m[i]
         dy = track.y_m[i + 1] - track.y_m[i]
         norm_sq = dx * dx + dy * dy
         if norm_sq <= 0.0:
             continue
-        fraction = min(1.0, max(0.0,
+        cell_length_m = end_station_m - start_station_m
+        lower_fraction = (overlap_lower_m - start_station_m) / cell_length_m
+        upper_fraction = (overlap_upper_m - start_station_m) / cell_length_m
+        fraction = min(upper_fraction, max(lower_fraction,
             ((x_m - track.x_m[i]) * dx + (y_m - track.y_m[i]) * dy) / norm_sq
         ))
         px = track.x_m[i] + fraction * dx
@@ -268,9 +291,7 @@ def _project_local(
         if distance_sq < best_distance_sq:
             best_distance_sq = distance_sq
             best = _Projection(
-                track.distance_m[i] + fraction * (
-                    track.distance_m[i + 1] - track.distance_m[i]
-                ) + lap_shift,
+                start_station_m + fraction * cell_length_m,
                 (dx * error_y - dy * error_x) / sqrt(norm_sq),
                 atan2(dy, dx),
             )
@@ -526,9 +547,16 @@ def run_pose_driver(
     """
 
     course = load_course(SYNTHETIC_DEMO_COURSE_ID) if track is None else track
-    course.validate_coherent_arcs()
     if not course.closed:
         raise ValueError("pose driver requires a closed coherent course")
+    # The controller, road preview, and footprint use short x/y chords.
+    # Subdivide coarse source arcs analytically so a valid long turn does not
+    # cut across its interior. Allow roundoff at the shipped 0.5 m cell size
+    # to preserve that track bitwise; SpatialTrack caps actual refinement.
+    if max(course.cell_length_m) > _MAX_POSE_CELL_LENGTH_M + 1e-9:
+        course = course.refine_arcs(_MAX_POSE_CELL_LENGTH_M)
+    else:
+        course.validate_coherent_arcs()
     car = synthetic_pose_vehicle() if vehicle_config is None else vehicle_config
     conditions = PlanarEnvironment() if environment is None else environment
     options = PoseDriverSettings() if settings is None else settings

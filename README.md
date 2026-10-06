@@ -130,11 +130,29 @@ survey or evidence of measured course boundaries.
 AI mode independently rebuilds its processed baseline and offset paths until
 their generated cells meet the same requested maximum, or reports its 5,000
 point compute limit. Coherent source arcs can remain finer than the request.
+The separate WIP pose preview keeps its own coherent source grid at no more
+than 0.5 m and does not use this main-lap field.
 The fixed **Calculate** strip labels its **Calculation progress** bar and
-animates it during planning and speed preparation, then shows the accepted-cell
-fraction of the current model pass. It
-does not imply an overall completion percentage for multi-pass AI work.
+animates it during planning. During speed preparation it shows the measured
+fraction of local corner-limit cells, then names the current cyclic braking
+pass and processed cells while convergence remains uncertain. During a
+recorded lap it shows the accepted-cell fraction of that model pass. No
+phase fraction implies an overall completion percentage or ETA for multi-pass
+AI work.
 See the [desktop guide](docs/simulator_desktop.md) for data and model limits.
+
+For Python studies, `PathConstraintSolver.solve`, `prepare_one_lap_constraints`,
+`run_one_lap`, and `run_speed_periodic_lap` accept an optional
+`cell_road_grip_multiplier` tuple with one **absolute**, finite, positive tire
+grip multiplier per solver cell. The same cell value is used for its corner
+limit, braking-envelope calculation, and distance-cell force update; the
+vehicle's configured grip is restored afterward. An omitted schedule keeps
+the original uniform calculation. This API input is a numerical road-grip
+sensitivity, distinct from the desktop's uniform percentage control and the
+four-wheel preview's world-fixed patch. The desktop does not yet provide a
+per-cell grip-map editor or save such a schedule in its lap records; a
+scheduled API result should not be labeled v2-record replayable until that
+schema and replay checker store and reapply the tuple.
 
 The **Driving path** control defaults to the ordinary centerline solver and
 does no path optimization. Its optional **AI racing line (experimental)** mode
@@ -269,6 +287,17 @@ duration, not the engineering
 lap time shown by the default solver. The run retains issued controls and
 states in memory for `replay_pose_driver()` to check numerical agreement at
 declared state tolerances, as well as recorded pose samples and stop status.
+The WIP tab can **Save last synthetic trace…** to a separate versioned JSON
+file and **Load synthetic trace…** for checked Driver-view playback. The file
+captures the exact synthetic course grid, car, road, controller settings,
+held controls, states, force evaluations, and sampled diagnostics. Capture and
+load check model evaluations and recorded-control numerical replay. Saved
+evaluation floats allow `1e-9` absolute or `1e-10` relative drift; discrete
+fields and array shapes must match, while states use their separate replay
+tolerances. Capture computes a content hash and load verifies it. Source and
+runtime identity are included for reproducibility review.
+An initial stop with no driven step can still be saved and loaded. This is a
+short synthetic trace archive, not a full timed session or ghost comparison.
 This preview uses the fixed 300 kg synthetic four-wheel car and does not use
 the selected Prius/TREV profile or change the default centerline lap. The
 speed planner is a bounded heuristic, not a tire-force feasibility proof.

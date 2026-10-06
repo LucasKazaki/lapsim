@@ -10,6 +10,7 @@ from math import atan, copysign, isfinite, sqrt
 from scipy.optimize import brentq
 
 from vehicle_model.mech.brakes import DEFAULT_MAXIMUM_BRAKE_PRESSURE_PSI
+from vehicle_model.mech.tire import Tire
 from vehicle_model.vehicle import Vehicle
 
 from ..core.controls import Controls
@@ -724,6 +725,36 @@ class EnduranceSimulator:
         record_telemetry: bool = False,
         progress_callback: Callable[[LapProgressSnapshot], None] | None = None,
     ) -> EnduranceRunResult:
+        """Run a lap, restoring the configured tire grip after scheduled cells."""
+
+        if constraints.cell_road_grip_multiplier is None:
+            return self._run_cells(
+                vehicle, constraints, profile, config,
+                record_telemetry=record_telemetry,
+                progress_callback=progress_callback,
+            )
+        if not isinstance(vehicle.tire, Tire):
+            raise TypeError("scheduled road grip requires the Tire model")
+        reference_grip = vehicle.tire.road_grip_multiplier
+        try:
+            return self._run_cells(
+                vehicle, constraints, profile, config,
+                record_telemetry=record_telemetry,
+                progress_callback=progress_callback,
+            )
+        finally:
+            vehicle.tire.road_grip_multiplier = reference_grip
+
+    def _run_cells(
+        self,
+        vehicle: Vehicle,
+        constraints: PathSpeedConstraints,
+        profile: TorqueProfile | EnduranceControlProfile,
+        config: EnduranceRunConfig,
+        *,
+        record_telemetry: bool = False,
+        progress_callback: Callable[[LapProgressSnapshot], None] | None = None,
+    ) -> EnduranceRunResult:
         track = constraints.track
         if not track.closed:
             raise ValueError("Endurance simulation requires a closed track")
@@ -751,6 +782,10 @@ class EnduranceSimulator:
 
         for lap_index in range(config.laps):
             for cell_index, cell_length_m in enumerate(cell_lengths_m):
+                if constraints.cell_road_grip_multiplier is not None:
+                    vehicle.tire.road_grip_multiplier = (
+                        constraints.cell_road_grip_multiplier[cell_index]
+                    )
                 cell_update_completed = False
                 next_cell_index = (cell_index + 1) % track.cell_count
                 curvature_per_m = track.curvature_per_m[cell_index]

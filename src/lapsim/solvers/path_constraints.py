@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass
 from math import atan, isfinite
@@ -27,6 +28,39 @@ class PathConstraintViolation(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
+class PathConstraintProgressSnapshot:
+    """Observed solver work; a braking pass is not a convergence estimate.
+
+    ``completed_cells`` is exact within the named phase and pass. The cyclic
+    braking sweep may converge on any pass up to ``maximum_passes``, so a UI
+    must not turn that upper bound into a percentage or time remaining.
+    """
+
+    phase: str
+    completed_cells: int
+    cell_count: int
+    pass_number: int | None
+    maximum_passes: int
+
+
+def _validate_cell_road_grip_multiplier(
+    track: SpatialTrack, values: tuple[float, ...] | None,
+) -> None:
+    """Check an immutable schedule of absolute tire-grip multipliers."""
+
+    if values is None:
+        return
+    if not isinstance(values, tuple) or len(values) != track.cell_count:
+        raise ValueError("cell road grip must be a tuple with one value per track cell")
+    if any(
+        isinstance(value, bool) or not isinstance(value, Real)
+        or not isfinite(value) or value <= 0.0
+        for value in values
+    ):
+        raise ValueError("cell road grip values must be finite and positive")
+
+
+@dataclass(frozen=True, slots=True)
 class PathSpeedConstraints:
     """Local corner limits and cyclic maximum-braking speed ceiling."""
 
@@ -34,6 +68,7 @@ class PathSpeedConstraints:
     local_corner_speed_mps: tuple[float, ...]
     braking_speed_ceiling_mps: tuple[float, ...]
     passes: int
+    cell_road_grip_multiplier: tuple[float, ...] | None = None
 
     def __post_init__(self) -> None:
         expected = self.track.cell_count
@@ -41,6 +76,7 @@ class PathSpeedConstraints:
             raise ValueError("Local limits must contain one value per track cell")
         if len(self.braking_speed_ceiling_mps) != expected:
             raise ValueError("Braking ceilings must contain one value per track cell")
+        _validate_cell_road_grip_multiplier(self.track, self.cell_road_grip_multiplier)
 
 
 class PathConstraintSolver:
@@ -89,24 +125,83 @@ class PathConstraintSolver:
         self.air_density_kgpm3 = air_density_kgpm3
         self.maximum_brake_pressure_psi = maximum_brake_pressure_psi
 
-    def solve(self, track: SpatialTrack, vehicle: Vehicle) -> PathSpeedConstraints:
-        """Calculate local lateral limits then a cyclic backward brake pass."""
+    def solve(
+        self, track: SpatialTrack, vehicle: Vehicle, *,
+        cell_road_grip_multiplier: tuple[float, ...] | None = None,
+        progress_callback: Callable[[PathConstraintProgressSnapshot], None] | None = None,
+    ) -> PathSpeedConstraints:
+        """Calculate limits, optionally reporting observed work by solver stage."""
+
+        _validate_cell_road_grip_multiplier(track, cell_road_grip_multiplier)
+        if cell_road_grip_multiplier is None:
+            return self._solve(track, vehicle, None, progress_callback)
+        if not isinstance(vehicle.tire, Tire):
+            raise TypeError("scheduled road grip requires the Tire model")
+        reference_grip = vehicle.tire.road_grip_multiplier
+        try:
+            return self._solve(
+                track, vehicle, cell_road_grip_multiplier, progress_callback,
+            )
+        finally:
+            vehicle.tire.road_grip_multiplier = reference_grip
+
+    def _solve(
+        self, track: SpatialTrack, vehicle: Vehicle,
+        cell_road_grip_multiplier: tuple[float, ...] | None,
+        progress_callback: Callable[[PathConstraintProgressSnapshot], None] | None,
+    ) -> PathSpeedConstraints:
+        """Keep the uniform path's original arithmetic when no schedule exists."""
 
         if not track.closed:
             raise ValueError(
                 "The endurance path-constraint solver requires a closed track"
             )
         vehicle.validate()
-        local_limits = [
-            self.local_corner_speed_limit_mps(vehicle, curvature_per_m)
-            for curvature_per_m in track.curvature_per_m
-        ]
+        report_stride = max(1, (track.cell_count + 99) // 100)
+
+        def report(phase: str, completed_cells: int, pass_number: int | None) -> None:
+            if progress_callback is not None and (
+                completed_cells % report_stride == 0
+                or completed_cells == track.cell_count
+            ):
+                progress_callback(PathConstraintProgressSnapshot(
+                    phase=phase,
+                    completed_cells=completed_cells,
+                    cell_count=track.cell_count,
+                    pass_number=pass_number,
+                    maximum_passes=self.maximum_passes,
+                ))
+
+        if cell_road_grip_multiplier is None:
+            if progress_callback is None:
+                local_limits = [
+                    self.local_corner_speed_limit_mps(vehicle, curvature_per_m)
+                    for curvature_per_m in track.curvature_per_m
+                ]
+            else:
+                local_limits = []
+                for cell_index, curvature_per_m in enumerate(track.curvature_per_m):
+                    local_limits.append(
+                        self.local_corner_speed_limit_mps(vehicle, curvature_per_m)
+                    )
+                    report("local_limits", cell_index + 1, None)
+        else:
+            local_limits = []
+            for cell_index, curvature_per_m in enumerate(track.curvature_per_m):
+                vehicle.tire.road_grip_multiplier = cell_road_grip_multiplier[cell_index]
+                local_limits.append(
+                    self.local_corner_speed_limit_mps(vehicle, curvature_per_m)
+                )
+                if progress_callback is not None:
+                    report("local_limits", cell_index + 1, None)
         ceilings = local_limits.copy()
         cell_lengths = track.cell_length_m
 
         for pass_number in range(1, self.maximum_passes + 1):
             largest_change_mps = 0.0
             for cell_index in range(track.cell_count - 1, -1, -1):
+                if cell_road_grip_multiplier is not None:
+                    vehicle.tire.road_grip_multiplier = cell_road_grip_multiplier[cell_index]
                 next_index = (cell_index + 1) % track.cell_count
                 reachable_speed_mps = self._maximum_entry_speed_mps(
                     vehicle=vehicle,
@@ -125,12 +220,19 @@ class PathConstraintSolver:
                     ceilings[cell_index] - new_speed_mps,
                 )
                 ceilings[cell_index] = new_speed_mps
+                if progress_callback is not None:
+                    report(
+                        "cyclic_braking", track.cell_count - cell_index,
+                        pass_number,
+                    )
             if largest_change_mps < self.convergence_tolerance_mps:
                 # The descending sweep updates every cell using its already
                 # updated successor, except the last cell, which reads cell 0
                 # before cell 0 is updated. A loose convergence tolerance must
                 # not certify that stale seam value as a feasible brake entry.
                 last_index = track.cell_count - 1
+                if cell_road_grip_multiplier is not None:
+                    vehicle.tire.road_grip_multiplier = cell_road_grip_multiplier[last_index]
                 seam_entry_mps = self._maximum_entry_speed_mps(
                     vehicle=vehicle,
                     next_speed_mps=ceilings[0],
@@ -147,6 +249,7 @@ class PathConstraintSolver:
                         local_corner_speed_mps=tuple(local_limits),
                         braking_speed_ceiling_mps=tuple(ceilings),
                         passes=pass_number,
+                        cell_road_grip_multiplier=cell_road_grip_multiplier,
                     )
 
         raise RuntimeError(
@@ -392,6 +495,7 @@ class PathConstraintSolver:
 
 
 __all__ = [
+    "PathConstraintProgressSnapshot",
     "PathConstraintSolver",
     "PathConstraintViolation",
     "PathSpeedConstraints",

@@ -769,8 +769,8 @@ def test_car_comparison_shares_rolling_start_and_replays_both_records(
         app._select_course(COURSE_OPTIONS[1].label)
         entry_ceilings_mps: list[float] = []
 
-        def track_prepared_constraints(vehicle, track):
-            constraints = prepare_one_lap_constraints(vehicle, track)
+        def track_prepared_constraints(vehicle, track, **kwargs):
+            constraints = prepare_one_lap_constraints(vehicle, track, **kwargs)
             entry_ceilings_mps.append(constraints.braking_speed_ceiling_mps[0])
             return constraints
 

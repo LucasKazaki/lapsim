@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 import tkinter as tk
 from unittest.mock import patch
 
 import pytest
 
+from lapsim.dynamics.conditions import PlanarEnvironment
 from lapsim.dynamics.planar import PlanarState
 from lapsim.optimization.pose_driver import PoseDriverSample
 from lapsim.ui.app import (
@@ -42,6 +44,8 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         assert app.pose_preview_button.cget("state") == "disabled"
         assert app.pose_scenario_menu.cget("state") == "disabled"
         assert app.pose_offset_entry.cget("state") == "disabled"
+        assert app.pose_save_button.cget("state") == "disabled"
+        assert app.pose_load_button.cget("state") == "disabled"
         assert app.pose_offset_var.get() == "0.0"
         assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_UNIFORM, 0.0)
         assert app.pose_scenario_var.get() == POSE_SCENARIO_UNIFORM
@@ -95,6 +99,8 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         assert not app.run_in_progress
         assert app.pose_preview_button.cget("state") == "normal"
         assert app.pose_offset_entry.cget("state") == "normal"
+        assert app.pose_save_button.cget("state") == "normal"
+        assert app.pose_load_button.cget("state") == "normal"
         assert "not an engineering lap time" in app.pose_preview_status.get()
         assert POSE_SCENARIO_UNIFORM in app.pose_preview_status.get()
         assert "initial offset +0.00 m" in app.pose_preview_status.get()
@@ -257,6 +263,108 @@ def test_pose_offset_accepts_assumed_center_limit(value: str) -> None:
         with patch("lapsim.ui.app.threading.Thread") as thread:
             app._start_pose_preview()
         assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_UNIFORM, float(value))
+    finally:
+        root.destroy()
+
+
+def test_synthetic_trace_save_uses_frozen_run_and_reports_replay(tmp_path: Path) -> None:
+    root, app = _desktop()
+    try:
+        run = object()
+        app._latest_pose_run = run
+        app._set_busy(False)
+        assert app.pose_save_button.cget("state") == "normal"
+        destination = tmp_path / "pose.json"
+        with (
+            patch("lapsim.ui.app.default_pose_run_directory", return_value=tmp_path),
+            patch("lapsim.ui.app.filedialog.asksaveasfilename", return_value=str(destination)),
+            patch("lapsim.ui.app.threading.Thread") as thread,
+        ):
+            app._save_pose_record()
+        assert thread.call_args.kwargs["args"] == (run, destination)
+        assert app.pose_save_button.cget("state") == "disabled"
+        assert app.pose_load_button.cget("state") == "disabled"
+
+        fake_record = SimpleNamespace(content_id="a" * 64, save=lambda path: None)
+        with patch("lapsim.ui.app.PoseRunRecord.capture", return_value=fake_record) as capture:
+            app._write_pose_record(run, destination)
+        capture.assert_called_once_with(run)
+        app._poll_result()
+        assert not app.run_in_progress
+        assert app.pose_save_button.cget("state") == "normal"
+        assert "numerical replay passed" in app.pose_record_status.get()
+        assert "pose.json" in app.pose_record_status.get()
+    finally:
+        root.destroy()
+
+
+def test_synthetic_trace_load_checks_record_before_playback(tmp_path: Path) -> None:
+    root, app = _desktop()
+    try:
+        destination = tmp_path / "pose.json"
+        with (
+            patch("lapsim.ui.app.default_pose_run_directory", return_value=tmp_path),
+            patch("lapsim.ui.app.filedialog.askopenfilename", return_value=str(destination)),
+            patch("lapsim.ui.app.threading.Thread") as thread,
+        ):
+            app._load_pose_record()
+        assert thread.call_args.kwargs["args"] == (destination,)
+        assert app.run_in_progress
+        assert app.pose_load_button.cget("state") == "disabled"
+
+        run = SimpleNamespace(
+            environment=PlanarEnvironment(),
+            settings=SimpleNamespace(initial_lateral_offset_m=0.75),
+            samples=(SimpleNamespace(progress_m=80.1),),
+            states=(object(), object()),
+            status="target_reached",
+            elapsed_pose_model_time_s=15.0,
+        )
+        record = SimpleNamespace(run=run, content_id="b" * 64)
+        with patch("lapsim.ui.app.PoseRunRecord.load", return_value=record) as load:
+            app._read_pose_record(destination)
+        load.assert_called_once_with(destination)
+        with patch.object(app, "_activate_pose_preview") as activate:
+            app._poll_result()
+        activate.assert_called_once_with(run)
+        assert not app.run_in_progress
+        assert app._latest_pose_run is run
+        assert app._active_pose_offset_m == 0.75
+        assert app.pose_save_button.cget("state") == "normal"
+        assert "numerical replay passed" in app.pose_record_status.get()
+    finally:
+        root.destroy()
+
+
+def test_zero_step_synthetic_trace_load_has_no_invented_motion(tmp_path: Path) -> None:
+    root, app = _desktop()
+    try:
+        destination = tmp_path / "zero_step.json"
+        run = SimpleNamespace(
+            environment=PlanarEnvironment(),
+            settings=SimpleNamespace(initial_lateral_offset_m=0.0),
+            samples=(SimpleNamespace(progress_m=0.0),),
+            states=(object(),),
+            status="initial_road_out_of_domain",
+            elapsed_pose_model_time_s=0.0,
+        )
+        record = SimpleNamespace(run=run, content_id="c" * 64)
+        for value in app.driver_values.values():
+            value.set("old lap")
+        for value in app.driver_decision_values.values():
+            value.set("old lap")
+        with patch("lapsim.ui.app.PoseRunRecord.load", return_value=record):
+            app._read_pose_record(destination)
+        with patch.object(app, "_activate_pose_preview") as activate:
+            app._poll_result()
+        activate.assert_not_called()
+        assert app._latest_pose_run is run
+        assert app._active_tab == "Driver view"
+        assert app.driver_playback is None
+        assert app.driver_play_button.cget("state") == "disabled"
+        assert "no driven step" in app.driver_run_label.get()
+        assert all(value.get() == "—" for value in app.driver_values.values())
+        assert all(value.get() == "—" for value in app.driver_decision_values.values())
     finally:
         root.destroy()
 

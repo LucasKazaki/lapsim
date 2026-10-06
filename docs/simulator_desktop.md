@@ -95,6 +95,16 @@ replay checker restores both; older v2 records without this condition use
 the original 100% grip. Editing a run input or changing the selected profile
 clears displayed outputs and playback so prior numbers cannot be read as the
 new setup.
+For Python-only studies, the path-constraint and one-lap APIs also accept an
+immutable tuple of **absolute** tire-grip multipliers with exactly one
+positive finite value per solver cell. The local corner-speed calculation,
+cyclic braking-envelope pass, and that cell's force update all use its value,
+and the car's configured tire multiplier is restored afterward. Omitting the
+tuple preserves the uniform baseline. The desktop does not expose this
+schedule, draw a local main-lap grip map, or save such a schedule in a lap
+record; its percentage box remains uniform for centerline, AI, and A/B.
+A scheduled API run needs a future record/replay schema extension before it
+can be shared as a checked v2 lap record.
 Invalid or non-finite values are rejected before a run begins, and requests
 producing more than 5,000 actual cells are refused. For either synthetic course,
 the guard counts subdivisions of each original straight or arc cell. The fused
@@ -112,6 +122,9 @@ coarser request therefore does not reduce a coherent source's solver-cell
 count. Imported courses have the same 5,000-cell guard. This gate checks a
 numerical solver representation; it does not establish
 a surveyed track or measured left/right boundaries.
+The separate WIP pose preview instead retains or analytically refines its
+coherent course to at most 0.5 m cells; it does not read the main-lap
+**Cell size (max)** box.
 
 The numeric outputs are lap time, peak speed, average speed, distance, net
 equivalent-pack energy, peak lateral acceleration in g, and lap entry/exit
@@ -128,13 +141,16 @@ restores the full view.
 
 The fixed **Calculate** strip remains visible when the input panel scrolls.
 Its labeled monochrome **Calculation progress** bar animates during path
-planning and speed-limit preparation,
-AI dry passes, and waits without accepted cells because those stages do not
-report a reliable total step count. During a recorded physics pass it fills
-from that pass's accepted-cell index and labels the active car/path and cell
-count. The displayed percentage describes **the current pass only**; AI can
-run several passes and return to preparation. Completion, failure, or changed
-inputs update the bar's label and state.
+planning, AI dry passes, and waits without accepted cells. During path-speed
+preparation it fills by **local corner-limit cells processed**. The following
+cyclic braking sweeps show a pass number and processed-cell count, while the
+bar stays indeterminate because the number of passes needed for convergence
+is unknown. During a recorded physics pass it fills from that pass's
+accepted-cell index and labels the active car/path and cell count. A
+percentage describes **its named phase or current recorded pass only**; it
+is never an overall percentage or ETA. AI can run several passes and return
+to preparation. Completion, failure, or changed inputs update the bar's
+label and state.
 
 The right side has **Analysis**, **Driver view**, and **Timed sessions · WIP**
 tabs. Analysis remains the startup view. When a lap starts, Driver view first
@@ -346,7 +362,8 @@ synthetic flag, and exact source-geometry hash. These records do not provide a
 full ghost/session replay.
 
 The **Timed sessions · WIP** tab has an enabled **Run 80 m synthetic pose
-preview** button, a **Road condition** selector, and an **Initial lateral
+preview** button, **Save last synthetic trace…** and **Load synthetic
+trace…** controls, a **Road condition** selector, and an **Initial lateral
 offset (m)** box; **Start timed session**
 remains disabled. **Uniform base grip (1.0×)** is the initial choice. **Assumed
 bend patch (0.3×)** adds one world-fixed rectangle on the first synthetic
@@ -370,8 +387,15 @@ are frozen for the worker and identified in its live status and replay.
 Changing either while idle clears only an old pose preview, not an ordinary
 lap replay. The pose preview is limited by
 target progress, simulated time, control-step count, and internal integration
-steps. It opens Driver view immediately and shows the latest simulated planar
-x/y and heading while solving, then plays the complete trace. This differs
+steps. A supplied coherent course with cells longer than 0.5 m is validated
+and split into analytic straight/circular subarcs before driving, with a
+100,000-cell refinement cap; the shipped 0.5 m source grid is retained. The
+local projection considers cells overlapping the station window, including
+overlapping lap copies across the seam, and clips the station to that window.
+These are numerical geometry repairs, not continuous road-edge checks; the
+controller still uses short x/y chords. It opens Driver view immediately
+and shows the latest simulated planar x/y and heading while solving, then
+plays the complete trace. This differs
 from mapping station onto reference x/y as ordinary lap playback does. The
 display labels its time as **pose-model time** and identifies the synthetic
 four-wheel experiment; it does not show an endurance-model lap time, energy,
@@ -387,8 +411,26 @@ planning heuristic, not a tire-force or clearance certificate. This WIP
 preview always uses the fixed 300 kg synthetic four-wheel car and does not
 use the selected Prius/TREV profile or feed the default centerline lap. A full
 interactive session, ghost,
-versioned controller/vehicle capture, and linked comparison report remain
-future work. The standalone main-lap record replay below is also separate.
+Terps vehicle/controller, and linked comparison report remain future work.
+The saved synthetic pose trace is a versioned short experiment, distinct
+from a complete session or the standalone main-lap record replay below.
+
+After a preview, **Save last synthetic trace…** checks and writes the frozen
+run to a separate JSON file; the default folder is
+`%LOCALAPPDATA%\LapSim\pose_runs` on Windows. **Load synthetic trace…**
+checks a selected file in a worker and plays its recorded pose in Driver view
+when it has driven steps. A zero-step stop is still a valid record and loads
+with an explicit no-driven-step status. The schema-v1 file keeps the exact
+processed course, synthetic car, road and patches, controller settings,
+control/time/state history, pre-step force evaluations, pose samples,
+termination status, and source/runtime identity. Capture computes a
+SHA-256 content ID; load checks it. Both check the saved evaluations against
+current model equations and run recorded-control numerical replay.
+Evaluation floats allow `1e-9` absolute or `1e-10` relative drift, while
+field names, array lengths, and discrete values must match exactly; pose
+states have separate replay tolerances. A
+matching hash alone does not prove
+the simulated dynamics agree, and replay does not validate a measured car.
 
 **Run comparison** simulates two selected saved/built-in profiles with the
 same selected centerline course, solver spacing, driver request, and rolling
@@ -459,7 +501,9 @@ The replay is not validation against a measured car or a complete
 ghost/session workflow.
 
 The synthetic pose preview retains each issued control and resulting planar
-state in its in-memory `PoseDriverRun`. For engineering checks,
+state in its `PoseDriverRun`, which can also be saved through
+`PoseRunRecord.capture(run).save(path)` and reconstructed with
+`PoseRunRecord.load(path)`. For engineering checks,
 `replay_pose_driver(run, tolerances=PoseReplayTolerances())` reintegrates the
 saved controls with the same four-wheel configuration and environment. Its
 default absolute tolerances are **1e-8 m** for position, **1e-8 rad** for
@@ -470,9 +514,10 @@ slack, projection validity, and stop status under explicit tolerances, and
 checks road-validity agreement. This is numerical replay of a short synthetic
 maneuver, distinct from the saved
 v2 endurance-lap record replay and from a persistent full-session record.
-It starts from the trace's recorded initial planar state; it does not
-independently reconstruct that state from the offset box or establish
-measured corridor clearance.
+The programmatic replay starts from the trace's recorded initial planar
+state; the **pose record loader** additionally checks that the initial state
+matches its saved course and offset settings. Neither establishes measured
+corridor clearance.
 
 **Four-wheel lab** opens a separate top-down, time-domain experiment. It
 compares two allocations of the same total requested wheel torque on one

@@ -29,6 +29,7 @@ from scipy.optimize import LinearConstraint, minimize
 
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.events.endurance import EnduranceRunResult, LapProgressSnapshot
+from lapsim.solvers.path_constraints import PathConstraintProgressSnapshot
 
 
 @dataclass(frozen=True, slots=True)
@@ -1230,6 +1231,7 @@ def compare_lines_with_lap_model(
     *,
     torque_request_fraction: float,
     progress_callback: Callable[[str, SpatialTrack, LapProgressSnapshot], None] | None = None,
+    constraint_progress_callback: Callable[[str, PathConstraintProgressSnapshot], None] | None = None,
     speed_periodic: bool = False,
     minimum_selection_gain_s: float = 0.05,
 ) -> RacingLineComparison:
@@ -1259,7 +1261,9 @@ def compare_lines_with_lap_model(
     The selection margin is not a certified discretization error bound.
     Errors remain explicit.
     With a callback, accepted-cell snapshots carry a phase label and the exact
-    track being simulated; periodic probes do not emit callbacks.
+    track being simulated; periodic probes do not emit callbacks. Constraint
+    progress separately reports exact cells processed in each solver stage,
+    with no claim that a braking pass is a percent of total convergence.
     """
 
     if (
@@ -1337,6 +1341,12 @@ def compare_lines_with_lap_model(
         track: SpatialTrack, phase: str,
     ) -> tuple[EnduranceRunResult | None, float | None, str | None]:
         try:
+            constraint_options = (
+                {"constraint_progress_callback": lambda snapshot: (
+                    constraint_progress_callback(phase, snapshot)
+                )}
+                if constraint_progress_callback is not None else {}
+            )
             if speed_periodic:
                 periodic_options = dict(
                     torque_request_fraction=torque_request_fraction,
@@ -1345,11 +1355,11 @@ def compare_lines_with_lap_model(
                 )
                 if progress_callback is None:
                     periodic = run_speed_periodic_lap(
-                        vehicle, track, **periodic_options,
+                        vehicle, track, **periodic_options, **constraint_options,
                     )
                 else:
                     periodic = run_speed_periodic_lap(
-                        vehicle, track, **periodic_options,
+                        vehicle, track, **periodic_options, **constraint_options,
                         progress_callback=lambda snapshot: progress_callback(
                             phase, track, snapshot,
                         ),
@@ -1364,11 +1374,13 @@ def compare_lines_with_lap_model(
                     result = run_one_lap(
                         deepcopy(vehicle), track,
                         torque_request_fraction=torque_request_fraction,
+                        **constraint_options,
                     )
                 else:
                     result = run_one_lap(
                         deepcopy(vehicle), track,
                         torque_request_fraction=torque_request_fraction,
+                        **constraint_options,
                         progress_callback=lambda snapshot: progress_callback(
                             phase, track, snapshot,
                         ),
