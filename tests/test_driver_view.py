@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from math import cos, sin
 from types import SimpleNamespace
 
 import pytest
@@ -48,6 +49,47 @@ def test_driver_playback_interpolates_time_and_uses_map_station() -> None:
     assert playback.frame_at(100.0).distance_m == pytest.approx(20.0)
 
 
+def test_playback_motion_matches_constant_acceleration_cells() -> None:
+    # The endurance model records cell exits.  Its first entry speed can be
+    # recovered from the first cell's distance, elapsed time, and exit speed.
+    playback = DriverPlayback(
+        straight_map(),
+        lap_channels(**{
+            "vehicle.speed_mps": (20.0, 0.0),
+            "vehicle.lateral_acceleration_mps2": (0.0, 0.0),
+        }),
+    )
+
+    assert playback.frame_at(0.0).speed_mps == pytest.approx(0.0)
+    accelerating = playback.frame_at(0.5)
+    assert accelerating.distance_m == pytest.approx(2.5)
+    assert accelerating.x_m == pytest.approx(2.5)
+    assert accelerating.speed_mps == pytest.approx(10.0)
+    braking = playback.frame_at(1.5)
+    assert braking.distance_m == pytest.approx(17.5)
+    assert braking.speed_mps == pytest.approx(10.0)
+    assert playback.frame_at(2.0).distance_m == pytest.approx(20.0)
+
+
+def test_inconsistent_legacy_cell_keeps_linear_station_fallback() -> None:
+    playback = DriverPlayback(straight_map(), lap_channels())
+
+    # Between 1 and 2 s, speeds of 10 and 20 m/s imply 15 m of motion,
+    # whereas this old fixture records 10 m.  Do not change its endpoints.
+    halfway = playback.frame_at(1.5)
+    assert halfway.distance_m == pytest.approx(15.0)
+    assert halfway.speed_mps == pytest.approx(15.0)
+
+
+def test_impossibly_short_imported_first_cell_time_keeps_finite_playback() -> None:
+    playback = DriverPlayback(
+        straight_map(),
+        lap_channels(**{"vehicle.time_s": (1e-320, 2.0)}),
+    )
+
+    assert playback.frame_at(0.0).speed_mps == pytest.approx(10.0)
+
+
 def test_local_path_is_car_fixed_and_open_course_does_not_wrap() -> None:
     playback = DriverPlayback(straight_map(), lap_channels())
     frame = playback.frame_at(1.5)
@@ -65,6 +107,36 @@ def test_local_path_is_car_fixed_and_open_course_does_not_wrap() -> None:
     assert len(start_samples) == 2
     assert start_samples[0] == pytest.approx((0.0, 0.0))
     assert start_samples[1] == pytest.approx((0.0, 5.0))
+
+
+def test_closed_view_samples_wrap_continuously_across_finish() -> None:
+    track = SpatialTrack(
+        distance_m=(0.0, 10.0, 20.0, 30.0, 40.0),
+        x_m=(0.0, 10.0, 10.0, 0.0, 0.0),
+        y_m=(0.0, 0.0, 10.0, 10.0, 0.0),
+        curvature_per_m=(0.0, 0.0, 0.0, 0.0),
+        closed=True,
+    )
+    playback = DriverPlayback(track, lap_channels(**{
+        "vehicle.distance_m": (20.0, 40.0),
+        "vehicle.speed_mps": (20.0, 20.0),
+    }))
+    frame = playback.frame_at(1.95)
+    samples = playback.local_path_m(
+        frame, behind_m=5.0, ahead_m=10.0, spacing_m=5.0
+    )
+
+    assert frame.distance_m == pytest.approx(39.0)
+    assert len(samples) == 4
+    for offset, sample in zip((-5.0, 0.0, 5.0, 10.0), samples, strict=True):
+        x_m, y_m = playback.point_at(frame.distance_m + offset)
+        dx, dy = x_m - frame.x_m, y_m - frame.y_m
+        angle = frame.course_heading_rad
+        expected = (
+            sin(angle) * dx - cos(angle) * dy,
+            cos(angle) * dx + sin(angle) * dy,
+        )
+        assert sample == pytest.approx(expected)
 
 
 @pytest.mark.parametrize(
@@ -96,6 +168,9 @@ def test_local_path_right_sign_matches_screen_direction(
     "changes",
     [
         {"vehicle.time_s": (1.0, 1.0)},
+        {"vehicle.time_s": (0.0,), "vehicle.distance_m": (0.0,),
+         "vehicle.speed_mps": (0.0,),
+         "vehicle.lateral_acceleration_mps2": (0.0,)},
         {"vehicle.distance_m": (10.0, 9.0)},
         {"vehicle.distance_m": (10.0, 21.0)},
         {"vehicle.speed_mps": (-1.0, 2.0)},

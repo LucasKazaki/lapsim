@@ -5,6 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
+from lapsim import TrackGeometryAudit
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Straight, Track
 
@@ -49,6 +50,50 @@ class SpatialTrackTests(TestCase):
             loaded = SpatialTrack.from_csv(path)
 
         self.assertEqual(loaded, spatial)
+
+    def test_geometry_audit_detects_impossible_point_to_point_distance(self) -> None:
+        spatial = SpatialTrack(
+            distance_m=(0.0, 1.0, 2.0),
+            x_m=(0.0, 2.0, 0.0),
+            y_m=(0.0, 0.0, 0.0),
+            curvature_per_m=(0.0, 0.0),
+        )
+
+        audit = spatial.geometry_audit()
+
+        self.assertIsInstance(audit, TrackGeometryAudit)
+        self.assertEqual(audit.cells_with_chord_excess, 2)
+        self.assertAlmostEqual(audit.station_length_m, 2.0)
+        self.assertAlmostEqual(audit.xy_chord_length_m, 4.0)
+        self.assertAlmostEqual(audit.total_chord_excess_m, 2.0)
+        self.assertAlmostEqual(audit.maximum_chord_excess_m, 1.0)
+        self.assertAlmostEqual(audit.endpoint_separation_m, 0.0)
+
+    def test_geometry_audit_accepts_shorter_chords_on_curves(self) -> None:
+        spatial = SpatialTrack.from_track(
+            Track.from_segments([Curve(10.0, 2.0 * pi)]),
+            maximum_cell_length_m=1.0,
+        )
+
+        audit = spatial.geometry_audit()
+
+        self.assertEqual(audit.cells_with_chord_excess, 0)
+        self.assertAlmostEqual(audit.endpoint_separation_m, 0.0, places=8)
+        self.assertLess(audit.xy_chord_length_m, audit.station_length_m)
+
+    def test_geometry_audit_reports_endpoint_separation_on_open_path(self) -> None:
+        spatial = SpatialTrack(
+            distance_m=(0.0, 2.0),
+            x_m=(0.0, 2.0),
+            y_m=(0.0, 0.0),
+            curvature_per_m=(0.0,),
+            closed=False,
+        )
+
+        audit = spatial.geometry_audit()
+
+        self.assertEqual(audit.cells_with_chord_excess, 0)
+        self.assertAlmostEqual(audit.endpoint_separation_m, 2.0)
 
     def test_can_convert_cells_to_legacy_segment_track(self) -> None:
         spatial = SpatialTrack(

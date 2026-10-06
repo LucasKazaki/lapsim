@@ -33,8 +33,9 @@ and speed limit. **Save current** creates another named local profile in
 The repository and source-backed profiles are read-only so source values and
 inherited model defaults remain distinguishable from edited assumptions.
 
-Driver request and solver cell length apply to every run. Invalid or
-non-finite values are rejected before a run begins. The default solver cell
+Driver request applies to every run; the solver cell-length box applies to
+standard centerline runs. AI mode builds its separate nominal 2 m geometric
+grid. Invalid or non-finite values are rejected before a run begins. The default solver cell
 is 1 m; 0.5 m uses the source course's full station resolution. Coarser cells
 run faster but can change the lap result because they smooth curvature over
 longer distances.
@@ -54,8 +55,10 @@ scrubbing, playback speed, and wheel zoom are available. The course rotates
 around a fixed car marker in a driver-centered top-down map. Numeric boxes
 show elapsed time, station, modeled speed and lateral acceleration, and map
 heading. The marker follows the distance-aligned x/y course visualization.
-The lap physics uses a separate recorded curvature channel, so the displayed
-map heading is not the heading solved by the force model. The lap solver does
+The replay uses the solver's constant-acceleration cell relation to interpolate
+station and speed between recorded cell exits. The lap physics uses a separate
+recorded curvature channel, so the displayed map heading is not necessarily
+the heading solved by the force model. The lap solver does
 not simulate vehicle line tracking or a first-person camera. The playback is
 computed from the completed run; it is not a live physics integration.
 
@@ -68,8 +71,10 @@ and safety margin. The app has no measured boundaries and does not infer
 vehicle body width from the car profile. A deterministic, bounded planner
 proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
 torque request through both a newly derived geometric centerline and the
-candidate path. It selects the candidate only if both laps complete and the
-candidate is faster. The left panel shows the two times, signed difference,
+full-offset candidate path. If the full path fails or is no faster, it can
+evaluate a validated half-offset path, for at most three full physics laps.
+It selects the best tested candidate only if that path and the baseline both
+complete and the candidate is faster. The left panel shows the two times, signed difference,
 selected path length, and assumptions; **Compare path numbers** shows time,
 distance, speed, equivalent energy, and lateral acceleration side by side.
 The selected path is used for the course plot, Driver view, and saved run
@@ -77,12 +82,17 @@ record. A failed run returned by the solver is saved for diagnosis.
 
 This AI mode rebuilds arc length and curvature from the x/y map. The ordinary
 centerline mode uses the separate recorded curvature channel. On the packaged
-course those channels disagree materially; the two AI-mode paths can be
+course those channels disagree materially; the Analysis tab warns that 1,441
+map chords are longer than their assigned station intervals. The two AI-mode paths can be
 compared with each other, but their times should not be compared directly to
 the ordinary lap time. The map is not a surveyed corridor, the planner does
 not steer a closed-loop car, and the vehicle model has simplified tire and
 controller physics. See [AI racer design and checks](ai_racer_design.md) for
 the objective, validation checks, and local benchmark results.
+
+The saved AI run includes every tested offset strength, its result or error,
+the selected strength, and the exact selected path geometry. It does not yet
+save the other trials' full telemetry as a linked A/B package.
 
 The Timed sessions tab is explicitly a design placeholder for a future
 versioned Terps vehicle/controller, timed drive, ghost, full control capture,

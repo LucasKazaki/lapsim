@@ -105,18 +105,37 @@ class RacingLinePlan:
 
 @dataclass(frozen=True, slots=True)
 class RacingLineComparison:
-    """Full-model timings for a centerline and an optional candidate."""
+    """Full-model timings for a centerline and bounded candidate trials.
+
+    ``candidate_*`` refers to the fastest completed nonzero-strength trial,
+    not necessarily the full-strength geometric proposal. If no candidate
+    completes, it refers to the first failed trial when a run was returned.
+    ``selected_*`` remains the faster completed path when both complete.
+    """
 
     baseline_time_s: float | None
     candidate_time_s: float | None
     baseline_run: EnduranceRunResult | None
     candidate_run: EnduranceRunResult | None
+    candidate_track: SpatialTrack
+    candidate_strength: float | None
+    trials: tuple[RacingLineTrial, ...]
     selected_mode: str
     selected_track: SpatialTrack
     selected_run: EnduranceRunResult | None
     baseline_error: str | None
     candidate_error: str | None
     compute_time_s: float
+
+
+@dataclass(frozen=True, slots=True)
+class RacingLineTrial:
+    """One nonzero lateral-offset strength checked with the lap model."""
+
+    strength: float
+    path_length_m: float | None
+    lap_time_s: float | None
+    error: str | None
 
 
 def _periodic_cubic_basis_at(
@@ -503,6 +522,40 @@ class RacingLinePlanner:
         )
 
 
+def _scaled_candidate_track(plan: RacingLinePlan, strength: float) -> SpatialTrack:
+    """Interpolate a valid offset toward its baseline and rebuild geometry.
+
+    Both endpoints use the same processed stations. For strengths in [0, 1],
+    the offset is a convex blend of zero and the validated spline, so it stays
+    inside the spline's piecewise lateral bounds. That fact does not establish
+    that the interpolated polygon is simple; check it independently.
+    """
+
+    if not isfinite(strength) or not 0.0 < strength < 1.0:
+        raise ValueError("intermediate line strength must be between zero and one")
+    if plan.status != "candidate":
+        raise ValueError("no validated candidate is available for interpolation")
+    base_x = np.asarray(plan.baseline_track.x_m[:-1])
+    base_y = np.asarray(plan.baseline_track.y_m[:-1])
+    full_x = np.asarray(plan.candidate_track.x_m[:-1])
+    full_y = np.asarray(plan.candidate_track.y_m[:-1])
+    if base_x.shape != full_x.shape or base_y.shape != full_y.shape:
+        raise ValueError("baseline and candidate need identical planning grids")
+    x = base_x + strength * (full_x - base_x)
+    y = base_y + strength * (full_y - base_y)
+    track = _track_from_closed_points(x, y)
+    base_dx, base_dy = np.roll(base_x, -1) - base_x, np.roll(base_y, -1) - base_y
+    dx, dy = np.roll(x, -1) - x, np.roll(y, -1) - y
+    forward_cosine = (base_dx * dx + base_dy * dy) / (
+        np.hypot(base_dx, base_dy) * np.hypot(dx, dy)
+    )
+    if not np.all(np.isfinite(forward_cosine)) or float(np.min(forward_cosine)) < 0.15:
+        raise ValueError("intermediate path reverses direction relative to reference")
+    if _has_nonadjacent_segment_intersection(x, y):
+        raise ValueError("intermediate path crosses itself")
+    return track
+
+
 def compare_lines_with_lap_model(
     vehicle: object,
     plan: RacingLinePlan,
@@ -512,8 +565,11 @@ def compare_lines_with_lap_model(
     """Evaluate a candidate and its baseline with the unchanged lap physics.
 
     The vehicle is copied before each run because a lap mutates pack and
-    chassis state. A candidate is selected only if its run completes faster;
-    errors are returned explicitly and never converted into a fictitious time.
+    chassis state. The full geometric candidate is tried first. A half-offset
+    path is tried only if that candidate fails or does not beat a completed
+    baseline. Thus at most three full laps run, and the ordinary centerline
+    path still avoids this module entirely. A candidate is selected only if
+    both it and the baseline complete and it is faster. Errors remain explicit.
     """
 
     from lapsim.ui.simulation import run_one_lap
@@ -523,31 +579,54 @@ def compare_lines_with_lap_model(
     candidate_time: float | None = None
     baseline_run: EnduranceRunResult | None = None
     candidate_run: EnduranceRunResult | None = None
+    candidate_track = plan.candidate_track
+    candidate_strength: float | None = None
+    trials: list[RacingLineTrial] = []
     baseline_error: str | None = None
     candidate_error: str | None = None
-    try:
-        baseline_run = run_one_lap(
-            deepcopy(vehicle), plan.baseline_track,
-            torque_request_fraction=torque_request_fraction,
-        )
-        if baseline_run.completed:
-            baseline_time = baseline_run.driving_time_s
-        else:
-            baseline_error = baseline_run.failure_reason or "Lap did not complete"
-    except (ValueError, RuntimeError, ArithmeticError, OverflowError) as error:
-        baseline_error = f"{type(error).__name__}: {error}"
-    if plan.status == "candidate":
+
+    def run_trial(track: SpatialTrack) -> tuple[EnduranceRunResult | None, float | None, str | None]:
         try:
-            candidate_run = run_one_lap(
-                deepcopy(vehicle), plan.candidate_track,
+            result = run_one_lap(
+                deepcopy(vehicle), track,
                 torque_request_fraction=torque_request_fraction,
             )
-            if candidate_run.completed:
-                candidate_time = candidate_run.driving_time_s
-            else:
-                candidate_error = candidate_run.failure_reason or "Lap did not complete"
         except (ValueError, RuntimeError, ArithmeticError, OverflowError) as error:
-            candidate_error = f"{type(error).__name__}: {error}"
+            return None, None, f"{type(error).__name__}: {error}"
+        if result.completed and isfinite(result.driving_time_s) and result.driving_time_s > 0.0:
+            return result, result.driving_time_s, None
+        return result, None, result.failure_reason or "Lap did not complete with a finite positive time"
+
+    baseline_run, baseline_time, baseline_error = run_trial(plan.baseline_track)
+    if plan.status == "candidate":
+        full_run, full_time, full_error = run_trial(plan.candidate_track)
+        trials.append(RacingLineTrial(1.0, plan.candidate_track.length_m, full_time, full_error))
+        candidate_run, candidate_time, candidate_error = full_run, full_time, full_error
+        candidate_strength = 1.0 if full_time is not None else None
+        if full_time is None or (baseline_time is not None and full_time >= baseline_time):
+            # Scaling a valid spline offset toward zero preserves every
+            # convex lateral corridor bound. The intermediate x/y geometry
+            # still needs its own fold and self-intersection checks.
+            try:
+                half_track = _scaled_candidate_track(plan, 0.5)
+            except ValueError as error:
+                trials.append(RacingLineTrial(0.5, None, None, f"Geometry: {error}"))
+            else:
+                half_run, half_time, half_error = run_trial(half_track)
+                trials.append(RacingLineTrial(0.5, half_track.length_m, half_time, half_error))
+                if half_time is not None and (candidate_time is None or half_time < candidate_time):
+                    candidate_track, candidate_run = half_track, half_run
+                    candidate_time, candidate_error = half_time, None
+                    candidate_strength = 0.5
+                elif candidate_run is None and half_run is not None:
+                    # Preserve the path belonging to any available failed
+                    # result so the desktop can save a diagnostic run.
+                    candidate_track, candidate_run = half_track, half_run
+        if candidate_time is None:
+            candidate_error = "; ".join(
+                f"{trial.strength:g}x: {trial.error}"
+                for trial in trials if trial.error is not None
+            ) or "No candidate lap completed"
     use_candidate = (
         baseline_time is not None
         and candidate_time is not None
@@ -559,8 +638,11 @@ def compare_lines_with_lap_model(
         candidate_time_s=candidate_time,
         baseline_run=baseline_run,
         candidate_run=candidate_run,
+        candidate_track=candidate_track,
+        candidate_strength=candidate_strength,
+        trials=tuple(trials),
         selected_mode="candidate" if use_candidate else "centerline",
-        selected_track=plan.candidate_track if use_candidate else plan.baseline_track,
+        selected_track=candidate_track if use_candidate else plan.baseline_track,
         selected_run=candidate_run if use_candidate else (baseline_run if baseline_time is not None else None),
         baseline_error=baseline_error,
         candidate_error=candidate_error,
@@ -569,6 +651,6 @@ def compare_lines_with_lap_model(
 
 
 __all__ = [
-    "TrackCorridor", "RacingLinePlan", "RacingLineComparison",
+    "TrackCorridor", "RacingLinePlan", "RacingLineComparison", "RacingLineTrial",
     "RacingLinePlanner", "compare_lines_with_lap_model",
 ]

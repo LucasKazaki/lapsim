@@ -63,6 +63,7 @@ class LapSimDesktop:
         self.root.minsize(1080, 720)
 
         self.track = load_team_endurance_track()
+        self.course_geometry_audit = self.track.geometry_audit()
         self.result_queue: queue.Queue[tuple[str, Any, BaseException | None]] = (
             queue.Queue()
         )
@@ -425,7 +426,7 @@ class LapSimDesktop:
         )
         for index, (label, key, unit) in enumerate((
             ("Geometric centerline", "baseline", "s"),
-            ("AI candidate", "candidate", "s"),
+            ("Best tested AI path", "candidate", "s"),
             ("Candidate − centerline", "difference", "s"),
             ("Selected path length", "length", "m"),
         )):
@@ -775,7 +776,7 @@ class LapSimDesktop:
         )
         plot_box.grid(row=1, column=0, sticky="nsew")
         plot_box.grid_columnconfigure(0, weight=1)
-        plot_box.grid_rowconfigure(1, weight=1)
+        plot_box.grid_rowconfigure(2, weight=1)
 
         controls = tk.Frame(plot_box)
         controls.grid(row=0, column=0, sticky="ew", pady=(0, 4))
@@ -807,12 +808,26 @@ class LapSimDesktop:
             anchor="e",
         ).pack(side="right", padx=4)
 
+        audit = self.course_geometry_audit
+        if audit.cells_with_chord_excess:
+            tk.Label(
+                plot_box,
+                text=(
+                    f"Course data mismatch: {audit.cells_with_chord_excess:,} map "
+                    f"segments exceed their assigned travel distance "
+                    f"({audit.total_chord_excess_m:.1f} m combined excess). "
+                    "The source map is a visual reference; default lap physics "
+                    "uses its separate distance and curvature data."
+                ),
+                anchor="w", justify="left", wraplength=780, font=("Segoe UI", 9),
+            ).grid(row=1, column=0, sticky="ew", pady=(0, 5))
+
         self.figure = Figure(figsize=(9.0, 6.5), dpi=100, constrained_layout=True)
         self.course_ax = self.figure.add_subplot(2, 1, 1)
         self.speed_ax = self.figure.add_subplot(2, 1, 2)
         self.canvas = FigureCanvasTkAgg(self.figure, master=plot_box)
         self.canvas_widget = self.canvas.get_tk_widget()
-        self.canvas_widget.grid(row=1, column=0, sticky="nsew")
+        self.canvas_widget.grid(row=2, column=0, sticky="nsew")
         self.canvas.mpl_connect("button_press_event", self._pan_start)
         self.canvas.mpl_connect("motion_notify_event", self._pan_move)
         self.canvas.mpl_connect("button_release_event", self._pan_end)
@@ -1633,14 +1648,14 @@ class LapSimDesktop:
                 # Show the completed candidate, but never call it a time gain.
                 selected_mode = "candidate_only_baseline_failed"
                 selected_run = comparison.candidate_run
-                selected_track = plan.candidate_track
+                selected_track = comparison.candidate_track
             if selected_run is None:
                 # Preserve a failed attempt for diagnosis when the simulator
                 # returned a run object for at least one path.
                 selected_run = comparison.baseline_run or comparison.candidate_run
                 selected_track = (
                     plan.baseline_track if comparison.baseline_run is not None
-                    else plan.candidate_track
+                    else comparison.candidate_track
                 )
                 selected_mode = "no_completed_path"
             if selected_run is None:
@@ -1661,8 +1676,23 @@ class LapSimDesktop:
             ).hexdigest()
             path_planning = {
                 "mode": "experimental_racing_line",
-                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v1",
+                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v2_bounded_strength",
                 "selected_mode": selected_mode,
+                "candidate_offset_strength": comparison.candidate_strength,
+                "selected_offset_strength": (
+                    comparison.candidate_strength
+                    if selected_mode.startswith("candidate")
+                    else 0.0 if selected_mode == "centerline" else None
+                ),
+                "candidate_trials": [
+                    {
+                        "offset_strength": trial.strength,
+                        "path_length_m": trial.path_length_m,
+                        "lap_time_s": trial.lap_time_s,
+                        "error": trial.error,
+                    }
+                    for trial in comparison.trials
+                ],
                 "comparison_is_valid": (
                     baseline_valid and comparison.candidate_time_s is not None
                 ),
@@ -1686,8 +1716,14 @@ class LapSimDesktop:
                 "baseline_error": comparison.baseline_error,
                 "candidate_error": comparison.candidate_error,
                 "baseline_length_m": plan.baseline_track.length_m,
-                "candidate_length_m": plan.candidate_track.length_m,
+                "candidate_length_m": comparison.candidate_track.length_m,
                 "max_abs_offset_m": plan.max_abs_offset_m,
+                "selected_max_abs_offset_m": (
+                    plan.max_abs_offset_m * comparison.candidate_strength
+                    if selected_mode.startswith("candidate")
+                    and comparison.candidate_strength is not None
+                    else 0.0 if selected_mode == "centerline" else None
+                ),
                 "max_constraint_violation_m": plan.max_constraint_violation_m,
                 "source_closure_error_m": plan.source_closure_error_m,
                 "source_vs_processed_length_m": plan.source_vs_processed_length_m,
@@ -1813,17 +1849,24 @@ class LapSimDesktop:
             if selected_mode == "no_completed_path":
                 selection = "Neither geometric path completed. A failed run was saved for diagnosis."
             elif selected_mode == "candidate":
-                selection = "Faster completed AI path selected."
+                selection = (
+                    f"Faster AI path selected at {comparison.candidate_strength:g}× "
+                    "of the proposed offset."
+                )
             elif selected_mode == "candidate_only_baseline_failed":
-                selection = "AI path completed; geometric centerline failed, so no time gain is established."
+                selection = (
+                    f"AI path at {comparison.candidate_strength:g}× offset completed; "
+                    "geometric centerline failed, so no time gain is established."
+                )
             elif candidate_time is not None:
-                selection = "AI candidate was slower; geometric centerline selected."
+                selection = "Best tested AI path was slower; geometric centerline selected."
             else:
                 selection = "No completed faster AI candidate; geometric centerline selected."
             self.ai_result_text.set(
                 f"{selection} Assumed ±{half_width_m:g} m corridor, "
                 f"{vehicle_width_m:g} m car, {margin_m:g} m margin. "
-                f"Max offset {plan.max_abs_offset_m:.2f} m; "
+                f"Proposed max offset {plan.max_abs_offset_m:.2f} m; "
+                f"{len(comparison.trials)} candidate trial(s). "
                 f"source map length differs by {plan.source_vs_processed_length_fraction:+.1%}. "
                 "Compare only the two times in this box; the default lap uses "
                 "different source curvature. These are assumed model scenarios."
@@ -1835,7 +1878,7 @@ class LapSimDesktop:
                 if comparison.baseline_run is not None and comparison.baseline_run.completed:
                     runs.append(("Geometric centerline", comparison.baseline_run))
                 if comparison.candidate_run is not None and comparison.candidate_run.completed:
-                    runs.append(("AI candidate", comparison.candidate_run))
+                    runs.append(("Best tested AI path", comparison.candidate_run))
                 self._comparison_results = tuple(runs) if len(runs) == 2 else None
                 self._show_result(result, track_length_m=selected_track.length_m)
                 self._activate_driver_playback(
@@ -1897,7 +1940,7 @@ class LapSimDesktop:
             comparison.baseline_run, plan.baseline_track.length_m
         )
         candidate = summarize_lap(
-            comparison.candidate_run, plan.candidate_track.length_m
+            comparison.candidate_run, comparison.candidate_track.length_m
         )
         window = tk.Toplevel(self.root)
         window.title("LapSim path comparison")
@@ -1910,11 +1953,12 @@ class LapSimDesktop:
         tk.Label(
             body,
             text=(f"One car, one geometric source, assumed ±{assumptions[0]:g} m "
-                  "corridor. Candidate − centerline; negative lap-time Δ is faster."),
+                  f"corridor. Best tested AI path uses {comparison.candidate_strength:g}× "
+                  "proposed offset. Candidate − centerline; negative lap-time Δ is faster."),
             anchor="w", justify="left", wraplength=755,
         ).grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 10))
         for column, heading in enumerate((
-            "Measure", "Geometric centerline", "AI candidate", "Δ candidate − centerline",
+            "Measure", "Geometric centerline", "Best tested AI path", "Δ candidate − centerline",
         )):
             tk.Label(
                 body, text=heading, font=FONT_BOLD, anchor="w", wraplength=180,

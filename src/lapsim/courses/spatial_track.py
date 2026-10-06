@@ -4,12 +4,29 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from math import ceil, copysign, cos, isfinite, sin
+from math import ceil, copysign, cos, hypot, isfinite, sin
 from os import PathLike
 from pathlib import Path
 import csv
 
 from .track import Curve, Straight, Track
+
+
+@dataclass(frozen=True, slots=True)
+class TrackGeometryAudit:
+    """Observable distance and closure checks for a track's plotted coordinates.
+
+    A straight chord cannot be longer than the distance travelled along its
+    cell.  Positive chord excess therefore proves that at least one of the
+    station or x/y channels is inconsistent; it does not identify which one.
+    """
+
+    station_length_m: float
+    xy_chord_length_m: float
+    endpoint_separation_m: float
+    cells_with_chord_excess: int
+    total_chord_excess_m: float
+    maximum_chord_excess_m: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,6 +86,43 @@ class SpatialTrack:
         return tuple(
             0.5 * (lower + upper)
             for lower, upper in zip(self.distance_m, self.distance_m[1:])
+        )
+
+    def geometry_audit(self) -> TrackGeometryAudit:
+        """Compare x/y chords with the station distances used by the solver.
+
+        A small relative and absolute tolerance excludes ordinary floating
+        point roundoff. This audit intentionally does not infer a new track or
+        replace the source curvature used by the default lap model.
+        """
+
+        chords = tuple(
+            hypot(upper_x - lower_x, upper_y - lower_y)
+            for lower_x, upper_x, lower_y, upper_y in zip(
+                self.x_m[:-1], self.x_m[1:],
+                self.y_m[:-1], self.y_m[1:], strict=True
+            )
+        )
+        excess = tuple(
+            max(chord - length, 0.0)
+            for chord, length in zip(chords, self.cell_length_m, strict=True)
+        )
+        above_tolerance = tuple(
+            amount > max(1e-6, 1e-6 * length)
+            for amount, length in zip(excess, self.cell_length_m, strict=True)
+        )
+        return TrackGeometryAudit(
+            station_length_m=self.length_m,
+            xy_chord_length_m=sum(chords),
+            endpoint_separation_m=hypot(
+                self.x_m[-1] - self.x_m[0], self.y_m[-1] - self.y_m[0]
+            ),
+            cells_with_chord_excess=sum(above_tolerance),
+            total_chord_excess_m=sum(
+                amount for amount, counted in zip(excess, above_tolerance, strict=True)
+                if counted
+            ),
+            maximum_chord_excess_m=max(excess),
         )
 
     def wrap_distance_m(self, distance_m: float) -> float:
@@ -266,4 +320,4 @@ class SpatialTrack:
         )
 
 
-__all__ = ["SpatialTrack"]
+__all__ = ["SpatialTrack", "TrackGeometryAudit"]

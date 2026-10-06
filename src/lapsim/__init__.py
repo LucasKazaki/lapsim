@@ -48,6 +48,7 @@ __all__ = [
     "TelemetryRecorder",
     "TireNormalLoads",
     "SpatialTrack",
+    "TrackGeometryAudit",
     "SpatialCoordinate",
     "Straight",
     "Track",
@@ -185,13 +186,20 @@ def __getattr__(name: str):
             "TimedEventScoreBreakdown": TimedEventScoreBreakdown,
             "TimedEventScoring": TimedEventScoring,
         }[name]
-    if name in {"Curve", "SpatialCoordinate", "SpatialTrack", "Straight", "Track"}:
-        from .courses import Curve, SpatialCoordinate, SpatialTrack, Straight, Track
+    if name in {
+        "Curve", "SpatialCoordinate", "SpatialTrack", "Straight", "Track",
+        "TrackGeometryAudit",
+    }:
+        from .courses import (
+            Curve, SpatialCoordinate, SpatialTrack, Straight, Track,
+            TrackGeometryAudit,
+        )
 
         return {
             "Curve": Curve,
             "SpatialCoordinate": SpatialCoordinate,
             "SpatialTrack": SpatialTrack,
+            "TrackGeometryAudit": TrackGeometryAudit,
             "Straight": Straight,
             "Track": Track,
         }[name]

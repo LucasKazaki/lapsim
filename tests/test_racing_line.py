@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from math import pi
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -15,6 +17,7 @@ from lapsim.optimization.racing_line import (
     _continuous_offset_violation,
     _has_nonadjacent_segment_intersection,
     _periodic_cubic_basis_at,
+    _scaled_candidate_track,
     compare_lines_with_lap_model,
 )
 from lapsim.ui.presets import VehicleSetup, make_prius_benchmark
@@ -202,3 +205,135 @@ def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> Non
     assert comparison.selected_track is plan.candidate_track
     assert comparison.selected_run is comparison.candidate_run
     assert comparison.compute_time_s > 0.0
+
+
+@pytest.fixture(scope="module")
+def _adaptive_plan():
+    track = _rounded_rectangle()
+    plan = RacingLinePlanner().plan(track, _corridor(track))
+    assert plan.status == "candidate"
+    return plan
+
+
+def test_half_strength_path_rebuilds_geometry_inside_valid_endpoints(_adaptive_plan) -> None:
+    plan = _adaptive_plan
+    half = _scaled_candidate_track(plan, 0.5)
+    base_x = np.asarray(plan.baseline_track.x_m)
+    base_y = np.asarray(plan.baseline_track.y_m)
+    full_x = np.asarray(plan.candidate_track.x_m)
+    full_y = np.asarray(plan.candidate_track.y_m)
+    assert half.x_m == pytest.approx(0.5 * (base_x + full_x))
+    assert half.y_m == pytest.approx(0.5 * (base_y + full_y))
+    assert np.diff(half.distance_m) == pytest.approx(
+        np.hypot(np.diff(half.x_m), np.diff(half.y_m)), abs=1e-10,
+    )
+    assert not _has_nonadjacent_segment_intersection(
+        np.asarray(half.x_m[:-1]), np.asarray(half.y_m[:-1]),
+    )
+    with pytest.raises(ValueError, match="between zero and one"):
+        _scaled_candidate_track(plan, 1.0)
+
+
+def test_vehicle_model_selects_half_strength_if_full_line_is_slower(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    plan = _adaptive_plan
+    calls = []
+
+    def fake_lap(vehicle, track, *, torque_request_fraction):
+        assert torque_request_fraction == 0.7
+        calls.append(track)
+        time_s = 100.0 if track is plan.baseline_track else (
+            102.0 if track is plan.candidate_track else 98.0
+        )
+        return SimpleNamespace(completed=True, driving_time_s=time_s, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(
+        {"vehicle": "test"}, plan, torque_request_fraction=0.7,
+    )
+    assert len(calls) == 3
+    assert comparison.baseline_time_s == 100.0
+    assert comparison.candidate_time_s == 98.0
+    assert comparison.candidate_strength == 0.5
+    assert tuple(trial.strength for trial in comparison.trials) == (1.0, 0.5)
+    assert tuple(trial.lap_time_s for trial in comparison.trials) == (102.0, 98.0)
+    assert comparison.candidate_track is calls[2]
+    assert comparison.selected_mode == "candidate"
+    assert comparison.selected_track is calls[2]
+    assert comparison.selected_run is comparison.candidate_run
+
+
+def test_full_strength_win_skips_extra_lap(_adaptive_plan, monkeypatch) -> None:
+    plan = _adaptive_plan
+    calls = []
+
+    def fake_lap(vehicle, track, *, torque_request_fraction):
+        calls.append(track)
+        time_s = 100.0 if track is plan.baseline_track else 99.0
+        return SimpleNamespace(completed=True, driving_time_s=time_s, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
+    assert calls == [plan.baseline_track, plan.candidate_track]
+    assert comparison.candidate_strength == 1.0
+    assert comparison.candidate_track is plan.candidate_track
+    assert len(comparison.trials) == 1
+
+
+def test_no_geometric_candidate_runs_only_baseline(_adaptive_plan, monkeypatch) -> None:
+    plan = replace(
+        _adaptive_plan,
+        status="centerline",
+        candidate_track=_adaptive_plan.baseline_track,
+    )
+    calls = []
+
+    def fake_lap(vehicle, track, *, torque_request_fraction):
+        calls.append(track)
+        return SimpleNamespace(completed=True, driving_time_s=100.0, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
+    assert calls == [plan.baseline_track]
+    assert comparison.trials == ()
+    assert comparison.candidate_strength is None
+    assert comparison.candidate_time_s is None
+    assert comparison.selected_mode == "centerline"
+
+
+def test_half_strength_can_recover_from_failed_full_lap(_adaptive_plan, monkeypatch) -> None:
+    plan = _adaptive_plan
+
+    def fake_lap(vehicle, track, *, torque_request_fraction):
+        if track is plan.candidate_track:
+            return SimpleNamespace(completed=False, driving_time_s=0.0, failure_reason="stalled")
+        time_s = 100.0 if track is plan.baseline_track else 99.0
+        return SimpleNamespace(completed=True, driving_time_s=time_s, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
+    assert comparison.candidate_strength == 0.5
+    assert comparison.candidate_time_s == 99.0
+    assert comparison.candidate_error is None
+    assert comparison.trials[0].error == "stalled"
+    assert comparison.trials[1].lap_time_s == 99.0
+
+
+def test_failed_trials_have_no_fictitious_time(_adaptive_plan, monkeypatch) -> None:
+    plan = _adaptive_plan
+
+    def fake_lap(vehicle, track, *, torque_request_fraction):
+        return SimpleNamespace(completed=False, driving_time_s=0.0, failure_reason="stalled")
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
+    assert comparison.baseline_time_s is None
+    assert comparison.candidate_time_s is None
+    assert comparison.candidate_strength is None
+    assert comparison.selected_mode == "centerline"
+    assert comparison.selected_run is None
+    assert comparison.candidate_run is not None
+    assert len(comparison.trials) == 2
+    assert "1x: stalled" in comparison.candidate_error
+    assert "0.5x: stalled" in comparison.candidate_error
