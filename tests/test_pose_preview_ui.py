@@ -11,6 +11,7 @@ import pytest
 
 from lapsim.dynamics.conditions import PlanarEnvironment
 from lapsim.dynamics.planar import PlanarState
+from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.optimization.pose_driver import PoseDriverSample
 from lapsim.ui.app import (
     LapSimDesktop, POSE_DRIVER_NOTE, POSE_SCENARIO_PATCH,
@@ -32,6 +33,64 @@ def _desktop() -> tuple[tk.Tk, LapSimDesktop]:
     return root, LapSimDesktop(root)
 
 
+def test_timed_session_controls_can_scroll_into_view_at_minimum_window() -> None:
+    root, app = _desktop()
+    try:
+        root.geometry("1080x720")
+        root.deiconify()
+        app._switch_tab("Timed sessions · WIP")
+        root.update()
+        tab = app.tab_panels["Timed sessions · WIP"]
+        canvas = next(child for child in tab.winfo_children()
+                      if isinstance(child, tk.Canvas))
+        canvas.yview_moveto(1.0)
+        root.update()
+        labels = [child for child in app._walk_widgets(tab)
+                  if isinstance(child, tk.Label)]
+        last_label = max(labels, key=lambda child: child.winfo_rooty())
+        assert last_label.winfo_rooty() + last_label.winfo_height() <= (
+            canvas.winfo_rooty() + canvas.winfo_height()
+        )
+    finally:
+        root.destroy()
+
+
+def _sampled_ai_path() -> SpatialTrack:
+    return SpatialTrack(
+        distance_m=(0.0, 30.0, 60.0, 90.0, 120.0),
+        x_m=(0.0, 30.0, 30.0, 0.0, 0.0),
+        y_m=(0.0, 0.0, 30.0, 30.0, 0.0),
+        curvature_per_m=(0.0, 0.0, 0.0, 0.0),
+        closed=True,
+    )
+
+
+def _offer_selected_ai_path(
+    app: LapSimDesktop, *, rank_status: str = "candidate_selected",
+    selected_mode: str = "candidate", audit_valid: bool = True,
+) -> SpatialTrack:
+    spec = next(option for option in COURSE_OPTIONS
+                if option.course_id == SYNTHETIC_DEMO_COURSE_ID)
+    app._select_course(spec.label)
+    app.driving_mode_var.set("AI racing line (experimental)")
+    app._on_driving_mode_change()
+    app.root.update_idletasks()
+    track = _sampled_ai_path()
+    comparison = SimpleNamespace(
+        rank_status=rank_status,
+        selected_mode=selected_mode,
+        baseline_time_s=20.0,
+        candidate_time_s=19.0,
+        candidate_run=SimpleNamespace(completed=True),
+        candidate_path_audit=SimpleNamespace(valid=audit_valid),
+        candidate_track=track,
+    )
+    app._path_comparison = (object(), comparison, (3.0, 1.8, 0.2))
+    app._selected_path_track = track
+    app._update_pose_ai_preview_availability()
+    return track
+
+
 def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> None:
     root, app = _desktop()
     try:
@@ -47,7 +106,10 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         assert app.pose_save_button.cget("state") == "disabled"
         assert app.pose_load_button.cget("state") == "disabled"
         assert app.pose_offset_var.get() == "0.0"
-        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_UNIFORM, 0.0)
+        scenario, offset, pose_track, reference_geometry = thread.call_args.kwargs["args"]
+        assert (scenario, offset) == (POSE_SCENARIO_UNIFORM, 0.0)
+        assert reference_geometry == "coherent_arcs"
+        assert pose_track == load_course(SYNTHETIC_DEMO_COURSE_ID)
         assert app.pose_scenario_var.get() == POSE_SCENARIO_UNIFORM
         assert app._displayed_run_records == ()
         assert app._active_tab == "Driver view"
@@ -55,6 +117,7 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         assert "Synthetic pose model" in app.driver_run_label.get()
         assert POSE_SCENARIO_UNIFORM in app.driver_run_label.get()
         assert "initial offset +0.00 m" in app.driver_run_label.get()
+        assert "effective pose grid" in app.driver_run_label.get()
         assert app.driver_play_button.cget("state") == "disabled"
         assert app.driver_heading_title_label.cget("text") == "VEHICLE HEADING (°)"
 
@@ -68,6 +131,7 @@ def test_pose_button_runs_separate_worker_and_displays_model_only_result() -> No
         app._poll_pose_progress()
         assert "40.0/80 m" in app.calculation_progress_text.get()
         assert "initial offset +0.00 m" in app.calculation_progress_text.get()
+        assert "1.25 s pose-model time" in app.calculation_progress_text.get()
         assert app._calculation_progress_fraction == pytest.approx(0.5)
         assert isinstance(app.driver_playback, PoseDriverLivePlayback)
         frame = app.driver_playback.frame_at(sample.time_s)
@@ -135,6 +199,172 @@ def test_pose_scenario_passes_selected_road_to_worker(
         root.destroy()
 
 
+def test_pose_preview_uses_finer_frozen_cell_grid() -> None:
+    root, app = _desktop()
+    try:
+        source = load_course(SYNTHETIC_DEMO_COURSE_ID)
+        app.inputs["solver_step_m"].set("0.25")
+        with patch("lapsim.ui.app.threading.Thread") as thread:
+            app._start_pose_preview()
+        args = thread.call_args.kwargs["args"]
+        grid = args[2]
+        assert grid.cell_count > source.cell_count
+        assert max(grid.cell_length_m) <= 0.25 + 1e-12
+        assert "requested Cell size (max) 0.25 m" in app.pose_preview_status.get()
+        assert f"effective pose grid {grid.cell_count:,} cells" in app.pose_preview_status.get()
+        assert app.entry_by_key["solver_step_m"].cget("state") == "disabled"
+
+        # The worker receives the grid frozen before a later input edit.
+        app.inputs["solver_step_m"].set("1")
+        with patch("lapsim.ui.app.run_pose_driver", return_value=object()) as driver:
+            app._calculate_pose_preview(*args)
+        assert driver.call_args.kwargs["track"] is grid
+        assert app.result_queue.get_nowait()[0] == "pose_preview"
+    finally:
+        root.destroy()
+
+
+def test_pose_preview_keeps_finer_source_for_coarse_request() -> None:
+    root, app = _desktop()
+    try:
+        source = load_course(SYNTHETIC_DEMO_COURSE_ID)
+        app.inputs["solver_step_m"].set("2")
+        with patch("lapsim.ui.app.threading.Thread") as thread:
+            app._start_pose_preview()
+        grid = thread.call_args.kwargs["args"][2]
+        assert grid == source
+        assert "requested Cell size (max) 2 m" in app.pose_preview_status.get()
+        assert f"max {max(source.cell_length_m):.3g} m" in app.pose_preview_status.get()
+    finally:
+        root.destroy()
+
+
+def test_eligible_selected_ai_path_uses_frozen_sampled_reference() -> None:
+    root, app = _desktop()
+    try:
+        selected = _offer_selected_ai_path(app)
+        assert app.pose_ai_preview_button.cget("state") == "normal"
+        assert "Eligible selected AI path ready" in app.pose_ai_availability.get()
+        with patch("lapsim.ui.app.threading.Thread") as thread:
+            app._start_pose_preview(use_selected_ai_path=True)
+        args = thread.call_args.kwargs["args"]
+        frozen = args[2]
+        assert args[:2] == (POSE_SCENARIO_UNIFORM, 0.0)
+        assert args[3] == "sampled_polyline"
+        assert frozen.cell_count > selected.cell_count
+        assert max(frozen.cell_length_m) <= 0.5 + 1e-12
+        assert "eligible selected AI path (sampled polyline)" in app.driver_run_label.get()
+        assert "separate synthetic car" in app.driver_note_var.get()
+        assert app.pose_ai_preview_button.cget("state") == "disabled"
+
+        # Editing the shared entry while the mocked worker is queued cannot
+        # substitute a different path or resolution into that worker.
+        app.inputs["solver_step_m"].set("0.25")
+        with patch("lapsim.ui.app.run_pose_driver", return_value=object()) as driver:
+            app._calculate_pose_preview(*args)
+        assert driver.call_args.kwargs["track"] is frozen
+        settings = driver.call_args.kwargs["settings"]
+        assert settings.reference_geometry == "sampled_polyline"
+        assert settings.target_progress_m == 80.0
+        assert "vehicle_config" not in driver.call_args.kwargs
+        assert app.result_queue.get_nowait()[0] == "pose_preview"
+    finally:
+        root.destroy()
+
+
+@pytest.mark.parametrize(
+    ("rank_status", "selected_mode", "audit_valid"),
+    [
+        ("candidate_not_faster", "centerline", True),
+        ("invalid_candidate_path", "centerline", False),
+        ("invalid_processed_baseline", "candidate", True),
+    ],
+)
+def test_diagnostic_or_unselected_ai_paths_cannot_start_pose_preview(
+    rank_status: str, selected_mode: str, audit_valid: bool,
+) -> None:
+    root, app = _desktop()
+    try:
+        _offer_selected_ai_path(
+            app, rank_status=rank_status, selected_mode=selected_mode,
+            audit_valid=audit_valid,
+        )
+        assert app.pose_ai_preview_button.cget("state") == "disabled"
+        assert "diagnostic paths do not" in app.pose_ai_availability.get()
+        with (
+            patch("lapsim.ui.app.messagebox.showerror") as showerror,
+            patch("lapsim.ui.app.threading.Thread") as thread,
+        ):
+            app._start_pose_preview(use_selected_ai_path=True)
+        showerror.assert_called_once()
+        thread.assert_not_called()
+    finally:
+        root.destroy()
+
+
+def test_selected_ai_pose_button_retires_on_input_or_course_change() -> None:
+    root, app = _desktop()
+    try:
+        _offer_selected_ai_path(app)
+        assert app.pose_ai_preview_button.cget("state") == "normal"
+        app.inputs["solver_step_m"].set("0.25")
+        root.update_idletasks()
+        assert app.pose_ai_preview_button.cget("state") == "disabled"
+        assert app._path_comparison is None
+
+        _offer_selected_ai_path(app)
+        assert app.pose_ai_preview_button.cget("state") == "normal"
+        app._select_course(COURSE_OPTIONS[0].label)
+        assert app.pose_ai_preview_button.cget("state") == "disabled"
+        assert "only on Synthetic loop" in app.pose_ai_availability.get()
+    finally:
+        root.destroy()
+
+
+def test_selected_ai_pose_grid_obeys_5000_cell_cap() -> None:
+    root, app = _desktop()
+    try:
+        app.inputs["solver_step_m"].set("0.01")
+        with pytest.raises(ValueError, match="5,000-cell compute cap"):
+            app._read_pose_grid(_sampled_ai_path())
+    finally:
+        root.destroy()
+
+
+def test_pose_grid_label_is_retired_when_inputs_change() -> None:
+    root, app = _desktop()
+    try:
+        with patch("lapsim.ui.app.threading.Thread"):
+            app._start_pose_preview()
+        assert "effective pose grid" in app._active_pose_description()
+        app._set_busy(False)
+        app.inputs["solver_step_m"].set("0.25")
+        root.update_idletasks()
+        assert "pose grid" not in app._active_pose_description()
+    finally:
+        root.destroy()
+
+
+@pytest.mark.parametrize("value", ["", "bad", "nan", "inf", "0", "-1", "0.01"])
+def test_pose_preview_rejects_invalid_or_excessive_cell_grid(value: str) -> None:
+    root, app = _desktop()
+    try:
+        app.inputs["solver_step_m"].set(value)
+        with (
+            patch("lapsim.ui.app.messagebox.showerror") as showerror,
+            patch("lapsim.ui.app.threading.Thread") as thread,
+        ):
+            app._start_pose_preview()
+        showerror.assert_called_once()
+        thread.assert_not_called()
+        assert not app.run_in_progress
+        assert app.entry_by_key["solver_step_m"].cget("state") == "normal"
+        if value == "0.01":
+            assert "5,000-cell compute cap" in showerror.call_args.args[1]
+    finally:
+        root.destroy()
+
+
 def test_pose_scenario_change_clears_only_old_pose_playback() -> None:
     root, app = _desktop()
     try:
@@ -145,7 +375,7 @@ def test_pose_scenario_change_clears_only_old_pose_playback() -> None:
         assert POSE_SCENARIO_PATCH in app.pose_preview_status.get()
         with patch("lapsim.ui.app.threading.Thread") as thread:
             app._start_pose_preview()
-        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_PATCH, 0.0)
+        assert thread.call_args.kwargs["args"][:2] == (POSE_SCENARIO_PATCH, 0.0)
         assert POSE_SCENARIO_PATCH in app.driver_run_label.get()
         assert app.pose_scenario_menu.cget("state") == "disabled"
         app.pose_scenario_var.set(POSE_SCENARIO_UNIFORM)
@@ -160,8 +390,9 @@ def test_pose_scenario_change_clears_only_old_pose_playback() -> None:
         assert app.driver_values["speed"].get() == "—"
         assert POSE_SCENARIO_UNIFORM in app.pose_preview_status.get()
         assert "scenario changed" in app.driver_run_label.get()
+        assert "pose grid" not in app._active_pose_description()
         tab = app.tab_panels["Timed sessions · WIP"]
-        labels = [child.cget("text") for child in tab.winfo_children()
+        labels = [child.cget("text") for child in app._walk_widgets(tab)
                   if isinstance(child, tk.Label)]
         assert any("world x 36–55 m, y −3–16 m" in label for label in labels)
     finally:
@@ -174,8 +405,12 @@ def test_pose_playback_labels_separate_model_and_reference_mode_restores_note() 
         run = SimpleNamespace(
             status="target_reached",
             samples=(SimpleNamespace(progress_m=80.1),),
-            settings=SimpleNamespace(target_progress_m=80.0),
+            settings=SimpleNamespace(
+                target_progress_m=80.0, reference_geometry="sampled_polyline",
+            ),
+            elapsed_pose_model_time_s=14.75,
         )
+        app._active_pose_reference_label = "recorded sampled polyline"
         fake_playback = object()
         with (
             patch("lapsim.ui.app.PoseDriverPlayback", return_value=fake_playback),
@@ -185,11 +420,14 @@ def test_pose_playback_labels_separate_model_and_reference_mode_restores_note() 
         ):
             app._activate_pose_preview(run)
         assert app.driver_playback is fake_playback
-        assert app.driver_note_var.get() == POSE_DRIVER_NOTE
+        assert POSE_DRIVER_NOTE in app.driver_note_var.get()
         assert app.driver_heading_title_label.cget("text") == "VEHICLE HEADING (°)"
         assert "recorded controls and tracking values" in app.driver_decision_title.get()
         assert "Synthetic pose model" in app.driver_run_label.get()
         assert "initial offset +0.00 m" in app.driver_run_label.get()
+        assert "recorded sampled polyline" in app.driver_run_label.get()
+        assert "separate synthetic car" in app.driver_note_var.get()
+        assert "14.75 s pose-model time" in app.driver_run_label.get()
         assert app.driver_decision_title_labels[0].cget("text") == "STEER FRONT (°)"
 
         with (
@@ -217,7 +455,7 @@ def test_pose_offset_freezes_at_start_and_only_clears_pose_playback() -> None:
         assert "initial offset +1.25 m" in app.pose_preview_status.get()
         with patch("lapsim.ui.app.threading.Thread") as thread:
             app._start_pose_preview()
-        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_UNIFORM, 1.25)
+        assert thread.call_args.kwargs["args"][:2] == (POSE_SCENARIO_UNIFORM, 1.25)
         assert app.pose_offset_entry.cget("state") == "disabled"
         assert "initial offset +1.25 m" in app.driver_run_label.get()
         app.pose_offset_var.set("-0.5")
@@ -262,7 +500,9 @@ def test_pose_offset_accepts_assumed_center_limit(value: str) -> None:
         assert app._read_pose_offset_m() == float(value)
         with patch("lapsim.ui.app.threading.Thread") as thread:
             app._start_pose_preview()
-        assert thread.call_args.kwargs["args"] == (POSE_SCENARIO_UNIFORM, float(value))
+        assert thread.call_args.kwargs["args"][:2] == (
+            POSE_SCENARIO_UNIFORM, float(value),
+        )
     finally:
         root.destroy()
 
@@ -314,7 +554,11 @@ def test_synthetic_trace_load_checks_record_before_playback(tmp_path: Path) -> N
 
         run = SimpleNamespace(
             environment=PlanarEnvironment(),
-            settings=SimpleNamespace(initial_lateral_offset_m=0.75),
+            settings=SimpleNamespace(
+                initial_lateral_offset_m=0.75,
+                reference_geometry="sampled_polyline",
+            ),
+            track=_sampled_ai_path(),
             samples=(SimpleNamespace(progress_m=80.1),),
             states=(object(), object()),
             status="target_reached",
@@ -332,6 +576,10 @@ def test_synthetic_trace_load_checks_record_before_playback(tmp_path: Path) -> N
         assert app._active_pose_offset_m == 0.75
         assert app.pose_save_button.cget("state") == "normal"
         assert "numerical replay passed" in app.pose_record_status.get()
+        assert "recorded pose grid" in app.pose_preview_status.get()
+        assert "recorded sampled polyline" in app.pose_preview_status.get()
+        assert "pose-model time" in app.pose_preview_status.get()
+        assert "requested Cell size" not in app.pose_preview_status.get()
     finally:
         root.destroy()
 

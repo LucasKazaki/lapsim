@@ -3,6 +3,7 @@
 from dataclasses import replace
 import json
 
+import numpy as np
 import pytest
 
 from lapsim.dynamics.conditions import (
@@ -16,6 +17,8 @@ from lapsim.experiments.pose_run_record import (
     PoseRunRecord,
 )
 from lapsim.optimization.pose_driver import PoseDriverSettings, run_pose_driver
+from lapsim.optimization.racing_line import _track_from_closed_points
+from lapsim.ui.course_catalog import SYNTHETIC_DEMO_COURSE_ID, load_course
 from lapsim.ui.pose_driver_playback import PoseDriverPlayback
 
 
@@ -101,6 +104,47 @@ def test_assumed_grip_patch_and_interrupted_road_are_replayable(tmp_path):
     assert len(loaded_stopped.run.states) == 1
     assert not loaded_stopped.run.road_valid
     assert loaded_stopped.replay_report.passed
+
+
+def test_sampled_polyline_record_replays_and_rejects_geometry_mode_tamper(tmp_path):
+    course = load_course(SYNTHETIC_DEMO_COURSE_ID)
+    path = _track_from_closed_points(
+        np.asarray(course.x_m[:-1:2]), np.asarray(course.y_m[:-1:2]),
+    )
+    run = run_pose_driver(path, settings=replace(
+        PoseDriverSettings(), reference_geometry="sampled_polyline",
+        maximum_control_steps=5,
+    ))
+    record = PoseRunRecord.capture(run)
+    saved_path = record.save(tmp_path / "sampled.json")
+    loaded = PoseRunRecord.load(saved_path)
+    assert loaded.run.settings.reference_geometry == "sampled_polyline"
+    assert loaded.run == run
+    assert loaded.replay_report.passed
+
+    _write_changed_record(saved_path, record, lambda data: data["inputs"]["settings"].__setitem__(
+        "reference_geometry", "coherent_arcs",
+    ))
+    with pytest.raises(ValueError, match="arc .* mismatch"):
+        PoseRunRecord.load(saved_path)
+
+
+def test_legacy_v1_pose_record_still_loads(short_run, tmp_path):
+    payload = PoseRunRecord.capture(short_run).to_dict()
+    payload.pop("content_id")
+    payload["schema_version"] = 1
+    payload["controller"] = {
+        "algorithm_id": "synthetic_pose_preview_pure_pursuit_grip_edge_v1",
+        "algorithm_version": 1,
+    }
+    payload["inputs"]["settings"].pop("reference_geometry")
+    payload["content_id"] = pose_run_record._content_id(payload)
+    path = tmp_path / "legacy-v1.json"
+    path.write_text(json.dumps(payload, allow_nan=False), encoding="utf-8")
+    loaded = PoseRunRecord.load(path)
+    assert loaded.to_dict() == payload
+    assert loaded.run.settings.reference_geometry == "coherent_arcs"
+    assert loaded.replay_report.passed
 
 
 def test_content_hash_and_numerical_gate_reject_tampering(short_run, tmp_path):

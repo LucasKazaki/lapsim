@@ -467,7 +467,7 @@ Research basis: [TUM FTM's variable-friction minimum-time implementation](https:
 | Assumed road grip | Positive base tire-capacity factor in percent, default 100%; remains uniform for centerline and both car profiles, and is the base for AI trials |
 | AI trial surface | Uniform by default; optional editable world X/Y rectangle with lower grip as a percent of base on a coherent closed source course. Each AI path gets a separately mapped absolute cell schedule, saved and checked on replay |
 | Driver request | Constant fraction, 0-100%, of motor torque-curve request before vehicle/path limits |
-| Cell size (max) | Fixed Calculation settings entry beside Run; user-requested upper bound on generated main-lap physics cell length in metres, with a centerline solver-cell count or invalid-size hint. AI mode says its separate grid varies until planning. Fused centerline source is resampled, coherent synthetic/imported source arcs remain finer or are analytically subdivided, and optional AI rebuilds its separate geometric grid until generated path cells meet the bound. The WIP pose preview separately uses at most 0.5 m coherent source cells and does not read this input |
+| Cell size (max) | Fixed Calculation settings entry beside Run; user-requested upper bound on generated main-lap physics cell length in metres, with a centerline solver-cell count or invalid-size hint. AI mode says its separate grid varies until planning. Fused centerline source is resampled, coherent synthetic/imported source arcs remain finer or are analytically subdivided, and optional AI rebuilds its separate geometric grid until generated path cells meet the bound. The WIP pose preview reads the same entry at start and freezes a separate coherent synthetic grid: requests finer than its 0.5 m source analytically subdivide it, coarser requests keep the source. It labels requested and effective resolution and enforces a 5,000-cell UI cap |
 | Driving path | Centerline is default; experimental AI requires assumed corridor half-width, vehicle width, and safety margin |
 | Run one lap | Worker executes one rolling-start prescribed-path lap in default mode; AI mode plans one geometry candidate and tests full, half, and one bounded fourth offset against its processed centerline |
 | Calculation progress bar | Labeled fixed monochrome strip: local corner-limit cells and current recorded-lap accepted cells have measured within-phase fractions; cyclic braking names its pass and processed cells while remaining indeterminate until convergence; planning, explicitly labeled speed-seam probes, and the transition to the final lap remain indeterminate; complete/stopped state at result |
@@ -477,7 +477,7 @@ Research basis: [TUM FTM's variable-friction minimum-time implementation](https:
 | Trace selector | Speed, acceleration, drive/braking forces, inferred driven slip, or battery power from named telemetry channels, against time or distance |
 | Course map | Selected source x/y reference, fixed top-down; mouse drag pans and wheel zooms; a selected AI rectangle is outlined in black/white. The fused course displays its geometry warning while the synthetic choices are labeled as assumed examples |
 | Driver view tab | Static labeled source-course preview while preparing; latest accepted physics cell on the exact trial grid during a solve; then timed top-down replay on each run's saved solver-grid x/y with fixed car marker, play/pause, scrub, rate, wheel zoom, cell control/force number boxes, and a Replay lap menu for completed comparisons; the separately labeled synthetic pose preview uses simulated x/y and heading |
-| Timed sessions · WIP tab | Optional bounded 80 m synthetic four-wheel pose preview with uniform base grip or a labeled assumed 0.3× first-bend patch, plus a signed initial lateral offset inside a nominal ±1.9 m input bound; Save/Load controls persist and numerically check only this separate synthetic trace; the versioned team controller, ghost, full session capture, and comparison workflow remain unavailable |
+| Timed sessions · WIP tab | Optional bounded 80 m synthetic four-wheel pose preview on the coherent demo centerline, plus a selected eligible AI candidate path preview on that same demo using an explicit sampled-polyline reference. Both use a separate synthetic car, uniform base grip or a labeled assumed 0.3× first-bend patch, and a signed initial offset inside a nominal ±1.9 m input bound. Save/Load persists and numerically checks only this separate synthetic trace; the versioned team controller, ghost, full session capture, and comparison workflow remain unavailable |
 | Saved run details | Read-only text window for the currently displayed lap or A/B result: full content IDs and files, profile, result, source/boundary status, solver path, AI rank/assumptions, and available linked AI trial records |
 | Source data / model notes | Inspect reviewed records, origins, model use, and caveats; inspection does not change the active vehicle |
 | Dark mode | Reverses white/black Tk and Matplotlib surfaces; it does not change a simulation parameter |
@@ -522,8 +522,20 @@ clears an old pose preview and its boxes, without discarding an ordinary lap
 replay. Neither can be changed during the calculation. The nominal ±1.9 m
 input range is derived from the assumed half-width, car width, and margin;
 the sampled body footprint can still start outside the curved corridor.
+An additional **Preview selected AI path (80 m)** button is enabled only
+after the synthetic demo's optional AI comparison selects a faster eligible
+candidate with passing modeled-path audit and completed baseline/candidate
+times. The worker freezes that selected polygon and refines its chords to
+the smaller of the entered cell-size maximum and 0.5 m, under a 5,000-cell
+desktop cap. It sets `reference_geometry="sampled_polyline"`; the ordinary
+pose preview retains strict coherent arcs. Changing the source course or a
+run input retires the selected path button. The displayed pose and time use
+the separate synthetic car and WIP road scenario, which need not match the
+selected Prius/TREV car or optional AI trial's road schedule. A loaded
+polyline trace is labeled as a recorded sampled reference without asserting
+the provenance of an absent AI comparison.
 After a run, **Save last synthetic trace…** captures its complete bounded
-trace in a separate schema-v1 JSON file; **Load synthetic trace…** validates
+trace in a separate schema-v2 JSON file; **Load synthetic trace…** validates
 and replays it in Driver view on the UI worker. A zero-step stop loads with
 its status and no invented playback motion. The initial save directory is
 `%LOCALAPPDATA%\LapSim\pose_runs` on Windows. The UI disables these actions
@@ -681,9 +693,9 @@ The path is a reference for steering; the state evolves from the four-wheel
 forces and yaw equations above. This gives a controlled pose experiment,
 not a calibrated Formula SAE lap or complete driving session.
 
-`run_pose_driver` first validates that the supplied closed course has
-coherent constant-curvature straight/circular-arc geometry. If any source
-cell is longer than **0.5 m**, it uses
+By default, `run_pose_driver` first validates that the supplied closed
+course has coherent constant-curvature straight/circular-arc geometry. If
+any source cell is longer than **0.5 m**, it uses
 `SpatialTrack.refine_arcs(0.5)` to integrate analytic subarc x/y points,
 retain every source station and curvature, and keep each resulting cell at
 most 0.5 m long under the **100,000-cell** refinement cap. The shipped
@@ -691,6 +703,26 @@ synthetic course already has 0.5 m cells and is retained unchanged. The
 control loop's `_path_point` still interpolates the resulting short x/y
 **chords**, so refinement reduces a coarse-turn chord error without
 substituting continuous-arc projection or proving physical path clearance.
+
+An explicit `PoseDriverSettings(reference_geometry="sampled_polyline")`
+allows the same bounded pose controller to follow an AI planner's sampled
+x/y reference. This mode checks a closed, finite, nondegenerate polygon,
+its station/chord agreement and adjacent-cell reversals, then uses
+`SpatialTrack.refine(0.5)` to split chords while retaining the source
+vertices. Its start heading is the first chord heading rather than an
+analytic arc-entry heading. At each speed-preview station `s`, let
+`h=min(0.5 m,L_track/8)`, `P-=P(s-h)`, `P0=P(s)`, and `P+=P(s+h)` on the
+interpolated polygon. The bend proxy is
+`max(|kappa_saved_cell|, |wrap(angle(P+-P0)-angle(P0-P-))|/h)`.
+If either preview chord is degenerate, the controller asks for a slow
+preview instead of trusting an undefined heading. Using a **fixed metric
+span** prevents merely splitting an unchanged polygon into shorter cells
+from doubling its bend estimate. This only chooses a speed target under an
+explicit smoothing heuristic; a polygon vertex has no finite point
+curvature. The option does not certify
+self-intersection, a swept car footprint, measured cone clearance, or
+agreement between the main lap's prescribed curvature and the driven pose.
+The default strict arc mode and centerline lap calculation remain unchanged.
 
 For local pose projection, `_project_local` visits each cell whose **station
 interval overlaps** `[s_previous-window,s_previous+window]`, rather than
@@ -943,7 +975,7 @@ The lab record supports inspection and programmatic replay from exact inputs, bu
 
 ### 14.4 Synthetic pose trace record (`experiments/pose_run_record.py`)
 
-`PoseRunRecord` is a **separate schema-v1** archive for one short synthetic
+`PoseRunRecord` is a **separate schema-v2** archive for one short synthetic
 time-domain pose experiment; it is not a v2 endurance-lap record. The WIP
 tab's **Save last synthetic trace…** invokes `PoseRunRecord.capture(run)`
 then an atomic JSON `save(path)` in a worker. **Load synthetic trace…**
@@ -951,13 +983,15 @@ invokes `PoseRunRecord.load(path)` in a worker and displays the checked
 result in Driver view. These controls do not enable **Start timed session**
 or create a ghost or comparison report.
 
-The file stores `schema_version=1`, `record_type=synthetic_pose_driver`,
+New files store `schema_version=2`, `record_type=synthetic_pose_driver`,
 `simulation_mode=time_domain_four_wheel`, and the versioned pure-pursuit/
 grip/edge controller identity. `inputs` contains the **exact processed
 track** (stations, x/y, curvature, closure), `PlanarVehicleConfig`,
 `PlanarEnvironment` (wind, road, ordered patches and optional domain), and
-all `PoseDriverSettings`, including initial lateral offset and compute
-bounds. `trace` contains every output time, planar boundary state, held
+all `PoseDriverSettings`, including the explicit reference-geometry mode,
+initial lateral offset, and compute bounds. Schema-v1 arc-only records
+remain loadable with their original controller identity and an implied
+`coherent_arcs` mode. `trace` contains every output time, planar boundary state, held
 control, pre-step `PlanarEvaluation`, derived `PoseDriverSample`, final
 status, internal-substep count, and road-valid flag. `runtime` identifies
 Python/platform, NumPy/SciPy versions, Git commit and dirty state when
@@ -970,7 +1004,8 @@ an integrity identifier, **not** a signature or independent evidence of
 physical correctness. The loader rejects duplicate JSON keys, nonfinite
 JSON constants, unknown/missing schema fields, unsupported controller IDs,
 misaligned trace arrays, a file over **32 MiB**, more than **100,000** track
-cells, more than **128** road patches, and non-coherent saved arcs. It
+cells, more than **128** road patches, and geometry that fails the saved
+mode's arc or sampled-polyline gate. It
 reconstructs the initial pose from the saved track and offset setting,
 checks times/step budgets and every saved pre-step dynamics evaluation
 against the current equations. Finite evaluation floats use
@@ -1026,8 +1061,8 @@ Read the JSON in this order: `schema_version` and `simulation_mode`; `runtime` a
 | Main vehicle assembly | `vehicle_model/vehicle.py` | Couples aero, suspension, tire, drivetrain, brake, battery and commits state after solving a cell |
 | Four-wheel derivative and integrator | `dynamics/planar.py` | Pure force/derivative evaluation; bounded RK4 time integration; no lap score |
 | Wind/road scenario | `dynamics/conditions.py` | Deterministic world wind and world-fixed contact-patch query; no update side effect |
-| WIP pose driver and playback | `optimization/pose_driver.py`, `ui/pose_driver_playback.py`, `ui/app.py` | Validates/refines coherent long arcs, projects overlapping station cells/lap copies, runs a bounded synthetic four-wheel control loop, and streams simulated pose to Driver view without changing a main-lap record |
-| Synthetic pose evidence | `experiments/pose_run_record.py` | Saves/loads a separate schema-v1 exact synthetic trace with source identity, content hash, evaluations, and numerical recorded-control replay, including zero-step stops |
+| WIP pose driver and playback | `optimization/pose_driver.py`, `ui/pose_driver_playback.py`, `ui/app.py` | Validates/refines coherent long arcs by default; opt-in sampled-polyline mode accepts checked AI x/y references. Both project overlapping station cells/lap copies, run a bounded synthetic four-wheel control loop, and stream simulated pose to Driver view without changing a main-lap record |
+| Synthetic pose evidence | `experiments/pose_run_record.py` | Saves/loads a separate schema-v2 exact synthetic trace with geometry mode, source identity, content hash, evaluations, and numerical recorded-control replay, including zero-step stops; v1 arc traces remain loadable |
 | Main-lap evidence | `experiments/run_record.py` | Content-hashed v2 record with exact solver grid and effective vehicle snapshot |
 | One-lap model replay | `experiments/lap_replay.py` | Reconstructs an allowlisted vehicle and saved grid; reruns accepted-cell controls and reports numeric differences separately from provenance |
 | Driver view and progress | `events/endurance.py`, `ui/driver_view.py`, `ui/app.py` | Emits immutable accepted-cell snapshots; maps live endpoints and completed telemetry to each run's saved solver-grid reference x/y; switches among already solved comparison laps without changing physics |
@@ -1064,7 +1099,9 @@ Coarse prescribed-path skidpad regressions require a radius-5 m circle split int
 
 On 6 October 2026, the checked-in `scripts/check_all.ps1` completed all **60 repository test files** in isolated one-module pytest processes with no failures. One pose GUI case was skipped during that sweep when Windows intermittently failed to read an existing Tcl/Tk support file; that exact case then passed in a fresh process (**1/1**). The full desktop AI module passed **18/18**, and the desktop startup check passed. Splitting the files avoided this workstation's Windows commit-memory limit; each process used one OpenBLAS, OMP, and MKL thread and explicit Tcl/Tk library paths. The Driver view checks compare every live accepted-cell value with same-cell telemetry, verify replay's active-cell boundary timing and independent missing-channel handling, and confirm the desktop numbers and unit conversions. New desktop tests also start a new run with an old Analysis trace visible, then fail the new calculation and verify the old plot and result references remain cleared. Failed-run checks cover rejection before a cell update, rejection after the first and a later attempted update, last accepted telemetry alignment, complete-run equality, record serialization and contradictions, and consistent battery-depletion progress. A/B tests use cars with markedly different independent first-cell ceilings, require one common start and one preparation per car, replay both saved records, inspect live/replay/popup behavior, and reject a different vehicle or track when reusing limits. The new cyclic-braking regression reproduces a four-cell closing-straight case: with a loose tolerance, the prior one-pass 43.112 m/s closing-cell ceiling exceeded its 23.254 m/s braking-feasible entry; the corrected solver continues its sweep or raises at the pass bound. It also rejects nonfinite tolerance settings. At the declared minimum **1080 × 720** window, the decision grid requests **620 px** inside a **660 px** panel and the course canvas remains **264 px** high. Course checks include exact catalog-source identity for both synthetic IDs, analytic per-cell endpoint and closed-heading validation, original-station-preserving subarcs, and a valid coarse two-semicircle loop whose polygon chord winding aliases the true turn. They also cover bounded versioned JSON and CSV loading, duplicate/nonfinite/malformed input rejection, source and manifest hashes, local catalog reload and revision conflicts, imported centerline and AI runs, linked trial records, and model replay of those records. These are numerical and software checks, not a track survey or measured-boundary validation.
 
-The cell-length regressions verify that the planner bounds generated baseline and candidate physics cells, tries the allowed 5,000-point grid before rejecting a tight request, and handles a one-ulp final-station discrepancy on the FSAE-style practice course without relaxing its clearance checks. A desktop regression changes the visible cell-size entry from 2 m to 1 m and confirms that the actual model grid and requested maximum passed to record capture change. Desktop progress regressions verify current-pass accepted-cell fractions, explicit speed-seam probe and final-lap transitions without a fabricated percentage, indeterminate preparation and gap states, completion/failure reset, dark-mode contrast, and cancellation of pending animation callbacks at window close. Detour regressions check bounded construction, lower wheel-contact exposure, corridor refusal, full-model selection, slower-detour rejection, exact saved strategy, and replay agreement.
+A later 6 October sweep after the pose-grid, selected-path, and WIP scrolling changes again completed all **60 test files** without failures. The focused pose UI module passed **36/36**, and `scripts/check_desktop.py` passed its Python, TkAgg, app-import, and default-course preflight. These runs verify reproducibility under the checked-in model and this workstation; they do not calibrate its physical predictions.
+
+The cell-length regressions verify that the planner bounds generated baseline and candidate physics cells, tries the allowed 5,000-point grid before rejecting a tight request, and handles a one-ulp final-station discrepancy on the FSAE-style practice course without relaxing its clearance checks. A desktop regression changes the visible cell-size entry from 2 m to 1 m and confirms that the actual model grid and requested maximum passed to record capture change. The WIP pose UI checks its finer/coarser effective grid, 5,000-cell rejection, selected-path eligibility gate, frozen worker path, live pose-model labels, saved-record mode, and scrolling access to status at the 1080 × 720 window minimum. Desktop progress regressions verify current-pass accepted-cell fractions, explicit speed-seam probe and final-lap transitions without a fabricated percentage, indeterminate preparation and gap states, completion/failure reset, dark-mode contrast, and cancellation of pending animation callbacks at window close. Detour regressions check bounded construction, lower wheel-contact exposure, corridor refusal, full-model selection, slower-detour rejection, exact saved strategy, and replay agreement.
 
 Further focused tests exercise the **absolute per-cell grip** tuple:
 shape/finite-value rejection, cell-specific corner and cyclic braking
@@ -1149,6 +1186,48 @@ stopped outside the assumed corridor at **40.64 m** with **−0.01351 m**
 minimum sampled slack. Both recorded traces passed numerical replay. This
 shows one reproducible controller tradeoff on an analytic road; it does not
 prove the rule prevents exits on other tracks, offsets, grips, or lookaheads.
+
+The new opt-in sampled-polyline checks retain strict arc-mode rejection of
+an AI polygon unless its geometry mode is explicitly changed. They reject
+open endpoints, zero chords, mismatched stations, and local reversals; a
+driven polygon trace passes state/sample replay and the schema-v2 record
+round trip, while a changed geometry-mode field fails loading. A constructed
+schema-v1 coherent-arc record still loads with numerical replay. In one
+on-demand synthetic demo probe, the planner produced a **206-cell** sampled
+candidate at a requested **1 m** maximum. The separate pose controller
+reached **80.1475 m** in **14.75 s** of pose-model time with **295** control
+steps and **38,055** internal substeps. Wall time was **3.744 s** on this
+computer; maximum absolute reference tracking error was **0.17404 m** and
+minimum *assumed sampled* footprint slack was **1.70328 m**. Numerical
+replay and a saved schema-v2 round trip passed. These numbers describe a
+synthetic car following a planner-produced polygon; they are not an
+eligible engineering lap-time comparison or measured boundary clearance.
+In an unmocked desktop-to-worker exercise, the synthetic demo Prius AI
+comparison selected a **206-cell** candidate after its processed geometric
+baseline and candidate modeled **17.009011 s** and **14.637831 s**,
+respectively. The WIP button froze that selected polygon as **412** pose
+cells; the synthetic car reached **80.147 m** in **14.75 s** of pose-model
+time, and its recorded controls passed numerical replay and schema-v2
+capture/load. The two AI values are full prescribed-path model laps; the
+14.75 s value is a separate 80 m driven pose duration, so subtracting them
+would be meaningless. The test establishes UI wiring and replay, not a
+validated Racing Terps path or car.
+The first polygon-corner speed proxy divided heading turn by the adjacent
+**solver** cell lengths; splitting an identical sampled polygon from 0.5 m
+to 0.25 m doubled its peak estimated bend from about **0.142** to
+**0.284 1/m** and changed the 80 m pose duration from **14.75** to
+**16.70 s**. That was a numerical grid artifact, not a changed driving
+line. The fixed **0.5 m physical preview span** described above removes
+that specific artifact: for the same polygon, its active 8 m/s bend-speed
+target differed by at most **1.2e-12 m/s** across those subdivisions, and
+both 80 m runs ended on the same **14.75 s** control step. This is a focused
+resolution check on fixed x/y geometry, not a formal convergence study of
+the four-wheel integrator or the main lap solver.
+An exploratory full coherent-course pose run reached one **195.4 m** lap
+after **35.85 s** of model time, using **92,493** of the allowed **100,000**
+substeps, and also replayed. Its small remaining compute headroom supports
+retaining the 80 m WIP preview as the desktop default rather than promising
+an arbitrary full-session finish.
 
 `tests/test_ai_profile_e2e.py` now exercises the optional AI route from the
 desktop's selected profile through its worker, recorded result, Driver view,

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from bisect import bisect_right
 from dataclasses import dataclass
-from math import atan2, ceil, cos, floor, hypot, isfinite, pi, remainder, sin, sqrt
+from math import atan2, ceil, cos, floor, fsum, hypot, isfinite, pi, remainder, sin, sqrt
 from typing import Callable
 
 from lapsim.courses.spatial_track import SpatialTrack
@@ -31,6 +31,9 @@ _MAX_POSE_CELL_LENGTH_M = 0.5
 _MAX_SPEED_PREVIEW_M = 60.0
 _MAX_SPEED_PREVIEW_SAMPLES = 120
 _MAX_STEERING_LOOKAHEAD_M = 30.0
+_POLYLINE_PREVIEW_SPAN_M = 0.5
+_REFERENCE_GEOMETRIES = ("coherent_arcs", "sampled_polyline")
+_MAX_POSE_CELLS = 100_000
 
 
 def synthetic_pose_vehicle() -> PlanarVehicleConfig:
@@ -77,8 +80,12 @@ class PoseDriverSettings:
     drive_gain_nm_per_mps: float = 40.0
     brake_gain_nm_per_mps: float = 35.0
     local_projection_window_m: float = 12.0
+    reference_geometry: str = "coherent_arcs"
 
     def __post_init__(self) -> None:
+        if (type(self.reference_geometry) is not str or
+                self.reference_geometry not in _REFERENCE_GEOMETRIES):
+            raise ValueError("reference_geometry must be coherent_arcs or sampled_polyline")
         positive = (
             "output_step_s", "target_progress_m", "maximum_simulated_time_s",
             "assumed_half_width_m", "vehicle_width_m", "initial_speed_mps",
@@ -208,6 +215,89 @@ class _Projection:
     station_m: float
     cross_track_m: float
     heading_rad: float
+
+
+def _validate_sampled_polyline(track: SpatialTrack) -> None:
+    """Gate an opt-in polygon reference, independently of solver arc curvature.
+
+    The cells must be saved as x/y chords with matching station increments.
+    This does not establish a surveyed corridor or exclude nonlocal crossings;
+    the AI planner performs its own separate candidate-path audit.
+    """
+
+    if not track.closed or track.cell_count < 3:
+        raise ValueError("sampled polyline requires a closed path with at least three cells")
+    if track.cell_count > _MAX_POSE_CELLS:
+        raise ValueError("sampled polyline exceeds the 100000-cell compute cap")
+    if hypot(track.x_m[-1] - track.x_m[0],
+             track.y_m[-1] - track.y_m[0]) > 1e-6:
+        raise ValueError("sampled polyline has a closed endpoint mismatch")
+    first: tuple[float, float] | None = None
+    previous: tuple[float, float] | None = None
+    chord_lengths_m: list[float] = []
+    for index, station_length_m in enumerate(track.cell_length_m):
+        dx = track.x_m[index + 1] - track.x_m[index]
+        dy = track.y_m[index + 1] - track.y_m[index]
+        chord_m = hypot(dx, dy)
+        if not isfinite(chord_m) or chord_m < 1e-5:
+            raise ValueError(f"sampled polyline cell {index} has a degenerate chord")
+        if abs(chord_m - station_length_m) > max(1e-6, 1e-8 * station_length_m):
+            raise ValueError(f"sampled polyline cell {index} has a station/chord mismatch")
+        chord_lengths_m.append(chord_m)
+        direction = (dx / chord_m, dy / chord_m)
+        if previous is not None and (
+            previous[0] * direction[0] + previous[1] * direction[1] < -1.0 + 1e-8
+        ):
+            raise ValueError(f"sampled polyline folds back at cell {index}")
+        first = direction if first is None else first
+        previous = direction
+    if previous is not None and first is not None and (
+        previous[0] * first[0] + previous[1] * first[1] < -1.0 + 1e-8
+    ):
+        raise ValueError("sampled polyline folds back at the closed seam")
+    if abs(fsum(chord_lengths_m) - track.length_m) > max(1e-5, 1e-8 * track.length_m):
+        raise ValueError("sampled polyline total station/chord length mismatch")
+
+
+def _reference_start_heading(track: SpatialTrack, settings: PoseDriverSettings) -> float:
+    first_chord_heading = atan2(
+        track.y_m[1] - track.y_m[0], track.x_m[1] - track.x_m[0],
+    )
+    if settings.reference_geometry == "sampled_polyline":
+        return first_chord_heading
+    return first_chord_heading - (
+        track.curvature_per_m[0] * track.cell_length_m[0] / 2.0
+    )
+
+
+def _polyline_preview_curvature(
+    track: SpatialTrack, station_m: float, cell: int,
+) -> float:
+    """Estimate local polygon bend over a fixed physical preview span.
+
+    Subdividing an unchanged x/y polygon inserts collinear vertices. A turn
+    divided by *adjacent cell length* then grows as the grid gets finer, so
+    preview speed changes without a path change. Chord headings measured at
+    fixed stations are invariant to that subdivision. This remains a bounded
+    speed-control heuristic, not finite point curvature at a sharp corner.
+    """
+
+    span_m = min(_POLYLINE_PREVIEW_SPAN_M, track.length_m / 8.0)
+    before_x, before_y = _path_point(track, station_m - span_m)
+    center_x, center_y = _path_point(track, station_m)
+    after_x, after_y = _path_point(track, station_m + span_m)
+    before_dx, before_dy = center_x - before_x, center_y - before_y
+    after_dx, after_dy = after_x - center_x, after_y - center_y
+    if min(hypot(before_dx, before_dy), hypot(after_dx, after_dy)) < 1e-9:
+        # A folded local chord has undefined heading. Request a slow preview
+        # instead of treating atan2(0, 0) as a trustworthy straight path.
+        return max(abs(track.curvature_per_m[cell]), pi / span_m)
+    before_heading = atan2(before_dy, before_dx)
+    after_heading = atan2(after_dy, after_dx)
+    return max(
+        abs(track.curvature_per_m[cell]),
+        abs(remainder(after_heading - before_heading, 2.0 * pi)) / span_m,
+    )
 
 
 def _path_point(track: SpatialTrack, station_m: float) -> tuple[float, float]:
@@ -349,7 +439,12 @@ def _preview_speed_target(
             for road_sample in (environment.road.query(x, y) for x, y in road_points)
         )
         minimum_grip = min(minimum_grip, grip)
-        samples.append((distance_ahead_m, abs(track.curvature_per_m[cell]), grip))
+        curvature_per_m = (
+            _polyline_preview_curvature(track, sample_station_m, cell)
+            if settings.reference_geometry == "sampled_polyline"
+            else abs(track.curvature_per_m[cell])
+        )
+        samples.append((distance_ahead_m, curvature_per_m, grip))
 
     # Reserve a fraction of the friction estimate for simultaneous steering
     # and model error. Maximum wheel brake torque gives a separate upper bound
@@ -547,33 +642,34 @@ def run_pose_driver(
     """
 
     course = load_course(SYNTHETIC_DEMO_COURSE_ID) if track is None else track
+    options = PoseDriverSettings() if settings is None else settings
+    if not isinstance(options, PoseDriverSettings):
+        raise TypeError("settings must be PoseDriverSettings")
     if not course.closed:
-        raise ValueError("pose driver requires a closed coherent course")
+        raise ValueError("pose driver requires a closed course")
     # The controller, road preview, and footprint use short x/y chords.
     # Subdivide coarse source arcs analytically so a valid long turn does not
     # cut across its interior. Allow roundoff at the shipped 0.5 m cell size
     # to preserve that track bitwise; SpatialTrack caps actual refinement.
-    if max(course.cell_length_m) > _MAX_POSE_CELL_LENGTH_M + 1e-9:
+    if options.reference_geometry == "sampled_polyline":
+        _validate_sampled_polyline(course)
+        if max(course.cell_length_m) > _MAX_POSE_CELL_LENGTH_M + 1e-9:
+            course = course.refine(_MAX_POSE_CELL_LENGTH_M)
+            _validate_sampled_polyline(course)
+    elif max(course.cell_length_m) > _MAX_POSE_CELL_LENGTH_M + 1e-9:
         course = course.refine_arcs(_MAX_POSE_CELL_LENGTH_M)
     else:
         course.validate_coherent_arcs()
     car = synthetic_pose_vehicle() if vehicle_config is None else vehicle_config
     conditions = PlanarEnvironment() if environment is None else environment
-    options = PoseDriverSettings() if settings is None else settings
     if not isinstance(car, PlanarVehicleConfig):
         raise TypeError("vehicle_config must be PlanarVehicleConfig")
     if not isinstance(conditions, PlanarEnvironment):
         raise TypeError("environment must be PlanarEnvironment")
-    if not isinstance(options, PoseDriverSettings):
-        raise TypeError("settings must be PoseDriverSettings")
     if options.target_progress_m > course.length_m:
         raise ValueError("target progress cannot exceed one course lap")
 
-    first_dx = course.x_m[1] - course.x_m[0]
-    first_dy = course.y_m[1] - course.y_m[0]
-    start_heading = atan2(first_dy, first_dx) - (
-        course.curvature_per_m[0] * course.cell_length_m[0] / 2.0
-    )
+    start_heading = _reference_start_heading(course, options)
     wheel_speed = options.initial_speed_mps / car.wheel_radius_m
     initial = PlanarState(
         x_m=course.x_m[0] - sin(start_heading) * options.initial_lateral_offset_m,
@@ -701,6 +797,10 @@ def replay_pose_driver(
         raise ValueError("recorded controls, states, times, and samples are not aligned")
     if len(run.controls) > run.settings.maximum_control_steps:
         raise ValueError("recorded controls exceed the declared step budget")
+    if run.settings.reference_geometry == "sampled_polyline":
+        _validate_sampled_polyline(run.track)
+    else:
+        run.track.validate_coherent_arcs()
     if run.times_s[-1] > run.settings.maximum_simulated_time_s + 1e-9:
         raise ValueError("recorded duration exceeds the declared time budget")
     simulator = PlanarSimulator(run.vehicle_config, run.states[0],

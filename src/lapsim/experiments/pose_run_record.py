@@ -14,7 +14,7 @@ from dataclasses import asdict, dataclass, field, fields
 from hashlib import sha256
 from importlib.metadata import PackageNotFoundError, version as distribution_version
 import json
-from math import atan2, cos, isclose, isfinite, sin
+from math import cos, isclose, isfinite, sin
 import os
 from pathlib import Path
 import platform
@@ -31,13 +31,14 @@ from lapsim.dynamics.planar import (
 )
 from lapsim.optimization.pose_driver import (
     PoseDriverRun, PoseDriverSample, PoseDriverSettings, PoseReplayReport,
-    replay_pose_driver,
+    _reference_start_heading, _validate_sampled_polyline, replay_pose_driver,
 )
 
 
-POSE_RUN_RECORD_SCHEMA_VERSION = 1
-POSE_CONTROLLER_ALGORITHM_ID = "synthetic_pose_preview_pure_pursuit_grip_edge_v1"
-POSE_CONTROLLER_ALGORITHM_VERSION = 1
+POSE_RUN_RECORD_SCHEMA_VERSION = 2
+POSE_CONTROLLER_ALGORITHM_ID = "synthetic_pose_preview_pure_pursuit_grip_edge_v2"
+POSE_CONTROLLER_ALGORITHM_VERSION = 2
+_LEGACY_POSE_CONTROLLER_ALGORITHM_ID = "synthetic_pose_preview_pure_pursuit_grip_edge_v1"
 _RECORD_TYPE = "synthetic_pose_driver"
 _MAX_RECORD_BYTES = 32 * 1024 * 1024
 _MAX_GRIP_PATCHES = 128
@@ -163,7 +164,7 @@ def _number_list(value: Any, label: str, *, length: int | None = None) -> tuple[
     return tuple(_number(item, label) for item in value)
 
 
-def _parse_track(value: Any) -> SpatialTrack:
+def _parse_track(value: Any, reference_geometry: str) -> SpatialTrack:
     data = _dataclass_mapping(value, SpatialTrack, "pose track")
     if type(data["closed"]) is not bool or not data["closed"]:
         raise ValueError("pose track must be closed")
@@ -185,7 +186,10 @@ def _parse_track(value: Any) -> SpatialTrack:
         curvature_per_m=_number_list(data["curvature_per_m"], "track curvature"),
         closed=data["closed"],
     )
-    track.validate_coherent_arcs()
+    if reference_geometry == "sampled_polyline":
+        _validate_sampled_polyline(track)
+    else:
+        track.validate_coherent_arcs()
     return track
 
 
@@ -236,13 +240,20 @@ def _parse_environment(value: Any) -> PlanarEnvironment:
     )
 
 
-def _parse_settings(value: Any) -> PoseDriverSettings:
-    data = _dataclass_mapping(value, PoseDriverSettings, "pose settings")
-    parsed: dict[str, float | int] = {}
+def _parse_settings(value: Any, schema_version: int) -> PoseDriverSettings:
+    expected = {item.name for item in fields(PoseDriverSettings)}
+    if schema_version == 1:
+        expected.remove("reference_geometry")
+    data = _mapping(value, expected, "pose settings")
+    parsed: dict[str, float | int | str] = {}
     for name, item in data.items():
         if name in ("maximum_control_steps", "maximum_internal_substeps"):
             if type(item) is not int:
                 raise ValueError(f"{name} must be an integer")
+            parsed[name] = item
+        elif name == "reference_geometry":
+            if type(item) is not str:
+                raise ValueError("reference_geometry must be text")
             parsed[name] = item
         else:
             parsed[name] = _number(item, name)
@@ -336,12 +347,9 @@ def _expected_initial_state(
     track: SpatialTrack, config: PlanarVehicleConfig,
     settings: PoseDriverSettings,
 ) -> PlanarState:
-    """Freeze version 1's explicit start-state construction for audit."""
+    """Recompute the declared reference geometry's explicit start state."""
 
-    start_heading = atan2(
-        track.y_m[1] - track.y_m[0],
-        track.x_m[1] - track.x_m[0],
-    ) - track.curvature_per_m[0] * track.cell_length_m[0] / 2.0
+    start_heading = _reference_start_heading(track, settings)
     wheel_speed = settings.initial_speed_mps / config.wheel_radius_m
     return PlanarState(
         x_m=track.x_m[0] - sin(start_heading) * settings.initial_lateral_offset_m,
@@ -397,7 +405,7 @@ def _run_from_payload(payload: dict[str, Any]) -> tuple[PoseDriverRun, PoseRepla
         "controller", "runtime", "inputs", "trace", "validity",
     }, "pose record")
     if (type(payload["schema_version"]) is not int or
-            payload["schema_version"] != POSE_RUN_RECORD_SCHEMA_VERSION or
+            payload["schema_version"] not in (1, POSE_RUN_RECORD_SCHEMA_VERSION) or
             payload["record_type"] != _RECORD_TYPE or
             payload["simulation_mode"] != "time_domain_four_wheel" or
             payload["evidence_level"] != "synthetic_model_estimate"):
@@ -406,9 +414,13 @@ def _run_from_payload(payload: dict[str, Any]) -> tuple[PoseDriverRun, PoseRepla
         payload["controller"], {"algorithm_id", "algorithm_version"},
         "controller identity",
     )
-    if (controller["algorithm_id"] != POSE_CONTROLLER_ALGORITHM_ID or
-            type(controller["algorithm_version"]) is not int or
-            controller["algorithm_version"] != POSE_CONTROLLER_ALGORITHM_VERSION):
+    expected_controller = (
+        (_LEGACY_POSE_CONTROLLER_ALGORITHM_ID, 1)
+        if payload["schema_version"] == 1 else
+        (POSE_CONTROLLER_ALGORITHM_ID, POSE_CONTROLLER_ALGORITHM_VERSION)
+    )
+    if (type(controller["algorithm_version"]) is not int or
+            (controller["algorithm_id"], controller["algorithm_version"]) != expected_controller):
         raise ValueError("unsupported pose-controller identity")
     _validate_runtime(payload["runtime"])
     validity = _mapping(
@@ -422,10 +434,10 @@ def _run_from_payload(payload: dict[str, Any]) -> tuple[PoseDriverRun, PoseRepla
         payload["inputs"], {"track", "vehicle_config", "environment", "settings"},
         "pose inputs",
     )
-    track = _parse_track(inputs["track"])
+    settings = _parse_settings(inputs["settings"], payload["schema_version"])
+    track = _parse_track(inputs["track"], settings.reference_geometry)
     config = _parse_vehicle(inputs["vehicle_config"])
     environment = _parse_environment(inputs["environment"])
-    settings = _parse_settings(inputs["settings"])
     if settings.target_progress_m > track.length_m:
         raise ValueError("target progress exceeds the saved course")
     trace = _mapping(payload["trace"], {

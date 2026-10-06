@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
-from math import isfinite
+from math import ceil, isfinite
 from pathlib import Path
 import queue
 import threading
@@ -20,6 +20,7 @@ from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
 
 from lapsim.courses.course_bundle import CourseBundle
+from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.dynamics.conditions import (
     PlanarEnvironment, PlanarRoad, RectangularGripPatch,
 )
@@ -93,6 +94,7 @@ POSE_DRIVER_NOTE = (
 )
 POSE_SCENARIO_UNIFORM = "Uniform base grip (1.0×)"
 POSE_SCENARIO_PATCH = "Assumed bend patch (0.3×)"
+POSE_PREVIEW_MAX_CELL_M = 0.5
 
 
 def _pose_preview_environment(scenario: str) -> PlanarEnvironment:
@@ -444,7 +446,14 @@ class LapSimDesktop:
         self.pose_offset_var = tk.StringVar(value="0.0")
         self.pose_offset_entry: tk.Entry | None = None
         self._active_pose_offset_m = 0.0
+        self._active_pose_grid_label = ""
+        self._active_pose_reference_label = "synthetic centerline (coherent arcs)"
+        self.pose_ai_availability = tk.StringVar(value=(
+            "Selected AI path preview requires an eligible candidate on the "
+            "synthetic demo course."
+        ))
         self.pose_preview_button: tk.Button | None = None
+        self.pose_ai_preview_button: tk.Button | None = None
         self.pose_save_button: tk.Button | None = None
         self.pose_load_button: tk.Button | None = None
         self._latest_pose_run: PoseDriverRun | None = None
@@ -1287,6 +1296,7 @@ class LapSimDesktop:
         self._set_driver_replay_options({}, selected="—")
         self._path_comparison = None
         self._selected_path_track = None
+        self._update_pose_ai_preview_availability()
         self._last_result = None
         self._set_displayed_run_records(())
         self._displayed_road_grip_multiplier = None
@@ -1696,7 +1706,25 @@ class LapSimDesktop:
         ).grid(row=7, column=0, sticky="ew", pady=(2, 3))
 
     def _build_timed_sessions_tab(self, parent: tk.Frame) -> None:
+        parent.grid_rowconfigure(0, weight=1)
         parent.grid_columnconfigure(0, weight=1)
+        canvas = tk.Canvas(parent, highlightthickness=0, bd=0)
+        canvas.grid(row=0, column=0, sticky="nsew")
+        scrollbar = tk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        content = tk.Frame(canvas)
+        content.grid_columnconfigure(0, weight=1)
+        content_window = canvas.create_window((0, 0), window=content, anchor="nw")
+        content.bind(
+            "<Configure>",
+            lambda _event: canvas.configure(scrollregion=canvas.bbox("all")),
+        )
+        canvas.bind(
+            "<Configure>",
+            lambda event: canvas.itemconfigure(content_window, width=event.width),
+        )
+        parent = content
         tk.Label(
             parent,
             text="Timed sessions and ghost · Work in Progress",
@@ -1754,7 +1782,11 @@ class LapSimDesktop:
                 "four-wheel car. Steering and speed react to modeled pose and "
                 "local grip. This separate model has no battery, motor, thermal "
                 "system, ghost, or Formula SAE timed-lap result. The 3 m half-width "
-                "is an assumption, not measured cone clearance."
+                "is an assumption, not measured cone clearance. It uses "
+                "Cell size (max) from Calculate; requests above 0.5 m keep the "
+                "finer synthetic source grid. An eligible selected AI path can "
+                "also be tracked for 80 m by this separate synthetic car; the "
+                "pose road condition below is selected independently."
             ),
             justify="left", anchor="w", wraplength=760, font=FONT,
         ).grid(row=6, column=0, sticky="ew", pady=(0, 9))
@@ -1805,14 +1837,30 @@ class LapSimDesktop:
             command=self._load_pose_record, relief="raised", bd=1,
         )
         self.pose_load_button.pack(side="left", padx=(8, 0))
+        self.pose_ai_preview_button = tk.Button(
+            parent, text="Preview selected AI path (80 m)",
+            command=lambda: self._start_pose_preview(use_selected_ai_path=True),
+            state="disabled", relief="raised", bd=1,
+        )
+        self.pose_ai_preview_button.grid(row=10, column=0, sticky="w", pady=(7, 0))
+        tk.Label(
+            parent, textvariable=self.pose_ai_availability,
+            justify="left", anchor="w", wraplength=760, font=FONT,
+        ).grid(row=11, column=0, sticky="ew", pady=(4, 0))
         tk.Label(
             parent, textvariable=self.pose_preview_status,
             justify="left", anchor="w", wraplength=760, font=FONT,
-        ).grid(row=10, column=0, sticky="ew", pady=(8, 0))
+        ).grid(row=12, column=0, sticky="ew", pady=(8, 0))
         tk.Label(
             parent, textvariable=self.pose_record_status,
             justify="left", anchor="w", wraplength=760, font=FONT,
-        ).grid(row=11, column=0, sticky="ew", pady=(4, 0))
+        ).grid(row=13, column=0, sticky="ew", pady=(4, 0))
+        for widget in (canvas, content, *self._walk_widgets(content)):
+            widget.bind(
+                "<MouseWheel>",
+                lambda event: canvas.yview_scroll(-int(event.delta / 120), "units"),
+            )
+        self._update_pose_ai_preview_availability()
 
     def _on_pose_scenario_change(self) -> None:
         if self.run_in_progress:
@@ -1846,6 +1894,89 @@ class LapSimDesktop:
             )
         return offset_m
 
+    def _eligible_selected_ai_pose_track(self) -> SpatialTrack | None:
+        """Only a ranked, completed candidate on the demo can enter pose mode."""
+
+        if (
+            self.course_spec.course_id != SYNTHETIC_DEMO_COURSE_ID
+            or not self._ai_mode_selected()
+            or self._path_comparison is None
+            or not isinstance(self._selected_path_track, SpatialTrack)
+        ):
+            return None
+        comparison = self._path_comparison[1]
+        if (
+            comparison.rank_status != "candidate_selected"
+            or comparison.selected_mode != "candidate"
+            or comparison.baseline_time_s is None
+            or comparison.candidate_time_s is None
+            or comparison.candidate_run is None
+            or not comparison.candidate_run.completed
+            or comparison.candidate_path_audit is None
+            or not comparison.candidate_path_audit.valid
+            or comparison.candidate_track != self._selected_path_track
+        ):
+            return None
+        return self._selected_path_track
+
+    def _update_pose_ai_preview_availability(self) -> None:
+        selected = self._eligible_selected_ai_pose_track()
+        if self.pose_ai_preview_button is not None:
+            self.pose_ai_preview_button.configure(
+                state="normal" if selected is not None and not self.run_in_progress
+                else "disabled",
+            )
+        if self.course_spec.course_id != SYNTHETIC_DEMO_COURSE_ID:
+            message = "Selected AI path preview is available only on Synthetic loop · AI demo."
+        elif not self._ai_mode_selected():
+            message = "Select AI racing line and run it to unlock the selected-path preview."
+        elif selected is None:
+            message = (
+                "Run AI racing line on this course. Only an eligible, faster "
+                "selected candidate unlocks this preview; diagnostic paths do not."
+            )
+        else:
+            message = (
+                "Eligible selected AI path ready for an 80 m synthetic-car pose "
+                "preview. Its pose-model time is separate from the lap comparison."
+            )
+        self.pose_ai_availability.set(message)
+
+    def _read_pose_grid(
+        self, selected_ai_track: SpatialTrack | None = None,
+    ) -> tuple[float, SpatialTrack]:
+        """Freeze a safe synthetic or sampled-path grid from the shared entry."""
+
+        try:
+            requested_m = float(self.inputs["solver_step_m"].get())
+        except ValueError as error:
+            raise ValueError("Cell size (max) must be a finite number in meters") from error
+        if not isfinite(requested_m) or requested_m <= 0.0:
+            raise ValueError("Cell size (max) must be finite and above 0 m")
+        if selected_ai_track is not None:
+            target_m = min(requested_m, POSE_PREVIEW_MAX_CELL_M)
+            cell_count = 0
+            for length_m in selected_ai_track.cell_length_m:
+                ratio = length_m / target_m
+                if not isfinite(ratio) or ratio > 5000 - cell_count:
+                    raise ValueError(
+                        "Pose preview Cell size (max) exceeds the 5,000-cell compute cap"
+                    )
+                cell_count += ceil(ratio)
+            return requested_m, selected_ai_track.refine(target_m)
+        source = load_course(SYNTHETIC_DEMO_COURSE_ID)
+        try:
+            track = solver_track_for_course(
+                SYNTHETIC_DEMO_COURSE_ID, source, requested_m,
+            )
+        except ValueError as error:
+            if "5000-cell" in str(error):
+                raise ValueError(
+                    "Pose preview Cell size (max) exceeds the 5,000-cell compute cap"
+                ) from error
+            raise
+        return requested_m, track
+
     def _on_pose_offset_change(self) -> None:
         if self.run_in_progress:
             if self.pose_offset_var.get() != f"{self._active_pose_offset_m:g}":
@@ -1868,6 +1999,8 @@ class LapSimDesktop:
         if not isinstance(self.driver_playback,
                           (PoseDriverPlayback, PoseDriverLivePlayback)):
             return
+        self._active_pose_grid_label = ""
+        self._active_pose_reference_label = "synthetic centerline (coherent arcs)"
         self._pause_driver_playback()
         self.driver_playback = None
         self._driver_live_mode = False
@@ -1941,10 +2074,24 @@ class LapSimDesktop:
             label.configure(text=title)
 
     def _active_pose_description(self) -> str:
-        return (
+        description = (
             f"{self._active_pose_scenario} · "
-            f"initial offset {self._active_pose_offset_m:+.2f} m"
+            f"initial offset {self._active_pose_offset_m:+.2f} m · "
+            f"reference {self._active_pose_reference_label}"
         )
+        if self._active_pose_grid_label:
+            description += f" · {self._active_pose_grid_label}"
+        return description
+
+    @staticmethod
+    def _pose_reference_note(reference_geometry: str) -> str:
+        if reference_geometry == "sampled_polyline":
+            return (
+                "Sampled AI-style path reference, driven for 80 m by a separate "
+                "synthetic car and controller. Its pose-model time is not a "
+                "Prius, TREV, or Formula SAE lap time. " + POSE_DRIVER_NOTE
+            )
+        return POSE_DRIVER_NOTE
 
     def _activate_pose_preview(self, run: PoseDriverRun) -> None:
         """Show simulated pose while keeping its model separate from lap results."""
@@ -1957,13 +2104,18 @@ class LapSimDesktop:
         self._driver_preview_track = None
         self._driver_live_update_serial += 1
         self._driver_playback_time_s = 0.0
-        self.driver_note_var.set(POSE_DRIVER_NOTE)
+        self.driver_note_var.set(
+            self._pose_reference_note(
+                getattr(run.settings, "reference_geometry", "coherent_arcs"),
+            )
+        )
         self._set_driver_box_mode(pose=True)
         self.driver_decision_title.set("Pose model · recorded controls and tracking values")
         self.driver_playback = PoseDriverPlayback(run)
         self.driver_run_label.set(
             f"Synthetic pose model · {self._active_pose_description()} · {run.status} · "
-            f"{run.samples[-1].progress_m:.1f} m / {run.settings.target_progress_m:.0f} m"
+            f"{run.samples[-1].progress_m:.1f} m / {run.settings.target_progress_m:.0f} m · "
+            f"{run.elapsed_pose_model_time_s:.2f} s pose-model time"
         )
         if self.driver_play_button is not None:
             self.driver_play_button.configure(state="normal")
@@ -2621,13 +2773,17 @@ class LapSimDesktop:
             return
         if not self.run_in_progress and self._calculation_progress_mode in {"complete", "stopped"}:
             self._set_calculation_progress("idle", "Inputs changed · run again")
-        if self.run_in_progress or (not force and not any((
+        if self.run_in_progress:
+            return
+        self._active_pose_grid_label = ""
+        self._active_pose_reference_label = "synthetic centerline (coherent arcs)"
+        if not force and not any((
             self._last_result is not None,
             self._comparison_results is not None,
             self._path_comparison is not None,
             self.driver_playback is not None,
             bool(self._displayed_run_records),
-        ))):
+        )):
             return
         self._pause_driver_playback()
         self.driver_playback = None
@@ -2643,6 +2799,7 @@ class LapSimDesktop:
         self._path_comparison = None
         self._selected_path_track = None
         self._set_driver_replay_options({}, selected="—")
+        self._update_pose_ai_preview_availability()
         self._driver_playback_time_s = 0.0
         self.driver_progress_var.set(0.0)
         self.driver_progress.configure(state="disabled")
@@ -2719,6 +2876,7 @@ class LapSimDesktop:
         if not self._ai_mode_selected() and self.ai_output_box is not None:
             self.ai_output_box.pack_forget()
         self._update_cell_count_hint()
+        self._update_pose_ai_preview_availability()
 
     def _read_ai_road(self) -> PlanarRoad | None:
         """Read one explicit assumed rectangle; None retains uniform physics."""
@@ -2776,6 +2934,11 @@ class LapSimDesktop:
         self.run_button.configure(state=state)
         if self.pose_preview_button is not None:
             self.pose_preview_button.configure(state=state)
+        if self.pose_ai_preview_button is not None:
+            self.pose_ai_preview_button.configure(
+                state=state if self._eligible_selected_ai_pose_track() is not None
+                else "disabled",
+            )
         if self.pose_save_button is not None:
             self.pose_save_button.configure(
                 state="disabled" if busy or self._latest_pose_run is None else "normal"
@@ -2825,6 +2988,7 @@ class LapSimDesktop:
         self._comparison_results = None
         self._selected_path_track = None
         self._path_comparison = None
+        self._update_pose_ai_preview_availability()
         if self.ai_compare_button is not None:
             self.ai_compare_button.configure(state="disabled")
         self._draw_plots(preserve_course_view=True)
@@ -3074,21 +3238,44 @@ class LapSimDesktop:
 
         DynamicsLab(self.root, dark=self.is_dark.get())
 
-    def _start_pose_preview(self) -> None:
+    def _start_pose_preview(self, *, use_selected_ai_path: bool = False) -> None:
         """Run a bounded synthetic control experiment outside the lap model."""
 
         if self.run_in_progress:
+            return
+        selected_ai_track = (
+            self._eligible_selected_ai_pose_track() if use_selected_ai_path else None
+        )
+        if use_selected_ai_path and selected_ai_track is None:
+            self._update_pose_ai_preview_availability()
+            messagebox.showerror(
+                "Selected AI path unavailable", self.pose_ai_availability.get(),
+                parent=self.root,
+            )
             return
         scenario = self.pose_scenario_var.get()
         if scenario not in (POSE_SCENARIO_UNIFORM, POSE_SCENARIO_PATCH):
             raise ValueError(f"Unknown synthetic pose scenario: {scenario!r}")
         try:
             offset_m = self._read_pose_offset_m()
+            requested_cell_m, pose_track = self._read_pose_grid(selected_ai_track)
         except ValueError as error:
-            messagebox.showerror("Check pose preview offset", str(error), parent=self.root)
+            messagebox.showerror("Check pose preview inputs", str(error), parent=self.root)
             return
+        reference_geometry = (
+            "sampled_polyline" if use_selected_ai_path else "coherent_arcs"
+        )
         self._active_pose_scenario = scenario
         self._active_pose_offset_m = offset_m
+        self._active_pose_reference_label = (
+            "eligible selected AI path (sampled polyline)"
+            if use_selected_ai_path else "synthetic centerline (coherent arcs)"
+        )
+        self._active_pose_grid_label = (
+            f"requested Cell size (max) {requested_cell_m:g} m · "
+            f"effective pose grid {pose_track.cell_count:,} cells, "
+            f"max {max(pose_track.cell_length_m):.3g} m"
+        )
         self._latest_pose_run = None
         self.pose_record_status.set("Current synthetic trace has not been saved.")
         description = self._active_pose_description()
@@ -3105,7 +3292,7 @@ class LapSimDesktop:
         self._driver_stream_active = True
         self._driver_preview_track = None
         self._driver_live_update_serial += 1
-        self.driver_note_var.set(POSE_DRIVER_NOTE)
+        self.driver_note_var.set(self._pose_reference_note(reference_geometry))
         self._set_driver_box_mode(pose=True)
         self.driver_decision_title.set("Live pose and tracking · controls after replay")
         self.driver_run_label.set(
@@ -3131,12 +3318,17 @@ class LapSimDesktop:
         self._switch_tab("Driver view")
         self._draw_driver_view()
         threading.Thread(
-            target=self._calculate_pose_preview, args=(scenario, offset_m), daemon=True,
+            target=self._calculate_pose_preview,
+            args=(scenario, offset_m, pose_track, reference_geometry), daemon=True,
         ).start()
 
-    def _calculate_pose_preview(self, scenario: str, offset_m: float) -> None:
+    def _calculate_pose_preview(
+        self, scenario: str, offset_m: float, track: SpatialTrack | None = None,
+        reference_geometry: str = "coherent_arcs",
+    ) -> None:
         try:
-            track = load_course(SYNTHETIC_DEMO_COURSE_ID)
+            if track is None:
+                track = load_course(SYNTHETIC_DEMO_COURSE_ID)
             environment = _pose_preview_environment(scenario)
 
             def on_progress(sample: PoseDriverSample, state: PlanarState) -> None:
@@ -3155,7 +3347,10 @@ class LapSimDesktop:
 
             run = run_pose_driver(
                 track=track, environment=environment,
-                settings=PoseDriverSettings(initial_lateral_offset_m=offset_m),
+                settings=PoseDriverSettings(
+                    initial_lateral_offset_m=offset_m,
+                    reference_geometry=reference_geometry,
+                ),
                 progress_callback=on_progress,
             )
             self.result_queue.put(("pose_preview", run, None))
@@ -3239,14 +3434,16 @@ class LapSimDesktop:
             "determinate",
             f"Synthetic pose preview · {self._active_pose_description()} · "
             f"{sample.progress_m:.1f}/{target_m:.0f} m "
-            f"({fraction:.0%} of target distance)",
+            f"({fraction:.0%} of target distance) · "
+            f"{sample.time_s:.2f} s pose-model time",
             fraction=fraction,
         )
         self.driver_playback = PoseDriverLivePlayback(track, sample, state)
         self._driver_playback_time_s = sample.time_s
         self.driver_run_label.set(
             f"Synthetic pose model · {self._active_pose_description()} · live · "
-            f"{sample.progress_m:.1f}/{target_m:.0f} m"
+            f"{sample.progress_m:.1f}/{target_m:.0f} m · "
+            f"{sample.time_s:.2f} s pose-model time"
         )
         self._render_driver_frame()
 
@@ -4020,6 +4217,20 @@ class LapSimDesktop:
                 self.pose_offset_var.set(f"{run.settings.initial_lateral_offset_m:g}")
                 self._active_pose_scenario = scenario
                 self._active_pose_offset_m = run.settings.initial_lateral_offset_m
+                reference_geometry = getattr(
+                    run.settings, "reference_geometry", "coherent_arcs",
+                )
+                self._active_pose_reference_label = (
+                    "recorded sampled polyline"
+                    if reference_geometry == "sampled_polyline" else
+                    "synthetic centerline (coherent arcs)"
+                )
+                recorded_track = getattr(run, "track", None)
+                self._active_pose_grid_label = (
+                    f"recorded pose grid {recorded_track.cell_count:,} cells, "
+                    f"max {max(recorded_track.cell_length_m):.3g} m"
+                    if isinstance(recorded_track, SpatialTrack) else ""
+                )
                 self._set_calculation_progress(
                     "complete", "Synthetic pose trace loaded and replay checked",
                     fraction=1.0,
@@ -4047,7 +4258,9 @@ class LapSimDesktop:
                     self._driver_preview_track = None
                     self._driver_live_update_serial += 1
                     self._driver_playback_time_s = 0.0
-                    self.driver_note_var.set(POSE_DRIVER_NOTE)
+                    self.driver_note_var.set(
+                        self._pose_reference_note(reference_geometry)
+                    )
                     self._set_driver_box_mode(pose=True)
                     self.driver_decision_title.set("Pose model · no driven controls")
                     self.driver_progress_var.set(0.0)
@@ -4488,6 +4701,7 @@ class LapSimDesktop:
                 f"assumed grip {road_grip_multiplier * 100:g}% · "
                 f"saved A {run_ids[0][:10]}, B {run_ids[1][:10]}"
             )
+        self._update_pose_ai_preview_availability()
         self._schedule_after(100, self._poll_result)
 
     def _show_result(self, result: Any, *, track_length_m: float | None = None) -> None:

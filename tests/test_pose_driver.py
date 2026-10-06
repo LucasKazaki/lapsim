@@ -3,6 +3,7 @@
 from dataclasses import replace
 from math import cos, pi, sin
 
+import numpy as np
 import pytest
 
 from lapsim.courses.spatial_track import SpatialTrack
@@ -14,6 +15,9 @@ from lapsim.dynamics.conditions import (
     RoadDomain,
 )
 import lapsim.optimization.pose_driver as pose_driver
+from lapsim.optimization.racing_line import (
+    RacingLinePlanner, TrackCorridor, _track_from_closed_points,
+)
 from lapsim.optimization.pose_driver import (
     PoseDriverSettings,
     replay_pose_driver,
@@ -499,6 +503,97 @@ def test_pose_driver_preserves_default_fine_grid_identity():
     ))
     assert run.track is source
     assert replay_pose_driver(run).passed
+
+
+def _sampled_demo_polyline() -> SpatialTrack:
+    course = load_course(SYNTHETIC_DEMO_COURSE_ID)
+    return _track_from_closed_points(
+        np.asarray(course.x_m[:-1:2]), np.asarray(course.y_m[:-1:2]),
+    )
+
+
+def test_sampled_polyline_is_explicit_and_replayable():
+    path = _sampled_demo_polyline()
+    with pytest.raises(ValueError, match="arc chord mismatch"):
+        run_pose_driver(path, settings=replace(
+            PoseDriverSettings(), maximum_control_steps=1,
+        ))
+
+    settings = replace(
+        PoseDriverSettings(), reference_geometry="sampled_polyline",
+        target_progress_m=20.0,
+    )
+    run = run_pose_driver(path, settings=settings)
+    assert run.completed
+    assert run.track.cell_count > path.cell_count
+    assert max(run.track.cell_length_m) <= 0.5 + 1e-9
+    assert run.states[0].heading_rad == pytest.approx(
+        pose_driver.atan2(
+            run.track.y_m[1] - run.track.y_m[0],
+            run.track.x_m[1] - run.track.x_m[0],
+        )
+    )
+    assert run.internal_substeps <= settings.maximum_internal_substeps
+    assert replay_pose_driver(run).passed
+
+
+def test_sampled_polyline_rejects_bad_saved_geometry():
+    path = _sampled_demo_polyline()
+    settings = replace(PoseDriverSettings(), reference_geometry="sampled_polyline")
+    station = list(path.distance_m)
+    station[1] += 0.01
+    with pytest.raises(ValueError, match="station/chord mismatch"):
+        run_pose_driver(replace(path, distance_m=tuple(station)), settings=settings)
+
+    x = list(path.x_m)
+    x[-1] += 0.01
+    with pytest.raises(ValueError, match="closed endpoint mismatch"):
+        run_pose_driver(replace(path, x_m=tuple(x)), settings=settings)
+
+    x = list(path.x_m)
+    y = list(path.y_m)
+    x[1], y[1] = x[0], y[0]
+    with pytest.raises(ValueError, match="degenerate chord"):
+        run_pose_driver(replace(path, x_m=tuple(x), y_m=tuple(y)), settings=settings)
+
+    with pytest.raises(ValueError, match="reference_geometry"):
+        replace(PoseDriverSettings(), reference_geometry="unsupported")
+
+
+def test_polyline_speed_preview_is_stable_under_collinear_refinement():
+    source = load_course(SYNTHETIC_DEMO_COURSE_ID)
+    corridor = TrackCorridor.constant(
+        source, left_width_m=3.0, right_width_m=3.0,
+        vehicle_width_m=1.8, safety_margin_m=0.2,
+        source="assumed synthetic demonstration corridor",
+    )
+    plan = RacingLinePlanner(maximum_cell_length_m=1.0).plan(source, corridor)
+    assert plan.status == "candidate"
+    polygon = plan.candidate_track
+    half_meter = polygon.refine(0.5)
+    quarter_meter = polygon.refine(0.25)
+    settings = replace(PoseDriverSettings(), reference_geometry="sampled_polyline")
+    preview_settings = replace(settings, cruise_speed_mps=8.0)
+    preview_stations_m = (35.0, 40.0, 45.0, 50.0, 55.0, 80.0)
+    preview_by_grid = tuple(tuple(
+        pose_driver._preview_speed_target(
+            path, pose_driver.synthetic_pose_vehicle(), PlanarEnvironment(),
+            preview_settings, station_m, 8.0, 1.0,
+        )
+        for station_m in preview_stations_m
+    ) for path in (half_meter, quarter_meter))
+    assert min(preview_by_grid[0]) < 7.0  # the bend limit is active
+    assert preview_by_grid[0] == pytest.approx(preview_by_grid[1], abs=1e-8)
+
+    half_run = run_pose_driver(half_meter, settings=settings)
+    quarter_run = run_pose_driver(quarter_meter, settings=settings)
+    assert half_run.completed and quarter_run.completed
+    # The controller samples on a 0.05 s grid, so agreement within one
+    # output interval is the meaningful duration tolerance.
+    assert abs(half_run.elapsed_pose_model_time_s -
+               quarter_run.elapsed_pose_model_time_s) <= settings.output_step_s + 1e-9
+    assert replay_pose_driver(half_run).passed
+    assert replay_pose_driver(quarter_run).passed
 
 
 def test_pose_driver_rejects_refinement_above_cell_budget():

@@ -374,17 +374,45 @@ window rather than only cells whose midpoints fall inside it. It considers
 the overlapping closed-lap copies needed at the seam and clips the
 projected point to the window, so a long cell or the seam does not
 disappear from the search.
-Before driving, a coherent source with cells longer than **0.5 m** is
+By default, a coherent source with cells longer than **0.5 m** is
 validated and analytically subdivided with `SpatialTrack.refine_arcs(0.5)`;
 this keeps source boundaries and exact straight/circular-arc geometry under
-the **100,000-cell** refinement cap. The shipped 0.5 m source is retained
-unchanged. The controller still projects to short **x/y chords** and checks
+the **100,000-cell** refinement cap. The desktop pose preview also reads
+**Cell size (max)** from Calculate: finer requests analytically subdivide
+the shipped 0.5 m source before the worker starts, while coarser requests
+retain the finer source. The requested and effective grid are displayed,
+and the desktop refuses more than 5,000 pose cells. The controller still
+projects to short **x/y chords** and checks
 the axle-span body corners only at output samples; this is not continuous
-geometry or swept-body clearance.
+geometry or swept-body clearance. An explicit `sampled_polyline` reference
+mode can instead follow the AI planner's closed x/y polygon. It validates
+nondegenerate chord/station geometry, subdivides long chords without
+changing their source vertices, and estimates bend severity from chord
+headings one fixed metric interval before and after each speed-preview
+station. The fixed window avoids changing its corner estimate merely by
+inserting collinear solver cells. This mode is a separate
+synthetic pose experiment; it does not make the main distance-domain AI lap
+a tracked car trajectory or a measured-corridor result.
 
-`PoseRunRecord.capture(run)` writes a separate **schema-v1 synthetic pose
+The WIP desktop keeps the coherent 80 m pose preview as its default. After
+the synthetic demo course produces an eligible, faster selected AI candidate,
+an additional button can drive that exact selected polygon for 80 m with
+the separate synthetic four-wheel car. An audit-failed, unranked, or slower
+candidate does not unlock it. The path is frozen and subdivided to the
+smaller of the entered Cell size (max) and 0.5 m under a 5,000-cell UI cap;
+the saved pose trace records its sampled-polyline mode. The selected
+Prius/TREV vehicle does not become the pose car, and the WIP road scenario
+is independent of any main AI trial grip schedule. A planner-produced
+206-cell synthetic candidate reached 80.1475 m in 14.75 s of pose-model
+time with 0.17404 m maximum absolute tracking error and 1.70328 m minimum
+sampled assumed footprint slack. Recorded-control replay and schema-v2
+save/load passed. These are synthetic tracking diagnostics, not a measured
+racing-line gain or full Formula SAE lap.
+
+`PoseRunRecord.capture(run)` writes a separate **schema-v2 synthetic pose
 record** through `save(path)`; `PoseRunRecord.load(path)` reconstructs and
-checks it. It freezes the exact processed track, synthetic car, road and
+checks it. It freezes the exact processed track, reference-geometry mode,
+synthetic car, road and
 patches, settings and controller identity, held controls, every boundary
 time/state, pre-step dynamics evaluations, pose samples, status, and runtime
 and source identity. A SHA-256 content ID detects content changes unless
@@ -397,7 +425,8 @@ standard closeness rule; evaluation field names, array lengths, material
 IDs, and other discrete values must match exactly. Pose states and path
 diagnostics keep their separate `PoseReplayTolerances` gate. A stopped
 trace with zero controls is valid if its initial status and samples agree.
-The WIP tab's
+Earlier schema-v1 coherent-arc records remain loadable with the original
+controller identity and default mode. The WIP tab's
 **Save last synthetic trace…** and **Load synthetic trace…** controls do this
 work in a worker and show loaded trace playback. This archive is isolated
 from v2 endurance-lap records and cannot be ranked as a full timed session

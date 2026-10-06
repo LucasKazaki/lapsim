@@ -136,9 +136,11 @@ coarser request therefore does not reduce a coherent source's solver-cell
 count. Imported courses have the same 5,000-cell guard. This gate checks a
 numerical solver representation; it does not establish
 a surveyed track or measured left/right boundaries.
-The separate WIP pose preview instead retains or analytically refines its
-coherent course to at most 0.5 m cells; it does not read the main-lap
-**Cell size (max)** box.
+The separate WIP pose preview reads **Cell size (max)** when it starts,
+then freezes its own coherent synthetic grid. Requests finer than its 0.5 m
+source analytically subdivide the source arcs; coarser requests retain the
+finer source. Its run labels show the requested maximum and effective cell
+count. A request exceeding 5,000 pose cells is rejected before launch.
 
 The numeric outputs are lap time, peak speed, average speed, distance, net
 equivalent-pack energy, peak lateral acceleration in g, and lap entry/exit
@@ -420,6 +422,17 @@ cases also completed without it, so these runs do not establish improved
 clearance. Both choices are synthetic sensitivity scenarios; neither is a
 measured dry/wet tire or road map. The chosen scenario and starting offset
 are frozen for the worker and identified in its live status and replay.
+An additional **Preview selected AI path (80 m)** button becomes available
+only after a faster, fully eligible AI candidate is selected on **Synthetic
+loop · AI demo**. It freezes that exact selected polygon and the current
+Cell size (max), follows its x/y chords with an explicit sampled-polyline
+reference mode, and retains the same synthetic car and assumed corridor.
+The selected Prius or TREV model does not drive this pose trace. A
+diagnostic path, an unranked comparison, or a different course leaves the
+button unavailable. The WIP road condition is its own synthetic scenario,
+not a replay of the main AI trial's grip schedule; neither pose time is a
+ranked engineering lap result. The WIP tab scrolls so its preview controls
+and status remain reachable at the desktop's 1080 × 720 minimum size.
 Changing either while idle clears only an old pose preview, not an ordinary
 lap replay. The pose preview is limited by
 target progress, simulated time, control-step count, and internal integration
@@ -456,8 +469,8 @@ run to a separate JSON file; the default folder is
 `%LOCALAPPDATA%\LapSim\pose_runs` on Windows. **Load synthetic trace…**
 checks a selected file in a worker and plays its recorded pose in Driver view
 when it has driven steps. A zero-step stop is still a valid record and loads
-with an explicit no-driven-step status. The schema-v1 file keeps the exact
-processed course, synthetic car, road and patches, controller settings,
+with an explicit no-driven-step status. The schema-v2 file keeps the exact
+processed course, reference-geometry mode, synthetic car, road and patches, controller settings,
 control/time/state history, pre-step force evaluations, pose samples,
 termination status, and source/runtime identity. Capture computes a
 SHA-256 content ID; load checks it. Both check the saved evaluations against
@@ -467,6 +480,8 @@ field names, array lengths, and discrete values must match exactly; pose
 states have separate replay tolerances. A
 matching hash alone does not prove
 the simulated dynamics agree, and replay does not validate a measured car.
+Earlier schema-v1 coherent-arc traces remain loadable with their original
+controller identity and implied strict reference mode.
 
 **Run comparison** simulates two selected saved/built-in profiles with the
 same selected centerline course, solver spacing, driver request, and rolling

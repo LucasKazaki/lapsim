@@ -130,8 +130,11 @@ survey or evidence of measured course boundaries.
 AI mode independently rebuilds its processed baseline and offset paths until
 their generated cells meet the same requested maximum, or reports its 5,000
 point compute limit. Coherent source arcs can remain finer than the request.
-The separate WIP pose preview keeps its own coherent source grid at no more
-than 0.5 m and does not use this main-lap field.
+The separate WIP pose preview reads the same maximum when it starts and
+freezes its own coherent synthetic grid. A request finer than the 0.5 m
+source analytically subdivides it; a coarser request retains the finer
+source. The preview labels the requested maximum and effective cell count,
+and rejects requests beyond its 5,000-cell UI cap.
 The fixed **Calculate** strip labels its **Calculation progress** bar and
 animates it during planning. During speed preparation it shows the measured
 fraction of local corner-limit cells, then names the current cyclic braking
@@ -304,6 +307,12 @@ Near the assumed corridor edge, a separate speed rule lowers the bend/grip
 target using sampled body-corner slack and outward motion. This is a
 conservative synthetic response, not a clearance guarantee. The preview's
 default target is **80 m of progress**, not a complete lap.
+After an eligible faster AI path is selected on the synthetic demo course,
+**Preview selected AI path (80 m)** becomes available in the WIP tab. It
+uses the same separate synthetic car and bounded pose controller with an
+explicit sampled-polyline reference mode; its time cannot be compared as a
+Prius or TREV engineering lap. Diagnostic or unranked AI paths cannot unlock
+that button. The ordinary synthetic centerline pose preview stays available.
 Driver view shows its actual simulated planar x/y and heading during
 calculation and can replay it, labeled
 **synthetic four-wheel pose experiment**. Its elapsed time is a pose-model
@@ -313,7 +322,7 @@ states in memory for `replay_pose_driver()` to check numerical agreement at
 declared state tolerances, as well as recorded pose samples and stop status.
 The WIP tab can **Save last synthetic trace…** to a separate versioned JSON
 file and **Load synthetic trace…** for checked Driver-view playback. The file
-captures the exact synthetic course grid, car, road, controller settings,
+captures the exact synthetic course grid, reference-geometry mode, car, road, controller settings,
 held controls, states, force evaluations, and sampled diagnostics. Capture and
 load check model evaluations and recorded-control numerical replay. Saved
 evaluation floats allow `1e-9` absolute or `1e-10` relative drift; discrete
@@ -322,6 +331,7 @@ tolerances. Capture computes a content hash and load verifies it. Source and
 runtime identity are included for reproducibility review.
 An initial stop with no driven step can still be saved and loaded. This is a
 short synthetic trace archive, not a full timed session or ghost comparison.
+New pose traces use schema v2; older coherent-arc v1 traces remain loadable.
 This preview uses the fixed 300 kg synthetic four-wheel car and does not use
 the selected Prius/TREV profile or change the default centerline lap. The
 speed planner is a bounded heuristic, not a tire-force feasibility proof.
