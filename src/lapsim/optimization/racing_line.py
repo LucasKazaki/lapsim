@@ -20,7 +20,7 @@ from dataclasses import dataclass, field, replace
 from math import atan2, ceil, cos, hypot, isfinite, pi, sin
 from numbers import Real
 from time import perf_counter
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
@@ -31,6 +31,9 @@ from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.dynamics.conditions import PlanarRoad
 from lapsim.events.endurance import EnduranceRunResult, LapProgressSnapshot
 from lapsim.solvers.path_constraints import PathConstraintProgressSnapshot
+
+if TYPE_CHECKING:
+    from lapsim.ui.simulation import SpeedPeriodicPhaseSnapshot
 
 
 @dataclass(frozen=True, slots=True)
@@ -189,13 +192,23 @@ class RacingLineComparison:
     baseline_diagnostic_time_s: float | None = None
     candidate_diagnostic_time_s: float | None = None
     baseline_cell_road_grip_multiplier: tuple[float, ...] | None = None
+    candidate_strategy: str | None = None
+    grip_detour_status: str | None = None
+    grip_detour_reason: str | None = None
+    grip_detour_side: str | None = None
+    grip_detour_max_offset_m: float | None = None
+    grip_detour_baseline_exposure_m: float | None = None
+    grip_detour_candidate_exposure_m: float | None = None
+    grip_detour_candidate_count: int = 0
+    grip_detour_mapped_candidate_count: int = 0
+    grip_detour_compute_time_s: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)
 class RacingLineTrial:
     """One nonzero lateral-offset strength and its exact evaluated path/run."""
 
-    strength: float
+    strength: float | None
     path_length_m: float | None
     lap_time_s: float | None
     error: str | None
@@ -206,6 +219,7 @@ class RacingLineTrial:
     cell_road_grip_multiplier: tuple[float, ...] | None = field(
         default=None, repr=False, compare=False,
     )
+    strategy: str = "geometric_offset"
 
 
 def _periodic_cubic_basis_at(
@@ -823,14 +837,17 @@ def _audit_curvature_path(
     chord_length = np.hypot(chord_x, chord_y)
     arc_chord_length = length * np.sinc(0.5 * cell_turn / pi)
     if bool(np.all(
-        np.abs(arc_chord_length - chord_length)
+        np.abs(np.abs(arc_chord_length) - chord_length)
         <= np.maximum(1e-8, 1e-8 * chord_length)
     )):
         # A coherent circular-arc cell connects its saved endpoints. Its
         # midpoint bearing determines the exact entry heading. For legacy
         # polygon paths that use each chord as the arc length, this equality
         # does not hold and the shared-vertex tangent is the appropriate seed.
-        first_heading = atan2(chord_y[0], chord_x[0]) - 0.5 * cell_turn[0]
+        first_heading = (
+            atan2(chord_y[0], chord_x[0]) - 0.5 * cell_turn[0]
+            - (pi if arc_chord_length[0] < 0.0 else 0.0)
+        )
         heading_policy = "coherent_first_arc_chord"
     else:
         first_heading = atan2(chord_y[0], chord_x[0]) - 0.5 * start_turn
@@ -1237,9 +1254,11 @@ def compare_lines_with_lap_model(
     torque_request_fraction: float,
     progress_callback: Callable[[str, SpatialTrack, LapProgressSnapshot], None] | None = None,
     constraint_progress_callback: Callable[[str, PathConstraintProgressSnapshot], None] | None = None,
+    phase_progress_callback: Callable[[str, SpeedPeriodicPhaseSnapshot], None] | None = None,
     speed_periodic: bool = False,
     minimum_selection_gain_s: float = 0.05,
     road: PlanarRoad | None = None,
+    maximum_detour_cell_length_m: float | None = None,
 ) -> RacingLineComparison:
     """Evaluate a candidate and its baseline with the same lap physics.
 
@@ -1249,7 +1268,11 @@ def compare_lines_with_lap_model(
     eligible car-specific times. If the full path fails its clearance audit but
     the half path wins clearly, a few cheap geometry-only clearance probes
     can move the fourth model trial closer to full strength. Otherwise it
-    defaults to three-quarter offset. The default evaluates one lap per path;
+    defaults to three-quarter offset. With one optional low-grip rectangle,
+    a bounded smooth detour may add one path-specific full-model trial after
+    the original strength trials. Its cheap grip-exposure screen cannot claim
+    a time gain; the same modeled-path audit and selection margin still apply.
+    The default evaluates one lap per path;
     opt-in
     ``speed_periodic`` permits one dry seam-speed probe plus one final lap per
     path, at a fixed initial vehicle/pack state. This checks speed at the
@@ -1267,7 +1290,8 @@ def compare_lines_with_lap_model(
     The selection margin is not a certified discretization error bound.
     Errors remain explicit.
     With a callback, accepted-cell snapshots carry a phase label and the exact
-    track being simulated; periodic probes do not emit callbacks. Constraint
+    track being simulated. Periodic probes emit only an optional phase
+    transition, not an estimated cell fraction. Constraint
     progress separately reports exact cells processed in each solver stage,
     with no claim that a braking pass is a percent of total convergence.
     """
@@ -1281,6 +1305,13 @@ def compare_lines_with_lap_model(
         raise ValueError("minimum_selection_gain_s must be finite and nonnegative")
     if road is not None and not isinstance(road, PlanarRoad):
         raise ValueError("road must be a PlanarRoad or None")
+    if maximum_detour_cell_length_m is not None and (
+        isinstance(maximum_detour_cell_length_m, bool)
+        or not isinstance(maximum_detour_cell_length_m, Real)
+        or not isfinite(maximum_detour_cell_length_m)
+        or maximum_detour_cell_length_m <= 0.0
+    ):
+        raise ValueError("maximum_detour_cell_length_m must be finite and positive")
 
     from lapsim.ui.simulation import run_one_lap, run_speed_periodic_lap
 
@@ -1297,9 +1328,21 @@ def compare_lines_with_lap_model(
     candidate_strength: float | None = (
         1.0 if plan.status == "candidate" else None
     )
+    candidate_strategy: str | None = (
+        "geometric_offset" if plan.status == "candidate" else None
+    )
     trials: list[RacingLineTrial] = []
     baseline_error: str | None = None
     candidate_error: str | None = None
+    grip_detour_status: str | None = None
+    grip_detour_reason: str | None = None
+    grip_detour_side: str | None = None
+    grip_detour_max_offset_m: float | None = None
+    grip_detour_baseline_exposure_m: float | None = None
+    grip_detour_candidate_exposure_m: float | None = None
+    grip_detour_candidate_count = 0
+    grip_detour_mapped_candidate_count = 0
+    grip_detour_compute_time_s = 0.0
 
     def audit_trial(track: SpatialTrack) -> tuple[CurvaturePathAudit | None, str | None]:
         if plan.corridor is None or plan.source_station_m is None:
@@ -1371,6 +1414,10 @@ def compare_lines_with_lap_model(
                     maximum_lap_passes=2,
                     speed_tolerance_mps=0.005,
                 )
+                if phase_progress_callback is not None:
+                    periodic_options["phase_progress_callback"] = lambda snapshot: (
+                        phase_progress_callback(phase, snapshot)
+                    )
                 if progress_callback is None:
                     periodic = run_speed_periodic_lap(
                         vehicle, track, **periodic_options, **constraint_options,
@@ -1513,6 +1560,7 @@ def compare_lines_with_lap_model(
                 candidate_path_audit = trial_audit
                 candidate_diagnostic_time = trial_diagnostic_time
                 candidate_strength = strength
+                candidate_strategy = "geometric_offset"
             elif candidate_run is None and trial_run is not None:
                 # Preserve the path belonging to any available failed
                 # result so the desktop can save a diagnostic run.
@@ -1520,6 +1568,7 @@ def compare_lines_with_lap_model(
                 candidate_path_audit = trial_audit
                 candidate_diagnostic_time = trial_diagnostic_time
                 candidate_strength = strength
+                candidate_strategy = "geometric_offset"
             elif (
                 candidate_time is None and trial_time is None
                 and trial_diagnostic_time is not None
@@ -1534,21 +1583,95 @@ def compare_lines_with_lap_model(
                 candidate_path_audit = trial_audit
                 candidate_diagnostic_time = trial_diagnostic_time
                 candidate_strength = strength
-        if candidate_time is None:
-            candidate_error = "; ".join(
-                f"{trial.strength:g}x: {trial.error}"
-                for trial in trials if trial.error is not None
-            ) or "No candidate lap completed"
+                candidate_strategy = "geometric_offset"
+
+    if road is not None and road.patches:
+        if baseline_path_error is not None:
+            grip_detour_status = "baseline_audit_failed"
+            grip_detour_reason = "The processed baseline failed its modeled-path audit."
+        else:
+            from .grip_detour import propose_grip_detour
+
+            proposal = propose_grip_detour(
+                plan, vehicle, road,
+                maximum_cell_length_m=maximum_detour_cell_length_m,
+            )
+            grip_detour_status = proposal.status
+            grip_detour_reason = proposal.reason
+            grip_detour_side = proposal.side
+            grip_detour_max_offset_m = proposal.max_offset_m
+            grip_detour_baseline_exposure_m = proposal.baseline_exposure_m
+            grip_detour_candidate_exposure_m = proposal.candidate_exposure_m
+            grip_detour_candidate_count = proposal.candidate_count
+            grip_detour_mapped_candidate_count = proposal.mapped_candidate_count
+            grip_detour_compute_time_s = proposal.compute_time_s
+            if proposal.track is not None:
+                detour_track = proposal.track
+                detour_audit, detour_path_error = audit_trial(detour_track)
+                detour_run, detour_model_time, detour_run_error, detour_grip = run_ai_trial(
+                    detour_track, "grip_detour", detour_audit,
+                )
+                detour_diagnostic_time = completed_diagnostic_time(detour_run)
+                detour_time = (
+                    detour_model_time if detour_path_error is None else None
+                )
+                detour_error = combined_error(detour_path_error, detour_run_error)
+                trials.append(RacingLineTrial(
+                    None, detour_track.length_m, detour_time, detour_error,
+                    detour_audit, detour_diagnostic_time, detour_track,
+                    detour_run, detour_grip, strategy="grip_detour",
+                ))
+                if detour_time is not None and (
+                    candidate_time is None or detour_time < candidate_time
+                ):
+                    candidate_track, candidate_run = detour_track, detour_run
+                    candidate_time, candidate_error = detour_time, None
+                    candidate_path_audit = detour_audit
+                    candidate_diagnostic_time = detour_diagnostic_time
+                    candidate_strength = None
+                    candidate_strategy = "grip_detour"
+                elif candidate_run is None and detour_run is not None:
+                    candidate_track, candidate_run = detour_track, detour_run
+                    candidate_path_audit = detour_audit
+                    candidate_diagnostic_time = detour_diagnostic_time
+                    candidate_strength = None
+                    candidate_strategy = "grip_detour"
+                elif (
+                    candidate_time is None and detour_time is None
+                    and detour_diagnostic_time is not None
+                    and (candidate_diagnostic_time is None
+                         or detour_diagnostic_time < candidate_diagnostic_time)
+                ):
+                    candidate_track, candidate_run = detour_track, detour_run
+                    candidate_path_audit = detour_audit
+                    candidate_diagnostic_time = detour_diagnostic_time
+                    candidate_strength = None
+                    candidate_strategy = "grip_detour"
+                if detour_path_error is not None:
+                    grip_detour_status = "path_audit_failed"
+                    grip_detour_reason = detour_path_error
+                elif detour_run_error is not None:
+                    grip_detour_status = "model_trial_failed"
+                    grip_detour_reason = detour_run_error
+                else:
+                    grip_detour_status = "timed"
+                    grip_detour_reason = "Detour timed with the full lap model."
+
+    if trials and candidate_time is None:
+        candidate_error = "; ".join(
+            f"{('detour' if trial.strategy == 'grip_detour' else format(trial.strength, 'g') + 'x')}: {trial.error}"
+            for trial in trials if trial.error is not None
+        ) or "No candidate lap completed"
     if baseline_path_audit is None:
         rank_status = "path_audit_unavailable"
     elif not baseline_path_audit.valid:
         rank_status = "invalid_processed_baseline"
-    elif plan.status == "candidate" and candidate_time is None and any(
+    elif trials and candidate_time is None and any(
         trial.path_length_m is not None and trial.path_audit is None
         for trial in trials
     ):
         rank_status = "path_audit_unavailable"
-    elif plan.status == "candidate" and candidate_time is None and any(
+    elif trials and candidate_time is None and any(
         trial.path_audit is not None and not trial.path_audit.valid
         for trial in trials
     ):
@@ -1583,6 +1706,16 @@ def compare_lines_with_lap_model(
         baseline_diagnostic_time_s=baseline_diagnostic_time,
         candidate_diagnostic_time_s=candidate_diagnostic_time,
         baseline_cell_road_grip_multiplier=baseline_cell_grip,
+        candidate_strategy=candidate_strategy,
+        grip_detour_status=grip_detour_status,
+        grip_detour_reason=grip_detour_reason,
+        grip_detour_side=grip_detour_side,
+        grip_detour_max_offset_m=grip_detour_max_offset_m,
+        grip_detour_baseline_exposure_m=grip_detour_baseline_exposure_m,
+        grip_detour_candidate_exposure_m=grip_detour_candidate_exposure_m,
+        grip_detour_candidate_count=grip_detour_candidate_count,
+        grip_detour_mapped_candidate_count=grip_detour_mapped_candidate_count,
+        grip_detour_compute_time_s=grip_detour_compute_time_s,
     )
 
 

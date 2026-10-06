@@ -1,6 +1,6 @@
 """World-fixed synthetic grip is mapped separately onto modeled path arcs."""
 
-from math import atan2, cos, pi, sin
+from math import atan2, cos, hypot, pi, sin
 from time import perf_counter
 
 import pytest
@@ -150,6 +150,31 @@ def test_world_patch_follows_integrated_arc_not_saved_polygon_chord() -> None:
     road = _patch(wheel_x - 0.01, wheel_x + 0.01,
                   wheel_y - 0.01, wheel_y + 0.01)
     assert world_patch_grip_schedule(distorted, vehicle, road)[0] == 0.3
+
+
+def test_negative_arc_chord_maps_patch_on_valid_coarse_circle() -> None:
+    # The first 3*pi arc has a negative signed chord. Its saved first point
+    # still lies on the modeled circle, and the world frame must not rotate.
+    angles = (0.0, 3.0 * pi, 10.0 * pi / 3.0, 11.0 * pi / 3.0, 4.0 * pi)
+    track = SpatialTrack(
+        distance_m=angles,
+        x_m=tuple(sin(angle) for angle in angles),
+        y_m=tuple(1.0 - cos(angle) for angle in angles),
+        curvature_per_m=(1.0,) * 4,
+    )
+    track.validate_coherent_arcs()
+    vehicle = Vehicle()
+    front_axle_m = vehicle.chassis.wheelbase_m * (
+        1.0 - vehicle.chassis.static_front_weight_fraction
+    )
+    front_right_radius_m = hypot(
+        1.0 + 0.5 * vehicle.chassis.front_track_width_m, front_axle_m,
+    )
+    road = _patch(
+        front_right_radius_m - 0.005, front_right_radius_m + 0.005,
+        0.995, 1.005,
+    )
+    assert world_patch_grip_schedule(track, vehicle, road)[0] == 0.3
 
 
 def test_rejects_unsupported_or_unphysical_surface_inputs() -> None:

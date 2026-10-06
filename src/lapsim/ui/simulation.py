@@ -77,6 +77,15 @@ class SpeedPeriodicLapResult:
         return None
 
 
+@dataclass(frozen=True, slots=True)
+class SpeedPeriodicPhaseSnapshot:
+    """An observed lap-pass transition, without an estimated percent done."""
+
+    phase: str
+    pass_number: int
+    maximum_passes: int
+
+
 @dataclass(frozen=True, slots=True, eq=False)
 class PreparedOneLapConstraints:
     """Path limits bound to the vehicle used to calculate them."""
@@ -265,6 +274,7 @@ def run_speed_periodic_lap(
     speed_tolerance_mps: float = 0.005,
     maximum_lap_passes: int = 2,
     progress_callback: Callable[[LapProgressSnapshot], None] | None = None,
+    phase_progress_callback: Callable[[SpeedPeriodicPhaseSnapshot], None] | None = None,
     cell_road_grip_multiplier: tuple[float, ...] | None = None,
     constraint_progress_callback: Callable[[PathConstraintProgressSnapshot], None] | None = None,
 ) -> SpeedPeriodicLapResult:
@@ -273,8 +283,9 @@ def run_speed_periodic_lap(
     This optional desktop helper keeps the ordinary one-lap behavior intact.
     Path constraints are solved once. Every pass starts from an independent
     copy of the same initial vehicle and pack state. Earlier passes have no
-    telemetry or progress callbacks; only the final pass is recorded and
-    observed. The default allows one probe plus one final pass. A third pass
+    telemetry or accepted-cell progress callbacks; an optional phase callback
+    announces each unrecorded probe and the final pass. The default allows
+    one probe plus one final pass. A third pass
     can be requested for an additional dry probe before the final pass.
 
     The returned ``converged`` flag is about speed alone. The final explicit
@@ -305,6 +316,10 @@ def run_speed_periodic_lap(
     start_speed_mps = constraints.braking_speed_ceiling_mps[0]
     simulator = EnduranceSimulator()
     for pass_number in range(1, maximum_lap_passes):
+        if phase_progress_callback is not None:
+            phase_progress_callback(SpeedPeriodicPhaseSnapshot(
+                "speed_seam_probe", pass_number, maximum_lap_passes,
+            ))
         probe_vehicle = deepcopy(template_vehicle)
         probe_result = simulator.run(
             probe_vehicle,
@@ -330,6 +345,10 @@ def run_speed_periodic_lap(
         ):
             break
 
+    if phase_progress_callback is not None:
+        phase_progress_callback(SpeedPeriodicPhaseSnapshot(
+            "final_lap", pass_number + 1, maximum_lap_passes,
+        ))
     final_vehicle = deepcopy(template_vehicle)
     final_result = simulator.run(
         final_vehicle,

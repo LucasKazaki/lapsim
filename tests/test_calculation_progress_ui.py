@@ -11,6 +11,7 @@ import pytest
 from lapsim.events.endurance import LapProgressSnapshot
 from lapsim.solvers.path_constraints import PathConstraintProgressSnapshot
 from lapsim.ui.app import LapSimDesktop
+from lapsim.ui.simulation import SpeedPeriodicPhaseSnapshot
 
 
 def _desktop() -> tuple[tk.Tk, LapSimDesktop]:
@@ -146,6 +147,47 @@ def test_ai_and_comparison_bar_labels_each_current_pass() -> None:
         app._queue_live_progress("Car B", "Centerline comparison", app.track, _cell(app, 0))
         app._poll_live_progress()
         assert "Car B: Centerline comparison" in app.calculation_progress_text.get()
+    finally:
+        root.destroy()
+
+
+def test_ai_speed_seam_probe_clears_old_percent_and_has_no_fake_pose() -> None:
+    root, app = _desktop()
+    try:
+        app.driving_mode_var.set("AI racing line (experimental)")
+        with patch("lapsim.ui.app.threading.Thread"):
+            app._start_run()
+        app._queue_live_progress(
+            "Prius", "Geometric centerline", app.track, _cell(app, 0),
+        )
+        app._poll_live_progress()
+        assert app._calculation_progress_mode == "determinate"
+        assert app.driver_playback is not None
+
+        probe = SpeedPeriodicPhaseSnapshot("speed_seam_probe", 1, 2)
+        app._queue_live_progress("Prius", "Full AI line", None, probe)
+        app._poll_live_progress()
+        assert app._calculation_progress_mode == "indeterminate"
+        assert "Full AI line" in app.calculation_progress_text.get()
+        assert "speed-seam probe pass 1" in app.calculation_progress_text.get()
+        assert "cell progress unavailable" in app.calculation_progress_text.get()
+        assert app.driver_playback is None
+        assert "no vehicle pose" in app.driver_run_label.get()
+
+        final = SpeedPeriodicPhaseSnapshot("final_lap", 2, 2)
+        app._queue_live_progress("Prius", "Full AI line", None, final)
+        app._poll_live_progress()
+        assert app._calculation_progress_mode == "indeterminate"
+        assert "final lap pass 2" in app.calculation_progress_text.get()
+        assert "waiting for first accepted cell" in app.calculation_progress_text.get()
+        app._queue_live_progress(
+            "Prius", "Full AI line", app.track, _cell(app, 1),
+        )
+        app._poll_live_progress()
+        assert app._calculation_progress_mode == "determinate"
+        assert app._calculation_progress_fraction == pytest.approx(
+            2 / app.track.cell_count
+        )
     finally:
         root.destroy()
 

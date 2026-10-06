@@ -135,8 +135,10 @@ than 0.5 m and does not use this main-lap field.
 The fixed **Calculate** strip labels its **Calculation progress** bar and
 animates it during planning. During speed preparation it shows the measured
 fraction of local corner-limit cells, then names the current cyclic braking
-pass and processed cells while convergence remains uncertain. During a
-recorded lap it shows the accepted-cell fraction of that model pass. No
+pass and processed cells while convergence remains uncertain. AI speed-seam
+probes and the transition to the final lap are labeled without inventing a
+percentage. During a recorded lap it shows the accepted-cell fraction of
+that model pass. No
 phase fraction implies an overall completion percentage or ETA for multi-pass
 AI work.
 See the [desktop guide](docs/simulator_desktop.md) for data and model limits.
@@ -158,8 +160,12 @@ low-grip rectangle on a coherent closed course. Each trial maps nominal wheel
 contacts along its own curvature-integrated path to a scalar grip schedule;
 one touched wheel lowers the whole solver cell's tire capacity. The top-down
 map outlines the rectangle, and each saved AI trial retains and replays its
-own schedule. This is a conservative sensitivity model, not measured grip,
-independent-wheel road forces, or a closed-loop driver.
+own schedule. In this optional patch mode, a bounded second proposal can try
+one smooth grip-aware detour around contacts on the processed centerline. It
+screens up to 12 constructed geometries, times at most one extra detour with
+the full lap model, and still selects a path only after the modeled-path audit
+and the same gain threshold. This is a conservative sensitivity model, not
+measured grip, independent-wheel road forces, or a closed-loop driver.
 
 The **Driving path** control defaults to the ordinary centerline solver and
 does no path optimization. Its optional **AI racing line (experimental)** mode
@@ -176,7 +182,9 @@ offset clearly beats the baseline, a short geometry-only search tries a stronger
 fourth offset with at least 0.02 m of certified scalar clearance. In other
 cases the fourth strength is 0.75. Each path admitted to physics receives one
 dry speed-seam pass and one recorded pass, for at most eight lap-model passes
-across four paths. A
+across four paths in uniform-grip mode. With one assumed low-grip rectangle,
+the planner may also test one grip-aware detour, raising the cap to ten passes
+across five paths. A
 completed lap is eligible for a path comparison only when its start
 and finish speeds agree within 0.005 m/s and its integrated prescribed-curvature
 path passes the declared clearance and position-closure checks. The audit
@@ -192,6 +200,13 @@ For eligible paths, the app selects a candidate only when its gain over the
 geometric baseline is strictly greater than 0.05 s. A smaller positive gain
 is an unresolved numerical tie; the 0.05 s margin is a provisional selection
 heuristic, not a proven error bound.
+The detour uses a periodic, C2-smooth lateral shift with finite lead-in and
+lead-out shoulders. A cheap reduction in wheel-contact low-grip exposure
+chooses which candidate receives the extra model trial; reduced exposure alone
+is not an improved lap time. The original minimum-curvature proposal remains
+independent of grip. Detours remain subject to the same declared scalar
+corridor, path geometry, speed-seam, and full-model timing gates. There is no
+learned policy or swept-body/cone-clearance certificate.
 
 An end-to-end desktop regression exercises a partial source-backed TREV
 working profile when its local source bundle is available and a locally
@@ -254,8 +269,10 @@ geometry. The primary record links to the other trial IDs; its own selected
 trial is identified as `selected_result`. Diagnostic runs remain available
 for inspection but must not be ranked. Records identify the selected source
 course by ID; AI metadata also marks a synthetic course explicitly and records
-the fourth-strength policy and every tested `candidate_trials[].offset_strength`.
-Read those values rather than assuming the fourth path always uses 0.75.
+the fourth-strength policy and every tested `candidate_trials[].strategy` and
+nullable `offset_strength`. A `grip_detour` trial has no line-strength scalar;
+read its strategy, path audit, and modeled time. The fourth offset does not
+always use 0.75.
 Candidate-only displays with a failed baseline are marked diagnostic. The
 **Saved run details** button opens the record IDs and local JSON paths for the
 currently displayed lap or car comparison and follows available AI trial links.

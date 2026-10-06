@@ -45,6 +45,7 @@ from .pose_driver_playback import PoseDriverLivePlayback, PoseDriverPlayback
 from .garage import CAR_INPUT_KEYS, ProfileStore, SavedCarProfile
 from .presets import VehicleSetup, make_prius_benchmark
 from .simulation import (
+    SpeedPeriodicPhaseSnapshot,
     apply_uniform_road_grip,
     endurance_run_config,
     path_solver_settings,
@@ -153,6 +154,16 @@ def _saved_run_path(run_id: str) -> Path:
     return (default_run_directory() / f"{run_id}.json").resolve()
 
 
+def _ai_trial_label(
+    strategy: str | None, strength: float | None, *, ascii_x: bool = False,
+) -> str:
+    if strategy == "grip_detour":
+        return "Grip-aware detour"
+    if isinstance(strength, (int, float)) and not isinstance(strength, bool):
+        return f"AI offset {strength:g}{'x' if ascii_x else '×'}"
+    return "AI trial"
+
+
 def _linked_ai_run_references(planning: dict[str, Any]) -> tuple[tuple[str, str], ...]:
     """Name saved AI trials linked by the primary record."""
 
@@ -165,11 +176,8 @@ def _linked_ai_run_references(planning: dict[str, Any]) -> tuple[tuple[str, str]
         for trial in trials:
             if not isinstance(trial, dict) or not isinstance(trial.get("run_id"), str):
                 continue
-            strength = trial.get("offset_strength")
-            label = (
-                f"AI offset {strength:g}×"
-                if isinstance(strength, (int, float)) and not isinstance(strength, bool)
-                else "AI trial"
+            label = _ai_trial_label(
+                trial.get("strategy"), trial.get("offset_strength"),
             )
             references.append((label, trial["run_id"]))
     return tuple(references)
@@ -226,6 +234,15 @@ def _run_evidence_text(label: str, path: Path, record: dict[str, Any]) -> str:
             f"AI rank status: {planning.get('rank_status') or 'not recorded'}; "
             f"diagnostic only: {'yes' if planning.get('diagnostic_only') else 'no'}"
         )
+        strategy = planning.get("selected_strategy") or planning.get("strategy")
+        if isinstance(strategy, str):
+            lines.append(f"AI path strategy: {strategy}")
+        detour = planning.get("grip_detour_search")
+        if isinstance(detour, dict) and isinstance(detour.get("status"), str):
+            lines.append(
+                f"Grip detour search: {detour['status']}; "
+                f"{detour.get('reason') or 'no detail recorded'}"
+            )
         road_condition = planning.get("road_condition")
         if isinstance(road_condition, dict) and road_condition.get("mode") == (
             "assumed_world_fixed_low_grip_rectangle"
@@ -778,9 +795,10 @@ class LapSimDesktop:
             text=("AI mode uses a deterministic path optimizer and an assumed "
                   "uniform corridor. No measured course widths are available. "
                   "It uses Cell size (max) in Calculate for its path grid and "
-                  "up to four paths, with two "
+                  "up to four geometry paths, with two "
                   "speed-seam passes per path. Its fourth path can follow "
-                  "the selected car's eligible lap times. "
+                  "the selected car's eligible lap times. A lower-grip "
+                  "rectangle can add one smooth detour and two more passes. "
                   "The optional rectangular surface reduces whole-cell grip "
                   "when a nominal wheel touches it; it is an assumed "
                   "sensitivity, not measured tire or road data. "
@@ -2866,9 +2884,9 @@ class LapSimDesktop:
         if latest is None or not self.run_in_progress:
             return
         name, phase, track, snapshot = latest
-        if isinstance(snapshot, PathConstraintProgressSnapshot):
-            # Constraint preparation has no accepted vehicle pose. Show the
-            # observed work without inventing an overall time remaining.
+        if isinstance(snapshot, (PathConstraintProgressSnapshot, SpeedPeriodicPhaseSnapshot)):
+            # Constraint preparation and unrecorded seam-speed probes have no
+            # accepted vehicle pose or trustworthy overall percentage.
             self._driver_live_update_serial += 1
             self.driver_playback = None
             self._live_decision = None
@@ -2878,7 +2896,24 @@ class LapSimDesktop:
                 value.set("—")
             for value in self.driver_decision_values.values():
                 value.set("—")
-            if snapshot.phase == "local_limits":
+            if isinstance(snapshot, SpeedPeriodicPhaseSnapshot):
+                if snapshot.phase == "speed_seam_probe":
+                    description = (
+                        f"{name}: {phase} · speed-seam probe pass "
+                        f"{snapshot.pass_number} (limit {snapshot.maximum_passes}); "
+                        "cell progress unavailable"
+                    )
+                else:
+                    description = (
+                        f"{name}: {phase} · final lap pass "
+                        f"{snapshot.pass_number} (limit {snapshot.maximum_passes}); "
+                        "waiting for first accepted cell"
+                    )
+                self._set_calculation_progress("indeterminate", description)
+                self.driver_run_label.set(
+                    f"{name} · {phase} · model pass preparing · no vehicle pose"
+                )
+            elif snapshot.phase == "local_limits":
                 fraction = snapshot.completed_cells / snapshot.cell_count
                 description = (
                     f"{name}: {phase} · local speed limits · "
@@ -2888,6 +2923,9 @@ class LapSimDesktop:
                 self._set_calculation_progress(
                     "determinate", description, fraction=fraction,
                 )
+                self.driver_run_label.set(
+                    f"{name} · preparing path speed limits · no vehicle pose"
+                )
             else:
                 description = (
                     f"{name}: {phase} · cyclic braking pass "
@@ -2896,9 +2934,9 @@ class LapSimDesktop:
                     "convergence pending"
                 )
                 self._set_calculation_progress("indeterminate", description)
-            self.driver_run_label.set(
-                f"{name} · preparing path speed limits · no vehicle pose"
-            )
+                self.driver_run_label.set(
+                    f"{name} · preparing path speed limits · no vehicle pose"
+                )
             self._draw_driver_view()
             return
         try:
@@ -3228,7 +3266,7 @@ class LapSimDesktop:
         if ai_assumptions is not None:
             self._path_comparison = None
             self.ai_result_text.set(
-                "Evaluating geometric centerline, full, half, and adaptive lines…"
+                "Evaluating geometric centerline and bounded AI path trials…"
             )
             if self.ai_compare_button is not None:
                 self.ai_compare_button.configure(state="disabled")
@@ -3385,6 +3423,14 @@ class LapSimDesktop:
             plan = planner.plan(self.track, corridor)
             last_progress_post_s = float("-inf")
             last_progress_phase = ""
+            phase_labels = {
+                "baseline": "Geometric centerline",
+                "full": "Full AI line",
+                "half": "Half AI line",
+                "three_quarter": "Three-quarter AI line",
+                "adaptive": "Car-adaptive AI line",
+                "grip_detour": "Grip-aware detour",
+            }
 
             def on_progress(phase: str, phase_track: Any, snapshot: Any) -> None:
                 nonlocal last_progress_post_s, last_progress_phase
@@ -3396,13 +3442,7 @@ class LapSimDesktop:
                     now - last_progress_post_s >= 0.1
                     or snapshot.cell_index + 1 == snapshot.cell_count
                 ):
-                    label = {
-                        "baseline": "Geometric centerline",
-                        "full": "Full AI line",
-                        "half": "Half AI line",
-                        "three_quarter": "Three-quarter AI line",
-                        "adaptive": "Car-adaptive AI line",
-                    }.get(phase, phase)
+                    label = phase_labels.get(phase, phase)
                     self._queue_live_progress(
                         profile_name, label, phase_track, snapshot
                     )
@@ -3412,19 +3452,15 @@ class LapSimDesktop:
                 vehicle, plan, torque_request_fraction=torque_fraction,
                 progress_callback=on_progress,
                 constraint_progress_callback=lambda phase, snapshot: self._queue_live_progress(
-                    profile_name,
-                    {
-                        "baseline": "Geometric centerline",
-                        "full": "Full AI line",
-                        "half": "Half AI line",
-                        "three_quarter": "Three-quarter AI line",
-                        "adaptive": "Car-adaptive AI line",
-                    }.get(phase, phase),
-                    None, snapshot,
+                    profile_name, phase_labels.get(phase, phase), None, snapshot,
+                ),
+                phase_progress_callback=lambda phase, snapshot: self._queue_live_progress(
+                    profile_name, phase_labels.get(phase, phase), None, snapshot,
                 ),
                 speed_periodic=True,
                 minimum_selection_gain_s=AI_SELECTION_MARGIN_S,
                 road=road,
+                maximum_detour_cell_length_m=step_m,
             )
             selected_mode = comparison.selected_mode
             selected_run = comparison.selected_run
@@ -3513,6 +3549,13 @@ class LapSimDesktop:
                 ),
                 "rank_status": comparison.rank_status,
                 "selection_margin_s": comparison.selection_margin_s,
+                "candidate_strategy": comparison.candidate_strategy,
+                "selected_strategy": (
+                    comparison.candidate_strategy
+                    if selected_mode.startswith("candidate")
+                    else "geometric_centerline" if selected_mode == "centerline"
+                    else None
+                ),
                 "candidate_offset_strength": comparison.candidate_strength,
                 "selected_offset_strength": (
                     comparison.candidate_strength
@@ -3521,6 +3564,7 @@ class LapSimDesktop:
                 ),
                 "candidate_trials": [
                     {
+                        "strategy": trial.strategy,
                         "offset_strength": trial.strength,
                         "path_length_m": trial.path_length_m,
                         "lap_time_s": trial.lap_time_s,
@@ -3538,6 +3582,27 @@ class LapSimDesktop:
                     }
                     for trial in comparison.trials
                 ],
+                "grip_detour_search": {
+                    "version": "bounded_c2_two_sides_three_amplitudes_v1",
+                    "status": comparison.grip_detour_status,
+                    "reason": comparison.grip_detour_reason,
+                    "side": comparison.grip_detour_side,
+                    "maximum_offset_m": comparison.grip_detour_max_offset_m,
+                    "baseline_weighted_exposure_m": (
+                        comparison.grip_detour_baseline_exposure_m
+                    ),
+                    "candidate_weighted_exposure_m": (
+                        comparison.grip_detour_candidate_exposure_m
+                    ),
+                    "constructed_geometry_count": (
+                        comparison.grip_detour_candidate_count
+                    ),
+                    "mapped_geometry_count": (
+                        comparison.grip_detour_mapped_candidate_count
+                    ),
+                    "compute_time_s": comparison.grip_detour_compute_time_s,
+                    "extra_lap_model_trials_cap": 1,
+                } if road is not None else None,
                 "comparison_is_valid": (
                     baseline_valid and comparison.candidate_time_s is not None
                 ),
@@ -3593,6 +3658,9 @@ class LapSimDesktop:
                     plan.max_abs_offset_m * comparison.candidate_strength
                     if selected_mode.startswith("candidate")
                     and comparison.candidate_strength is not None
+                    else comparison.grip_detour_max_offset_m
+                    if selected_mode.startswith("candidate")
+                    and comparison.candidate_strategy == "grip_detour"
                     else 0.0 if selected_mode == "centerline" else None
                 ),
                 "max_constraint_violation_m": plan.max_constraint_violation_m,
@@ -3611,16 +3679,14 @@ class LapSimDesktop:
                 counterpart_run = comparison.candidate_run
                 counterpart_track = comparison.candidate_track
                 counterpart_role = "candidate_trial"
-                counterpart_strength = (
-                    comparison.candidate_strength
-                    if comparison.candidate_strength is not None
-                    else 1.0 if counterpart_track is plan.candidate_track else 0.5
-                )
+                counterpart_strength = comparison.candidate_strength
+                counterpart_strategy = comparison.candidate_strategy
             else:
                 counterpart_run = comparison.baseline_run
                 counterpart_track = plan.baseline_track
                 counterpart_role = "geometric_centerline"
                 counterpart_strength = 0.0
+                counterpart_strategy = "geometric_centerline"
             # Keep every returned trial on its exact solver grid. Save the
             # selected run last so its content-addressed record can link to
             # the other records without a self-referential content hash.
@@ -3644,7 +3710,8 @@ class LapSimDesktop:
                 return schedule
 
             def save_other_path(
-                result: Any, track: Any, *, role: str, strength: float,
+                result: Any, track: Any, *, role: str, strength: float | None,
+                strategy: str | None,
                 audit: Any, eligible_time_s: float | None,
                 diagnostic_time_s: float | None, trial_error: str | None,
             ) -> str | None:
@@ -3681,6 +3748,7 @@ class LapSimDesktop:
                         "synthetic_course": self.course_spec.synthetic,
                         "road_condition": road_condition,
                         "comparison_role": role,
+                        "strategy": strategy,
                         "offset_strength": strength,
                         "user_requested_maximum_cell_length_m": step_m,
                         "actual_maximum_cell_length_m": max(track.cell_length_m),
@@ -3744,6 +3812,7 @@ class LapSimDesktop:
             counterpart_run_id = save_other_path(
                 counterpart_run, counterpart_track, role=counterpart_role,
                 strength=counterpart_strength,
+                strategy=counterpart_strategy,
                 audit=counterpart_audit,
                 eligible_time_s=counterpart_eligible_time,
                 diagnostic_time_s=counterpart_diagnostic_time,
@@ -3756,7 +3825,8 @@ class LapSimDesktop:
                 trial_track = getattr(trial, "track", None)
                 trial_id = save_other_path(
                     trial_run, trial_track, role="candidate_trial",
-                    strength=trial.strength, audit=trial.path_audit,
+                    strength=trial.strength, strategy=trial.strategy,
+                    audit=trial.path_audit,
                     eligible_time_s=trial.lap_time_s,
                     diagnostic_time_s=trial.diagnostic_lap_time_s,
                     trial_error=trial.error,
@@ -3778,6 +3848,7 @@ class LapSimDesktop:
             baseline_run_id = save_other_path(
                 comparison.baseline_run, plan.baseline_track,
                 role="geometric_centerline", strength=0.0,
+                strategy="geometric_centerline",
                 audit=comparison.baseline_path_audit,
                 eligible_time_s=comparison.baseline_time_s,
                 diagnostic_time_s=comparison.baseline_diagnostic_time_s,
@@ -4132,6 +4203,7 @@ class LapSimDesktop:
         elif kind == "ai_single":
             (profile_name, result, selected_track, selected_mode,
              plan, comparison, assumptions, run_id, *grip_setting) = payload
+            candidate_strategy = getattr(comparison, "candidate_strategy", None)
             self._set_displayed_run_records((("AI result", run_id),))
             road_grip_multiplier = grip_setting[0] if grip_setting else 1.0
             self._displayed_road_grip_multiplier = road_grip_multiplier
@@ -4203,13 +4275,18 @@ class LapSimDesktop:
                 selection = "Neither geometric path produced a valid timed lap. A diagnostic run was saved."
             elif selected_mode == "candidate":
                 selection = (
-                    f"Faster AI path selected at {comparison.candidate_strength:g}× "
-                    "of the proposed offset."
+                    "Faster grip-aware detour selected after full-model timing."
+                    if candidate_strategy == "grip_detour"
+                    else f"Faster AI path selected at {comparison.candidate_strength:g}× "
+                         "of the proposed offset."
                 )
             elif selected_mode == "candidate_only_baseline_failed":
                 selection = (
-                    f"AI path at {comparison.candidate_strength:g}× offset completed; "
-                    "geometric centerline failed, so no time gain is established."
+                    "Grip-aware detour completed; geometric centerline failed, "
+                    "so no time gain is established."
+                    if candidate_strategy == "grip_detour"
+                    else f"AI path at {comparison.candidate_strength:g}× offset completed; "
+                         "geometric centerline failed, so no time gain is established."
                 )
             elif comparison.rank_status == "unresolved_close_gain":
                 selection = (
@@ -4265,6 +4342,10 @@ class LapSimDesktop:
                 ))
                 if surface_errors:
                     surface_error_note = " Trial error: " + "; ".join(surface_errors) + "."
+                if getattr(comparison, "grip_detour_status", None) is not None:
+                    surface_error_note += (
+                        f" Grip detour: {comparison.grip_detour_status}."
+                    )
             self.ai_result_text.set(
                 (f"SYNTHETIC COURSE: {self.course_spec.label}. "
                  if self.course_spec.synthetic else "")
@@ -4316,10 +4397,12 @@ class LapSimDesktop:
                     else "Geometric centerline · diagnostic"
                 )
                 candidate_replay_label = "Best tested AI path"
-                if comparison.candidate_strength is not None:
-                    candidate_replay_label += (
-                        f" · {comparison.candidate_strength:g}x offset"
-                    )
+                candidate_replay_label += (
+                    " · grip-aware detour"
+                    if candidate_strategy == "grip_detour"
+                    else f" · {comparison.candidate_strength:g}x offset"
+                    if comparison.candidate_strength is not None else ""
+                )
                 if (
                     comparison.baseline_time_s is None
                     or comparison.candidate_time_s is None
@@ -4344,7 +4427,10 @@ class LapSimDesktop:
                         or trial_run is comparison.candidate_run
                     ):
                         continue
-                    trial_label = f"AI offset {trial.strength:g}x"
+                    trial_label = _ai_trial_label(
+                        getattr(trial, "strategy", None),
+                        getattr(trial, "strength", None), ascii_x=True,
+                    )
                     if comparison.baseline_time_s is None or trial.lap_time_s is None:
                         trial_label += " · diagnostic"
                     replay_options[trial_label] = (
@@ -4461,8 +4547,12 @@ class LapSimDesktop:
             text=(f"Course: {course_label}. One car, one geometric source, "
                   f"assumed ±{assumptions[0]:g} m "
                   f"corridor. {_ai_road_label(self._displayed_ai_road, self._displayed_road_grip_multiplier or 1.0)} "
-                   f"Best tested AI path uses {comparison.candidate_strength:g}× "
-                  "proposed offset. Candidate − centerline; negative lap-time Δ is faster."),
+                  + (
+                      "Best tested AI path is a grip-aware detour. "
+                      if getattr(comparison, "candidate_strategy", None) == "grip_detour"
+                      else f"Best tested AI path uses {comparison.candidate_strength:g}× proposed offset. "
+                  )
+                  + "Candidate − centerline; negative lap-time Δ is faster."),
             anchor="w", justify="left", wraplength=755,
         ).grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 10))
         for column, heading in enumerate((

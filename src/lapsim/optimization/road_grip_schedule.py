@@ -78,7 +78,7 @@ def _modeled_cells(track: SpatialTrack) -> tuple[_ModeledCell, ...]:
         previous_dx * first_dx + previous_dy * first_dy,
     )
     coherent_arc_chords = all(
-        abs(length * _sinc(0.5 * length * curvature) - hypot(
+        abs(abs(length * _sinc(0.5 * length * curvature)) - hypot(
             track.x_m[index + 1] - track.x_m[index],
             track.y_m[index + 1] - track.y_m[index],
         )) <= max(1e-8, 1e-8 * hypot(
@@ -89,10 +89,13 @@ def _modeled_cells(track: SpatialTrack) -> tuple[_ModeledCell, ...]:
             zip(lengths, track.curvature_per_m, strict=True)
         )
     )
+    first_arc_chord_m = lengths[0] * _sinc(
+        0.5 * lengths[0] * track.curvature_per_m[0]
+    )
     heading = atan2(first_dy, first_dx) - 0.5 * (
         lengths[0] * track.curvature_per_m[0]
         if coherent_arc_chords else first_turn
-    )
+    ) - (pi if coherent_arc_chords and first_arc_chord_m < 0.0 else 0.0)
     x_m = track.x_m[0]
     y_m = track.y_m[0]
     cells: list[_ModeledCell] = []

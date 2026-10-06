@@ -97,8 +97,13 @@ centers follow the path's prescribed curvature, and any wheel touching the
 rectangle reduces the entire cell's tire capacity. The top-down map outlines
 the assumed rectangle. This is a conservative scalar sensitivity, not a
 measured wet-road map, four independent tire contacts, or a tracked vehicle
-pose. The geometric path proposal does not use the patch; its bounded
-car-dependent trial timing and line-strength selection do. Each saved trial
+pose. The original minimum-curvature proposal does not use the patch; its
+bounded car-dependent trial timing and line-strength selection do. With one
+rectangle, a second bounded proposal may try a C2-smooth local detour to lower
+nominal wheel-contact grip exposure. It tests at most 12 cheap constructed
+geometries and sends at most one extra path through the ordinary modeled-path
+audit and full lap calculation. Exposure alone cannot select the detour.
+Each saved trial
 records its exact schedule and the assumed rectangle/mapping version.
 The engineering replay checker restores the schedule; older v2 records without
 conditions use the original 100% grip. Editing a run input or changing the
@@ -150,7 +155,8 @@ restores the full view.
 
 The fixed **Calculate** strip remains visible when the input panel scrolls.
 Its labeled monochrome **Calculation progress** bar animates during path
-planning, AI dry passes, and waits without accepted cells. During path-speed
+planning, explicitly labeled AI speed-seam probes and final-lap transitions,
+and waits without accepted cells. During path-speed
 preparation it fills by **local corner-limit cells processed**. The following
 cyclic braking sweeps show a pass number and processed-cell count, while the
 bar stays indeterminate because the number of passes needed for convergence
@@ -175,7 +181,8 @@ top-down view of that run's **solver-grid reference x/y**. The desktop keeps onl
 at roughly 10 updates per second, so it does not slow the solver to real time.
 AI mode labels geometric baseline, full, half, and its fourth line separately;
 that fourth line is labeled three-quarter on fallback or car-adaptive when a
-different strength is selected. Its
+different strength is selected. An optional fifth patch-mode trial is labeled
+**Grip-aware detour**. Its
 dry seam-speed probe sends no live updates; Driver view shows accepted cells
 from the final recorded pass for each path.
 Rejected cells are not shown as completed movement. After a completed lap,
@@ -239,9 +246,27 @@ car, not a learned or closed-loop controller. For each path admitted to physics 
 final recorded lap, starting each from the same fresh
 initial car and pack state. The final pass starts at the probe's exit speed;
 its finish-minus-start speed must be within **0.005 m/s**. This is at most eight
-full physics passes across four paths. Pack charge and other states need not
+full physics passes across four paths without a patch. An assumed rectangle
+may add one detour trial after the strength trials, reaching at most **ten**
+full passes across **five** paths. Pack charge and other states need not
 match at the seam. The fourth path has the same modeled-path and speed-seam
 eligibility requirements as every other path.
+
+Patch-mode detour search is available only when the processed geometric
+baseline passes its path audit. It groups that path's cyclic low-grip wheel
+contacts, examines at most two groups and three amplitudes on each side,
+and uses a periodic quintic shoulder with continuous value, slope, and
+curvature. Its offset is bounded by the entered usable corridor and **3 m**.
+The search remaps the same world rectangle to every candidate geometry and
+chooses one only if its weighted low-grip exposure decreases by at least
+**0.01 m**. That cheap score does not predict lap time. The selected proposal
+must still pass path clearance/closure, speed seam, and full-model timing;
+it wins only with more than **0.05 s** eligible lead over the processed
+baseline. No detour is added when the patch has no baseline wheel contact or
+the screens find no candidate. The saved planning details state the search
+status, side, maximum offset, exposure, constructed/mapped candidate counts,
+and elapsed search time. These are assumed-road calculations, not a learned
+policy or a swept-vehicle/cone-clearance proof.
 
 Before a time can be compared, the app integrates each solver path's saved
 constant-curvature cells and evaluates **four positions per modeled cell**, plus
@@ -345,20 +370,22 @@ clearance audit; the selected path's conservative minimum assumed clearance
 was **0.1173201189 m**. These are software scenario numbers for an analytic
 practice shape, not a surveyed event course or calibrated vehicle.
 
-The primary AI run record includes every tested offset strength and its
-reported eligible or diagnostic result and audit status. It stores its own
+The primary AI run record includes each tested candidate's strategy, nullable
+offset strength, eligible or diagnostic result, and audit status. It stores its own
 exact solver geometry and telemetry, including the explicit starting speed of
 its final pass. Its `settings.path_planning.algorithm` ends in `v7_continuous_scalar_clearance`;
 `fourth_strength_policy` names the bounded quadratic, clearance screen, and 0.75 fallback.
-Read `candidate_trials[].offset_strength`, path audit, and eligible versus
-diagnostic time for the actual fourth probe; its position in the trial list
+Read `candidate_trials[].strategy`, `offset_strength`, path audit, and eligible
+versus diagnostic time for the actual fourth probe or optional fifth detour.
+A detour has null `offset_strength`; the fourth probe's position in the list
 does not imply a fixed 0.75 strength or an eligible result. Every completed
 AI trial has its own content-identified record with exact solver geometry,
 recorded telemetry, and final-pass start speed. The primary record's
 `baseline_record` and `candidate_trials[]` entries identify the selected
 record as `selected_result` and link other saved runs by `run_id`. The
 existing `comparison_counterpart_run_id` still points to the comparison
-counterpart. At most four path records are saved per AI comparison. A geometry-screened
+counterpart. At most four path records are saved without a patch, or five
+when one detour reaches the model. A geometry-screened
 trial has its audit and skip reason in the primary record but no model run ID;
 an interrupted extra trial likewise keeps its error summary without a
 replayable record.

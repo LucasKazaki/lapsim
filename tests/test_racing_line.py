@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from math import pi
+from math import cos, pi, sin
 from types import SimpleNamespace
 
 import numpy as np
@@ -540,6 +540,25 @@ def test_curvature_arc_audit_uses_exact_heading_for_coherent_arc_cells() -> None
     assert audit.maximum_corridor_excess_m == 0.0
     assert audit.valid
     assert audit.continuous_clearance_certified
+
+
+def test_curvature_arc_audit_handles_negative_signed_chord() -> None:
+    angles = (0.0, 3.0 * pi, 10.0 * pi / 3.0, 11.0 * pi / 3.0, 4.0 * pi)
+    track = SpatialTrack(
+        distance_m=angles,
+        x_m=tuple(sin(angle) for angle in angles),
+        y_m=tuple(1.0 - cos(angle) for angle in angles),
+        curvature_per_m=(1.0,) * 4,
+    )
+    track.validate_coherent_arcs()
+    corridor = TrackCorridor.constant(
+        track, left_width_m=20.0, right_width_m=20.0,
+        vehicle_width_m=1.0, source="coarse coherent circle",
+    )
+    audit = _audit_curvature_path(track, track, track.distance_m, corridor)
+    assert audit.initial_heading_policy == "coherent_first_arc_chord"
+    assert audit.seam_position_error_m < 1e-8
+    assert audit.valid
 
 
 def test_curvature_arc_audit_rejects_an_open_map_labeled_closed() -> None:
@@ -1352,3 +1371,32 @@ def test_constraint_progress_callback_identifies_each_ai_trial(
     )
     for (_, snapshot), (_, callback_snapshot) in zip(emitted, received, strict=True):
         assert callback_snapshot is snapshot
+
+
+def test_speed_periodic_phase_callback_identifies_current_ai_path(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    from lapsim.ui.simulation import SpeedPeriodicPhaseSnapshot
+
+    plan = replace(
+        _adaptive_plan, status="centerline",
+        candidate_track=_adaptive_plan.baseline_track,
+    )
+    snapshot = SpeedPeriodicPhaseSnapshot("speed_seam_probe", 1, 2)
+
+    def fake_periodic(vehicle, track, **kwargs):
+        del vehicle
+        assert track is plan.baseline_track
+        kwargs["phase_progress_callback"](snapshot)
+        run = SimpleNamespace(
+            completed=True, driving_time_s=10.0, failure_reason=None,
+        )
+        return SimpleNamespace(run=run, converged=True, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_speed_periodic_lap", fake_periodic)
+    received = []
+    compare_lines_with_lap_model(
+        object(), plan, torque_request_fraction=0.7, speed_periodic=True,
+        phase_progress_callback=lambda phase, event: received.append((phase, event)),
+    )
+    assert received == [("baseline", snapshot)]
