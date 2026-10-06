@@ -145,7 +145,6 @@ class LapSimDesktop:
         self._driver_look_ahead_m = 80.0
         self._driver_live_mode = False
         self._driver_stream_active = False
-        self._live_progress_activated = False
         self._build_window()
         self._refresh_profile_menus()
         self._select_profile("prius_2026_le")
@@ -395,6 +394,8 @@ class LapSimDesktop:
             ("Distance", "distance", "m"),
             ("Net energy*", "energy", "kWh"),
             ("Peak lateral", "lateral_g", "g"),
+            ("Lap entry speed", "entry_speed", "km/h"),
+            ("Lap exit speed", "exit_speed", "km/h"),
         )
         for index, (label, key, unit) in enumerate(outputs):
             row, column = divmod(index, 2)
@@ -419,12 +420,16 @@ class LapSimDesktop:
         box.grid_columnconfigure(1, weight=1, uniform="output")
         tk.Label(
             box,
-            text="*Equivalent battery model; not measured Prius fuel or battery use.",
+            text=(
+                "*Equivalent battery model; not measured Prius fuel or battery use. "
+                "Entry and exit speeds may differ: this is one initial-condition lap, "
+                "not a periodic steady-state lap."
+            ),
             anchor="w",
             justify="left",
             wraplength=315,
             font=("Segoe UI", 9),
-        ).grid(row=3, column=0, columnspan=2, sticky="ew", padx=2, pady=(5, 0))
+        ).grid(row=4, column=0, columnspan=2, sticky="ew", padx=2, pady=(5, 0))
 
         self.ai_output_box = tk.LabelFrame(
             parent, text="Experimental path comparison", font=FONT_BOLD,
@@ -1495,12 +1500,18 @@ class LapSimDesktop:
         self._driver_playback_time_s = 0.0
         self._driver_live_mode = True
         self._driver_stream_active = True
-        self._live_progress_activated = False
+        self.driver_progress_var.set(0.0)
+        for value in self.driver_values.values():
+            value.set("—")
+        for value in self.output_values.values():
+            value.configure(text="—")
+        for value in self.ai_output_values.values():
+            value.configure(text="—")
         self.driver_run_label.set(f"Preparing {name} · path and speed limits")
         if self.driver_play_button is not None:
             self.driver_play_button.configure(state="disabled")
         self.driver_progress.configure(state="disabled")
-        self._draw_driver_view()
+        self._switch_tab("Driver view")
 
     def _queue_live_progress(
         self, name: str, phase: str, track: Any, snapshot: Any,
@@ -1553,9 +1564,6 @@ class LapSimDesktop:
             f"{snapshot.cell_index + 1}/{snapshot.cell_count} · reference path"
         )
         self._render_driver_frame()
-        if not self._live_progress_activated:
-            self._live_progress_activated = True
-            self._switch_tab("Driver view")
 
     def _vehicle_for_profile(
         self, profile_id: str, setup: VehicleSetup | None
@@ -1620,6 +1628,9 @@ class LapSimDesktop:
         profile_name = self.profile_id_to_display[profile_id]
         if ai_assumptions is not None:
             self._path_comparison = None
+            self.ai_result_text.set(
+                "Evaluating geometric centerline, full line, and half line…"
+            )
             if self.ai_compare_button is not None:
                 self.ai_compare_button.configure(state="disabled")
         self._set_busy(True)
@@ -1810,7 +1821,7 @@ class LapSimDesktop:
             ).hexdigest()
             path_planning = {
                 "mode": "experimental_racing_line",
-                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v2_bounded_strength",
+                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v3_winding_three_trial",
                 "selected_mode": selected_mode,
                 "candidate_offset_strength": comparison.candidate_strength,
                 "selected_offset_strength": (
@@ -1859,6 +1870,7 @@ class LapSimDesktop:
                     else 0.0 if selected_mode == "centerline" else None
                 ),
                 "max_constraint_violation_m": plan.max_constraint_violation_m,
+                "corridor_fold_ratio_max": plan.corridor_fold_ratio_max,
                 "source_closure_error_m": plan.source_closure_error_m,
                 "source_vs_processed_length_m": plan.source_vs_processed_length_m,
                 "source_vs_processed_length_fraction": plan.source_vs_processed_length_fraction,
@@ -1950,9 +1962,12 @@ class LapSimDesktop:
         self._set_busy(False)
         if self._driver_live_mode:
             self._driver_stream_active = False
-            self.driver_run_label.set(
-                f"Last accepted step · {self.driver_run_label.get()}"
-            )
+            if self.driver_playback is None:
+                self.driver_run_label.set("No accepted model step · calculation ended")
+            else:
+                self.driver_run_label.set(
+                    f"Last accepted step · {self.driver_run_label.get()}"
+                )
             self._draw_driver_view()
         elapsed_s = time.perf_counter() - self.run_started_at
         if error is not None:
@@ -2079,6 +2094,14 @@ class LapSimDesktop:
             "distance": f"{summary.distance_m:.0f}",
             "energy": f"{summary.pack_energy_kwh:.3f}",
             "lateral_g": f"{summary.peak_lateral_g:.2f}",
+            "entry_speed": (
+                f"{result.starting_speed_mps * 3.6:.1f}"
+                if result.starting_speed_mps is not None else "—"
+            ),
+            "exit_speed": (
+                f"{result.ending_speed_mps * 3.6:.1f}"
+                if result.ending_speed_mps is not None else "—"
+            ),
         }
         for key, value in values.items():
             self.output_values[key].configure(text=value)
@@ -2101,7 +2124,7 @@ class LapSimDesktop:
         )
         window = tk.Toplevel(self.root)
         window.title("LapSim path comparison")
-        window.geometry("800x440")
+        window.geometry("800x475")
         body = tk.Frame(window, padx=12, pady=12)
         body.pack(fill="both", expand=True)
         tk.Label(body, text="Experimental path comparison", font=FONT_TITLE).grid(
@@ -2142,15 +2165,31 @@ class LapSimDesktop:
                     relief="solid", bd=1, padx=6, pady=5,
                     font=FONT if column == 0 else ("Consolas", 10),
                 ).grid(row=row, column=column, sticky="ew", padx=3, pady=2)
+        baseline_seam = comparison.baseline_run.seam_speed_delta_mps
+        candidate_seam = comparison.candidate_run.seam_speed_delta_mps
+        seam_cells = (
+            "Seam speed Δ (km/h)",
+            f"{baseline_seam * 3.6:+.1f}" if baseline_seam is not None else "—",
+            f"{candidate_seam * 3.6:+.1f}" if candidate_seam is not None else "—",
+            f"{(candidate_seam - baseline_seam) * 3.6:+.1f}"
+            if baseline_seam is not None and candidate_seam is not None else "—",
+        )
+        for column, value in enumerate(seam_cells):
+            tk.Label(
+                body, text=value, anchor="w" if column == 0 else "e",
+                relief="solid", bd=1, padx=6, pady=5,
+                font=FONT if column == 0 else ("Consolas", 10),
+            ).grid(row=9, column=column, sticky="ew", padx=3, pady=2)
         for column in range(4):
             body.grid_columnconfigure(column, weight=1)
         tk.Label(
             body,
             text=("Widths and vehicle envelope are assumptions. The source x/y map "
                   "and recorded curvature disagree; these times are comparable model "
-                  "scenarios, not validated Terps lap predictions."),
+                  "scenarios, not validated Terps lap predictions. Seam speed Δ is "
+                  "finish minus start; these one-pass laps need not be periodic."),
             anchor="w", justify="left", wraplength=755,
-        ).grid(row=9, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+        ).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(10, 0))
         self._apply_theme()
 
     def _show_comparison(
@@ -2163,7 +2202,7 @@ class LapSimDesktop:
         second = summarize_lap(second_result, self.track.length_m)
         window = tk.Toplevel(self.root)
         window.title("LapSim car comparison")
-        window.geometry("760x490")
+        window.geometry("760x525")
         box = tk.Frame(window, padx=12, pady=12)
         box.pack(fill="both", expand=True)
         tk.Label(box, text="Same course and run settings", font=FONT_TITLE).grid(
@@ -2206,19 +2245,35 @@ class LapSimDesktop:
                     relief="solid", bd=1, padx=6, pady=5,
                     font=("Consolas", 10) if column else FONT,
                 ).grid(row=row_number, column=column, sticky="ew", padx=2, pady=2)
+        first_seam = first_result.seam_speed_delta_mps
+        second_seam = second_result.seam_speed_delta_mps
+        seam_cells = (
+            "Seam speed Δ (km/h)",
+            f"{first_seam * 3.6:+.1f}" if first_seam is not None else "—",
+            f"{second_seam * 3.6:+.1f}" if second_seam is not None else "—",
+            f"{(second_seam - first_seam) * 3.6:+.1f}"
+            if first_seam is not None and second_seam is not None else "—",
+        )
+        for column, value in enumerate(seam_cells):
+            tk.Label(
+                box, text=value, anchor="w" if column == 0 else "e",
+                relief="solid", bd=1, padx=6, pady=5,
+                font=("Consolas", 10) if column else FONT,
+            ).grid(row=9, column=column, sticky="ew", padx=2, pady=2)
         for column in range(4):
             box.grid_columnconfigure(column, weight=1)
         tk.Label(
             box,
-            text="*Equivalent pack-model energy. These are model comparisons, not "
-                 "validated vehicle performance or measured energy use.",
+            text="*Equivalent pack-model energy. Seam speed Δ = finish minus start; "
+                 "a nonzero value means a single initial-condition lap, not "
+                 "a periodic steady-state lap. These are model comparisons.",
             anchor="w", justify="left", wraplength=720,
-        ).grid(row=9, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+        ).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(10, 0))
         tk.Label(
             box,
             text=f"Saved records: A {run_ids[0][:16]} · B {run_ids[1][:16]}",
             anchor="w", font=("Consolas", 9),
-        ).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(5, 0))
+        ).grid(row=11, column=0, columnspan=4, sticky="ew", pady=(5, 0))
         self._apply_theme()
 
 

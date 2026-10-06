@@ -49,6 +49,8 @@ main classes for concise imports.
   lap records, and comparison traces.
 - [Optional AI racer design and checks](docs/ai_racer_design.md): bounded path
   search, geometry assumptions, model comparison, and known limits.
+- [Team demo brief](docs/team_demo_brief.md): a five-minute walkthrough,
+  evidence to show, and measurements needed before car or course decisions.
 - [Four-wheel dynamics](docs/four_wheel_dynamics.md): synthetic independent-wheel
   torque-allocation experiment, wind and local road grip, equations, and limits.
 - [Source-backed vehicle profiles](docs/source_vehicle_profiles.md): local
@@ -80,8 +82,8 @@ The **Driving path** control defaults to the ordinary centerline solver and
 does no path optimization. Its optional **AI racing line (experimental)** mode
 uses an assumed track half-width, vehicle width, and margin to propose one
 smooth line and compare it with a geometric centerline using the same car and
-physics solver. If the full line loses or fails, it can also test a half-offset
-line, with a hard limit of three full physics laps. The app selects a candidate
+physics solver. It also tests a half-offset line for a valid candidate,
+with a hard limit of three full physics laps. The app selects a candidate
 only when both it and the baseline complete and it is faster. The packaged
 course has no surveyed widths, and its x/y map does not agree with its stored
 solver curvature; the Analysis tab displays the measured inconsistency. AI-mode times should be

@@ -30,14 +30,16 @@ class EnduranceRunConfig:
     def __post_init__(self) -> None:
         if self.laps <= 0:
             raise ValueError("laps must be positive")
-        if self.starting_speed_mps is not None and self.starting_speed_mps < 0:
-            raise ValueError("starting_speed_mps cannot be negative")
-        if self.maximum_driving_time_s <= 0:
-            raise ValueError("maximum_driving_time_s must be positive")
-        if self.minimum_moving_speed_mps <= 0:
-            raise ValueError("minimum_moving_speed_mps must be positive")
-        if self.path_speed_tolerance_mps <= 0:
-            raise ValueError("path_speed_tolerance_mps must be positive")
+        if self.starting_speed_mps is not None and (
+            not isfinite(self.starting_speed_mps) or self.starting_speed_mps < 0.0
+        ):
+            raise ValueError("starting_speed_mps must be finite and nonnegative")
+        if not isfinite(self.maximum_driving_time_s) or self.maximum_driving_time_s <= 0.0:
+            raise ValueError("maximum_driving_time_s must be finite and positive")
+        if not isfinite(self.minimum_moving_speed_mps) or self.minimum_moving_speed_mps <= 0.0:
+            raise ValueError("minimum_moving_speed_mps must be finite and positive")
+        if not isfinite(self.path_speed_tolerance_mps) or self.path_speed_tolerance_mps <= 0.0:
+            raise ValueError("path_speed_tolerance_mps must be finite and positive")
         if self.maximum_brake_pressure_psi is not None and (
             not isfinite(self.maximum_brake_pressure_psi)
             or self.maximum_brake_pressure_psi <= 0.0
@@ -63,10 +65,29 @@ class EnduranceRunResult:
     final_state_of_charge: float
     failure_reason: str | None
     telemetry: Telemetry | None
+    starting_speed_mps: float | None = None
+    ending_speed_mps: float | None = None
 
     @property
     def completed(self) -> bool:
         return self.failure_reason is None
+
+    @property
+    def seam_speed_delta_mps(self) -> float | None:
+        """Finish minus start speed for a completed single-lap run, if known.
+
+        A nonzero value means the lap's speed state is not periodic at the
+        start/finish seam. No tolerance or correction is hidden in this value.
+        """
+
+        if (
+            not self.completed
+            or self.completed_laps != 1
+            or self.starting_speed_mps is None
+            or self.ending_speed_mps is None
+        ):
+            return None
+        return self.ending_speed_mps - self.starting_speed_mps
 
 
 @dataclass(frozen=True, slots=True)
@@ -439,6 +460,7 @@ class EnduranceSimulator:
             if config.starting_speed_mps is None
             else config.starting_speed_mps
         )
+        starting_speed_mps = vehicle.speed_mps
 
         recorder = TelemetryRecorder() if record_telemetry else None
         energy_j = 0.0
@@ -603,6 +625,8 @@ class EnduranceSimulator:
             final_state_of_charge=vehicle.battery.state_of_charge,
             failure_reason=failure_reason,
             telemetry=telemetry,
+            starting_speed_mps=starting_speed_mps,
+            ending_speed_mps=vehicle.speed_mps,
         )
 
 __all__ = [

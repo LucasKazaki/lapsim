@@ -8,7 +8,11 @@ from lapsim import LapProgressSnapshot
 from lapsim.core.controls import Controls
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Track
-from lapsim.events.endurance import EnduranceRunConfig, EnduranceSimulator
+from lapsim.events.endurance import (
+    EnduranceRunConfig,
+    EnduranceRunResult,
+    EnduranceSimulator,
+)
 from lapsim.optimization.torque_profile import UniformPeriodicTorqueParameterization
 from lapsim.solvers.path_constraints import PathConstraintSolver
 from lapsim.ui.simulation import run_one_lap
@@ -45,6 +49,15 @@ class ConstantUnsafeControls:
 
 
 class EnduranceSimulatorTests(TestCase):
+    def test_config_rejects_nonfinite_start_and_numerical_limits(self) -> None:
+        for name in (
+            "starting_speed_mps", "maximum_driving_time_s",
+            "minimum_moving_speed_mps", "path_speed_tolerance_mps",
+        ):
+            for value in (float("nan"), float("inf"), float("-inf")):
+                with self.subTest(field=name, value=value), self.assertRaises(ValueError):
+                    EnduranceRunConfig(**{name: value})
+
     def test_progress_snapshots_match_accepted_cells_without_changing_result(self) -> None:
         track = small_closed_track()
         vehicle = Vehicle()
@@ -72,6 +85,9 @@ class EnduranceSimulatorTests(TestCase):
         self.assertIsNone(lightweight.telemetry)
         self.assertEqual(observed.pack_energy_kwh, ordinary.pack_energy_kwh)
         self.assertEqual(observed.telemetry, ordinary.telemetry)
+        self.assertEqual(observed.starting_speed_mps, 8.0)
+        self.assertEqual(observed.ending_speed_mps, vehicle.speed_mps)
+        self.assertIsNone(observed.seam_speed_delta_mps)
         self.assertEqual(len(progress), 2 * track.cell_count)
         self.assertIsInstance(progress[0], LapProgressSnapshot)
         self.assertEqual(lightweight_progress, progress)
@@ -115,6 +131,28 @@ class EnduranceSimulatorTests(TestCase):
         self.assertEqual(progress[-1].cell_index, track.cell_count - 1)
         self.assertAlmostEqual(progress[-1].lap_station_m, track.length_m)
         self.assertAlmostEqual(progress[-1].elapsed_time_s, result.driving_time_s)
+        self.assertEqual(result.ending_speed_mps, progress[-1].speed_mps)
+        self.assertAlmostEqual(
+            result.seam_speed_delta_mps,
+            result.ending_speed_mps - result.starting_speed_mps,
+        )
+
+    def test_seam_speed_delta_requires_completed_single_lap_and_known_speeds(self) -> None:
+        original_fields = (1, 10.0, (10.0,), 0.2, 0.8, None, None)
+        legacy = EnduranceRunResult(*original_fields)
+        self.assertIsNone(legacy.seam_speed_delta_mps)
+
+        measured = EnduranceRunResult(
+            *original_fields,
+            starting_speed_mps=10.0,
+            ending_speed_mps=7.5,
+        )
+        self.assertEqual(measured.seam_speed_delta_mps, -2.5)
+        interrupted = EnduranceRunResult(
+            0, 3.0, (), 0.1, 0.9, "stalled", None,
+            starting_speed_mps=10.0, ending_speed_mps=7.5,
+        )
+        self.assertIsNone(interrupted.seam_speed_delta_mps)
 
     def test_preserves_battery_state_and_records_component_telemetry(self) -> None:
         track = small_closed_track()
@@ -394,5 +432,8 @@ class EnduranceSimulatorTests(TestCase):
 
         self.assertFalse(result.completed)
         self.assertAlmostEqual(vehicle.speed_mps, requested_speed_mps)
+        self.assertAlmostEqual(result.starting_speed_mps, requested_speed_mps)
+        self.assertAlmostEqual(result.ending_speed_mps, requested_speed_mps)
+        self.assertIsNone(result.seam_speed_delta_mps)
         self.assertEqual(vehicle.distance_m, 0.0)
         self.assertEqual(progress, [])

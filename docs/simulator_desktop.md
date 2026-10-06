@@ -41,7 +41,11 @@ run faster but can change the lap result because they smooth curvature over
 longer distances.
 
 The numeric outputs are lap time, peak speed, average speed, distance, net
-equivalent-pack energy, and peak lateral acceleration in g. The trace selector
+equivalent-pack energy, peak lateral acceleration in g, and lap entry/exit
+speeds. Different entry and exit speeds at the same closed-course seam mean
+this is a one-pass initial-condition lap rather than a periodic steady-state
+flying lap. The car and AI path comparison windows show the signed seam-speed
+difference alongside their other numbers. The trace selector
 shows speed, longitudinal or lateral acceleration, drive or braking force,
 driven tire slip, or battery power against distance or time. The top-down
 course map stays fixed rather than moving with the car. In the map,
@@ -55,7 +59,7 @@ prepass. As the physics solver accepts cells, Driver view shows its latest
 elapsed time, station, speed, and lateral acceleration on a driver-centered
 top-down **reference map**. The desktop keeps only the newest update and draws
 at roughly 10 updates per second, so it does not slow the solver to real time.
-AI mode labels geometric baseline, full line, and optional half line separately.
+AI mode labels geometric baseline, full line, and half line separately.
 Rejected cells are not shown as completed movement. After a completed lap,
 the app starts a 1× replay with Play/Pause, Start, time scrub, playback rate,
 and wheel zoom. The course rotates around a fixed car marker. The replay uses
@@ -74,9 +78,10 @@ existing recorded curvature and runs no path search. Choose **AI racing line
 and safety margin. The app has no measured boundaries and does not infer
 vehicle body width from the car profile. A deterministic, bounded planner
 proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
-torque request through both a newly derived geometric centerline and the
-full-offset candidate path. If the full path fails or is no faster, it can
-evaluate a validated half-offset path, for at most three full physics laps.
+torque request through a newly derived geometric centerline, the full-offset
+candidate, and a validated half-offset path, for at most three full physics
+laps. Evaluating both strengths can catch an interior line that is faster
+than the full path even when the full path already beats centerline.
 It selects the best tested candidate only if that path and the baseline both
 complete and the candidate is faster. The left panel shows the two times, signed difference,
 selected path length, and assumptions; **Compare path numbers** shows time,

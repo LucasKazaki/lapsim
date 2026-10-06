@@ -14,11 +14,62 @@ from lapsim.ui.app import LapSimDesktop
 from lapsim.ui.presets import VehicleSetup
 
 
+def test_live_view_clears_old_numbers_and_distinguishes_empty_failure() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        for value in app.driver_values.values():
+            value.set("previous run")
+        for value in app.output_values.values():
+            value.configure(text="previous run")
+        app.driver_progress_var.set(700.0)
+        with patch("lapsim.ui.app.threading.Thread"):
+            app._start_run()
+
+        assert app._active_tab == "Driver view"
+        assert app.driver_playback is None
+        assert app.driver_progress_var.get() == 0.0
+        assert all(value.get() == "—" for value in app.driver_values.values())
+        assert all(value["text"] == "—" for value in app.output_values.values())
+        app.result_queue.put(("single", None, RuntimeError("planning failed")))
+        with patch("lapsim.ui.app.messagebox.showerror"):
+            app._poll_result()
+        assert app.driver_run_label.get() == (
+            "No accepted model step · calculation ended"
+        )
+
+        with patch("lapsim.ui.app.threading.Thread"):
+            app._start_run()
+        station_m = app.track.distance_m[1]
+        app._queue_live_progress(
+            "Prius", "Centerline model", app.track,
+            LapProgressSnapshot(
+                lap_index=0, cell_index=0, cell_count=app.track.cell_count,
+                elapsed_time_s=1.0, lap_station_m=station_m,
+                total_distance_m=station_m, speed_mps=4.0,
+                lateral_acceleration_mps2=0.0,
+            ),
+        )
+        app._poll_live_progress()
+        assert app.driver_values["speed"].get() == "14.4"
+        app.result_queue.put(("single", None, RuntimeError("later failure")))
+        with patch("lapsim.ui.app.messagebox.showerror"):
+            app._poll_result()
+        assert app.driver_run_label.get().startswith("Last accepted step · ")
+        assert app.driver_values["speed"].get() == "14.4"
+    finally:
+        root.destroy()
+
+
 def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
     try:
         root = tk.Tk()
-    except tk.TclError:
-        pytest.skip("Tk display unavailable")
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
     root.withdraw()
     try:
         app = LapSimDesktop(root)
@@ -58,6 +109,7 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
             app._start_run()
             assert worker.call_args.kwargs["target"].__name__ == "_calculate_ai_single"
             assert worker.call_args.kwargs["args"][-1] == (2.0, 1.8, 0.2)
+            assert "Evaluating geometric centerline" in app.ai_result_text.get()
         app._set_busy(False)
         with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
             app._calculate_ai_single(
@@ -70,11 +122,11 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
             assert app.progress_queue.qsize() == 1
             app._set_busy(True)
             app._poll_live_progress()
-            assert "Full AI line" in app.driver_run_label.get()
+            assert "Half AI line" in app.driver_run_label.get()
             assert app.driver_playback is not None
             assert app.driver_playback.frame_at(
                 app.driver_playback.duration_s
-            ).distance_m == pytest.approx(payload[5].candidate_track.length_m)
+            ).distance_m == pytest.approx(app.driver_playback.track.length_m)
             app.result_queue.put((kind, payload, error))
             app._poll_result()
             root.update()
@@ -87,14 +139,21 @@ def test_ai_path_can_run_display_compare_and_save(tmp_path: Path) -> None:
         assert app.ai_compare_button["state"] == "normal"
         assert app.ai_output_values["baseline"]["text"] != "—"
         assert app.ai_output_values["candidate"]["text"] != "—"
+        assert app.output_values["entry_speed"]["text"] != "—"
+        assert app.output_values["exit_speed"]["text"] != "—"
         assert "different source curvature" in app.ai_result_text.get()
         records = list(tmp_path.glob("*.json"))
         assert len(records) == 1
         record = RunRecord.load(records[0]).to_dict()
+        assert record["result"]["seam_speed_delta_mps"] == pytest.approx(
+            record["result"]["ending_speed_mps"]
+            - record["result"]["starting_speed_mps"]
+        )
         planning = record["settings"]["path_planning"]
         assert planning["mode"] == "experimental_racing_line"
-        assert planning["algorithm"].endswith("v2_bounded_strength")
-        assert len(planning["candidate_trials"]) in (1, 2)
+        assert planning["algorithm"].endswith("v3_winding_three_trial")
+        assert len(planning["candidate_trials"]) == 2
+        assert planning["corridor_fold_ratio_max"] < 0.98
         assert planning["candidate_trials"][0]["offset_strength"] == 1.0
         assert planning["candidate_length_m"] == pytest.approx(
             payload[5].candidate_track.length_m

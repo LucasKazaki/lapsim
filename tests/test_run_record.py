@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from hashlib import sha256
 from importlib.metadata import version as distribution_version
 import json
@@ -97,6 +98,27 @@ class RunRecordTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             self.assertNotIn("NaN", text)
             self.assertIn('"run_id"', text)
+
+    def test_measured_seam_speeds_are_in_the_saved_result(self) -> None:
+        observed = replace(
+            self._result(self._telemetry()),
+            starting_speed_mps=4.0,
+            ending_speed_mps=3.0,
+        )
+        record = capture_lap_run(
+            observed, self.manifest, self.settings,
+            actual_vehicle=self.vehicle,
+        )
+        saved = record.to_dict()["result"]
+        self.assertEqual(saved["starting_speed_mps"], 4.0)
+        self.assertEqual(saved["ending_speed_mps"], 3.0)
+        self.assertEqual(saved["seam_speed_delta_mps"], -1.0)
+
+        legacy = capture_lap_run(
+            self._result(self._telemetry()), self.manifest, self.settings,
+            actual_vehicle=self.vehicle,
+        ).to_dict()["result"]
+        self.assertNotIn("seam_speed_delta_mps", legacy)
 
     def test_v2_embeds_exact_solver_grid_and_resolved_runtime(self) -> None:
         record = capture_lap_run(

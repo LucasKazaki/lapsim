@@ -23,6 +23,7 @@ from typing import Callable
 
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
+from scipy.interpolate import CubicSpline
 from scipy.optimize import LinearConstraint, minimize
 
 from lapsim.courses.spatial_track import SpatialTrack
@@ -98,6 +99,7 @@ class RacingLinePlan:
     processing_shift_max_m: float
     source_vs_processed_length_m: float
     source_vs_processed_length_fraction: float
+    corridor_fold_ratio_max: float
     iterations: int
     objective_evaluations: int
     compute_time_s: float
@@ -241,8 +243,10 @@ def _continuous_offset_violation(
     return maximum_violation
 
 
-def _track_from_closed_points(x: np.ndarray, y: np.ndarray) -> SpatialTrack:
-    """Recompute chord arc length and signed three-point curvature."""
+def _closed_chord_lengths_and_turns(
+    x: np.ndarray, y: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return each polygon edge length and signed turn at its start vertex."""
 
     dx = np.roll(x, -1) - x
     dy = np.roll(y, -1) - y
@@ -251,13 +255,25 @@ def _track_from_closed_points(x: np.ndarray, y: np.ndarray) -> SpatialTrack:
         raise ValueError("candidate contains a degenerate path cell")
     prev_dx = np.roll(dx, 1)
     prev_dy = np.roll(dy, 1)
-    prev_lengths = np.roll(lengths, 1)
     next_chord = np.hypot(prev_dx + dx, prev_dy + dy)
     if float(np.min(next_chord)) < 1e-5:
         raise ValueError("candidate folds back across a path point")
     cross = prev_dx * dy - prev_dy * dx
-    point_curvature = 2.0 * cross / (prev_lengths * lengths * next_chord)
-    cell_curvature = 0.5 * (point_curvature + np.roll(point_curvature, -1))
+    dot = prev_dx * dx + prev_dy * dy
+    vertex_turn = np.arctan2(cross, dot)
+    return lengths, vertex_turn
+
+
+def _track_from_closed_points(x: np.ndarray, y: np.ndarray) -> SpatialTrack:
+    """Recompute chord arc length and integral-consistent signed curvature.
+
+    The discrete heading turn at each vertex is shared equally by its two
+    adjacent cells. Thus ``sum(curvature_i * cell_length_i)`` equals the
+    polygon's signed winding angle exactly, including across the lap seam.
+    """
+
+    lengths, vertex_turn = _closed_chord_lengths_and_turns(x, y)
+    cell_curvature = 0.5 * (vertex_turn + np.roll(vertex_turn, -1)) / lengths
     distance = np.concatenate(([0.0], np.cumsum(lengths)))
     return SpatialTrack(
         distance_m=tuple(float(v) for v in distance),
@@ -357,6 +373,8 @@ class RacingLinePlanner:
         start = perf_counter()
         if not track.closed:
             raise ValueError("racing-line planning requires a closed course")
+        if track.cell_count < 4:
+            raise ValueError("racing-line planning requires at least four geometry cells")
         if len(corridor.left_width_m) != track.cell_count:
             raise ValueError("corridor widths must match reference track cells")
         count = max(ceil(track.length_m / self.sample_spacing_m), 4 * self.control_count, 32)
@@ -370,8 +388,12 @@ class RacingLinePlanner:
         # Bring the noisy endpoint onto the start by a visible, recorded repair.
         corrected_x = source_x - (source_station / track.length_m) * (source_x[-1] - source_x[0])
         corrected_y = source_y - (source_station / track.length_m) * (source_y[-1] - source_y[0])
-        raw_x = np.interp(station, source_station, corrected_x)
-        raw_y = np.interp(station, source_station, corrected_y)
+        corrected_x[-1], corrected_y[-1] = corrected_x[0], corrected_y[0]
+        # Periodic cubic interpolation avoids curvature aliasing when source
+        # and planner stations differ, and closes the reference tangent at the
+        # lap seam. Linear interpolation can create artificial corner spikes.
+        raw_x = CubicSpline(source_station, corrected_x, bc_type="periodic")(station)
+        raw_y = CubicSpline(source_station, corrected_y, bc_type="periodic")(station)
         sigma = self.smoothing_m / (track.length_m / count)
         if sigma:
             base_x = gaussian_filter1d(raw_x, sigma, mode="wrap")
@@ -391,6 +413,41 @@ class RacingLinePlanner:
             raise ValueError("reference line has an undefined tangent")
         normal_x, normal_y = -tangent_y / tangent_norm, tangent_x / tangent_norm
         half_width = 0.5 * corridor.vehicle_width_m + corridor.safety_margin_m
+        base_lengths, base_vertex_turn = _closed_chord_lengths_and_turns(base_x, base_y)
+        point_curvature = base_vertex_turn / (
+            0.5 * (base_lengths + np.roll(base_lengths, 1))
+        )
+        # Include every source cell center: a locally wide source cell can be
+        # shorter than the planner grid and would otherwise evade this guard.
+        fold_station = np.unique(np.concatenate((
+            station,
+            0.5 * (source_station[:-1] + source_station[1:]),
+        )))
+        fold_lower, fold_upper = _corridor_bounds_at(
+            fold_station, source_station, corridor, half_width
+        )
+        preceding = np.searchsorted(station, fold_station, side="right") - 1
+        following = (preceding + 1) % count
+        local_positive_curvature = np.maximum.reduce((
+            np.maximum(point_curvature[preceding], 0.0),
+            np.maximum(point_curvature[following], 0.0),
+        ))
+        local_negative_curvature = np.maximum.reduce((
+            np.maximum(-point_curvature[preceding], 0.0),
+            np.maximum(-point_curvature[following], 0.0),
+        ))
+        # The normal-coordinate map has tangential Jacobian 1 - kappa*d.
+        # When the usable inside offset reaches the local bend radius, that
+        # coordinate system folds and "inside the corridor" ceases to be a
+        # meaningful local safety claim. Leave a 2% numerical buffer.
+        corridor_fold_ratio = float(np.max(np.maximum(
+            local_positive_curvature * fold_upper,
+            local_negative_curvature * (-fold_lower),
+        )))
+        if corridor_fold_ratio >= 0.98:
+            raise ValueError(
+                "usable corridor reaches the local bend radius and folds in normal coordinates"
+            )
         basis = _periodic_cubic_basis(count, self.control_count)
         # Solver stations alone can miss a source cell narrower than the
         # planner grid. Constrain every source cell at its center and both
@@ -516,6 +573,7 @@ class RacingLinePlanner:
             processing_shift_max_m=processing_shift,
             source_vs_processed_length_m=baseline_length - track.length_m,
             source_vs_processed_length_fraction=(baseline_length - track.length_m) / track.length_m,
+            corridor_fold_ratio_max=corridor_fold_ratio,
             iterations=int(result.nit),
             objective_evaluations=int(result.nfev),
             compute_time_s=perf_counter() - start,
@@ -567,10 +625,9 @@ def compare_lines_with_lap_model(
     """Evaluate a candidate and its baseline with the unchanged lap physics.
 
     The vehicle is copied before each run because a lap mutates pack and
-    chassis state. The full geometric candidate is tried first. A half-offset
-    path is tried only if that candidate fails or does not beat a completed
-    baseline. Thus at most three full laps run, and the ordinary centerline
-    path still avoids this module entirely. A candidate is selected only if
+    chassis state. The full geometric candidate and a validated half-offset
+    path are both tried. Thus at most three full laps run, and the ordinary
+    centerline path still avoids this module entirely. A candidate is selected only if
     both it and the baseline complete and it is faster. Errors remain explicit.
     With a callback, accepted-cell snapshots carry a phase label and the exact
     track being simulated; no callback keyword is passed in the default case.
@@ -616,25 +673,25 @@ def compare_lines_with_lap_model(
         trials.append(RacingLineTrial(1.0, plan.candidate_track.length_m, full_time, full_error))
         candidate_run, candidate_time, candidate_error = full_run, full_time, full_error
         candidate_strength = 1.0 if full_time is not None else None
-        if full_time is None or (baseline_time is not None and full_time >= baseline_time):
-            # Scaling a valid spline offset toward zero preserves every
-            # convex lateral corridor bound. The intermediate x/y geometry
-            # still needs its own fold and self-intersection checks.
-            try:
-                half_track = _scaled_candidate_track(plan, 0.5)
-            except ValueError as error:
-                trials.append(RacingLineTrial(0.5, None, None, f"Geometry: {error}"))
-            else:
-                half_run, half_time, half_error = run_trial(half_track, "half")
-                trials.append(RacingLineTrial(0.5, half_track.length_m, half_time, half_error))
-                if half_time is not None and (candidate_time is None or half_time < candidate_time):
-                    candidate_track, candidate_run = half_track, half_run
-                    candidate_time, candidate_error = half_time, None
-                    candidate_strength = 0.5
-                elif candidate_run is None and half_run is not None:
-                    # Preserve the path belonging to any available failed
-                    # result so the desktop can save a diagnostic run.
-                    candidate_track, candidate_run = half_track, half_run
+        # Scaling a valid spline offset toward zero preserves every convex
+        # lateral corridor bound. The intermediate x/y geometry still needs
+        # its own fold and self-intersection checks. A full path that beats
+        # centerline can still lose to an interior offset for this vehicle.
+        try:
+            half_track = _scaled_candidate_track(plan, 0.5)
+        except ValueError as error:
+            trials.append(RacingLineTrial(0.5, None, None, f"Geometry: {error}"))
+        else:
+            half_run, half_time, half_error = run_trial(half_track, "half")
+            trials.append(RacingLineTrial(0.5, half_track.length_m, half_time, half_error))
+            if half_time is not None and (candidate_time is None or half_time < candidate_time):
+                candidate_track, candidate_run = half_track, half_run
+                candidate_time, candidate_error = half_time, None
+                candidate_strength = 0.5
+            elif candidate_run is None and half_run is not None:
+                # Preserve the path belonging to any available failed
+                # result so the desktop can save a diagnostic run.
+                candidate_track, candidate_run = half_track, half_run
         if candidate_time is None:
             candidate_error = "; ".join(
                 f"{trial.strength:g}x: {trial.error}"

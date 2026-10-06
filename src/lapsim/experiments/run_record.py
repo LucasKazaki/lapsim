@@ -390,7 +390,7 @@ def _result_payload(result: EnduranceRunResult) -> dict[str, Any]:
         raise ValueError("a successful one-lap result must complete one lap")
     if result.failure_reason is not None and not result.failure_reason.strip():
         raise ValueError("failure_reason must be nonempty when present")
-    return {
+    summary = {
         "status": "completed" if result.completed else "failed",
         "termination_reason": "completed" if result.completed else result.failure_reason,
         "completed_laps": result.completed_laps,
@@ -399,6 +399,15 @@ def _result_payload(result: EnduranceRunResult) -> dict[str, Any]:
         "pack_energy_kwh": result.pack_energy_kwh,
         "final_state_of_charge": result.final_state_of_charge,
     }
+    for name in ("starting_speed_mps", "ending_speed_mps"):
+        value = getattr(result, name)
+        if value is not None:
+            if not isfinite(value) or value < 0.0:
+                raise ValueError(f"{name} must be finite and nonnegative")
+            summary[name] = value
+    if result.seam_speed_delta_mps is not None:
+        summary["seam_speed_delta_mps"] = result.seam_speed_delta_mps
+    return summary
 
 
 def capture_lap_run(

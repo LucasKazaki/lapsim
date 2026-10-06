@@ -85,6 +85,9 @@ def test_generated_paths_recompute_arc_length_and_curvature() -> None:
             np.cos(np.roll(headings, -1) - headings),
         )
         assert float(np.sum(turns)) == pytest.approx(2.0 * pi, abs=1e-9)
+        assert float(np.dot(path.curvature_per_m, chords)) == pytest.approx(
+            float(np.sum(turns)), abs=1e-9
+        )
         assert abs(float(turns[-1])) < 0.2  # finite, smooth closure at this test seam
 
 
@@ -185,7 +188,76 @@ def test_curvature_is_derived_from_xy_not_copied_from_source_channel() -> None:
     )
     plan = RacingLinePlanner(length_penalty=1.0).plan(track, _corridor(track))
     assert np.mean(plan.baseline_track.curvature_per_m) == pytest.approx(1.0 / radius, rel=0.03)
+    assert max(plan.baseline_track.curvature_per_m) - min(plan.baseline_track.curvature_per_m) < 0.001
+    assert float(np.dot(
+        plan.baseline_track.curvature_per_m,
+        np.diff(plan.baseline_track.distance_m),
+    )) == pytest.approx(2.0 * pi, abs=1e-9)
     assert plan.baseline_track.curvature_per_m != track.curvature_per_m
+
+
+def test_normal_offset_corridor_that_folds_inside_circle_is_rejected() -> None:
+    radius = 5.0
+    count = 80
+    angle = np.linspace(0.0, 2.0 * pi, count + 1)
+    x = radius * np.cos(angle)
+    y = radius * np.sin(angle)
+    chord = np.hypot(np.diff(x), np.diff(y))
+    track = SpatialTrack(
+        distance_m=tuple(np.r_[0.0, np.cumsum(chord)]),
+        x_m=tuple(x),
+        y_m=tuple(y),
+        curvature_per_m=(0.0,) * count,
+    )
+    with pytest.raises(ValueError, match="folds in normal coordinates"):
+        RacingLinePlanner().plan(
+            track,
+            TrackCorridor.constant(
+                track,
+                left_width_m=8.0,
+                right_width_m=8.0,
+                vehicle_width_m=1.4,
+                safety_margin_m=0.2,
+                source="oversized synthetic corridor",
+            ),
+        )
+
+
+def test_unsampled_wide_source_cell_still_triggers_fold_guard() -> None:
+    radius = 5.0
+    count = 400
+    angle = np.linspace(0.0, 2.0 * pi, count + 1)
+    x = radius * np.cos(angle)
+    y = radius * np.sin(angle)
+    chord = np.hypot(np.diff(x), np.diff(y))
+    track = SpatialTrack(
+        distance_m=tuple(np.r_[0.0, np.cumsum(chord)]),
+        x_m=tuple(x),
+        y_m=tuple(y),
+        curvature_per_m=(0.0,) * count,
+    )
+    planner_stations = np.arange(96) * track.length_m / 96
+    wide_cell = next(
+        i for i in range(1, count)
+        if not np.any(
+            (planner_stations >= track.distance_m[i])
+            & (planner_stations < track.distance_m[i + 1])
+        )
+    )
+    left = [2.0] * count
+    right = [2.0] * count
+    left[wide_cell] = right[wide_cell] = 8.0
+    with pytest.raises(ValueError, match="folds in normal coordinates"):
+        RacingLinePlanner().plan(
+            track,
+            TrackCorridor(
+                left_width_m=tuple(left),
+                right_width_m=tuple(right),
+                vehicle_width_m=1.4,
+                safety_margin_m=0.2,
+                source="single wide source cell",
+            ),
+        )
 
 
 def test_full_lap_model_can_select_faster_candidate_on_synthetic_course() -> None:
@@ -280,21 +352,46 @@ def test_vehicle_model_selects_half_strength_if_full_line_is_slower(
     assert comparison.selected_run is comparison.candidate_run
 
 
-def test_full_strength_win_skips_extra_lap(_adaptive_plan, monkeypatch) -> None:
+def test_full_strength_win_is_retained_after_half_trial(_adaptive_plan, monkeypatch) -> None:
     plan = _adaptive_plan
     calls = []
 
     def fake_lap(vehicle, track, *, torque_request_fraction):
         calls.append(track)
-        time_s = 100.0 if track is plan.baseline_track else 99.0
+        time_s = 100.0 if track is plan.baseline_track else (
+            99.0 if track is plan.candidate_track else 99.5
+        )
         return SimpleNamespace(completed=True, driving_time_s=time_s, failure_reason=None)
 
     monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
     comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
-    assert calls == [plan.baseline_track, plan.candidate_track]
+    assert calls[:2] == [plan.baseline_track, plan.candidate_track]
+    assert len(calls) == 3
     assert comparison.candidate_strength == 1.0
     assert comparison.candidate_track is plan.candidate_track
-    assert len(comparison.trials) == 1
+    assert tuple(trial.lap_time_s for trial in comparison.trials) == (99.0, 99.5)
+
+
+def test_half_trial_can_improve_even_when_full_beats_baseline(
+    _adaptive_plan, monkeypatch,
+) -> None:
+    plan = _adaptive_plan
+    calls = []
+
+    def fake_lap(vehicle, track, *, torque_request_fraction):
+        calls.append(track)
+        time_s = 100.0 if track is plan.baseline_track else (
+            99.0 if track is plan.candidate_track else 98.5
+        )
+        return SimpleNamespace(completed=True, driving_time_s=time_s, failure_reason=None)
+
+    monkeypatch.setattr("lapsim.ui.simulation.run_one_lap", fake_lap)
+    comparison = compare_lines_with_lap_model(object(), plan, torque_request_fraction=0.7)
+    assert len(calls) == 3
+    assert comparison.candidate_strength == 0.5
+    assert comparison.candidate_time_s == 98.5
+    assert comparison.selected_track is calls[2]
+    assert tuple(trial.lap_time_s for trial in comparison.trials) == (99.0, 98.5)
 
 
 def test_no_geometric_candidate_runs_only_baseline(_adaptive_plan, monkeypatch) -> None:
