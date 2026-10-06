@@ -136,6 +136,15 @@ def load_course(course_id: str = DEFAULT_COURSE_ID) -> SpatialTrack:
 def imported_course_spec(bundle: CourseBundle) -> CourseSpec:
     """Expose one validated bundle revision as an explicit desktop choice."""
 
+    boundary_note = (
+        "Its source-relative per-cell widths are retained with provenance, "
+        "but optional AI still uses an editable uniform assumed corridor: "
+        "the planner changes the reference geometry and has no verified "
+        "width-frame transformation yet."
+        if bundle.source_cell_corridor is not None else
+        "No measured boundaries are included; AI widths remain "
+        "user-editable assumptions, not surveyed track clearance."
+    )
     return CourseSpec(
         course_id=f"{IMPORTED_COURSE_PREFIX}{bundle.catalog_id}",
         label=(
@@ -145,8 +154,7 @@ def imported_course_spec(bundle: CourseBundle) -> CourseSpec:
         description=(
             f"Imported {bundle.catalog_id}: {bundle.description} "
             "The solver x/y, distance, and curvature pass a numerical arc "
-            "coherence check. No measured boundaries are included; AI widths "
-            "remain user-editable assumptions, not surveyed track clearance."
+            f"coherence check. {boundary_note}"
         ),
         synthetic=bundle.synthetic,
         default_ai_half_width_m=bundle.default_ai_half_width_m,
@@ -219,17 +227,37 @@ def course_source_metadata(
         ):
             raise ValueError("Imported course does not match its validated bundle")
         manifest = bundle.to_dict()
+        common["metadata_version"] = 2 if bundle.schema_version == 2 else 1
+        common["boundary_status"] = bundle.boundary_status
         common.update({
             "source_kind": bundle.source_kind,
             "revision": bundle.revision,
             "bundle_id": bundle.catalog_id,
             "bundle_sha256": bundle.bundle_sha256,
-            "bundle_hash_scope": "canonical validated v1 course-bundle manifest",
+            "bundle_hash_scope": (
+                f"canonical validated v{bundle.schema_version} "
+                "course-bundle manifest"
+            ),
             "loaded_bundle_file_sha256": bundle.source_file_sha256,
             "declared_source_sha256": manifest["provenance"]["source_sha256"],
             "coordinate_frame": manifest["coordinate_frame"],
             "travel_direction": bundle.travel_direction,
         })
+        if bundle.source_cell_corridor is not None:
+            corridor = bundle.source_cell_corridor
+            common["source_cell_corridor"] = {
+                "status": corridor.status,
+                "reference_geometry_sha256": corridor.reference_geometry_sha256,
+                "corridor_sha256": corridor.corridor_sha256,
+                "source_name": corridor.source_name,
+                "source_sha256": corridor.source_sha256,
+                "coordinate_model": "left_right_normal_offsets_from_source_geometry",
+                "used_by_ai_planner": False,
+                "reason_not_used": (
+                    "AI planner smooths and resamples the source reference; "
+                    "a certified width-frame transformation is not implemented"
+                ),
+            }
         return common
     if spec.course_id == DEFAULT_COURSE_ID:
         if source_track != load_team_endurance_track():

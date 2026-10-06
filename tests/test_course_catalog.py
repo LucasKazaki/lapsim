@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
+from hashlib import sha256
+import json
 from math import pi
 
 import pytest
@@ -274,3 +276,35 @@ def test_source_metadata_separates_import_bundle_and_solver_geometry() -> None:
     assert metadata["boundary_status"] == "absent"
     with pytest.raises(ValueError, match="does not match"):
         course_source_metadata(spec, load_course(), bundle=bundle)
+
+    v2_manifest = bundle.to_dict()
+    v2_manifest["schema_version"] = 2
+    v2_manifest["boundary_status"] = "source_normal_offsets_assumed"
+    corridor = {
+        "model": "left_right_normal_offsets_from_source_geometry",
+        "reference_geometry_sha256": bundle.geometry_sha256,
+        "status": "assumed",
+        "left_width_m": [2.5] * bundle.track.cell_count,
+        "right_width_m": [2.75] * bundle.track.cell_count,
+        "provenance": {
+            "source_name": "Scenario width table",
+            "source_sha256": "a" * 64,
+            "processing_method": "Offsets from source-cell normals",
+            "review_note": "Not a surveyed boundary or swept-car clearance proof",
+        },
+    }
+    corridor["corridor_sha256"] = sha256(
+        json.dumps(corridor, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    v2_manifest["corridor"] = corridor
+    v2_bundle = CourseBundle.from_dict(v2_manifest)
+    v2_spec = imported_course_spec(v2_bundle)
+    assert "source-relative" in v2_spec.description
+    assert "uniform assumed corridor" in v2_spec.description
+    v2_metadata = course_source_metadata(v2_spec, v2_bundle.track, bundle=v2_bundle)
+    assert v2_metadata["metadata_version"] == 2
+    assert v2_metadata["boundary_status"] == "source_normal_offsets_assumed"
+    assert v2_metadata["source_cell_corridor"]["corridor_sha256"] == (
+        v2_bundle.source_cell_corridor.corridor_sha256
+    )
+    assert v2_metadata["source_cell_corridor"]["used_by_ai_planner"] is False

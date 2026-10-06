@@ -10,6 +10,19 @@ The desktop offers **Centerline (default)** and **AI racing line (experimental)*
 
 The UI requires one assumed uniform half-width for both sides, plus vehicle width and safety margin. The planner API also accepts **different left and right clearances for every source cell**, with an explicit source label. Each side must be wider than half the vehicle width plus margin. Neither built-in course nor v1 imported bundles include measured widths, so the entered numbers are hypothetical corridors. The user-facing result reports the modeled-path audit, including continuous scalar clearance certification before ranking any completed times. When the processed baseline audit fails, completed laps remain starred diagnostics, the time difference is blank, and no AI winner is selected. When that baseline is valid, a candidate failing its modeled-path audit is recorded as a skipped geometry trial without spending a lap-model pass or creating a replay. If both paths pass, an invalid, slower, or insufficiently faster candidate retains the geometric centerline. A candidate may be displayed if it finishes and its eligible geometric baseline does not, but that is explicitly **not** called a time improvement; its primary run record is also marked `diagnostic_only`.
 
+Course-bundle schema v2 can retain left and right widths **per original source
+cell**, tied to that validated source geometry by hashes and accompanied by
+independent width provenance and an assumed/measured declaration. They are
+normal-coordinate offsets from the *source* reference. The offline planner
+prepares a different smoothed reference, so its current desktop route does
+not substitute v2 widths for the editable assumed uniform corridor. A checked
+source-to-processed frame transformation, boundary uncertainty, and swept-body
+check are required before those widths can support an AI clearance claim.
+This keeps the course metadata available for review without silently changing
+the existing AI comparison. [TUM FTM's trajectory format](https://github.com/TUMFTM/global_racetrajectory_optimization/blob/master/Readme.md)
+also defines track widths relative to a named reference line and its normals;
+the reference line is therefore part of the meaning of each width.
+
 ## Why the default recorded track needs an honest comparison
 
 `analysis/data/track/gnss_imu_endurance_track.csv` contains 989 m of distance-indexed curvature for the current solver, but its separately fused x/y drawing does not form the same numerical path. The repeatable `SpatialTrack.geometry_audit()` reports **1,012.35 m of x/y chord length**, 0.760 m endpoint mismatch, and **1,441 of 1,978 map chords longer than their assigned station distance**, with 45.23 m total positive excess. Any one such chord is impossible for a path of its assigned length. The largest absolute difference between a prescribed constant-curvature arc's chord **length** and its plotted map-cell chord length is **0.235787 m**; this local check detects defects that can cancel in whole-lap turn and closure totals, although it does not check chord direction. The stored curvature integrates to **3.657937 rad** of signed turn versus **6.283185 rad** of x/y winding. Integrating the stored constant-curvature cells from the first plotted chord heading leaves a **542.633 m** position-closure gap. These are geometry diagnostics, not a simulated vehicle pose. The Analysis tab visibly warns about the mismatch. The track has no measured left/right cone boundary or width. Its metadata describes a fusion of registered schematic geometry and corrected IMU curvature, not a geometrically consistent surveyed corridor.
@@ -96,7 +109,7 @@ An **in-memory biarc prototype** was explored as a way to make every constant-cu
 
 A separate unmerged **one-circular-arc-per-edge** experiment used an odd 991-cell path and closed its integrated geometry to about **2e-11 m**. Its larger peak absolute curvature and adjacent curvature jumps shifted one-pass model times by **5–7 s**, reversed a TREV numerical ranking, and used about **2.5×** the compute. Exact position closure alone therefore did not make it a suitable course repair. It needs course review, curvature regularity and resolution checks, and independent vehicle validation before any competition-line claim.
 
-## Driver view and future timed-session tab
+## Driver view and timed-session boundary
 
 The implemented **Driver view** displays accepted physics-cell progress during a solve and then plays the completed lap's telemetry against a **reference path** in a top-down, car-fixed viewport. An optional immutable `LapProgressSnapshot` is emitted only after a cell passes the solver checks; it carries elapsed time, station, speed, lateral acceleration, and cell indices. The desktop coalesces intermediate events in a one-slot queue and sends at most about 10 updates per second to Tk. During path preparation, dry speed passes, or a pause after accepted cells, it shows a static labeled source-course map with the start marked and an explicit **NO VEHICLE POSE** label. Accepted-cell values remain in their boxes but no moving pose is inferred in those gaps. It labels baseline/full/half and fourth AI trial phases separately, using three-quarter for the 0.75 fallback and car-adaptive otherwise. If a run stops, the last accepted step stays identified as such. During accepted physics progress, the triangular marker stays fixed while the path rotates with its map tangent. Ordinary centerline laps and A/B car comparisons use the exact solver-grid x/y saved with their runs, matching live progress; each AI trial uses its own processed solver path. The separate Analysis course plot continues to show source x/y. Completed-run replay offers play/pause, start, time scrub, playback rate, and wheel zoom. The **Replay lap** menu switches among every completed geometric baseline, full, half, and fourth AI trial, including audit-failed diagnostic runs labeled as such, using each run's exact processed track and saved telemetry without rerunning physics. It also switches A/B laps after a two-car comparison. The menu is disabled when only one completed lap is available. Recorded cell exit time, distance, and speed are interpolated with the solver's constant-acceleration relation, reconstructing the initially unrecorded entry speed; inconsistent imported telemetry falls back to linear distance interpolation. Map positions and heading come from the displayed solver-grid x/y, while speed and lateral acceleration come from physics. The main solver integrates prescribed curvature and does not guarantee that its internally integrated x/y coincides with the separately fused plotted centerline. This is a **live accepted-step reference-path preview and completed-lap playback**, not the simulated vehicle pose, actual steering behavior, a true first-person camera, or collision detection.
 
@@ -108,7 +121,17 @@ holds the active cell's saved values and does not add solver passes. Missing
 or unaligned legacy channels show a dash. The ceiling alone is not the
 controller's full speed target; the current-cell corner limit also applies.
 
-The separate **Timed sessions · WIP** tab states a future contract: select a versioned Terps vehicle and controller, run a timed session against a ghost, save full controls/states/environment, generate a comparison report, and replay through the engineering model with stated tolerances. It currently contains a scope description and unavailable/disabled controls. A separate programmatic checker now replays a completed v2 one-lap record's accepted-cell commands through the saved solver grid and current model, but it does not implement this interactive session workflow. The event now requires both steering-requested and tire-achieved curvature to match the prescribed cell curvature within `EnduranceRunConfig.path_curvature_tolerance_per_m` (default **1e-9 1/m**) before a cell is accepted; a direct zero-steer circular lap therefore fails. The replay uses the same event gate. This is a scalar cell-curvature check, not proof that the integrated x/y position follows the displayed map or stays clear of cones. A real timed-session gate needs pose and boundary checks as well as versioned states and environment. Current lap and four-wheel records provide pieces of the evidence architecture, not the complete contract.
+The separate **Timed sessions · WIP** tab offers a short synthetic pose preview
+described below. Its future contract still calls for a versioned Terps vehicle
+and controller, a timed session against a ghost, full controls/states/environment
+capture, a comparison report, and replay through the engineering model with
+declared tolerances. The programmatic `replay_lap_record` checker reproduces a
+completed v2 one-lap record's accepted-cell commands on its saved solver grid;
+it is separate from this preview and from a full session workflow. The lap
+event requires both steering-requested and tire-achieved curvature to match
+the prescribed cell curvature within `EnduranceRunConfig.path_curvature_tolerance_per_m`
+(default **1e-9 1/m**) before accepting a cell. This scalar gate cannot show
+that the integrated pose followed the displayed x/y or cleared cones.
 
 AI runs save the primary displayed run's exact solver geometry and full result telemetry in a content-hashed lap record. Its optional `settings.path_planning` also stores source and processed geometry audits, assumed corridor and vehicle clearance, continuous scalar path audit and eligibility status, eligible versus diagnostic times, planner version/settings, the `periodic_cubic_minimum_curvature_slsqp_v7_continuous_scalar_clearance` algorithm ID and `fourth_strength_policy`, each evaluated candidate strength/time/error, path lengths, actual maximum generated cell length, and compute timings. The existing `settings.solver.requested_maximum_cell_length_m` field now receives the user request for these generated paths; `path_planning` separately records the actual maximum generated cell, nominal planning setting, and effective sample count/spacing. Every completed trial record also retains its own requested and measured maximum. Every path that completes a model lap has its own content-identified record with exact solver geometry, telemetry, and explicit final-pass start speed, for at most four path records per comparison. A candidate screened out before physics remains in the trial manifest with `record_role=no_run`, no run ID or time, and its failed audit and skip reason. The primary record's `baseline_record` and `candidate_trials[]` identify its own path by `record_role=selected_result` and link the other saved paths by `run_id`; the existing `comparison_counterpart_run_id` remains available. Linked trial records contain only their own planning/audit metadata, so content-derived IDs do not refer back to the primary ID. An extra trial interrupted before completing keeps its summary without a replayable record. On an audit-failed shipped course, no record is a selected racing-line winner: the primary record is flagged diagnostic, though completed runs can be replayed for investigation. Read `candidate_trials[].offset_strength` and its audit and eligible or diagnostic time to learn which fourth strength actually ran; trial order does not imply a fixed 0.75. Each completed v2 file with complete accepted-cell controls can be checked independently by `lapsim.experiments.replay_lap_record`; it compares selected summary and trace outputs with declared tolerances and reports source/runtime provenance separately. A file hash checks integrity, not model agreement or path feasibility. There is no one-click engineering replay or ghost/session workflow. A source hash is not a survey certificate.
 
@@ -117,11 +140,54 @@ Its interior x/y points are interpolated along each old chord; this unchanged
 QA method neither performs analytic subarc subdivision nor certifies that x/y,
 stations, and curvature agree.
 
+## Bounded synthetic pose-aware driver experiment
+
+`src/lapsim/optimization/pose_driver.py::run_pose_driver` runs the coherent
+rounded rectangle through the **separate time-domain four-wheel model**, with
+actual planar x/y, heading, body velocity, yaw rate, and four wheel speeds.
+The WIP tab can launch an **80 m** preview and the Driver view uses those
+simulated x/y and heading for playback. This controller does not steer the
+distance-domain endurance car, use the selected Prius/TREV profile, or produce
+an engineering lap time or battery energy. Its model-time duration is the
+elapsed time of one finite synthetic maneuver, not a complete closed lap.
+
+At each **0.05 s** control step, a local projection finds the rear axle's
+station on the source path. With body speed `speed = sqrt(u² + v_body²)`, the
+lookahead distance is `2.5 m + (0.45 s) speed`; the target is that distance ahead
+along the reference. For target bearing error `alpha`, wheelbase `L`, and
+rear-axle-to-target straight-line distance `D` (floored at **0.5 m**), the
+implemented kinematic steering command is
+`delta = atan2(2 L sin(alpha), D)`, clipped to **±0.30 rad**. The speed target
+is the lesser of **5.5 m/s** and
+`sqrt(min(4 m/s², 0.35 mu grip g) / max(|kappa|_preview, 1e-9 1/m))`;
+proportional requests drive both rear wheels or brake all four.
+The steering geometry follows [Coulter's pure-pursuit derivation](https://publications.ri.cmu.edu/implementation-of-the-pure-pursuit-path-tracking-algorithm).
+The [TORCS steering tutorial](https://torcs.sourceforge.net/api/robot_tutorial_chapter_4.html)
+likewise distinguishes distance measured along the reference from the direct
+vehicle-to-target vector. This is a basic feedback experiment, not a learned
+driver or an implementation of those projects' complete controller stacks.
+
+Default limits are **80 m** target progress, **20 s** simulated time,
+**400** control steps, and **60,000** internal integration substeps. The
+assumed ±3 m corridor, 1.8 m vehicle width, and 0.2 m margin give a
+**1.9 m** nominal CG offset allowance. The run checks a projected rectangle
+between the axle lines at each output sample and stops if its assumed
+boundary slack turns negative or the declared road domain is invalid. That
+sampled geometry excludes overhangs and does not certify the swept body
+between samples or clearance to measured cones. The recorded `PoseDriverRun`
+holds the issued controls, time grid, planar states, evaluations, and status
+in memory. `replay_pose_driver` reintegrates those controls and compares every
+saved state using `PoseReplayTolerances`: **1e-8 m** position, **1e-8 rad**
+heading, **1e-8 m/s** body velocity, **1e-8 rad/s** yaw rate and wheel speed,
+plus road-validity agreement. This checks numerical reproduction of a
+synthetic trace; it is not a saved full session, ghost, or vehicle validation.
+
 ## Acceptance and iteration checks
 
 | Check | Required evidence |
 |---|---|
 | Default unaffected | Centerline remains selected after launch and does not call optimizer code |
+| Source-width frame | V2 source-cell widths and provenance remain tied to source geometry; planner uses the explicit assumed corridor until a checked frame transformation exists |
 | Geometric validity | Continuous spline offset respects piecewise supplied widths after vehicle width/margin; closed path has finite positive cells, periodic geometry, no detected self-crossing |
 | Modeled-path validity | Initial quarter-cell/source-boundary samples and bounded interval checks certify continuous scalar normal-coordinate clearance to 1e-8 m for the represented curvature path; unresolved bounds fail, and the integrated path and both saved polygon endpoints must close within 0.01 m. This is not swept-body certification |
 | Fair A/B | Eligible geometric centerline and AI path share the same source x/y preparation, car, controller request, uniform assumed road grip, and solver settings |
@@ -130,12 +196,14 @@ stations, and curvature agree.
 | Traceability | Record selected path geometry, source hash, corridor assumptions, planner settings/version, selected profile and effective car, and run ID |
 | Car adaptability | Repeat on built-in and saved profiles without assuming one motor topology; reject unsupported or failing profile scenarios explicitly |
 | Presentation | Show a simple top-down line/driver preview, numbers, and explicit “synthetic corridor” labeling |
+| Pose preview | Bound work and progress, show simulated pose with a separate model/time label, compare replayed states within stated tolerances, and retain the WIP session boundary |
 
-Further development should be driven by failed checks and team data. Measured track boundaries, cone positions, tire limits, and synchronized vehicle logs are higher priority than a more complex learned policy. When those arrive, a closed-loop controller can be compared against this simple planner without changing the default engineering baseline.
+Further development should be driven by failed checks and team data. Measured track boundaries, cone positions, tire limits, and synchronized vehicle logs are higher priority than a more complex learned policy. A future team-car closed-loop controller can then be compared against this simple planner without changing the default engineering baseline; the bounded synthetic pose preview is an isolated first step.
 
 ## Primary references used for the design
 
-- [TUM FTM global racetrajectory optimization](https://github.com/TUMFTM/global_racetrajectory_optimization) separates shortest-path, minimum-curvature, and full minimum-time approaches and requires explicit track boundaries. Minimum curvature is a useful inexpensive proxy, not a promise of minimum lap time.
+- [TUM FTM global racetrajectory optimization](https://github.com/TUMFTM/global_racetrajectory_optimization/blob/master/Readme.md) separates shortest-path, minimum-curvature, and full minimum-time approaches and represents track widths relative to a reference line and normals. Minimum curvature is a useful inexpensive proxy, not a promise of minimum lap time.
+- [Coulter, *Implementation of the Pure Pursuit Path Tracking Algorithm* (CMU-RI-TR-92-01, 1992)](https://publications.ri.cmu.edu/implementation-of-the-pure-pursuit-path-tracking-algorithm) gives the geometric basis for the short pose-driver steering preview.
 - [Xue, Yue, and Dolan, *Spline-Based Minimum-Curvature Trajectory Optimization for Autonomous Racing* (2023)](https://arxiv.org/abs/2309.09186) motivates low-dimensional spline geometry when detailed vehicle and track dynamics data are limited. LapSim implements its own planner; its bounded car-specific timing trials are an extension here, not a reproduction or validation of that paper.
 - [TUM FTM trajectory planning helpers](https://github.com/TUMFTM/trajectory_planning_helpers) documents the boundary/corridor geometry and splined racing-line preparation used in that research software. We use the ideas, not its LGPL-3.0 implementation code.
 - [TORCS robot tutorial: driving on a track](https://torcs.sourceforge.net/api/robot_tutorial_chapter_4.html) illustrates the game-bot separation of target line, lookahead steering, speed feedback, and edge checks; it warns that cutting across corners can make a nominally faster lap invalid.

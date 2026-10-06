@@ -18,7 +18,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from lapsim.courses.course_bundle import CourseBundle
-from lapsim.experiments import LapRunSettings, capture_lap_run, default_run_directory
+from lapsim.experiments import LapRunSettings, RunRecord, capture_lap_run, default_run_directory
+from lapsim.optimization.pose_driver import PoseDriverRun, PoseDriverSample, run_pose_driver
 from lapsim.profiles import build_vehicle, browse_records, list_profiles
 
 from .comparison import summarize_lap
@@ -29,6 +30,7 @@ from .course_catalog import (
     solver_track_for_course,
 )
 from .driver_view import DriverCellDecision, DriverPlayback
+from .pose_driver_playback import PoseDriverPlayback
 from .garage import CAR_INPUT_KEYS, ProfileStore, SavedCarProfile
 from .presets import VehicleSetup, make_prius_benchmark
 from .simulation import (
@@ -44,6 +46,22 @@ FONT = ("Segoe UI", 10)
 FONT_BOLD = ("Segoe UI", 10, "bold")
 FONT_TITLE = ("Segoe UI", 16, "bold")
 AI_SELECTION_MARGIN_S = 0.05
+REFERENCE_DRIVER_NOTE = (
+    "Reference-map playback: position and heading come from the "
+    "distance-aligned x/y map; speed and lateral g come from the "
+    "solved run. The ceiling is the next cell's braking limit, not "
+    "the complete controller target. Positive battery kW means "
+    "discharge; negative means charge. Boxes show accepted-cell "
+    "values; the map is not a tracked vehicle pose."
+)
+POSE_DRIVER_NOTE = (
+    "Synthetic four-wheel pose experiment: marker x/y and heading are "
+    "integrated vehicle states. Time is only the 80 m pose-model duration. "
+    "The reference line and 3 m half-width are assumed; no measured cones, "
+    "full body overhang, battery, motor, or thermal model is included. "
+    "The boxes show recorded pose controls and tracking values; endurance "
+    "battery and force channels do not apply to this separate model."
+)
 
 
 def _course_geometry_warning(audit: Any) -> str | None:
@@ -87,6 +105,79 @@ def _course_geometry_warning(audit: Any) -> str | None:
     )
 
 
+def _saved_run_path(run_id: str) -> Path:
+    """Resolve a content ID inside the local run directory."""
+
+    if len(run_id) != 64 or any(character not in "0123456789abcdef" for character in run_id):
+        raise ValueError("Saved run ID is not a SHA-256 content ID")
+    return (default_run_directory() / f"{run_id}.json").resolve()
+
+
+def _linked_ai_run_references(planning: dict[str, Any]) -> tuple[tuple[str, str], ...]:
+    """Name saved AI trials linked by the primary record."""
+
+    references: list[tuple[str, str]] = []
+    baseline = planning.get("baseline_record")
+    if isinstance(baseline, dict) and isinstance(baseline.get("run_id"), str):
+        references.append(("Geometric baseline", baseline["run_id"]))
+    trials = planning.get("candidate_trials")
+    if isinstance(trials, list):
+        for trial in trials:
+            if not isinstance(trial, dict) or not isinstance(trial.get("run_id"), str):
+                continue
+            strength = trial.get("offset_strength")
+            label = (
+                f"AI offset {strength:g}×"
+                if isinstance(strength, (int, float)) and not isinstance(strength, bool)
+                else "AI trial"
+            )
+            references.append((label, trial["run_id"]))
+    return tuple(references)
+
+
+def _run_evidence_text(label: str, path: Path, record: dict[str, Any]) -> str:
+    """Summarize the evidence limits and exact file for a saved run."""
+
+    settings = record.get("settings", {})
+    track = settings.get("track", {})
+    source = track.get("source_course", {})
+    profile = record.get("configuration", {})
+    result = record.get("result", {})
+    planning = settings.get("path_planning", {})
+    source_id = source.get("selected_course_id") or track.get("id") or "not recorded"
+    source_kind = source.get("source_kind") or "not recorded"
+    synthetic = "yes" if source_kind == "synthetic" else "no"
+    boundary = source.get("boundary_status") or "not recorded"
+    lines = [
+        label,
+        f"Record ID: {record['run_id']}",
+        f"File: {path}",
+        "Evidence: simulation model estimate; car validation is not established by this run",
+        f"Profile: {profile.get('selected_profile_label') or 'not recorded'}",
+        f"Result: {result.get('status') or 'not recorded'}",
+        f"Source course: {source_id} ({source_kind}; synthetic: {synthetic})",
+        f"Source boundary status: {boundary}",
+        f"Solver path: {track.get('id') or 'not recorded'}; "
+        f"{track.get('cell_count', 'unknown')} cells",
+    ]
+    source_corridor = source.get("source_cell_corridor")
+    if isinstance(source_corridor, dict):
+        lines.append(
+            f"Source corridor: {source_corridor.get('status') or 'not recorded'}; "
+            f"used by AI planner: {'yes' if source_corridor.get('used_by_ai_planner') else 'no'}"
+        )
+    if isinstance(planning, dict) and planning.get("mode") == "experimental_racing_line":
+        corridor = planning.get("corridor") or {}
+        lines.append(
+            "AI corridor: " + str(corridor.get("source") or "assumption not recorded")
+        )
+        lines.append(
+            f"AI rank status: {planning.get('rank_status') or 'not recorded'}; "
+            f"diagnostic only: {'yes' if planning.get('diagnostic_only') else 'no'}"
+        )
+    return "\n".join(lines)
+
+
 TRACE_OPTIONS = {
     "Speed": ("vehicle.speed_mps", 3.6, "km/h"),
     "Longitudinal acceleration": (
@@ -115,6 +206,16 @@ DRIVER_CELL_BOXES = (
     ("friction_braking_force_n", "FRICTION BRAKE (kN)", 0.001, ".2f"),
     ("regenerative_braking_force_n", "REGEN BRAKE (kN)", 0.001, ".2f"),
     ("longitudinal_acceleration_mps2", "LONGITUDINAL (g)", 1.0 / 9.80665, "+.2f"),
+)
+POSE_DRIVER_BOX_TITLES = (
+    "STEER FRONT (°)", "REAR DRIVE (N·m/wheel)",
+    "BRAKE FL (N·m)", "BRAKE FR (N·m)", "CROSS-TRACK (m)",
+    "HEADING ERROR (°)", "LOCAL GRIP (×)", "ASSUMED SLACK (m)",
+    "YAW RATE (°/s)",
+)
+POSE_DRIVER_BOX_FORMATS = (
+    "+.1f", ".1f", ".1f", ".1f", "+.2f",
+    "+.1f", ".2f", ".2f", "+.1f",
 )
 
 
@@ -155,6 +256,7 @@ class LapSimDesktop:
         self.progress_queue: queue.Queue[tuple[str, str, Any, Any]] = queue.Queue(
             maxsize=1
         )
+        self.pose_progress_queue: queue.Queue[PoseDriverSample] = queue.Queue(maxsize=1)
         self.run_started_at = 0.0
         self.run_in_progress = False
         self.calculation_progress_text = tk.StringVar(value="Calculations · idle")
@@ -226,6 +328,11 @@ class LapSimDesktop:
         self.driver_replay_var = tk.StringVar(value="—")
         self._driver_replay_runs: dict[str, tuple[str, Any, str, Any]] = {}
         self.driver_run_label = tk.StringVar(value="Run a lap to load playback")
+        self.driver_note_var = tk.StringVar(value=REFERENCE_DRIVER_NOTE)
+        self.pose_preview_status = tk.StringVar(value=(
+            "Optional 80 m synthetic pose preview has not been run."
+        ))
+        self.pose_preview_button: tk.Button | None = None
         self.driver_speed_var = tk.StringVar(value="1×")
         self.driver_progress_var = tk.DoubleVar(value=0.0)
         self.driver_values = {
@@ -236,6 +343,7 @@ class LapSimDesktop:
             key: tk.StringVar(value="—")
             for key, _title, _scale, _format in DRIVER_CELL_BOXES
         }
+        self.driver_decision_title_labels: list[tk.Label] = []
         self.driver_decision_title = tk.StringVar(value="Solved cell values")
         self._live_decision: DriverCellDecision | None = None
         self._driver_playing = False
@@ -253,6 +361,9 @@ class LapSimDesktop:
         self._pending_input_invalidation = False
         self._result_generation = 0
         self._active_run_input_signature: tuple[str, ...] | None = None
+        self._displayed_run_records: tuple[tuple[str, str], ...] = ()
+        self.saved_runs_button: tk.Button | None = None
+        self._evidence_window: tk.Toplevel | None = None
         self._build_window()
         self._refresh_profile_menus()
         self._select_profile("prius_2026_le")
@@ -557,16 +668,28 @@ class LapSimDesktop:
             pady=5,
             font=FONT_BOLD,
         )
-        self.run_button.grid(row=0, column=0, sticky="ew", pady=(0, 3))
+        self.run_button.grid(row=0, column=0, sticky="ew", padx=(0, 4), pady=(0, 3))
+        self.saved_runs_button = tk.Button(
+            parent,
+            text="Saved run details",
+            command=self._open_saved_run_details,
+            state="disabled",
+            relief="raised",
+            bd=1,
+            padx=8,
+            pady=5,
+            font=FONT,
+        )
+        self.saved_runs_button.grid(row=0, column=1, sticky="ew", pady=(0, 3))
         tk.Label(
             parent, textvariable=self.calculation_progress_text,
             anchor="w", justify="left", wraplength=350,
-        ).grid(row=1, column=0, sticky="ew", pady=(3, 2))
+        ).grid(row=1, column=0, columnspan=2, sticky="ew", pady=(3, 2))
         self.calculation_progress_bar = tk.Canvas(
             parent, height=15, bd=1, relief="solid", highlightthickness=0,
         )
         self.calculation_progress_bar.grid(
-            row=2, column=0, sticky="ew",
+            row=2, column=0, columnspan=2, sticky="ew",
         )
         self.calculation_progress_bar.bind(
             "<Configure>", lambda _event: self._draw_calculation_progress(),
@@ -578,8 +701,90 @@ class LapSimDesktop:
             anchor="w",
             justify="left",
             wraplength=350,
-        ).grid(row=3, column=0, sticky="ew", pady=(4, 0))
+        ).grid(row=3, column=0, columnspan=2, sticky="ew", pady=(4, 0))
         parent.grid_columnconfigure(0, weight=1)
+        parent.grid_columnconfigure(1, weight=1)
+
+    def _set_displayed_run_records(
+        self, records: tuple[tuple[str, str], ...],
+    ) -> None:
+        if records != self._displayed_run_records and self._evidence_window is not None:
+            try:
+                if self._evidence_window.winfo_exists():
+                    self._evidence_window.destroy()
+            except tk.TclError:
+                pass
+            self._evidence_window = None
+        self._displayed_run_records = records
+        if self.saved_runs_button is not None:
+            self.saved_runs_button.configure(
+                state="normal" if records and not self.run_in_progress else "disabled"
+            )
+
+    def _open_saved_run_details(self) -> None:
+        if not self._displayed_run_records or self.run_in_progress:
+            return
+        if self._evidence_window is not None:
+            try:
+                if self._evidence_window.winfo_exists():
+                    self._evidence_window.lift()
+                    return
+            except tk.TclError:
+                pass
+            self._evidence_window = None
+        pending = list(self._displayed_run_records)
+        displayed: set[str] = set()
+        sections: list[str] = []
+        while pending:
+            label, run_id = pending.pop(0)
+            if run_id in displayed:
+                continue
+            displayed.add(run_id)
+            try:
+                path = _saved_run_path(run_id)
+                record = RunRecord.load(path).to_dict()
+            except (OSError, ValueError, TypeError) as error:
+                sections.append(f"{label}\nRecord ID: {run_id}\nCould not read saved run: {error}")
+                continue
+            sections.append(_run_evidence_text(label, path, record))
+            if label == "AI result":
+                planning = record.get("settings", {}).get("path_planning", {})
+                if isinstance(planning, dict):
+                    pending.extend(_linked_ai_run_references(planning))
+
+        window = tk.Toplevel(self.root)
+        self._evidence_window = window
+        window.title("Saved run evidence")
+        window.geometry("800x510")
+        window.minsize(560, 330)
+        body = tk.Frame(window, padx=10, pady=10)
+        body.pack(fill="both", expand=True)
+        title = tk.Label(
+            body, text="Saved run evidence", font=FONT_TITLE, anchor="w",
+        )
+        title.pack(fill="x", pady=(0, 4))
+        guidance = tk.Label(
+            body,
+            text="Full record IDs and files for the result currently shown. Select text to copy it.",
+            anchor="w", justify="left", wraplength=750,
+        )
+        guidance.pack(fill="x", pady=(0, 8))
+        scroll = tk.Scrollbar(body)
+        scroll.pack(side="right", fill="y")
+        details = tk.Text(
+            body, wrap="word", font=("Consolas", 10), relief="solid", bd=1,
+            yscrollcommand=scroll.set,
+        )
+        details.pack(side="left", fill="both", expand=True)
+        scroll.configure(command=details.yview)
+        details.insert("1.0", "\n\n".join(sections))
+        details.configure(state="disabled")
+        background, foreground = self._theme_colors()
+        for widget in (window, body, title, guidance, details):
+            widget.configure(background=background)
+        for widget in (title, guidance, details):
+            widget.configure(foreground=foreground)
+        details.configure(selectbackground=foreground, selectforeground=background)
 
     def _build_outputs(self, parent: tk.Widget) -> None:
         box = tk.LabelFrame(
@@ -860,6 +1065,8 @@ class LapSimDesktop:
         self._pause_driver_playback()
         self.driver_playback = None
         self._live_decision = None
+        self.driver_note_var.set(REFERENCE_DRIVER_NOTE)
+        self._set_driver_box_mode(pose=False)
         self.driver_decision_title.set("Solved cell values")
         self._driver_live_mode = False
         self._driver_stream_active = False
@@ -879,6 +1086,7 @@ class LapSimDesktop:
         self._path_comparison = None
         self._selected_path_track = None
         self._last_result = None
+        self._set_displayed_run_records(())
         self._displayed_road_grip_multiplier = None
         self._comparison_results = None
         self._pan_origin = None
@@ -1265,21 +1473,16 @@ class LapSimDesktop:
             row, column = divmod(index, 5)
             box = tk.Frame(decision_boxes, relief="solid", bd=1, padx=7, pady=4)
             box.grid(row=row, column=column, sticky="ew", padx=(0, 4), pady=(0, 4))
-            tk.Label(box, text=title, font=("Segoe UI", 8)).pack(anchor="w")
+            title_label = tk.Label(box, text=title, font=("Segoe UI", 8))
+            title_label.pack(anchor="w")
+            self.driver_decision_title_labels.append(title_label)
             tk.Label(
                 box, textvariable=self.driver_decision_values[key],
                 font=("Consolas", 12), anchor="w",
             ).pack(anchor="w")
         tk.Label(
             parent,
-            text=(
-                "Reference-map playback: position and heading come from the "
-                "distance-aligned x/y map; speed and lateral g come from the "
-                "solved run. The ceiling is the next cell's braking limit, not "
-                "the complete controller target. Positive battery kW means "
-                "discharge; negative means charge. Boxes show accepted-cell "
-                "values; the map is not a tracked vehicle pose."
-            ),
+            textvariable=self.driver_note_var,
             justify="left",
             anchor="w",
             wraplength=820,
@@ -1331,6 +1534,33 @@ class LapSimDesktop:
             parent, text="Start timed session (not available)", state="disabled",
             relief="raised", bd=1,
         ).grid(row=4, column=0, sticky="w")
+        tk.Label(
+            parent,
+            text="Bounded driving preview",
+            font=FONT_BOLD,
+            anchor="w",
+        ).grid(row=5, column=0, sticky="ew", pady=(22, 5))
+        tk.Label(
+            parent,
+            text=(
+                "Drive 80 m on a synthetic rounded rectangle with a synthetic "
+                "four-wheel car. Steering and speed react to modeled pose and "
+                "local grip. This separate model has no battery, motor, thermal "
+                "system, ghost, or Formula SAE timed-lap result. The 3 m half-width "
+                "is an assumption, not measured cone clearance."
+            ),
+            justify="left", anchor="w", wraplength=760, font=FONT,
+        ).grid(row=6, column=0, sticky="ew", pady=(0, 9))
+        self.pose_preview_button = tk.Button(
+            parent, text="Run 80 m synthetic pose preview",
+            command=self._start_pose_preview,
+            relief="raised", bd=1,
+        )
+        self.pose_preview_button.grid(row=7, column=0, sticky="w")
+        tk.Label(
+            parent, textvariable=self.pose_preview_status,
+            justify="left", anchor="w", wraplength=760, font=FONT,
+        ).grid(row=8, column=0, sticky="ew", pady=(8, 0))
 
     def _set_driver_run(
         self, name: str, result: Any, *, driving_mode: str = "Centerline",
@@ -1345,6 +1575,8 @@ class LapSimDesktop:
 
         self._pause_driver_playback()
         self._live_decision = None
+        self.driver_note_var.set(REFERENCE_DRIVER_NOTE)
+        self._set_driver_box_mode(pose=False)
         self.driver_decision_title.set("Solved cell values")
         self._driver_live_mode = False
         self._driver_stream_active = False
@@ -1372,6 +1604,38 @@ class LapSimDesktop:
             self.driver_play_button.configure(state="normal")
         self.driver_progress.configure(state="normal")
         self._render_driver_frame()
+
+    def _set_driver_box_mode(self, *, pose: bool) -> None:
+        titles = POSE_DRIVER_BOX_TITLES if pose else tuple(
+            item[1] for item in DRIVER_CELL_BOXES
+        )
+        for label, title in zip(self.driver_decision_title_labels, titles, strict=True):
+            label.configure(text=title)
+
+    def _activate_pose_preview(self, run: PoseDriverRun) -> None:
+        """Show simulated pose while keeping its model separate from lap results."""
+
+        self._pause_driver_playback()
+        self._live_decision = None
+        self._driver_live_mode = False
+        self._driver_stream_active = False
+        self._driver_preview_track = None
+        self._driver_live_update_serial += 1
+        self._driver_playback_time_s = 0.0
+        self.driver_note_var.set(POSE_DRIVER_NOTE)
+        self._set_driver_box_mode(pose=True)
+        self.driver_decision_title.set("Pose model · recorded controls and tracking values")
+        self.driver_playback = PoseDriverPlayback(run)
+        self.driver_run_label.set(
+            f"Synthetic pose model · {run.status} · "
+            f"{run.samples[-1].progress_m:.1f} m / {run.settings.target_progress_m:.0f} m"
+        )
+        if self.driver_play_button is not None:
+            self.driver_play_button.configure(state="normal")
+        self.driver_progress.configure(state="normal")
+        self._render_driver_frame()
+        self._switch_tab("Driver view")
+        self._toggle_driver_playback()
 
     def _set_driver_replay_options(
         self, options: dict[str, tuple[str, Any, str, Any]], *, selected: str,
@@ -1501,14 +1765,23 @@ class LapSimDesktop:
         self.driver_values["heading"].set(
             f"{float(np.degrees(frame.course_heading_rad)):+.1f}"
         )
-        decision = self._live_decision if self._driver_live_mode else frame.decision
-        for key, _title, scale, format_spec in DRIVER_CELL_BOXES:
-            raw = getattr(decision, key) if decision is not None else None
-            self.driver_decision_values[key].set(
-                f"{raw * scale:{format_spec}}"
-                if isinstance(raw, (int, float)) and np.isfinite(raw)
-                else "—"
-            )
+        if isinstance(playback, PoseDriverPlayback):
+            pose_values = playback.control_values_at(self._driver_playback_time_s)
+            for index, (key, _title, _scale, _format) in enumerate(DRIVER_CELL_BOXES):
+                raw = pose_values[index] if pose_values is not None else None
+                self.driver_decision_values[key].set(
+                    f"{raw:{POSE_DRIVER_BOX_FORMATS[index]}}"
+                    if raw is not None and np.isfinite(raw) else "—"
+                )
+        else:
+            decision = self._live_decision if self._driver_live_mode else frame.decision
+            for key, _title, scale, format_spec in DRIVER_CELL_BOXES:
+                raw = getattr(decision, key) if decision is not None else None
+                self.driver_decision_values[key].set(
+                    f"{raw * scale:{format_spec}}"
+                    if isinstance(raw, (int, float)) and np.isfinite(raw)
+                    else "—"
+                )
         self._driver_updating_scale = True
         self.driver_progress_var.set(
             1000.0 * frame.distance_m / playback.track.length_m
@@ -1578,7 +1851,10 @@ class LapSimDesktop:
             width - 12, 12,
             text=(("LIVE MODEL STEP" if self._driver_stream_active
                    else "LAST ACCEPTED STEP") + " · REFERENCE PATH"
-                  if self._driver_live_mode else "MODEL REFERENCE · NOT POSE"),
+                  if self._driver_live_mode else
+                  "SYNTHETIC POSE MODEL · EXPERIMENT"
+                  if isinstance(playback, PoseDriverPlayback) else
+                  "MODEL REFERENCE · NOT POSE"),
             anchor="ne", fill=foreground,
             font=("Consolas", 9),
         )
@@ -1993,6 +2269,7 @@ class LapSimDesktop:
             self._comparison_results is not None,
             self._path_comparison is not None,
             self.driver_playback is not None,
+            bool(self._displayed_run_records),
         ))):
             return
         self._pause_driver_playback()
@@ -2001,6 +2278,7 @@ class LapSimDesktop:
         self._driver_live_mode = False
         self._driver_stream_active = False
         self._last_result = None
+        self._set_displayed_run_records(())
         self._displayed_road_grip_multiplier = None
         self._comparison_results = None
         self._path_comparison = None
@@ -2094,6 +2372,12 @@ class LapSimDesktop:
         self.run_in_progress = busy
         state = "disabled" if busy else "normal"
         self.run_button.configure(state=state)
+        if self.pose_preview_button is not None:
+            self.pose_preview_button.configure(state=state)
+        if self.saved_runs_button is not None:
+            self.saved_runs_button.configure(
+                state="disabled" if busy or not self._displayed_run_records else "normal"
+            )
         self.compare_button.configure(state=state)
         self.profile_menu.configure(state=state)
         self.compare_a_menu.configure(state=state)
@@ -2123,6 +2407,7 @@ class LapSimDesktop:
             "indeterminate", f"{preparing} · pass progress unavailable",
         )
         self._last_result = None
+        self._set_displayed_run_records(())
         self._displayed_road_grip_multiplier = None
         self._comparison_results = None
         self._selected_path_track = None
@@ -2134,6 +2419,8 @@ class LapSimDesktop:
         self._pause_driver_playback()
         self.driver_playback = None
         self._live_decision = None
+        self.driver_note_var.set(REFERENCE_DRIVER_NOTE)
+        self._set_driver_box_mode(pose=False)
         self.driver_decision_title.set("Last accepted cell · model values")
         self._driver_playback_time_s = 0.0
         self._driver_live_mode = True
@@ -2315,6 +2602,61 @@ class LapSimDesktop:
         from .dynamics_lab import DynamicsLab
 
         DynamicsLab(self.root, dark=self.is_dark.get())
+
+    def _start_pose_preview(self) -> None:
+        """Run a bounded synthetic control experiment outside the lap model."""
+
+        if self.run_in_progress:
+            return
+        self.progress_queue = queue.Queue(maxsize=1)
+        self.pose_progress_queue = queue.Queue(maxsize=1)
+        self._set_busy(True)
+        self._set_calculation_progress(
+            "indeterminate", "Synthetic pose preview · preparing four-wheel model",
+        )
+        self.pose_preview_status.set(
+            "Running 80 m synthetic pose preview; engineering lap outputs are separate."
+        )
+        self.run_started_at = time.perf_counter()
+        threading.Thread(target=self._calculate_pose_preview, daemon=True).start()
+
+    def _calculate_pose_preview(self) -> None:
+        try:
+            def on_progress(sample: PoseDriverSample, _state: Any) -> None:
+                try:
+                    self.pose_progress_queue.put_nowait(sample)
+                except queue.Full:
+                    try:
+                        self.pose_progress_queue.get_nowait()
+                    except queue.Empty:
+                        pass
+                    try:
+                        self.pose_progress_queue.put_nowait(sample)
+                    except queue.Full:
+                        pass
+
+            run = run_pose_driver(progress_callback=on_progress)
+            self.result_queue.put(("pose_preview", run, None))
+        except Exception as error:
+            self.result_queue.put(("pose_preview", None, error))
+
+    def _poll_pose_progress(self) -> None:
+        latest = None
+        while True:
+            try:
+                latest = self.pose_progress_queue.get_nowait()
+            except queue.Empty:
+                break
+        if latest is None or not self.run_in_progress:
+            return
+        target_m = 80.0
+        fraction = min(max(latest.progress_m / target_m, 0.0), 1.0)
+        self._set_calculation_progress(
+            "determinate",
+            f"Synthetic pose preview · {latest.progress_m:.1f}/{target_m:.0f} m "
+            f"({fraction:.0%} of target distance)",
+            fraction=fraction,
+        )
 
     def _start_run(self) -> None:
         if self.run_in_progress:
@@ -2940,9 +3282,46 @@ class LapSimDesktop:
 
     def _poll_result(self) -> None:
         self._poll_live_progress()
+        self._poll_pose_progress()
         try:
             kind, payload, error = self.result_queue.get_nowait()
         except queue.Empty:
+            self._schedule_after(100, self._poll_result)
+            return
+
+        if kind == "pose_preview":
+            self._set_busy(False)
+            if error is not None:
+                self._set_calculation_progress(
+                    "stopped", "Synthetic pose preview stopped · see status",
+                )
+                self.pose_preview_status.set(f"Pose preview failed: {error}")
+                self.status_text.set(f"Pose preview failed: {error}")
+            else:
+                run: PoseDriverRun = payload
+                completed = run.completed
+                self._set_calculation_progress(
+                    "complete" if completed else "stopped",
+                    ("Synthetic pose preview finished" if completed else
+                     f"Synthetic pose preview stopped: {run.status}"),
+                    fraction=1.0 if completed else min(
+                        max(run.samples[-1].progress_m / run.settings.target_progress_m,
+                            0.0), 1.0,
+                    ),
+                )
+                self.pose_preview_status.set(
+                    f"{run.status}: {run.samples[-1].progress_m:.1f} m in "
+                    f"{run.elapsed_pose_model_time_s:.2f} s pose-model time; "
+                    f"maximum center error {run.maximum_absolute_cross_track_error_m:.2f} m; "
+                    f"minimum assumed footprint slack "
+                    f"{run.minimum_assumed_boundary_slack_m:.2f} m. "
+                    "This is not an engineering lap time."
+                )
+                self.status_text.set(
+                    f"Synthetic pose preview {run.status} · separate four-wheel model"
+                )
+                if len(run.states) > 1:
+                    self._activate_pose_preview(run)
             self._schedule_after(100, self._poll_result)
             return
 
@@ -2988,10 +3367,12 @@ class LapSimDesktop:
             )
         if error is not None:
             self._set_driver_replay_options({}, selected="—")
+            self._set_displayed_run_records(())
             self.status_text.set(f"Calculation failed: {error}")
             messagebox.showerror("Lap calculation failed", str(error), parent=self.root)
         elif kind == "single":
             profile_name, step_m, result, run_id, solver_track, *grip_setting = payload
+            self._set_displayed_run_records((("Lap result", run_id),))
             road_grip_multiplier = grip_setting[0] if grip_setting else 1.0
             self._set_driver_replay_options({}, selected="—")
             if result.completed:
@@ -3019,6 +3400,7 @@ class LapSimDesktop:
         elif kind == "ai_single":
             (profile_name, result, selected_track, selected_mode,
              plan, comparison, assumptions, run_id, *grip_setting) = payload
+            self._set_displayed_run_records((("AI result", run_id),))
             road_grip_multiplier = grip_setting[0] if grip_setting else 1.0
             self._displayed_road_grip_multiplier = road_grip_multiplier
             self._path_comparison = (plan, comparison, assumptions)
@@ -3249,6 +3631,9 @@ class LapSimDesktop:
                 messagebox.showerror("No valid timed lap", str(detail), parent=self.root)
         else:
             step_m, torque_fraction, outcomes, run_ids, solver_track, *grip_setting = payload
+            self._set_displayed_run_records((
+                ("Car A", run_ids[0]), ("Car B", run_ids[1]),
+            ))
             road_grip_multiplier = grip_setting[0] if grip_setting else 1.0
             self._displayed_road_grip_multiplier = road_grip_multiplier
             self._comparison_results = outcomes

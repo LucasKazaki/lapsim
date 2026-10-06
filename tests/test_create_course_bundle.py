@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from hashlib import sha256
+import json
 from math import pi
 from pathlib import Path
 import subprocess
@@ -41,6 +42,27 @@ def _metadata() -> dict:
     }
 
 
+def _corridor_csv(tmp_path: Path, track: SpatialTrack) -> Path:
+    source = tmp_path / "widths.csv"
+    lines = ["distance_m,left_width_m,right_width_m"]
+    lines.extend(
+        f"{station_m},{2.5 + index * 0.01},0.2"
+        for index, station_m in enumerate(track.distance_m[:-1])
+    )
+    source.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return source
+
+
+def _corridor_metadata(source: Path) -> dict:
+    return {
+        "corridor_csv": source,
+        "corridor_status": "assumed",
+        "corridor_source_name": "Scenario width table r1",
+        "corridor_processing_method": "Widths assigned to exact source cells",
+        "corridor_review_note": "Illustrative source-relative widths only",
+    }
+
+
 def test_create_course_bundle_preserves_csv_digest_and_geometry(tmp_path: Path) -> None:
     source, track = _source_csv(tmp_path)
     output = tmp_path / "terps_test_r1.json"
@@ -67,6 +89,99 @@ def test_measured_option_records_source_hash_as_declared_provenance(tmp_path: Pa
     assert bundle.to_dict()["provenance"]["source_sha256"] == sha256(
         source.read_bytes()
     ).hexdigest()
+
+
+def test_v2_converter_hashes_exact_width_csv_and_keeps_assumed_ai_defaults(
+    tmp_path: Path,
+) -> None:
+    source, track = _source_csv(tmp_path)
+    widths = _corridor_csv(tmp_path, track)
+    output = tmp_path / "with_widths.json"
+    bundle = create_course_bundle(
+        source, output, **_metadata(), **_corridor_metadata(widths),
+    )
+    loaded = CourseBundle.load(output)
+    manifest = loaded.to_dict()
+    corridor = manifest["corridor"]
+    assert loaded.schema_version == 2
+    assert loaded.bundle_sha256 == bundle.bundle_sha256
+    assert manifest["boundary_status"] == "source_normal_offsets_assumed"
+    assert manifest["ai_defaults"]["width_source"] == "assumed_uniform"
+    assert corridor["reference_geometry_sha256"] == loaded.geometry_sha256
+    assert corridor["provenance"]["source_sha256"] == sha256(widths.read_bytes()).hexdigest()
+    assert corridor["right_width_m"] == [0.2] * track.cell_count
+    assert corridor["corridor_sha256"] == sha256(
+        json.dumps(
+            {key: value for key, value in corridor.items() if key != "corridor_sha256"},
+            sort_keys=True, separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+@pytest.mark.parametrize("change,expected", [
+    (lambda lines: lines.pop(), "exactly one row"),
+    (lambda lines: lines.append(lines[-1]), "exactly one row"),
+    (lambda lines: lines.__setitem__(2, lines[1]), "duplicates a station"),
+    (lambda lines: lines.__setitem__(1, "0.001,2.5,0.2"), "does not match source cell"),
+    (lambda lines: lines.__setitem__(1, "0,nan,0.2"), "finite numbers"),
+    (lambda lines: lines.__setitem__(1, "0,0,0.2"), "widths must be positive"),
+    (lambda lines: lines.__setitem__(0, "distance_m,left_width_m,right_width_m,extra"), "header must be exactly"),
+])
+def test_v2_converter_rejects_bad_corridor_rows_before_saving(
+    tmp_path: Path, change, expected: str,
+) -> None:
+    source, track = _source_csv(tmp_path)
+    widths = _corridor_csv(tmp_path, track)
+    lines = widths.read_text(encoding="utf-8").splitlines()
+    change(lines)
+    widths.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    output = tmp_path / "bad_widths.json"
+    with pytest.raises(ValueError, match=expected):
+        create_course_bundle(
+            source, output, **_metadata(), **_corridor_metadata(widths),
+        )
+    assert not output.exists()
+
+
+def test_v2_converter_accepts_roundoff_but_not_measured_synthetic_widths(
+    tmp_path: Path,
+) -> None:
+    source, track = _source_csv(tmp_path)
+    widths = _corridor_csv(tmp_path, track)
+    lines = widths.read_text(encoding="utf-8").splitlines()
+    lines[1] = "0.0000000005,2.5,0.2"
+    widths.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    output = tmp_path / "tolerant.json"
+    create_course_bundle(source, output, **_metadata(), **_corridor_metadata(widths))
+    assert CourseBundle.load(output).schema_version == 2
+    measured = _corridor_metadata(widths)
+    measured["corridor_status"] = "measured"
+    with pytest.raises(ValueError, match="measured source course"):
+        create_course_bundle(source, tmp_path / "invalid.json", **_metadata(), **measured)
+    measured_source = _metadata()
+    measured_source["source_kind"] = "measured"
+    accepted = create_course_bundle(
+        source, tmp_path / "measured_widths.json", **measured_source, **measured,
+    )
+    assert accepted.source_cell_corridor is not None
+    assert accepted.source_cell_corridor.status == "measured"
+
+
+def test_v2_requires_complete_metadata_and_bounded_utf8_input(tmp_path: Path) -> None:
+    source, track = _source_csv(tmp_path)
+    widths = _corridor_csv(tmp_path, track)
+    output = tmp_path / "invalid.json"
+    with pytest.raises(ValueError, match="requires status"):
+        create_course_bundle(source, output, **_metadata(), corridor_csv=widths)
+    with pytest.raises(ValueError, match="requires --corridor-csv"):
+        create_course_bundle(source, output, **_metadata(), corridor_status="assumed")
+    widths.write_bytes(b"\xff")
+    with pytest.raises(ValueError, match="corridor CSV must be UTF-8"):
+        create_course_bundle(source, output, **_metadata(), **_corridor_metadata(widths))
+    widths.write_bytes(b" " * (MAX_BUNDLE_BYTES + 1))
+    with pytest.raises(ValueError, match="corridor CSV exceeds the 4 MiB"):
+        create_course_bundle(source, output, **_metadata(), **_corridor_metadata(widths))
+    assert not output.exists()
 
 
 @pytest.mark.parametrize("change,expected", [
@@ -141,3 +256,20 @@ def test_cli_help_and_success(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert output.exists()
     assert CourseBundle.load(output).catalog_id in result.stdout
+
+
+def test_cli_opt_in_v2_corridor(tmp_path: Path) -> None:
+    repository = Path(__file__).resolve().parents[1]
+    script = repository / "scripts/create_course_bundle.py"
+    source, track = _source_csv(tmp_path)
+    widths = _corridor_csv(tmp_path, track)
+    output = tmp_path / "cli_v2.json"
+    args = [str(source), str(output)]
+    for name, value in {**_metadata(), **_corridor_metadata(widths)}.items():
+        args.extend(("--" + name.replace("_", "-"), str(value)))
+    result = subprocess.run(
+        [sys.executable, str(script), *args],
+        cwd=repository, capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert CourseBundle.load(output).schema_version == 2

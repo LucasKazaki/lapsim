@@ -50,10 +50,17 @@ three built-in course choices lack surveyed left/right boundaries.
 
 **Import course…** accepts a versioned, internally coherent closed course
 bundle. Its source arcs are validated before selection, and its local copy
-reappears in the menu after restarting the desktop. Imports have no measured
-boundaries in the current format; their starting AI width is an editable
-scenario assumption. See [Versioned course bundles](course_bundle_format.md)
-for the CSV format, converter command, metadata, and numerical gates.
+reappears in the menu after restarting the desktop. Schema v1 has no boundary
+widths. Schema v2 can carry one left and right width per original source cell,
+with declared status, source file hash, processing note, and a hash tied to the
+validated source geometry. These are distances along that source path's normals,
+not world-frame edge coordinates or a swept-car clearance certificate. The AI
+planner changes the reference path by smoothing and resampling, so the desktop
+does not feed v2 source widths into it until a frame transformation is checked.
+The starting AI width remains an editable uniform assumption, even when an
+import declares measured source-relative widths. See
+[Versioned course bundles](course_bundle_format.md) for source preparation,
+metadata, and numerical gates.
 
 The profile menu includes the Prius benchmark and unchanged repository model.
 When the local ENME408 evidence package is present in Downloads, it also
@@ -186,8 +193,9 @@ selected course's original curvature and runs no path search. Choose **AI racing
 and safety margin. On either synthetic course, the boxes initially show an
 *assumed* ±3 m half-width, 1.8 m vehicle width, and 0.2 m safety margin;
 switching back restores the default recorded course's scenario inputs. The
-app has no measured boundaries and does not infer
-vehicle body width from the car profile. A deterministic, bounded planner
+AI mode has no verified boundary transform from any imported source widths
+and does not infer vehicle body width from the car profile. A deterministic,
+bounded planner
 proposes one smooth lateral-offset line on a separate grid, using nominal 2 m samples only when the requested maximum allows it; it increases samples until generated cells meet the bound. It runs the same car and
 torque request through a newly derived geometric centerline, then checks
 full- and half-offset candidates. When the centerline audit is valid, a
@@ -325,11 +333,24 @@ AI path-planning metadata additionally saves the source label, description,
 synthetic flag, and exact source-geometry hash. These records do not provide a
 full ghost/session replay.
 
-The Timed sessions tab is explicitly a design placeholder for a future
-versioned Terps vehicle/controller, timed drive, ghost, full session capture,
-and comparison report. A standalone, programmatic lap-record replay check
-exists as described below, but it is not a timed session or a tab workflow.
-The tab's Start button is disabled.
+The **Timed sessions · WIP** tab has an enabled **Run 80 m synthetic pose
+preview** button; **Start timed session** remains disabled. The preview runs
+the separate time-domain four-wheel car on the coherent
+synthetic loop using rear-axle pure-pursuit steering, a short curvature/grip
+speed preview, and bounded drive/brake requests. The preview is limited by
+target progress, simulated time, control-step count, and internal integration
+steps. Driver view plays the model's actual planar x/y and heading instead of
+mapping station onto reference x/y as the ordinary lap playback does. The
+display labels its time as **pose-model time** and identifies the synthetic
+four-wheel experiment; it does not show an endurance-model lap time, energy,
+or battery result. Its number boxes switch to the recorded steering, rear
+wheel-drive and front-wheel-brake requests, tracking error, local grip,
+assumed footprint slack, and yaw rate. The default ±3 m corridor, 1.8 m vehicle width, and 0.2 m
+margin are assumptions. The sampled body-rectangle check covers the span
+between axle lines under that corridor, with no surveyed boundary, overhang,
+or between-sample swept-area certificate. A full interactive session, ghost,
+versioned controller/vehicle capture, and linked comparison report remain
+future work. The standalone main-lap record replay below is also separate.
 
 **Run comparison** simulates two selected saved/built-in profiles with the
 same selected centerline course, solver spacing, driver request, and rolling
@@ -351,6 +372,15 @@ settings, result status, and aligned telemetry with units and validity flags.
 The status line shows the start of the record ID; comparison shows both IDs.
 Files stay on your computer and are not added to Git. A record is evidence of
 what the model calculated, not evidence that the real vehicle was calibrated.
+
+For the result currently displayed, **Saved run details** opens a read-only,
+selectable-text evidence window. It gives full record IDs and file paths,
+profile and result status, source course and boundary status, solver path and
+cell count, and AI assumption/ranking status when applicable. It includes both
+cars after a comparison and follows the primary AI record's available trial
+links. The window reports a missing or invalid linked file instead of treating
+the link as a completed record. This viewer loads saved model records; it does
+not rerun the lap or establish vehicle validation.
 
 For a **completed v2 one-lap** record, an engineer can check the saved cell
 commands against the current model without opening the GUI:
@@ -389,6 +419,16 @@ uses the same event gate. This cell check does not establish that integrated
 x/y followed the plotted course or that the car stayed clear of boundaries.
 The replay is not validation against a measured car or a complete
 ghost/session workflow.
+
+The synthetic pose preview retains each issued control and resulting planar
+state in its in-memory `PoseDriverRun`. For engineering checks,
+`replay_pose_driver(run, tolerances=PoseReplayTolerances())` reintegrates the
+saved controls with the same four-wheel configuration and environment. Its
+default absolute tolerances are **1e-8 m** for position, **1e-8 rad** for
+heading, **1e-8 m/s** for body velocity, **1e-8 rad/s** for yaw rate, and
+**1e-8 rad/s** for wheel speed; it also checks road-validity agreement. This
+is numerical replay of a short synthetic maneuver, distinct from the saved
+v2 endurance-lap record replay and from a persistent full-session record.
 
 **Four-wheel lab** opens a separate top-down, time-domain experiment. It
 compares two allocations of the same total requested wheel torque on one

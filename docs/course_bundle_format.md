@@ -6,6 +6,12 @@ Python. The ordinary **Centerline (default)** mode remains the default after an
 import. An imported course is also available to car comparisons and the
 optional experimental racing-line planner.
 
+The converter produces v1 by default. Its optional v2 mode stores left and
+right widths at the **source geometry's cell starts** with their own provenance.
+The current AI planner still uses its separately declared uniform width
+assumption: its path has a different reference frame, and the required
+source-to-planner path-frame transformation has not been implemented.
+
 The built-in **Synthetic FSAE-style · practice** option is a separate analytic
 example and needs no import. Its 817.079633 m closed centerline repeats four
 copies of 60 m straight, 30° left turn at 15 m radius, 45 m straight, 30° right
@@ -21,7 +27,7 @@ record the generator and source geometry hash.
 
 ## Prepare a source CSV
 
-A v1 bundle represents one closed lap as exact, piecewise constant-curvature
+A bundle represents one closed lap as exact, piecewise constant-curvature
 straight or circular arcs. The source CSV needs these four columns:
 
 | Column | Meaning |
@@ -63,7 +69,7 @@ automatically hashes the exact source CSV bytes but does not establish that a
 survey occurred or that the map matches the physical event. Use `synthetic`
 for analytic examples. The optional `--ai-half-width-m`,
 `--ai-vehicle-width-m`, and `--ai-safety-margin-m` flags set *assumed* starting
-values in the desktop. They never become measured boundaries.
+values in the desktop. They never become measured boundaries, including in v2.
 
 The converter checks the CSV and saves a bundle only if it passes. It checks
 that the output path is free before saving; do not have another process write
@@ -73,6 +79,60 @@ records freeze its identity and exact solver grid. The app keeps a local copy
 at `%LOCALAPPDATA%\LapSim\courses\<bundle_sha256>.json` and reloads it into
 the course menu on the next launch. A bad saved file is skipped with a warning.
 The catalog accepts at most 64 JSON files so startup work stays bounded.
+
+## Add source-cell widths with v2
+
+Pass `--corridor-csv` to opt in to schema version 2. Its UTF-8 CSV has exactly
+these columns and one row per validated source cell, in source order:
+
+```csv
+distance_m,left_width_m,right_width_m
+0,2.5,2.7
+15.707963267948966,2.4,2.6
+31.41592653589793,2.3,2.5
+47.12388980384689,2.4,2.6
+```
+
+This example pairs with the four-cell circle above. `distance_m` is the
+starting station of a source cell, not the closure endpoint. Widths are
+positive distances in metres toward the left and right normal of the source
+path as traveled. They are attached to source cells, not surveyed x/y boundary
+points or a tested vehicle envelope. Their only numeric width requirement is
+that every value be finite and positive; a width may be narrower than the
+configured vehicle or margin. The converter rejects extra, missing, duplicate,
+nonfinite, or misaligned rows, and requires each station to match the
+validated source cell start within **1e-9 m**. Both CSV inputs are limited to
+4 MiB and are hashed from their exact bytes.
+
+For the example's synthetic geometry, create an assumed-width v2 bundle:
+
+```powershell
+.venv\Scripts\python.exe scripts\create_course_bundle.py .\course.csv .\course_with_widths_r1.json --course-id analytic_practice --revision widths-r1 --label "Analytic practice loop" --description "Synthetic circle with declared source-cell widths" --source-kind synthetic --source-name "Four quarter-circle arcs" --processing-method "Analytic circle geometry" --review-note "Software fixture only" --frame-origin "first point" --frame-x-axis east --frame-y-axis north --travel-direction counterclockwise --corridor-csv .\widths.csv --corridor-status assumed --corridor-source-name "Scenario width table r1" --corridor-processing-method "Per-cell assumed normal distances" --corridor-review-note "Illustrative source-relative widths; no field survey"
+```
+
+`--corridor-status` is `assumed` or `measured`. `measured` is accepted only
+when `--source-kind measured`; both labels remain self-declared provenance.
+The four corridor flags for status, source name, processing method, and review
+note are required with `--corridor-csv`. Omit all five flags to produce v1.
+Use a fresh revision if the width CSV or its provenance changes.
+
+V2 keeps the v1 top-level fields and adds `corridor`. Its exact fields are:
+
+| Field | Requirement |
+|---|---|
+| `model` | `left_right_normal_offsets_from_source_geometry`. |
+| `reference_geometry_sha256` | Must equal the validated source `geometry_sha256`. |
+| `status` | `assumed` or declared `measured`; determines top-level `boundary_status` as `source_normal_offsets_assumed` or `source_normal_offsets_measured`. |
+| `left_width_m`, `right_width_m` | One finite, positive number for each source cell, excluding the closure endpoint. |
+| `provenance` | `source_name`, exact corridor CSV byte `source_sha256`, `processing_method`, `review_note`. |
+| `corridor_sha256` | SHA-256 of the normalized corridor object excluding `corridor_sha256`, serialized as UTF-8 JSON with sorted keys and compact separators. |
+
+The canonical `bundle_sha256` covers the whole normalized v2 manifest,
+including the corridor and its hash. The loader checks both hashes on import.
+The corridor fields record a source-relative width claim. A planner path can
+shift or smooth the source path; applying these widths to that new path needs
+a checked path-frame transformation. Until that exists, the AI uses
+`ai_defaults.width_source: assumed_uniform` and does not use the v2 widths.
 
 ## Exact v1 contract and hashes
 
@@ -114,8 +174,9 @@ this app launch loaded. It can change when the same manifest is serialized as
 a local copy; the canonical `bundle_sha256` stays stable. Built-in legacy and
 synthetic courses have source artifact/generator identity but no bundle hash.
 
-For a team engineering decision, retain the source CSV, the bundle, the saved
-run JSON, and the processing/review notes together. The imported file does
-not yet include measured left/right boundaries or a surveyed car pose. AI
-clearance remains an explicitly assumed scenario, and a modeled time is not
-a measured lap or a certified Formula SAE course result.
+For a team engineering decision, retain the source CSV, any corridor CSV, the
+bundle, the saved run JSON, and the processing/review notes together. V2 can
+carry declared measured source-normal widths but no world-frame surveyed
+boundary points or surveyed car pose. AI clearance remains an explicitly
+assumed scenario, and a modeled time is not a measured lap or a certified
+Formula SAE course result.

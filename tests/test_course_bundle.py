@@ -11,9 +11,11 @@ from pathlib import Path
 import pytest
 
 from lapsim.courses.course_bundle import (
+    COURSE_BUNDLE_CORRIDOR_SCHEMA_VERSION,
     COURSE_BUNDLE_SCHEMA_VERSION,
     MAX_BUNDLE_BYTES,
     CourseBundle,
+    SourceCellCorridor,
     course_geometry_sha256,
 )
 from lapsim.courses.spatial_track import SpatialTrack
@@ -75,6 +77,32 @@ def _refresh_geometry_hash(payload: dict) -> None:
         closed=geometry["closed"],
     )
     payload["geometry_sha256"] = course_geometry_sha256(track)
+
+
+def _manifest_v2(*, measured: bool = False) -> dict:
+    manifest = _manifest(measured=measured)
+    manifest["schema_version"] = COURSE_BUNDLE_CORRIDOR_SCHEMA_VERSION
+    status = "measured" if measured else "assumed"
+    manifest["boundary_status"] = f"source_normal_offsets_{status}"
+    cell_count = len(manifest["geometry"]["curvature_per_m"])
+    corridor = {
+        "model": "left_right_normal_offsets_from_source_geometry",
+        "reference_geometry_sha256": manifest["geometry_sha256"],
+        "status": status,
+        "left_width_m": [2.5 + index * 0.001 for index in range(cell_count)],
+        "right_width_m": [2.75] * cell_count,
+        "provenance": {
+            "source_name": "Cone survey" if measured else "Scenario width table",
+            "source_sha256": "a" * 64,
+            "processing_method": "Normal distances at source cells",
+            "review_note": "Source-relative widths only; no swept-car certificate.",
+        },
+    }
+    corridor["corridor_sha256"] = sha256(
+        json.dumps(corridor, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    manifest["corridor"] = corridor
+    return manifest
 
 
 def test_course_bundle_roundtrip_hash_and_exact_arc_refinement(tmp_path: Path) -> None:
@@ -152,7 +180,7 @@ def test_rejects_mismatched_hash_and_incoherent_arc_geometry() -> None:
     (lambda m: m["ai_defaults"].update({"half_width_m": 1.0}), "usable assumed corridor"),
     (lambda m: m["ai_defaults"].update({"vehicle_width_m": True}), "finite number"),
     (lambda m: m["coordinate_frame"].update({"y_axis": "east"}), "axes must be distinct"),
-    (lambda m: m.update({"schema_version": 2}), "unsupported"),
+    (lambda m: m.update({"schema_version": 3}), "unsupported"),
 ])
 def test_strict_schema_rejects_unsupported_claims(mutation, expected: str) -> None:
     manifest = _manifest()
@@ -208,3 +236,85 @@ def test_source_geometry_and_metadata_cannot_mutate_loaded_bundle() -> None:
     manifest["geometry"]["x_m"][0] = 100.0
     manifest["description"] = "changed"
     assert bundle.to_dict() == original
+
+
+@pytest.mark.parametrize("measured", [False, True])
+def test_v2_source_cell_corridor_roundtrip_and_canonical_hash(
+    tmp_path: Path, measured: bool,
+) -> None:
+    manifest = _manifest_v2(measured=measured)
+    bundle = CourseBundle.from_dict(manifest)
+    assert bundle.schema_version == 2
+    assert isinstance(bundle.source_cell_corridor, SourceCellCorridor)
+    corridor = bundle.source_cell_corridor
+    assert corridor.status == ("measured" if measured else "assumed")
+    assert corridor.reference_geometry_sha256 == bundle.geometry_sha256
+    assert len(corridor.left_width_m) == bundle.track.cell_count
+    assert corridor.left_width_m[0] == 2.5
+    assert bundle.to_dict() == manifest
+    assert bundle.bundle_sha256 == sha256(
+        json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+    manifest["corridor"]["left_width_m"][0] = 100.0
+    assert corridor.left_width_m[0] == 2.5
+    path = bundle.save(tmp_path / "v2.json")
+    loaded = CourseBundle.load(path)
+    assert loaded.source_cell_corridor == corridor
+    assert loaded.bundle_sha256 == bundle.bundle_sha256
+    assert loaded.source_file_sha256 == sha256(path.read_bytes()).hexdigest()
+
+
+@pytest.mark.parametrize("mutation,expected", [
+    (lambda m: m["corridor"]["left_width_m"].pop(), "exactly"),
+    (lambda m: m["corridor"]["right_width_m"].append(3.0), "exactly"),
+    (lambda m: m["corridor"]["left_width_m"].__setitem__(0, 0.0), "positive"),
+    (lambda m: m["corridor"]["left_width_m"].__setitem__(0, float("nan")), "finite"),
+    (lambda m: m["corridor"]["right_width_m"].__setitem__(0, True), "finite"),
+    (lambda m: m["corridor"].update({"left_boundary_xy": []}), "exactly"),
+    (lambda m: m["corridor"]["provenance"].update({"license": "unknown"}), "exactly"),
+    (lambda m: m["corridor"].update({"reference_geometry_sha256": "b" * 64}), "match validated"),
+    (lambda m: m.update({"boundary_status": "source_normal_offsets_measured"}), "disagrees"),
+    (lambda m: m["corridor"].update({"status": "surveyed_world_frame"}), "assumed or measured"),
+    (lambda m: m["corridor"]["provenance"].update({"source_sha256": None}), "lowercase SHA-256"),
+    (lambda m: m["corridor"]["provenance"].update({"source_sha256": "B" * 64}), "lowercase SHA-256"),
+    (lambda m: m["corridor"].update({"corridor_sha256": "0" * 64}), "corridor SHA-256"),
+    (lambda m: m.pop("corridor"), "exactly"),
+])
+def test_v2_rejects_bad_widths_frames_and_provenance(mutation, expected: str) -> None:
+    manifest = _manifest_v2()
+    mutation(manifest)
+    with pytest.raises(ValueError, match=expected):
+        CourseBundle.from_dict(manifest)
+
+
+def test_v2_rejects_measured_corridor_on_synthetic_course() -> None:
+    manifest = _manifest_v2(measured=True)
+    manifest["source_kind"] = "synthetic"
+    with pytest.raises(ValueError, match="measured source course"):
+        CourseBundle.from_dict(manifest)
+
+
+def test_v2_retains_narrow_source_width_without_assuming_a_car_fits() -> None:
+    manifest = _manifest_v2()
+    manifest["corridor"]["right_width_m"][0] = 0.2
+    corridor = manifest["corridor"]
+    corridor["corridor_sha256"] = sha256(
+        json.dumps({key: value for key, value in corridor.items()
+                    if key != "corridor_sha256"},
+                   sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    bundle = CourseBundle.from_dict(manifest)
+    assert bundle.source_cell_corridor is not None
+    assert bundle.source_cell_corridor.right_width_m[0] == 0.2
+    assert bundle.default_ai_vehicle_width_m == 1.8
+
+
+def test_v2_rejects_duplicate_corridor_json_key(tmp_path: Path) -> None:
+    manifest = _manifest_v2()
+    source = tmp_path / "duplicate.json"
+    text = json.dumps(manifest, separators=(",", ":"))
+    text = text.replace('"status":"assumed"', '"status":"assumed","status":"measured"')
+    source.write_text(text, encoding="utf-8")
+    with pytest.raises(ValueError, match="duplicate course-bundle key"):
+        CourseBundle.load(source)

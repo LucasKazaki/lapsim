@@ -1,19 +1,19 @@
 # LapSim engineering handoff
 
-**Scope:** current source-launched desktop application, its two simulation modes, their input data, and the code and checks needed to maintain them.
+**Scope:** current source-launched desktop application, its distance-domain lap model and separate time-domain four-wheel experiments, their input data, and the code and checks needed to maintain them.
 **Audience:** software lead and vehicle engineers.
 **Status:** implementation description, not vehicle certification or a claim of predictive accuracy.
 **Source basis:** this repository; the supplied *EV Vehicle Simulation and Torque Control* research report (Report I); and the supplied *EV Vehicle Simulation II: Aerodynamics, CFD, Track Conditions, and Secondary Effects* (Report II, 5 October 2026). Report II's proposals are treated as design evidence, not as proof that a feature exists or that its example values describe the team car.
 
 ## 1. Read this first
 
-LapSim has **two different calculation paths**. The main desktop's default route estimates one rolling-start lap along a prescribed centerline; its start and finish speeds are recorded and need not match at the closed-course seam. Its optional AI path comparison uses extra passes to close seam **speed** for each tested path. Both routes advance from one distance cell to the next with the repository's vehicle, powertrain, battery, brake, aero, tire, and quasi-static suspension models. Their outputs are model estimates for the selected car and course. The separate four-wheel lab integrates world position, body velocity, yaw, and four wheel speeds over time for a short, synthetic, open-loop torque-allocation maneuver. It is not an endurance-lap solver and does not use the selected Prius or TREV car profile.
+LapSim has **two physics families**. The main desktop's default route estimates one rolling-start lap along a prescribed centerline; its start and finish speeds are recorded and need not match at the closed-course seam. Its optional AI path comparison uses extra passes to close seam **speed** for each tested path. Both routes advance from one distance cell to the next with the repository's vehicle, powertrain, battery, brake, aero, tire, and quasi-static suspension models. Their outputs are model estimates for the selected car and course. The separate time-domain four-wheel model integrates world position, body velocity, yaw, and four wheel speeds. The Four-wheel lab uses it for a short, synthetic, open-loop torque-allocation comparison. The optional WIP pose preview uses it with feedback steering over 80 m of a synthetic loop. Neither time-domain route is an endurance-lap solver or uses the selected Prius or TREV car profile.
 
 That distinction is the most important interface contract in the project. A lap-time difference is not proof that the time-domain torque controller will be faster; a yaw difference in the lab is not a lap-time prediction. Neither mode currently has a calibrated 2026-27 car. The built-in Prius uses an equivalent electric power source to exercise the software, not a Toyota hybrid transaxle model. Optional TREV working profiles use partial local evidence and retain inherited defaults for missing subsystems.
 
 The work informed by Report II adds explicit air-relative wind and per-wheel road-grip conditions to the four-wheel experiment. The **core API's** zero-drag, still-air, base-grip default recovers the pre-extension model; the desktop deliberately starts with a synthetic nonzero drag-area input. Full six-component CFD maps, ride-height feedback, vertical road/contact dynamics, and temperature-dependent limits remain future work because the required car, tire, CFD, road, and thermal data are not in this repository. Section 17 lists the exact data needed to advance those models.
 
-An optional **experimental racing-line planner** now proposes one smooth path within an explicitly supplied corridor and computes model laps for it and a processed geometric centerline. Each prescribed curvature path must pass a continuous scalar normal-coordinate clearance check and a position-closure check before either time can be ranked. The default fused course fails this gate, so its completed AI-mode times are **diagnostics, not a selected racing-line gain**. A separate synthetic rounded rectangle passes the software gates and demonstrates an eligible modeled selection under assumed widths; it is not a surveyed event track. The ordinary centerline remains the default driving mode and does not run optimization. The planner is deterministic geometry optimization rather than machine learning or closed-loop driving. The driver view plays solved telemetry on a reference map; it is not a measured or simulated tracked vehicle pose. Section 8.4 gives its math, Section 9 describes the desktop presentation, and `docs/ai_racer_design.md` records its research and evidence limits.
+An optional **experimental racing-line planner** now proposes one smooth path within an explicitly supplied corridor and computes model laps for it and a processed geometric centerline. Each prescribed curvature path must pass a continuous scalar normal-coordinate clearance check and a position-closure check before either time can be ranked. The default fused course fails this gate, so its completed AI-mode times are **diagnostics, not a selected racing-line gain**. A separate synthetic rounded rectangle passes the software gates and demonstrates an eligible modeled selection under assumed widths; it is not a surveyed event track. The ordinary centerline remains the default driving mode and does not run optimization. The planner is deterministic offline geometry optimization. Ordinary lap Driver view playback maps solved telemetry to reference x/y; the separate WIP pose preview plays the four-wheel model's simulated x/y and heading with its own label. Section 8.4 gives the planner math, Sections 9 and 10.2 describe those displays and pose experiment, and `docs/ai_racer_design.md` records their research and evidence limits.
 
 ### 1.1 Evidence levels
 
@@ -68,6 +68,9 @@ src/lapsim/ui/__main__.py
                   -> tire, suspension, aero, brake, drivetrain, battery
       -> experiments/run_record.py: settings, results, aligned telemetry
       -> ui/driver_view.py: time/distance interpolation onto reference x/y
+      -> optimization/pose_driver.py: bounded pure-pursuit synthetic pose preview
+          -> dynamics/planar.py: separate time-domain four-wheel model
+      -> ui/pose_driver_playback.py: actual simulated pose in Driver view
 
   -> ui/dynamics_lab.py: separate short maneuver and A/B displays
       -> dynamics/planar.py: time-domain four-wheel forces and RK4
@@ -144,6 +147,26 @@ neither the importer nor the AI planner can call its width a measured cone
 corridor. The inconsistent shipped fused recording fails this strict import
 contract and remains available only as its explicitly identified legacy
 built-in course.
+
+Schema **v2** keeps that same coherent source-arc contract and adds a
+`corridor` with one positive left and right width per original source cell.
+Its `reference_geometry_sha256` must match the validated source geometry;
+`corridor_sha256` covers normalized widths and separate width provenance
+(`source_name`, source SHA-256, processing method, review note). The declared
+`status` is `assumed` or `measured`; measured status requires a measured
+source-kind declaration. Widths are finite positive source data, independent
+of the default AI vehicle width and margin. The loader preserves them as normal-coordinate
+offsets from the **source** reference, not world-frame boundary coordinates
+or a swept-body certificate. The imported course description and saved run
+source metadata expose their status and hashes; run metadata marks
+`source_cell_corridor.used_by_ai_planner=false`. The planner's processed
+reference is smoothed and resampled, so its desktop route continues to use
+the editable `ai_defaults` uniform assumption until a source-to-processed
+width transformation is checked. A declaration of measured widths is not
+independent survey verification. [TUM FTM's trajectory format](https://github.com/TUMFTM/global_racetrajectory_optimization/blob/master/Readme.md)
+also defines left/right widths with respect to an explicit reference line
+and normal vectors, illustrating why changing that line changes the width
+coordinate frame.
 
 `SpatialTrack` reads point arrays `distance_m`, `x_m`, `y_m` and one curvature value per cell. It checks finite values, channel lengths, and strictly increasing distance. It does **not** prove that the plotted x/y geometry exactly matches the cell curvature, that a closed flag closes the coordinates perfectly, or that the car remains within cones. The path solver consumes distance, cell length, and curvature. The plotted map consumes x/y. `Vehicle.update_state` separately integrates its achieved x/y/heading; the desktop does not overlay this path or check track width.
 
@@ -326,7 +349,7 @@ Time and force are coupled because optional tire slip relaxation may depend on `
 
 ### 8.4 Optional experimental racing-line planning
 
-`src/lapsim/optimization/racing_line.py` prepares a **new path input** for the shared lap model. It does not change the force, power, braking, or battery equations in Sections 6-8. The desktop imports this module only after **AI racing line (experimental)** is selected. Ordinary **Centerline (default)** calls `solver_track_for_course` and `run_one_lap` on the selected course's original distance/curvature channel and pays no optimization cost. That grid helper resamples the fused recording or preserves and analytically subdivides either synthetic course's existing straight/arc cells as described in Section 5.1. The startup course is the fused team recording; either synthetic course is selected separately. The AI route requires the user to enter assumed half-width, vehicle width, and safety margin. Its programmatic `TrackCorridor` supports separate left/right width for *each source cell*, plus a required source description; the current desktop supplies equal uniform assumed widths because there is no surveyed corridor. The clearances must exceed `vehicle_width/2 + margin` on both sides. These values define a center-of-car offset envelope, not an observed edge of pavement.
+`src/lapsim/optimization/racing_line.py` prepares a **new path input** for the shared lap model. It does not change the force, power, braking, or battery equations in Sections 6-8. The desktop imports this module only after **AI racing line (experimental)** is selected. Ordinary **Centerline (default)** calls `solver_track_for_course` and `run_one_lap` on the selected course's original distance/curvature channel and pays no optimization cost. That grid helper resamples the fused recording or preserves and analytically subdivides either synthetic course's existing straight/arc cells as described in Section 5.1. The startup course is the fused team recording; either synthetic course is selected separately. The AI route requires the user to enter assumed half-width, vehicle width, and safety margin. Its programmatic `TrackCorridor` supports separate left/right width for *each source cell*, plus a required source description; the current desktop supplies equal uniform assumed widths. The clearances must exceed `vehicle_width/2 + margin` on both sides. These values define a center-of-car offset envelope, not an observed edge of pavement. Bundle v2 source-cell widths are not passed to this planner because it shifts and smooths the reference path without a verified source-to-processed width transformation.
 
 For a closed source course with length `L_source`, the planner removes the x/y endpoint mismatch linearly over source distance, interpolates x/y with a periodic cubic spline onto `N = max(ceil(L_source/2 m), 4 K, 32)` periodic samples by default (`K=24` controls), and applies wrapped Gaussian smoothing with a `0.8 m` scale. In desktop AI mode, the requested maximum cell length first reduces the nominal sampling interval when needed. Since offset geometry can lengthen an individual chord, the planner then rebuilds at larger sample counts until both generated endpoint paths have actual cell lengths at or below the request. Chord length is convex in offset strength, so bounding strength 0 and 1 also bounds the intermediate 0.5 and fourth strengths. Planning stops with an explicit error at the 5,000-point cap or after eight bounded attempts; smaller cells increase compute cost and can change the optimized line and modeled time. Periodic cubic interpolation avoids artificial corners when the source and planner station grids differ; it does not repair an inconsistent source map. The planner records closure error, maximum preparation shift, and processed path length difference. The processed zero-offset line is the **geometric baseline**; the ordinary source-curvature line is not a valid A/B baseline for a shifted x/y candidate. The planner refuses more than 5,000 samples, an open course, self-intersecting processed baseline, undefined tangent, degenerate cell, or unusable corridor.
 
@@ -383,8 +406,9 @@ Research basis: TUM FTM's trajectory planner and the TORCS robot tutorial. LapSi
 | AI result boxes | Eligible baseline/candidate times and signed difference when both audits pass; completed audit-failed times carry `*`, difference is blank, Compare path numbers is disabled, and text gives observed excess, certification status, and seam gap |
 | Trace selector | Speed, acceleration, drive/braking forces, inferred driven slip, or battery power from named telemetry channels, against time or distance |
 | Course map | Selected source x/y reference, fixed top-down; mouse drag pans and wheel zooms; the fused course displays its geometry warning while the synthetic choices are labeled as assumed examples |
-| Driver view tab | Static labeled source-course preview while preparing; latest accepted physics cell on the exact trial grid during a solve; then timed top-down replay on each run's saved solver-grid x/y with fixed car marker, play/pause, scrub, rate, wheel zoom, cell control/force number boxes, and a Replay lap menu for completed comparisons |
-| Timed sessions · WIP tab | Scope text and disabled start button for the future ghost/controller/complete-session/replay-tolerance workflow |
+| Driver view tab | Static labeled source-course preview while preparing; latest accepted physics cell on the exact trial grid during a solve; then timed top-down replay on each run's saved solver-grid x/y with fixed car marker, play/pause, scrub, rate, wheel zoom, cell control/force number boxes, and a Replay lap menu for completed comparisons; the separately labeled synthetic pose preview uses simulated x/y and heading |
+| Timed sessions · WIP tab | Optional bounded 80 m synthetic four-wheel pose preview; the versioned team controller, ghost, full session capture, and comparison workflow remain unavailable |
+| Saved run details | Read-only text window for the currently displayed lap or A/B result: full content IDs and files, profile, result, source/boundary status, solver path, AI rank/assumptions, and available linked AI trial records |
 | Source data / model notes | Inspect reviewed records, origins, model use, and caveats; inspection does not change the active vehicle |
 | Dark mode | Reverses white/black Tk and Matplotlib surfaces; it does not change a simulation parameter |
 
@@ -440,7 +464,17 @@ snapshot directly, since a one-snapshot preview does not contain the
 prefix of earlier cells needed for playback alignment. Tk may coalesce
 intermediate updates, but no extra physics pass is performed.
 
-For a centerline lap, including either car in a profile comparison, the displayed path is the exact centerline solver-grid x/y frozen in the saved run; for an AI trial it is that trial's processed solver path. Live progress and completed replay therefore interpolate the same per-run reference geometry. The separate Analysis course plot still shows the source x/y, which can differ after solver resampling. None of these views is the integrated `Vehicle` x/y/heading state. In particular, the fused default track's x/y and curvature disagree numerically even on the saved grid. The view is a useful time/station and speed preview but does **not** show steering error, tire path tracking, cone proximity, a true driver's camera, or interactive driving. The desktop switches to this tab when a calculation starts and shows a static labeled source-course map with the start marked and **NO VEHICLE POSE** until an accepted cell arrives. A pause between accepted cells returns to that preview; completed laps start replay. The Timed sessions tab remains visibly unavailable until a closed-loop session engine, versioned controller contract, full input/state/environment capture, replay tolerance policy, and linked comparison report exist.
+For a centerline lap, including either car in a profile comparison, the displayed path is the exact centerline solver-grid x/y frozen in the saved run; for an AI trial it is that trial's processed solver path. Live progress and completed replay therefore interpolate the same per-run reference geometry. The separate Analysis course plot still shows the source x/y, which can differ after solver resampling. None of these **lap views** is the integrated `Vehicle` x/y/heading state. In particular, the fused default track's x/y and curvature disagree numerically even on the saved grid. The lap view is a useful time/station and speed preview but does **not** show steering error, tire path tracking, cone proximity, a true driver's camera, or interactive driving. The desktop switches to this tab when a lap calculation starts and shows a static labeled source-course map with the start marked and **NO VEHICLE POSE** until an accepted cell arrives. A pause between accepted cells returns to that preview; completed laps start replay. The optional WIP pose preview instead plays the separate four-wheel model's actual simulated x/y and heading with an explicit synthetic model-time label. It does not validate the lap solver's reference-path playback. A full timed session remains unavailable until a versioned controller contract, complete input/state/environment capture, replay tolerance policy, and linked comparison report exist.
+
+During the pose preview, the nine decision boxes change labels and display the
+recorded front steering request (degrees), rear drive request per wheel (N·m),
+FL/FR brake requests (N·m), reference cross-track error (m), heading error
+(degrees), observed local road-grip multiplier, assumed axle-span footprint
+slack (m), and yaw rate (degrees/s). Controls are held over each 0.05 s output
+interval; geometric diagnostics and yaw rate are interpolated between recorded
+states for display only. Switching back to a lap restores the endurance-model
+box labels and telemetry. The pose boxes do not imply motor, pack, or hydraulic
+brake hardware modeling.
 
 ## 10. Four-wheel lab: state, control, tire, and motion equations
 
@@ -493,6 +527,50 @@ It should be at roundoff for a force evaluation, including the added aero work. 
 
 `run_planar_dynamics` uses classical fourth-order Runge-Kutta with held controls/environment over an output interval, splitting that interval into smaller internal steps. The cap is `min(user_max_step, 0.8/lambda)`, where `lambda=(Ck/v_floor)(R^2/J+4/m)` approximates the fastest small-slip mode. The synthetic config's explicit maximum is 0.002 s; stiffness may force smaller substeps. The public run stores `N+1` boundary times/states and `N` pre-control interval evaluations. There is no final-point evaluation because no control interval follows the final state; the GUI computes one only for display with the last held control. A single-step API raises on an invalid road query; the batch runner returns a flagged run. The output count and internal substep count have explicit upper bounds in code. The integration is deterministic for identical input values and code, apart from ordinary floating-point/runtime variation.
 
+### 10.2 Bounded pose-aware preview on the synthetic loop
+
+`optimization/pose_driver.py::run_pose_driver` couples this **same separate
+four-wheel model** to a simple feedback controller targeting **80 m** of
+progress on the coherent synthetic rounded rectangle. The WIP tab can show
+its actual planar x/y and heading through `ui/pose_driver_playback.py`; the
+playback labels elapsed time as **pose-model time** and has no battery or
+endurance-lap result. The car is the explicit 300 kg synthetic planar
+configuration from Section 10, independent of the active Prius/TREV profile.
+The path is a reference for steering; the state evolves from the four-wheel
+forces and yaw equations above. This gives a controlled pose experiment,
+not a calibrated Formula SAE lap or complete driving session.
+
+The controller projects the **rear axle** into a local 12 m station window,
+then looks `ell = 2.5 m + (0.45 s) sqrt(u² + v²)` ahead along the reference.
+For bearing error `alpha` from the vehicle heading to the target, wheelbase
+`L`, and direct rear-axle-to-target distance `D` (floored at **0.5 m**), it
+requests `delta = atan2(2 L sin(alpha), D)`, clipped to **±0.30 rad**. With
+peak short-preview curvature `|kappa|` and local grip multiplier `grip`, its
+corner-speed target is
+`sqrt(min(4 m/s², 0.35 mu grip g) / max(|kappa|, 1e-9 1/m))`, capped again
+at the **5.5 m/s** cruise setting. Speed error requests up to **80 N·m**
+drive on each rear wheel at gain **40 N·m/(m/s)** or up to **80 N·m** brake
+on each wheel at gain **35 N·m/(m/s)**. The rear-axle geometry follows
+[Coulter's pure-pursuit report](https://publications.ri.cmu.edu/implementation-of-the-pure-pursuit-path-tracking-algorithm);
+the [TORCS steering tutorial](https://torcs.sourceforge.net/api/robot_tutorial_chapter_4.html)
+also distinguishes lookahead station distance from the direct target vector.
+Neither reference supplies calibration or guarantees for this car.
+
+Default bounds are **0.05 s** per control step, **20 s** modeled time,
+**400** control steps, and **60,000** internal substeps. The assumed corridor
+is ±3 m with 1.8 m body width and 0.2 m margin. At each output sample, the
+model projects the four corners of an axle-span body rectangle and stops on
+negative assumed boundary slack or invalid declared road coverage. This
+omits overhangs and does not certify between-sample swept clearance or real
+cones. `PoseDriverRun` keeps time, issued controls, full planar boundary
+states, force evaluations, projection samples, and termination status in
+memory. `replay_pose_driver(run, tolerances=PoseReplayTolerances())`
+reintegrates those controls and compares every recorded state at default
+absolute limits **1e-8 m** position, **1e-8 rad** heading, **1e-8 m/s** body
+velocity, and **1e-8 rad/s** yaw rate and wheel speed, plus road-validity
+agreement. These are numerical replay tolerances for the short synthetic
+trace, not measured tracking accuracy or a persistent full-session record.
+
 ## 11. Report II upgrade: wind and road conditions
 
 `src/lapsim/dynamics/conditions.py` defines immutable `PlanarEnvironment`, `PlanarRoad`, `RectangularGripPatch`, and optional `RoadDomain`. Wind is a **world-frame vector** `(wx,wy)`. For heading `psi`, the derivative first rotates it into the body frame, then subtracts it from ground velocity:
@@ -535,6 +613,16 @@ The important reproducibility distinction is **model input versus measured evide
 ## 14. Saved records: exact schema, integrity, and replay limits
 
 ### 14.1 Main-lap record (`experiments/run_record.py`)
+
+For a v2 imported course, `settings.track.source_course.metadata_version=2`
+and `boundary_status` identify the declared source-width revision. Its
+`source_cell_corridor` summary stores status, source-geometry and corridor
+hashes, width source name/hash, and `used_by_ai_planner=false` with the
+frame-transformation reason. The full per-cell width arrays remain in the
+validated local course bundle, while the lap record freezes source identity
+and the actual solver grid. Review the corresponding bundle when a
+width-by-cell audit is needed. A measured declaration and matching hash are
+provenance, not proof of surveyed edge accuracy or AI path clearance.
 
 `LapRunSettings.from_track` freezes the **resampled solver grid**, not just a filename: `closed`, all distance/X/Y/curvature values, and a SHA-256 of canonical JSON for that geometry. It also saves course ID, length, cell count, requested maximum step, path-constraint settings, constant driver torque fraction, assumed uniform road-grip factor and source, one-lap event settings, and selected profile identifiers. The course ID distinguishes ordinary fused-team runs (`team_endurance_fused_gnss_imu`) from the short synthetic demo (`synthetic_rounded_rectangle_v1`) and longer practice course (`synthetic_fsae_endurance_style_v1`) rather than silently treating them as the same input. `capture_lap_run` combines these settings with the source-aware profile manifest, editable overrides, full effective `Vehicle` constructor-field snapshot and its hash, result status/reason/time/pack energy/final SOC, and synchronized post-cell telemetry. Each telemetry channel has values, unit when identified, origin category, sample count, and missing-sample status; a missing numeric sample is JSON `null`, not an undocumented zero. The record carries Python implementation/version, operating-system descriptors, and installed NumPy/SciPy/Matplotlib versions. `schema_version=2` embeds the grid; the loader accepts the older v1 format too.
 
@@ -586,7 +674,7 @@ for metric in report.metrics:
     print(metric.name, metric.maximum_absolute_error, metric.tolerance, metric.passed)
 ```
 
-The file hash checks that the loaded JSON has not changed since it was named; it is **not** this replay check. A successful command replay confirms selected numerical outputs of the saved **model** run and reruns the event's requested/achieved curvature gate. It does not prove that the integrated vehicle x/y followed the separately plotted course or stayed within surveyed boundaries. Neither this API nor the Driver view's visual telemetry playback proves agreement with an instrumented vehicle or implements the disabled Timed sessions workflow.
+The file hash checks that the loaded JSON has not changed since it was named; it is **not** this replay check. A successful command replay confirms selected numerical outputs of the saved **model** run and reruns the event's requested/achieved curvature gate. It does not prove that the integrated vehicle x/y followed the separately plotted course or stayed within surveyed boundaries. Neither this API nor the Driver view's visual telemetry playback proves agreement with an instrumented vehicle or implements the full Timed sessions workflow.
 
 ### 14.3 Four-wheel A/B record (`experiments/dynamics_record.py`)
 
@@ -595,6 +683,17 @@ The file hash checks that the loaded JSON has not changed since it was named; it
 The lab record supports inspection and programmatic replay from exact inputs, but there is no one-click replay button yet. Its power/force residuals are evaluated from the saved numerical derivatives and forces; they do not compare a simulated maneuver with instrumented car measurements. The road-valid flag reports that the **solver found** every queried contact inside the declared domain; capture and load rerun the integrator to check this, including RK4 stages. The file still stores only their aggregate invalid-query count, not every intermediate contact coordinate. If no domain exists, coverage is an unbounded synthetic assumption, which the GUI calls `ASSUMED`; it is not a claim of road survey coverage. A/B record capture does not include the current uncommitted source patch. Because load uses the installed model code for replay, a future change to physics or integration may reject a historically valid record until an explicit schema/model-version migration or archived-code replay is provided.
 
 ### 14.4 Practical record inspection
+
+The desktop's **Saved run details** button opens a read-only text viewer for
+the currently displayed lap or A/B comparison. It loads each named run by
+its full content ID and file path, reports the profile, result status, source
+course and boundary status, solver path and cell count, and AI assumption and
+rank status where present. For a primary AI result it follows available
+baseline and candidate trial IDs, showing a load error if a linked file is
+missing or invalid. The viewer does not rerun physics, certify boundaries,
+or turn a diagnostic trial into a ranked path. The short pose preview retains
+controls and states in memory for `replay_pose_driver`; it is not one of these
+persistent v2 lap records and supplies no complete session archive.
 
 Read the JSON in this order: `schema_version` and `simulation_mode`; `runtime` and source identity; `configuration`/`inputs`; `settings` and solver grid or time step; `result`/`runs`; `validity`; then telemetry/evaluations. A run is usable for a model comparison only if its event succeeded, its selected inputs match the intended comparison, its declared validity checks pass, and its assumed parameters are appropriate for the engineering question. Never rank a failed lap or a road-out-of-domain maneuver by its partial elapsed time or final yaw alone. Preserve the full JSON alongside any plot shared with the team.
 
@@ -646,9 +745,20 @@ Keep derivative evaluations pure during RK4 and commit thermal, charge, wear, or
 
 Coarse prescribed-path skidpad regressions require a radius-5 m circle split into one or four cells to reject acceleration beyond its modeled corner limit, while an ordinary within-limit skidpad still scores. A newer circle regression checks the combined longitudinal/lateral force margin at every accepted exit on both 4-cell and 64-cell grids; an explicit 50 N·m request that passes the pure lateral speed ceiling but lacks about 102 N of exit grip must fail. The legacy unconstrained nominal-2 m AI API regression requires a 0.95-strength continuous scalar-audit pass and a completed **14.617662 s** Prius trial under the current exit-grip physics; new maximum-cell tests check a distinct finer-grid desktop scenario. An earlier fixed-path 1 m probe retained roughly 0.449 s over the old 0.75 fallback under the prior cell-force policy. The Windows preflight also draws a TkAgg canvas and checks the shipped course before launch. On a separate synthetic radius-25 m circle with the repository-baseline car and torque request 0.8, an **earlier pre-exit-grip** sensitivity run changed assumed uniform road grip from 100% to 70%, reduced the path-entry ceiling from **19.827545 to 16.555945 m/s**, and increased the completed lap from **8.073551 to 9.637759 s**. Those lap times are historical; the prepass and lap both respond to the same grip factor, but this is not a calibrated wet-track prediction.
 
-On 6 October 2026, the checked-in `scripts/check_all.ps1` ran all **47 repository test files** in isolated one-module pytest processes and reported **483 passed, 660 subtests, and zero skips**. Splitting the files avoided this workstation's Windows commit-memory limit; each process used one OpenBLAS, OMP, and MKL thread and explicit Tcl/Tk library paths. The Driver view checks compare every live accepted-cell value with same-cell telemetry, verify replay's active-cell boundary timing and independent missing-channel handling, and confirm the desktop numbers and unit conversions. New desktop tests also start a new run with an old Analysis trace visible, then fail the new calculation and verify the old plot and result references remain cleared. Failed-run checks cover rejection before a cell update, rejection after the first and a later attempted update, last accepted telemetry alignment, complete-run equality, record serialization and contradictions, and consistent battery-depletion progress. A/B tests use cars with markedly different independent first-cell ceilings, require one common start and one preparation per car, replay both saved records, inspect live/replay/popup behavior, and reject a different vehicle or track when reusing limits. The new cyclic-braking regression reproduces a four-cell closing-straight case: with a loose tolerance, the prior one-pass 43.112 m/s closing-cell ceiling exceeded its 23.254 m/s braking-feasible entry; the corrected solver continues its sweep or raises at the pass bound. It also rejects nonfinite tolerance settings. At the declared minimum **1080 × 720** window, the decision grid requests **620 px** inside a **660 px** panel and the course canvas remains **264 px** high. Course checks include exact catalog-source identity for both synthetic IDs, analytic per-cell endpoint and closed-heading validation, original-station-preserving subarcs, and a valid coarse two-semicircle loop whose polygon chord winding aliases the true turn. They also cover bounded versioned JSON and CSV loading, duplicate/nonfinite/malformed input rejection, source and manifest hashes, local catalog reload and revision conflicts, imported centerline and AI runs, linked trial records, and model replay of those records. These are numerical and software checks, not a track survey or measured-boundary validation.
+On 6 October 2026, the checked-in `scripts/check_all.ps1` ran all **50 repository test files** in isolated one-module pytest processes and reported **528 passed, 660 subtests, and zero skips**. Splitting the files avoided this workstation's Windows commit-memory limit; each process used one OpenBLAS, OMP, and MKL thread and explicit Tcl/Tk library paths. The Driver view checks compare every live accepted-cell value with same-cell telemetry, verify replay's active-cell boundary timing and independent missing-channel handling, and confirm the desktop numbers and unit conversions. New desktop tests also start a new run with an old Analysis trace visible, then fail the new calculation and verify the old plot and result references remain cleared. Failed-run checks cover rejection before a cell update, rejection after the first and a later attempted update, last accepted telemetry alignment, complete-run equality, record serialization and contradictions, and consistent battery-depletion progress. A/B tests use cars with markedly different independent first-cell ceilings, require one common start and one preparation per car, replay both saved records, inspect live/replay/popup behavior, and reject a different vehicle or track when reusing limits. The new cyclic-braking regression reproduces a four-cell closing-straight case: with a loose tolerance, the prior one-pass 43.112 m/s closing-cell ceiling exceeded its 23.254 m/s braking-feasible entry; the corrected solver continues its sweep or raises at the pass bound. It also rejects nonfinite tolerance settings. At the declared minimum **1080 × 720** window, the decision grid requests **620 px** inside a **660 px** panel and the course canvas remains **264 px** high. Course checks include exact catalog-source identity for both synthetic IDs, analytic per-cell endpoint and closed-heading validation, original-station-preserving subarcs, and a valid coarse two-semicircle loop whose polygon chord winding aliases the true turn. They also cover bounded versioned JSON and CSV loading, duplicate/nonfinite/malformed input rejection, source and manifest hashes, local catalog reload and revision conflicts, imported centerline and AI runs, linked trial records, and model replay of those records. These are numerical and software checks, not a track survey or measured-boundary validation.
 
 The new cell-length regressions verify that the planner bounds generated baseline and candidate physics cells, tries the allowed 5,000-point grid before rejecting a tight request, and handles a one-ulp final-station discrepancy on the FSAE-style practice course without relaxing its clearance checks. Desktop progress regressions verify current-pass accepted-cell fractions, indeterminate preparation and gap states, completion/failure reset, dark-mode contrast, and cancellation of pending animation callbacks at window close.
+
+The v2 bundle and converter checks cover source-cell width lengths, station
+alignment, narrow positive widths independent of car size, declared provenance,
+both canonical and raw-file hashes, malformed or duplicate CSV rows, and
+round-trip import. The pose-driver checks cover an 80 m synthetic bend,
+low-grip command response from the same initial pose, finite work and road
+limits, projection failure alignment, recorded-control numerical replay, and
+driver-view use of the actual simulated pose and control boxes. Saved-run UI
+checks show full content IDs and paths for one lap, AI-linked trials, and A/B
+records, then clear stale evidence after input changes. These do not establish
+measured course width, driver quality, or real-car agreement.
 
 The repository tests exercise constructors, component limits, path constraints, endurance events, desktop settings, record integrity, and the four-wheel equations. The environment checks cover backward-compatible zero-drag/still-air behavior, headwind/tailwind/crosswind signs and power, rotated world wind, road queries after heading rotation, malformed inputs, deterministic repeated runs, and road-domain violations that occur **only inside RK4 stages**. The four-wheel lab checks that A/B share initial conditions and the same wind/patch, and that its worker saves a linked record. The record checks cover content hashes, geometry/input alignment, schema compatibility, tamper rejection, grip-condition/snapshot agreement, older v2 default-grip replay, and residual summaries. Additional desktop checks cover shared grip in AI and car A/B runs, the visible 1080×720 grip control, and clearing old result/replay displays when defining inputs change. The aero/suspension guards reject unsupported loss of normal reaction. Course-catalog checks cover source identity, synthetic and imported arc geometry at several requested steps, exact per-source-cell grid limits, fused-grid behavior, and invalid grid requests; desktop checks cover course-switch clearing, saved course IDs, import persistence, and comparison provenance. The exact command, result, and Git commit should be logged together for a later design review.
 
@@ -690,10 +800,12 @@ Important current bounds and gaps:
 | Explicit-control lap checks requested and achieved curvature, but not x/y path or boundaries | Passing the scalar curvature gate and recorded-control replay does not prove the car followed the displayed map or cleared cones |
 | AI polygon offset check uses a declared synthetic corridor relative to processed x/y | It verifies the proposed spline offset under supplied widths, not the arc path implied by curvature |
 | AI continuous scalar modeled-path check requires clearance and position closure | Initial samples plus bounded interval checks cover each represented curvature arc against supplied normal-coordinate widths; unresolved intervals fail. It does not certify swept-body or surveyed cone clearance, and the shipped paths fail |
+| Imported v2 widths are source-relative | Provenance and hashes preserve per-cell data, but the AI planner does not use them until its changed reference frame has a verified width transformation |
 | AI objective is local mean-curvature optimization plus bounded line-strength trials | Up to eight full-model passes; invalid candidates skip physics when the baseline is valid. No path is selectable when the processed baseline fails its modeled-path audit |
 | Source x/y and curvature disagree | Stored turn is 3.657937 rad versus 6.283185 rad map winding; default and AI paths cannot be compared for a racing-line gain |
 | Default lap speed need not close at the course seam | The default starts at a cyclic braking ceiling for one pass; AI trials separately require speed closure within 0.005 m/s, but no route enforces periodic charge or other full state |
-| Driver view maps solved station onto reference x/y | The marker is not the dynamically integrated vehicle pose or an interactive driver |
+| Main-lap Driver view maps solved station onto reference x/y | The lap marker is not the dynamically integrated vehicle pose; the separate WIP pose preview displays a four-wheel model state on a synthetic course |
+| Synthetic pose preview has sampled assumed-corridor checks | Its 80 m model duration is not an endurance lap time; axle-span sample checks and state replay do not establish swept cone clearance or a full session |
 | Main lap uses flat, still air and an assumed uniform grip factor | The entered factor scales tire force capacity across the lap; lab wind and local road patches do not change lap time |
 | Main tire is capacity-based with inferred slip | The uniform grip factor changes its capacity but supplies no measured tire/road calibration, independent wheel transient, or temperature prediction |
 | Lab uses static Fz and synthetic linear/circular tire | It demonstrates yaw/force coupling, not a calibrated car |
@@ -707,11 +819,11 @@ Important current bounds and gaps:
 
 1. **Freeze the 2026-27 car evidence.** Collect a versioned, reviewed configuration: mass/CG/inertias, wheelbase/tracks/radii, drive topology and torque limits, pack/thermal data, brake/regen limits, tire map, and aero coordinate convention. Keep source, units, validity range, and uncertainty per field. Promote only verified values into adapters; keep unknowns explicit.
 2. **Establish held-out baseline validation.** Instrument a known dry, flat maneuver and course section. Align times and frames; compare speed, yaw, wheel speeds/torques, pack voltage/current, and brake response with error and uncertainty. Require zero-weather/constant-surface regression before each environmental change.
-3. **Repair and survey the recorded course before ranking real racing lines.** Measure both cone boundaries in one world frame with x/y, station, closure, and uncertainty. Reconcile 989 m station/curvature with roughly 1,012 m x/y using retained raw data and versioned processing. Build a path representation whose x/y, station lengths, curvature arcs, and position seam agree without introducing damaging curvature spikes. The optional synthetic loop now passes the continuous scalar modeled-path gate under an assumed corridor; retain it as a software check, then test the full swept vehicle envelope against surveyed boundaries. The unmerged arc prototypes are research evidence, not a finished repair. Until then, the default fused course's AI times are diagnostics only.
+3. **Repair and survey the recorded course before ranking real racing lines.** Measure both cone boundaries in one world frame with x/y, station, closure, and uncertainty. Reconcile 989 m station/curvature with roughly 1,012 m x/y using retained raw data and versioned processing. Build a path representation whose x/y, station lengths, curvature arcs, and position seam agree without introducing damaging curvature spikes. V2 can retain source-relative widths, but promotion into the smoothed AI frame needs a checked transformation and boundary uncertainty. The optional synthetic loop now passes the continuous scalar modeled-path gate under an assumed corridor; retain it as a software check, then test the full swept vehicle envelope against surveyed boundaries. The unmerged arc prototypes are research evidence, not a finished repair. Until then, the default fused course's AI times are diagnostics only.
 4. **Extend wind and aero only with reviewed maps.** A first lap wind extension needs a world-referenced course and measured/declared wind. A full six-component CFD or wind-tunnel map needs force/moment reference, yaw sign, ride height/roll/pitch axes, interpolation bounds, and crosswind benchmarks. Avoid applying both scalar drag/downforce and the same map forces.
 5. **Add surveyed road geometry and contact states.** Elevation/grade, bank, crest, material, and patch coverage must be sampled at actual wheel contacts. Check analytically that still-flat results recover baseline; constant grade gives longitudinal gravity force `mg sin(theta)`, elevation work `mg delta_h`, and normal component `mg cos(theta)`; symmetric bank changes lateral demand with correct sign; crest unloading cannot produce negative contact loads. Track width and cone feasibility require a path model, not a display outline.
 6. **Add conservative thermal states only with calorimetry and cooling evidence.** Tire/brake/motor/inverter/pack temperatures need explicit heat capacities, generated heat, conductive/convective/radiative flows, ambient or coolant boundaries, and state-dependent limits. Internal heat exchanges must cancel in the whole-system balance. Slip and brake work must be assigned once, without double counting pack discharge. A derivative call must not change temperature or SOC.
-7. **Build timed sessions only after pose tracking and replay contracts exist.** A versioned vehicle and controller must record controls, states, environment, validity, and timing in one frame. Extend the new cell-curvature gate to a checked integrated pose against one consistent course map and surveyed boundaries before calling an explicit-controls run a driven lap. A ghost is only a time/station comparison until both tracked poses are verified. Extend the existing one-lap command replay to complete session states and environment, define channel tolerances, and link both run IDs, source hashes, and software versions in a comparison manifest. Then make the disabled tab a testable workflow.
+7. **Build complete timed sessions from the bounded pose experiment.** The 80 m synthetic preview now exercises feedback steering, planar pose, assumed-corridor samples, and in-memory state replay. A versioned team vehicle and controller must still capture controls, states, environment, validity, and timing in one frame. Extend the lap cell-curvature gate to a checked integrated pose against one consistent course map and surveyed boundaries before calling an explicit-controls run a driven lap. A ghost is only a time/station comparison until both tracked poses are verified. Extend one-lap command replay to complete session states and environment, define channel tolerances, and link both run IDs, source hashes, and software versions in a comparison manifest. Keep full-session controls unavailable until that workflow is testable.
 8. **Harden distribution and replay.** Package course/profile data or document the source-only requirement. Pin dependencies, extend the current one-lap command replay into an automated, version-aware comparison gate, capture dirty patches or require clean code for comparison evidence, and add a standalone car-comparison A/B manifest beyond the current primary AI trial manifest. Document schema migrations and machine-independent tolerances. The four-wheel record already reruns its A/B inputs; neither record type yet supplies the complete timed-session workflow.
 
 Report II's examples and reference checks provide **test design**, not acceptance evidence for this checkout. Each stage above should have an equation/units check, limiting-case regression, synthetic sensitivity with monotonic expectations where applicable, and an independently measured holdout before it is described as predictive. Until then, label displayed results as model estimates and keep the exact record with any engineering decision.

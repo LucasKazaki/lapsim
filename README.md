@@ -49,7 +49,8 @@ main classes for concise imports.
   lap records, and comparison traces.
 - [Versioned course bundles](docs/course_bundle_format.md): prepare coherent
   course CSVs, create portable revisions, import them in the desktop, and
-  trace their source and solver geometry in saved runs.
+  trace their source and solver geometry in saved runs. Schema v2 can also
+  retain source-relative per-cell widths and their provenance.
 - [Optional AI racer design and checks](docs/ai_racer_design.md): bounded path
   search, geometry assumptions, model comparison, and known limits.
 - [Team demo brief](docs/team_demo_brief.md): a five-minute walkthrough,
@@ -92,9 +93,14 @@ to the fused team endurance course and has an explicit **Course** menu for
 synthetic rounded-rectangle and FSAE-style practice courses. **Import course…**
 adds a validated, versioned course prepared from a coherent CSV and preserves
 it in the local course catalog across launches; see the
-[course-bundle guide](docs/course_bundle_format.md). It offers editable
-2026 Prius LE benchmark inputs, saved
-local car profiles, source-backed TREV5 working scenarios when the external
+[course-bundle guide](docs/course_bundle_format.md). A schema-v2 bundle can
+retain one left and right width per original source cell, a geometry hash,
+and separate width provenance. Those values are source-relative normal offsets;
+the optional AI planner still uses the editable uniform assumed width because
+it smooths and resamples the reference path and has no verified transformation
+of the source widths into that new frame. The desktop offers editable 2026
+Prius LE benchmark inputs, saved local car profiles, source-backed TREV5
+working scenarios when the external
 data package is present, and a two-car lap comparison with one feasible
 rolling-start speed for both cars. The **Four-wheel lab**
 opens a separate top-down torque-allocation comparison with individual wheel
@@ -214,14 +220,32 @@ for inspection but must not be ranked. Records identify the selected source
 course by ID; AI metadata also marks a synthetic course explicitly and records
 the fourth-strength policy and every tested `candidate_trials[].offset_strength`.
 Read those values rather than assuming the fourth path always uses 0.75.
-Candidate-only displays with a failed baseline are marked diagnostic. Completed v2 lap records
+Candidate-only displays with a failed baseline are marked diagnostic. The
+**Saved run details** button opens the record IDs and local JSON paths for the
+currently displayed lap or car comparison and follows available AI trial links.
+It labels source course, boundary status, solver path, and diagnostic ranking;
+this is an evidence viewer for saved model outputs. Completed v2 lap records
 can be checked on demand with the programmatic `replay_lap_record()` API: it
 reruns their recorded cell controls on the saved solver grid and reports
 numerical agreement. The lap model also checks both requested and achieved
 curvature against the prescribed cell curvature within a default 1e-9 1/m
 tolerance before accepting a cell. This does not verify the plotted x/y path
-or cone clearance. **Timed sessions · WIP** remains a disabled placeholder
-for an interactive drive, ghost, complete session capture, and report workflow.
+or cone clearance. **Timed sessions · WIP** includes a bounded synthetic
+pose-preview experiment, while an interactive full session, ghost, complete
+capture, and comparison report remain unavailable.
+
+The optional pose preview uses `optimization/pose_driver.py` and the separate
+time-domain four-wheel model. A rear-axle pure-pursuit controller steers toward
+a lookahead point on the coherent synthetic loop, with bounded speed, control
+steps, integration work, and an assumed ±3 m corridor. Its default target is
+**80 m of progress**, not a complete lap. Driver view can play its actual
+simulated planar x/y and heading, labeled **synthetic four-wheel pose
+experiment**; its elapsed time is a pose-model duration, not the engineering
+lap time shown by the default solver. The run retains issued controls and
+states in memory for `replay_pose_driver()` to check numerical agreement at
+declared position, heading, velocity, yaw-rate, and wheel-speed tolerances.
+It is not a validated team-car controller, surveyed-boundary check, saved
+full session, or ghost comparison.
 
 ## Basic use
 

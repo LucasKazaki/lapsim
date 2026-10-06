@@ -1,13 +1,16 @@
 """Portable, versioned course geometry for the desktop lap model.
 
 Version 1 accepts only a closed, coherent constant-curvature-arc solver path.
-Its AI width is explicitly a scenario assumption: surveyed boundaries need a
-separate reference-frame contract before they can be used for clearance.
+Its AI width is explicitly a scenario assumption. Version 2 can additionally
+store source-cell left/right normal-coordinate widths tied to that validated
+source geometry. Those widths are not world-frame boundaries or a swept-car
+clearance certificate, and cannot be passed to a planner that changes the
+reference path without a checked frame transformation.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from hashlib import sha256
 import json
 from math import ceil, fsum, isfinite, pi
@@ -22,6 +25,7 @@ from .spatial_track import SpatialTrack
 
 
 COURSE_BUNDLE_SCHEMA_VERSION = 1
+COURSE_BUNDLE_CORRIDOR_SCHEMA_VERSION = 2
 MAX_BUNDLE_BYTES = 4 * 1024 * 1024
 MAX_BUNDLE_CELLS = 5000
 _ID_PATTERN = re.compile(r"[a-z][a-z0-9_-]{2,63}\Z")
@@ -32,6 +36,7 @@ _TOP_KEYS = frozenset((
     "source_kind", "provenance", "coordinate_frame", "travel_direction",
     "boundary_status", "ai_defaults", "geometry", "geometry_sha256",
 ))
+_TOP_KEYS_V2 = _TOP_KEYS | frozenset(("corridor",))
 _GEOMETRY_KEYS = frozenset((
     "model", "closed", "distance_m", "x_m", "y_m", "curvature_per_m",
 ))
@@ -42,6 +47,15 @@ _PROVENANCE_KEYS = frozenset((
 _AI_KEYS = frozenset((
     "width_source", "half_width_m", "vehicle_width_m", "safety_margin_m",
 ))
+_CORRIDOR_KEYS = frozenset((
+    "model", "reference_geometry_sha256", "status", "left_width_m",
+    "right_width_m", "provenance", "corridor_sha256",
+))
+_CORRIDOR_MODEL = "left_right_normal_offsets_from_source_geometry"
+_CORRIDOR_BOUNDARY_STATUS = {
+    "assumed": "source_normal_offsets_assumed",
+    "measured": "source_normal_offsets_measured",
+}
 
 
 def _canonical_json(value: Any) -> str:
@@ -108,6 +122,26 @@ def course_geometry_sha256(track: SpatialTrack) -> str:
 
 
 @dataclass(frozen=True, slots=True)
+class SourceCellCorridor:
+    """Declared widths in normal coordinates of the bundle's source geometry.
+
+    The arrays contain one width per source cell and exclude the repeated
+    closure point. They do not describe world-frame edges, cones, or the
+    planner's separately smoothed reference path.
+    """
+
+    reference_geometry_sha256: str
+    status: str
+    left_width_m: tuple[float, ...]
+    right_width_m: tuple[float, ...]
+    source_name: str
+    source_sha256: str
+    processing_method: str
+    review_note: str
+    corridor_sha256: str
+
+
+@dataclass(frozen=True, slots=True)
 class CourseBundle:
     """Validated one-file course revision with immutable solver geometry."""
 
@@ -124,6 +158,8 @@ class CourseBundle:
     track: SpatialTrack
     geometry_sha256: str
     bundle_sha256: str
+    schema_version: int = COURSE_BUNDLE_SCHEMA_VERSION
+    source_cell_corridor: SourceCellCorridor | None = None
     source_file_sha256: str | None = None
     _manifest_json: str = field(default="", repr=False, compare=False)
 
@@ -215,13 +251,22 @@ class CourseBundle:
             track=bundle.track,
             geometry_sha256=bundle.geometry_sha256,
             bundle_sha256=bundle.bundle_sha256,
+            schema_version=bundle.schema_version,
+            source_cell_corridor=bundle.source_cell_corridor,
             source_file_sha256=sha256(data).hexdigest(),
             _manifest_json=bundle._manifest_json,
         )
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> CourseBundle:
-        """Validate all v1 claims before a course becomes runnable."""
+        """Validate all versioned claims before a course becomes runnable."""
+
+        if (
+            type(payload) is dict
+            and type(payload.get("schema_version")) is int
+            and payload["schema_version"] == COURSE_BUNDLE_CORRIDOR_SCHEMA_VERSION
+        ):
+            return cls._from_v2_dict(payload)
 
         manifest = _exact_keys(payload, _TOP_KEYS, "course bundle")
         if type(manifest["schema_version"]) is not int or manifest["schema_version"] != 1:
@@ -358,8 +403,101 @@ class CourseBundle:
             _manifest_json=manifest_json,
         )
 
+    @classmethod
+    def _from_v2_dict(cls, payload: dict[str, Any]) -> CourseBundle:
+        """Validate source-relative widths without asserting planner-frame safety."""
+
+        manifest = _exact_keys(payload, _TOP_KEYS_V2, "course bundle")
+        # Reuse the unchanged v1 geometry and metadata contract. A v2 bundle
+        # keeps v1 AI defaults as a separately identified uniform assumption;
+        # the source-cell corridor below is never substituted for those fields.
+        v1_manifest = {key: value for key, value in manifest.items() if key != "corridor"}
+        v1_manifest["schema_version"] = COURSE_BUNDLE_SCHEMA_VERSION
+        v1_manifest["boundary_status"] = "absent"
+        base = cls.from_dict(v1_manifest)
+
+        raw_corridor = _exact_keys(manifest["corridor"], _CORRIDOR_KEYS, "corridor")
+        if raw_corridor["model"] != _CORRIDOR_MODEL:
+            raise ValueError(f"corridor.model must be {_CORRIDOR_MODEL}")
+        if raw_corridor["reference_geometry_sha256"] != base.geometry_sha256:
+            raise ValueError("corridor.reference_geometry_sha256 must match validated source geometry")
+        status = raw_corridor["status"]
+        if not isinstance(status, str) or status not in _CORRIDOR_BOUNDARY_STATUS:
+            raise ValueError("corridor.status must be assumed or measured")
+        if manifest["boundary_status"] != _CORRIDOR_BOUNDARY_STATUS[status]:
+            raise ValueError("boundary_status disagrees with corridor.status")
+        if status == "measured" and base.source_kind != "measured":
+            raise ValueError("measured corridor requires a measured source course")
+
+        provenance = _exact_keys(
+            raw_corridor["provenance"], _PROVENANCE_KEYS, "corridor.provenance",
+        )
+        source_name = _text(provenance["source_name"], "corridor.provenance.source_name")
+        source_sha = provenance["source_sha256"]
+        if not isinstance(source_sha, str) or _SHA256_PATTERN.fullmatch(source_sha) is None:
+            raise ValueError("corridor.provenance.source_sha256 must be a lowercase SHA-256")
+        processing_method = _text(
+            provenance["processing_method"], "corridor.provenance.processing_method",
+        )
+        review_note = _text(provenance["review_note"], "corridor.provenance.review_note")
+
+        widths: dict[str, tuple[float, ...]] = {}
+        for side in ("left", "right"):
+            key = f"{side}_width_m"
+            values = raw_corridor[key]
+            if type(values) not in (list, tuple) or len(values) != base.track.cell_count:
+                raise ValueError(f"corridor.{key} must have exactly {base.track.cell_count} source-cell values")
+            widths[key] = tuple(
+                _finite_number(value, f"corridor.{key}[{index}]", positive=True)
+                for index, value in enumerate(values)
+            )
+
+        normalized_corridor = {
+            "model": _CORRIDOR_MODEL,
+            "reference_geometry_sha256": base.geometry_sha256,
+            "status": status,
+            "left_width_m": widths["left_width_m"],
+            "right_width_m": widths["right_width_m"],
+            "provenance": {
+                "source_name": source_name,
+                "source_sha256": source_sha,
+                "processing_method": processing_method,
+                "review_note": review_note,
+            },
+        }
+        corridor_sha = _sha256_json(normalized_corridor)
+        if raw_corridor["corridor_sha256"] != corridor_sha:
+            raise ValueError("corridor SHA-256 does not match its normalized channels and provenance")
+        normalized = base.to_dict()
+        normalized["schema_version"] = COURSE_BUNDLE_CORRIDOR_SCHEMA_VERSION
+        normalized["boundary_status"] = _CORRIDOR_BOUNDARY_STATUS[status]
+        normalized["corridor"] = {**normalized_corridor, "corridor_sha256": corridor_sha}
+        manifest_json = _canonical_json(normalized)
+        if len(manifest_json.encode("utf-8")) > MAX_BUNDLE_BYTES:
+            raise ValueError("course bundle exceeds the 4 MiB input cap")
+        source_cell_corridor = SourceCellCorridor(
+            reference_geometry_sha256=base.geometry_sha256,
+            status=status,
+            left_width_m=widths["left_width_m"],
+            right_width_m=widths["right_width_m"],
+            source_name=source_name,
+            source_sha256=source_sha,
+            processing_method=processing_method,
+            review_note=review_note,
+            corridor_sha256=corridor_sha,
+        )
+        return replace(
+            base,
+            schema_version=COURSE_BUNDLE_CORRIDOR_SCHEMA_VERSION,
+            boundary_status=_CORRIDOR_BOUNDARY_STATUS[status],
+            source_cell_corridor=source_cell_corridor,
+            bundle_sha256=sha256(manifest_json.encode("utf-8")).hexdigest(),
+            _manifest_json=manifest_json,
+        )
+
 
 __all__ = [
-    "COURSE_BUNDLE_SCHEMA_VERSION", "MAX_BUNDLE_BYTES", "MAX_BUNDLE_CELLS",
-    "CourseBundle", "course_geometry_sha256",
+    "COURSE_BUNDLE_SCHEMA_VERSION", "COURSE_BUNDLE_CORRIDOR_SCHEMA_VERSION",
+    "MAX_BUNDLE_BYTES", "MAX_BUNDLE_CELLS", "CourseBundle",
+    "SourceCellCorridor", "course_geometry_sha256",
 ]
