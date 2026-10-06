@@ -115,8 +115,9 @@ uniform multiplier, not a measured wet/dry or local-surface model. Changing
 run inputs clears the previous displayed result and playback. The editable
 **Cell size (max)** sits beside Run, defaults to 1 m, and limits generated
 simulation cells in centerline, car-comparison, and optional AI runs. A smaller value uses more
-cells and can take longer. The field shows the resulting solver-cell count or
-an invalid-size hint before a run; the recorded solver grid shows actual
+cells and can take longer. The field previews the centerline solver-cell count
+or an invalid-size hint before a run; AI mode labels its separate grid as
+variable until planning. The recorded solver grid shows actual
 lengths.
 The fused course is resampled to that step; synthetic and imported coherent
 courses retain their exact source arc cells when the request is at least as

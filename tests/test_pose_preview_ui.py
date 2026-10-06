@@ -134,11 +134,17 @@ def test_cell_size_and_calculation_progress_are_visible_beside_run() -> None:
         assert entry.master.cget("text") == "Calculation settings"
         assert entry.master.master is app.run_button.master
         assert app.inputs["solver_step_m"].get() == "1.0"
-        assert "solver cells" in app.cell_count_text.get()
+        assert "Centerline grid:" in app.cell_count_text.get()
 
         app.inputs["solver_step_m"].set("2.0")
         assert app._read_run_settings()[1] == pytest.approx(2.0)
-        assert "solver cells" in app.cell_count_text.get()
+        assert "Centerline grid:" in app.cell_count_text.get()
+        app.driving_mode_var.set("AI racing line (experimental)")
+        app._on_driving_mode_change()
+        assert "AI grid varies" in app.cell_count_text.get()
+        app.driving_mode_var.set("Centerline (default)")
+        app._on_driving_mode_change()
+        assert "AI grid varies" not in app.cell_count_text.get()
         app.inputs["solver_step_m"].set("0")
         assert "valid size" in app.cell_count_text.get()
         app.inputs["solver_step_m"].set("1")

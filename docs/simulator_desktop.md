@@ -79,8 +79,9 @@ inherited model defaults remain distinguishable from edited assumptions.
 Driver request applies to every run. **Cell size (max)** is an editable
 upper bound for the generated physics cells in centerline, two-car comparison,
 and optional AI runs. It sits in the fixed **Calculation settings** panel beside
-Run, with a live solver-cell count or invalid-size hint. The desktop starts at
-1 m. AI builds a separate x/y-derived path grid and adds samples until its processed baseline and full
+Run, with a live centerline solver-cell count or invalid-size hint. AI mode
+notes that its separate path grid count is determined during planning. The
+desktop starts at 1 m. AI builds a separate x/y-derived path grid and adds samples until its processed baseline and full
 offset meet that bound; fractional offsets then fit it too. A smaller request
 can increase planning and lap time, and a request needing more than 5,000
 points is refused. The saved grid's individual lengths are authoritative.

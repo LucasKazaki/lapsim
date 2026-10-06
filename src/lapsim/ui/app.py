@@ -751,7 +751,10 @@ class LapSimDesktop:
         except (ValueError, OverflowError):
             self.cell_count_text.set("Enter a valid size within the 5,000-cell limit")
         else:
-            self.cell_count_text.set(f"{count:,} solver cells on this course")
+            description = f"Centerline grid: {count:,} cells"
+            if self._ai_mode_selected():
+                description += " · AI grid varies"
+            self.cell_count_text.set(description)
 
     def _set_displayed_run_records(
         self, records: tuple[tuple[str, str], ...],
@@ -2385,15 +2388,15 @@ class LapSimDesktop:
             torque_fraction = float(self.inputs["torque_request_percent"].get()) / 100.0
             solver_step_m = float(self.inputs["solver_step_m"].get())
         except ValueError as error:
-            raise ValueError("Enter numeric driver request and Max cell length values.") from error
+            raise ValueError("Enter numeric driver request and Cell size (max) values.") from error
         if not np.isfinite(torque_fraction) or not 0.0 <= torque_fraction <= 1.0:
             raise ValueError("Driver request must be between 0 and 100%.")
         if not np.isfinite(solver_step_m) or not 0.0 < solver_step_m <= self.track.length_m:
-            raise ValueError("Max cell length must be finite and within the course length.")
+            raise ValueError("Cell size (max) must be finite and within the course length.")
         if solver_cell_count_for_course(
             self.course_spec.course_id, self.track, solver_step_m,
         ) > 5000:
-            raise ValueError("This Max cell length would exceed the 5000-cell compute cap.")
+            raise ValueError("This Cell size (max) would exceed the 5000-cell compute cap.")
         return torque_fraction, solver_step_m
 
     def _read_run_inputs(self) -> tuple[VehicleSetup | None, float, float]:
@@ -2417,6 +2420,7 @@ class LapSimDesktop:
             entry.configure(state=state)
         if not self._ai_mode_selected() and self.ai_output_box is not None:
             self.ai_output_box.pack_forget()
+        self._update_cell_count_hint()
 
     def _read_ai_assumptions(self) -> tuple[float, float, float]:
         try:
@@ -2789,7 +2793,7 @@ class LapSimDesktop:
         self.run_started_at = time.perf_counter()
         self.status_text.set(
             f"Calculating {profile_name}"
-            + (" with experimental AI path…" if ai_assumptions else f" at {step_m:g} m Max cell length…")
+            + (" with experimental AI path…" if ai_assumptions else f" with Cell size (max) {step_m:g} m…")
         )
         worker = threading.Thread(
             target=self._calculate_ai_single if ai_assumptions else self._calculate_single,
@@ -2828,7 +2832,7 @@ class LapSimDesktop:
         )
         self.run_started_at = time.perf_counter()
         self.status_text.set(
-            f"Comparing two cars on the same course at {step_m:g} m Max cell length…"
+            f"Comparing two cars on the same course with Cell size (max) {step_m:g} m…"
         )
         threading.Thread(
             target=self._calculate_comparison,
@@ -3499,7 +3503,7 @@ class LapSimDesktop:
                 )
                 self.status_text.set(
                     f"{profile_name} completed in {elapsed_s:.1f} s · "
-                    f"{step_m:g} m requested Max cell length · assumed grip "
+                    f"requested Cell size (max) {step_m:g} m · assumed grip "
                     f"{road_grip_multiplier * 100:g}% · saved run {run_id[:12]}"
                 )
             else:
@@ -3918,7 +3922,7 @@ class LapSimDesktop:
         )
         tk.Label(
             box,
-            text=f"Course: {self.course_spec.label} · Requested Max cell length: {step_m:g} m · driver request: "
+            text=f"Course: {self.course_spec.label} · Cell size (max): {step_m:g} m · driver request: "
                  f"{torque_fraction * 100:g}% · assumed uniform road grip: "
                  f"{road_grip_multiplier * 100:g}% · "
                  "Δ = B − A; positive lap-time Δ is slower",
