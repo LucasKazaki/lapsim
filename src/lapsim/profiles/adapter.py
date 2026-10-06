@@ -163,6 +163,13 @@ def _snapshot_config(value: Any) -> Any:
     raise TypeError(f"cannot snapshot model configuration type {type(value).__name__}")
 
 
+def snapshot_vehicle_config(vehicle: Vehicle) -> dict[str, Any]:
+    """Return an independent snapshot of the effective vehicle constructor inputs."""
+
+    vehicle.validate()
+    return _snapshot_config(vehicle)
+
+
 def _set_value(vehicle: Vehicle, path: str, value: float) -> None:
     names = path.split(".")
     parent = vehicle
@@ -443,5 +450,5 @@ def browse_records(
 
 __all__ = [
     "ProfileInfo", "ResolvedField", "ResolvedManifest", "browse_records",
-    "build_vehicle", "list_profiles", "preview_profile",
+    "build_vehicle", "list_profiles", "preview_profile", "snapshot_vehicle_config",
 ]

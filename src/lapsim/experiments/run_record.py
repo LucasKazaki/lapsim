@@ -1,0 +1,404 @@
+"""Versioned, immutable JSON evidence for a prescribed-path lap run.
+
+The distance-domain solver estimates an achievable lap under its chosen path
+and force-allocation assumptions.  A record preserves those assumptions and
+the exact effective vehicle configuration without implying vehicle validation.
+"""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from hashlib import sha256
+import json
+from math import isfinite, isnan
+import os
+from pathlib import Path
+from typing import Any, Mapping
+from uuid import uuid4
+
+from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.events.endurance import EnduranceRunConfig, EnduranceRunResult
+from lapsim.profiles import ResolvedManifest, snapshot_vehicle_config
+from vehicle_model import Vehicle
+
+
+RUN_RECORD_SCHEMA_VERSION = 1
+
+
+def _canonical_json(value: Any) -> str:
+    """Serialize only finite JSON values in a stable order."""
+
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+def _sha256_json(value: Any) -> str:
+    return sha256(_canonical_json(value).encode("utf-8")).hexdigest()
+
+
+def _reject_json_constant(value: str) -> None:
+    raise ValueError(f"Nonfinite JSON constant is forbidden: {value}")
+
+
+def _validated_mapping(value: Mapping[str, Any], name: str) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise TypeError(f"{name} must be a mapping")
+    if any(not isinstance(key, str) or not key for key in value):
+        raise ValueError(f"{name} keys must be nonempty strings")
+    try:
+        return json.loads(_canonical_json(dict(value)))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must contain finite JSON values") from exc
+
+
+@dataclass(frozen=True, slots=True)
+class LapRunSettings:
+    """Exact course and run inputs, frozen before simulation begins.
+
+    ``solver_settings`` must contain the actual path-constraint settings, not
+    just the requested grid spacing.  The course hash includes every point
+    and cell curvature in the solver's resampled track.
+    """
+
+    _json: str
+
+    @classmethod
+    def from_track(
+        cls,
+        track: SpatialTrack,
+        *,
+        track_id: str,
+        solver_step_m: float,
+        solver_settings: Mapping[str, Any],
+        torque_request_fraction: float,
+        endurance_config: EnduranceRunConfig,
+        profile_id: str | None = None,
+        profile_label: str | None = None,
+    ) -> LapRunSettings:
+        if not isinstance(track_id, str) or not track_id.strip():
+            raise ValueError("track_id must be a nonempty string")
+        if not track.closed:
+            raise ValueError("a one-lap endurance record requires a closed course")
+        if not isfinite(solver_step_m) or solver_step_m <= 0.0:
+            raise ValueError("solver_step_m must be finite and positive")
+        if not isfinite(torque_request_fraction) or not 0.0 <= torque_request_fraction <= 1.0:
+            raise ValueError("torque_request_fraction must be finite and in [0, 1]")
+        if not isinstance(endurance_config, EnduranceRunConfig) or endurance_config.laps != 1:
+            raise ValueError("endurance_config must describe exactly one lap")
+        if profile_id is not None and (not isinstance(profile_id, str) or not profile_id.strip()):
+            raise ValueError("profile_id must be a nonempty string when supplied")
+        if profile_label is not None and (not isinstance(profile_label, str) or not profile_label.strip()):
+            raise ValueError("profile_label must be a nonempty string when supplied")
+        solver = _validated_mapping(solver_settings, "solver_settings")
+        if not solver:
+            raise ValueError("solver_settings cannot be empty")
+        geometry = {
+            "closed": track.closed,
+            "distance_m": track.distance_m,
+            "x_m": track.x_m,
+            "y_m": track.y_m,
+            "curvature_per_m": track.curvature_per_m,
+        }
+        payload = {
+            "track": {
+                "id": track_id,
+                "geometry_sha256": _sha256_json(geometry),
+                "length_m": track.length_m,
+                "cell_count": track.cell_count,
+                "closed": track.closed,
+            },
+            "solver": {
+                "requested_maximum_cell_length_m": solver_step_m,
+                "path_constraint_settings": solver,
+            },
+            "driver": {"torque_request_fraction": torque_request_fraction},
+            "endurance_config": asdict(endurance_config),
+            "profile_id": profile_id,
+            "profile_label": profile_label,
+        }
+        return cls(_canonical_json(payload))
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a detached copy; callers cannot mutate saved settings."""
+
+        return json.loads(self._json)
+
+
+@dataclass(frozen=True, slots=True)
+class RunRecord:
+    """Immutable-by-value run payload with a content-derived identifier."""
+
+    run_id: str
+    _payload_json: str
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = json.loads(self._payload_json)
+        payload["run_id"] = self.run_id
+        return payload
+
+    def save(self, path: str | Path) -> Path:
+        """Atomically export a complete JSON record and return its path."""
+
+        destination = Path(path).expanduser().resolve()
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        temporary = destination.with_name(f"{destination.name}.{uuid4().hex}.tmp")
+        try:
+            temporary.write_text(
+                json.dumps(self.to_dict(), indent=2, ensure_ascii=False, allow_nan=False) + "\n",
+                encoding="utf-8",
+            )
+            os.replace(temporary, destination)
+        finally:
+            temporary.unlink(missing_ok=True)
+        return destination
+
+    @classmethod
+    def load(cls, path: str | Path) -> RunRecord:
+        """Read a saved record and reject corruption or unsupported schemas."""
+
+        with Path(path).open("r", encoding="utf-8") as stream:
+            payload = json.load(stream, parse_constant=_reject_json_constant)
+        if not isinstance(payload, dict) or payload.get("schema_version") != RUN_RECORD_SCHEMA_VERSION:
+            raise ValueError("unsupported run-record schema")
+        run_id = payload.pop("run_id", None)
+        if not isinstance(run_id, str) or run_id != _sha256_json(payload):
+            raise ValueError("run-record content hash does not match")
+        return cls(run_id=run_id, _payload_json=_canonical_json(payload))
+
+
+_UNIT_SUFFIXES = (
+    ("_nm_per_psi", "N*m/psi"),
+    ("_nm_per_deg", "N*m/deg"),
+    ("_nm_per_rad", "N*m/rad"),
+    ("_rad_s2", "rad/s^2"),
+    ("_rad_s", "rad/s"),
+    ("_kgpm3", "kg/m^3"),
+    ("_mps2", "m/s^2"),
+    ("_per_m", "1/m"),
+    ("_kwh", "kWh"),
+    ("_kgm2", "kg*m^2"),
+    ("_percent", "%"),
+    ("_ratio", "1"),
+    ("_fraction", "1"),
+    ("_coefficient", "1"),
+    ("_multiplier", "1"),
+    ("_utilization", "1"),
+    ("_mps", "m/s"),
+    ("_rpm", "rev/min"),
+    ("_rad", "rad"),
+    ("_deg", "deg"),
+    ("_psi", "psi"),
+    ("_ohm", "ohm"),
+    ("_m2", "m^2"),
+    ("_nm", "N*m"),
+    ("_kg", "kg"),
+    ("_ms", "ms"),
+    ("_hz", "Hz"),
+    ("_ah", "Ah"),
+    ("_pa", "Pa"),
+    ("_a", "A"),
+    ("_v", "V"),
+    ("_w", "W"),
+    ("_j", "J"),
+    ("_n", "N"),
+    ("_s", "s"),
+    ("_m", "m"),
+)
+
+
+def _channel_unit(name: str) -> str | None:
+    if name in {
+        "battery.state_of_charge", "chain_drive.ratio", "chain_drive.efficiency",
+        "aero.downforce_retention_at_roll_limit", "aero.active_aero.enabled",
+    }:
+        return "1"
+    if name.endswith(("_active", "_limited", "_enabled", ".enabled", ".efficiency")):
+        return "1"
+    if name.endswith(("_index", "_count")):
+        return "count"
+    for suffix, unit in _UNIT_SUFFIXES:
+        if name.endswith(suffix):
+            return unit
+    return None
+
+
+def _channel_origin(name: str) -> str:
+    prefix = name.split(".", 1)[0]
+    if prefix == "controls":
+        return "driver_command"
+    if prefix == "endurance":
+        return "distance_solver"
+    if prefix == "energy":
+        return "derived_accounting"
+    if prefix == "limits":
+        return "model_constraint"
+    return "simulated_model"
+
+
+def _trace_payload(result: EnduranceRunResult) -> dict[str, Any]:
+    telemetry = result.telemetry
+    if telemetry is None or telemetry.sample_count == 0:
+        return {
+            "sample_count": 0,
+            "sample_time_s": [],
+            "sample_distance_m": [],
+            "channels": {},
+            "status": "not_recorded" if telemetry is None else "empty",
+        }
+    sample_count = telemetry.sample_count
+    for required in ("vehicle.time_s", "vehicle.distance_m"):
+        if required not in telemetry:
+            raise ValueError(f"telemetry is missing required alignment channel {required}")
+    aligned: dict[str, list[float]] = {}
+    for name in ("vehicle.time_s", "vehicle.distance_m"):
+        values = [float(value) for value in telemetry[name]]
+        if len(values) != sample_count or not all(isfinite(value) for value in values):
+            raise ValueError(f"telemetry alignment channel {name} must be finite")
+        if values[0] < 0.0 or any(next_value < value for value, next_value in zip(values, values[1:])):
+            raise ValueError(f"telemetry alignment channel {name} must be nondecreasing and nonnegative")
+        aligned[name] = values
+    if any(next_value <= value for value, next_value in zip(aligned["vehicle.time_s"], aligned["vehicle.time_s"][1:])):
+        raise ValueError("telemetry time must increase at every sample")
+
+    channels: dict[str, Any] = {}
+    for name in sorted(telemetry):
+        values: list[float | None] = []
+        for raw_value in telemetry[name]:
+            value = float(raw_value)
+            if isfinite(value):
+                values.append(value)
+            elif isnan(value):
+                values.append(None)  # TelemetryRecorder's missing-channel marker.
+            else:
+                raise ValueError(f"telemetry channel {name} contains infinity")
+        valid_count = sum(value is not None for value in values)
+        channels[name] = {
+            "unit": _channel_unit(name),
+            "origin": _channel_origin(name),
+            "validity": "complete" if valid_count == sample_count else "missing_samples",
+            "valid_sample_count": valid_count,
+            "values": values,
+        }
+    return {
+        "sample_count": sample_count,
+        "sample_time_s": aligned["vehicle.time_s"],
+        "sample_distance_m": aligned["vehicle.distance_m"],
+        "channels": channels,
+        "status": "recorded",
+    }
+
+
+def _result_payload(result: EnduranceRunResult) -> dict[str, Any]:
+    if result.completed_laps not in (0, 1) or len(result.lap_times_s) != result.completed_laps:
+        raise ValueError("the run result must contain at most one completed lap")
+    scalars = (result.driving_time_s, result.pack_energy_kwh, result.final_state_of_charge)
+    if any(not isfinite(value) for value in scalars) or result.driving_time_s < 0.0:
+        raise ValueError("run summary contains invalid numeric values")
+    if not 0.0 <= result.final_state_of_charge <= 1.0:
+        raise ValueError("final_state_of_charge must be in [0, 1]")
+    if any(not isfinite(value) or value <= 0.0 for value in result.lap_times_s):
+        raise ValueError("lap_times_s must contain finite positive times")
+    if result.completed and result.completed_laps != 1:
+        raise ValueError("a successful one-lap result must complete one lap")
+    if result.failure_reason is not None and not result.failure_reason.strip():
+        raise ValueError("failure_reason must be nonempty when present")
+    return {
+        "status": "completed" if result.completed else "failed",
+        "termination_reason": "completed" if result.completed else result.failure_reason,
+        "completed_laps": result.completed_laps,
+        "driving_time_s": result.driving_time_s,
+        "lap_times_s": list(result.lap_times_s),
+        "pack_energy_kwh": result.pack_energy_kwh,
+        "final_state_of_charge": result.final_state_of_charge,
+    }
+
+
+def capture_lap_run(
+    result: EnduranceRunResult,
+    manifest: ResolvedManifest,
+    settings: LapRunSettings,
+    *,
+    actual_vehicle: Vehicle,
+    user_overrides: Mapping[str, Any] | None = None,
+) -> RunRecord:
+    """Freeze a one-lap result, provenance, effective car, and sampled traces.
+
+    For an edited profile, pass the full editable setup as ``user_overrides``.
+    The base manifest remains labeled as the original selected profile while
+    the effective constructor-field snapshot records what the solver used.
+    """
+
+    if not isinstance(result, EnduranceRunResult):
+        raise TypeError("result must be EnduranceRunResult")
+    if not isinstance(manifest, ResolvedManifest):
+        raise TypeError("manifest must be ResolvedManifest")
+    if not isinstance(settings, LapRunSettings):
+        raise TypeError("settings must be LapRunSettings")
+    if not isinstance(actual_vehicle, Vehicle):
+        raise TypeError("actual_vehicle must be Vehicle")
+    overrides = None if user_overrides is None else _validated_mapping(user_overrides, "user_overrides")
+    if overrides == {}:
+        raise ValueError("user_overrides must contain the edited setup when supplied")
+    base_manifest = manifest.to_dict()
+    effective_vehicle = snapshot_vehicle_config(actual_vehicle)
+    base_config = base_manifest["model_config"]
+    config_changed = _canonical_json(base_config) != _canonical_json(effective_vehicle)
+    if config_changed and overrides is None:
+        raise ValueError("actual vehicle differs from base manifest; supply user_overrides")
+    run_settings = settings.to_dict()
+    summary = _result_payload(result)
+    telemetry = _trace_payload(result)
+    warnings = list(manifest.limitations)
+    if manifest.code_commit is None:
+        warnings.append("Source commit was unavailable for this run.")
+    if manifest.dirty_worktree:
+        warnings.append("The source checkout had uncommitted changes; the commit alone cannot reproduce it.")
+    if telemetry["sample_count"] == 0:
+        warnings.append("No synchronized telemetry samples were recorded.")
+    if any(channel["unit"] is None for channel in telemetry["channels"].values()):
+        warnings.append("Some telemetry channels have unspecified units.")
+    payload = {
+        "schema_version": RUN_RECORD_SCHEMA_VERSION,
+        "simulation_mode": "prescribed_path_distance_domain",
+        "evidence_level": "simulation_model_estimate",
+        "model_assumptions": [
+            "prescribed_course_path",
+            "distance_domain_speed_envelope",
+            "capacity_based_tire_force_allocation",
+        ],
+        "configuration": {
+            "base_profile_manifest": base_manifest,
+            "selected_profile_id": run_settings["profile_id"] or manifest.profile_id,
+            "selected_profile_label": run_settings["profile_label"] or manifest.profile_name,
+            "user_overrides": overrides,
+            "effective_vehicle_config": effective_vehicle,
+            "effective_vehicle_config_sha256": _sha256_json(effective_vehicle),
+            "effective_config_differs_from_base": config_changed,
+        },
+        "settings": run_settings,
+        "result": summary,
+        "telemetry": telemetry,
+        "validity": {
+            "vehicle_validation": "not_established_by_this_run",
+            "warnings": warnings,
+        },
+    }
+    return RunRecord(run_id=_sha256_json(payload), _payload_json=_canonical_json(payload))
+
+
+def default_run_directory() -> Path:
+    """Return a per-user storage location outside the source checkout."""
+
+    if os.name == "nt":
+        base = Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local")
+    else:
+        base = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local" / "share")
+    return base / "LapSim" / "runs"
+
+
+__all__ = [
+    "RUN_RECORD_SCHEMA_VERSION",
+    "LapRunSettings",
+    "RunRecord",
+    "capture_lap_run",
+    "default_run_directory",
+]

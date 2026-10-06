@@ -6,6 +6,7 @@ import queue
 import threading
 import time
 import tkinter as tk
+from dataclasses import asdict
 from tkinter import messagebox, simpledialog
 from typing import Any
 
@@ -13,17 +14,40 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
+from lapsim.experiments import LapRunSettings, capture_lap_run, default_run_directory
 from lapsim.profiles import build_vehicle, browse_records, list_profiles
 
 from .comparison import summarize_lap
 from .garage import CAR_INPUT_KEYS, ProfileStore, SavedCarProfile
 from .presets import VehicleSetup, make_prius_benchmark
-from .simulation import load_team_endurance_track, resample_track, run_one_lap
+from .simulation import (
+    endurance_run_config,
+    load_team_endurance_track,
+    path_solver_settings,
+    resample_track,
+    run_one_lap,
+)
 
 
 FONT = ("Segoe UI", 10)
 FONT_BOLD = ("Segoe UI", 10, "bold")
 FONT_TITLE = ("Segoe UI", 16, "bold")
+TRACE_OPTIONS = {
+    "Speed": ("vehicle.speed_mps", 3.6, "km/h"),
+    "Longitudinal acceleration": (
+        "vehicle.longitudinal_acceleration_mps2", 1.0 / 9.80665, "g",
+    ),
+    "Lateral acceleration": (
+        "vehicle.lateral_acceleration_mps2", 1.0 / 9.80665, "g",
+    ),
+    "Drive force": ("vehicle.drive_force_n", 0.001, "kN"),
+    "Friction braking": ("vehicle.friction_braking_force_n", 0.001, "kN"),
+    "Regenerative braking": (
+        "vehicle.regenerative_braking_force_n", 0.001, "kN",
+    ),
+    "Driven tire slip": ("tire.driven_slip_percent", 1.0, "%"),
+    "Battery power": ("battery.power_w", 0.001, "kW"),
+}
 
 
 class LapSimDesktop:
@@ -51,6 +75,8 @@ class LapSimDesktop:
         self.profile_var = tk.StringVar()
         self.compare_a_var = tk.StringVar()
         self.compare_b_var = tk.StringVar()
+        self.trace_var = tk.StringVar(value="Speed")
+        self.trace_axis_var = tk.StringVar(value="Distance")
         self.profile_display_to_id: dict[str, str] = {}
         self.profile_id_to_display: dict[str, str] = {}
         self.vehicle_label_var = tk.StringVar()
@@ -105,6 +131,10 @@ class LapSimDesktop:
             font=FONT,
             padx=8,
         ).pack(side="right")
+        tk.Button(
+            header, text="Four-wheel lab", command=self._open_dynamics_lab,
+            relief="raised", bd=1, font=FONT,
+        ).pack(side="right", padx=(0, 9))
 
         main = tk.Frame(self.root, padx=10, pady=4)
         main.pack(fill="both", expand=True)
@@ -597,9 +627,22 @@ class LapSimDesktop:
         tk.Button(controls, text="Zoom −", command=lambda: self._zoom_axes(1.25)).pack(
             side="left", padx=2
         )
+        tk.Label(controls, text="Trace").pack(side="left", padx=(14, 3))
+        self.trace_menu = tk.OptionMenu(
+            controls, self.trace_var, *TRACE_OPTIONS,
+            command=lambda _choice: self._draw_plots(preserve_course_view=True),
+        )
+        self.trace_menu.configure(relief="raised", bd=1, width=23, anchor="w")
+        self.trace_menu.pack(side="left")
+        self.trace_axis_menu = tk.OptionMenu(
+            controls, self.trace_axis_var, "Distance", "Time",
+            command=lambda _choice: self._draw_plots(preserve_course_view=True),
+        )
+        self.trace_axis_menu.configure(relief="raised", bd=1, width=8, anchor="w")
+        self.trace_axis_menu.pack(side="left", padx=(4, 0))
         tk.Label(
             controls,
-            text="Drag to pan · mouse wheel to zoom",
+            text="Drag map to pan · wheel to zoom",
             anchor="e",
         ).pack(side="right", padx=4)
 
@@ -652,6 +695,7 @@ class LapSimDesktop:
             if widget.winfo_class() in {"Button", "Checkbutton"}:
                 options["activebackground"] = foreground
                 options["activeforeground"] = background
+            if widget.winfo_class() == "Checkbutton":
                 options["selectcolor"] = background
             if widget.winfo_class() in {"Listbox", "Text"}:
                 options["selectbackground"] = foreground
@@ -711,52 +755,61 @@ class LapSimDesktop:
         else:
             self._fit_course()
 
-        if self._comparison_results is not None:
-            for (name, result), line_style in zip(
-                self._comparison_results, ("-", "--"), strict=True
-            ):
-                distance_m = np.asarray(
-                    result.telemetry["vehicle.distance_m"], dtype=float
+        trace_label = self.trace_var.get()
+        trace_channel, scale, unit = TRACE_OPTIONS[trace_label]
+        horizontal_label = self.trace_axis_var.get()
+        horizontal_channel = (
+            "vehicle.time_s" if horizontal_label == "Time" else "vehicle.distance_m"
+        )
+        runs = (
+            self._comparison_results
+            if self._comparison_results is not None
+            else (("Current run", self._last_result),)
+            if self._last_result is not None
+            else ()
+        )
+        plotted = 0
+        for (name, result), line_style in zip(runs, ("-", "--"), strict=False):
+            if result.telemetry is None:
+                continue
+            try:
+                horizontal = np.asarray(
+                    result.telemetry[horizontal_channel], dtype=float
                 )
-                speed_kph = (
-                    np.asarray(result.telemetry["vehicle.speed_mps"], dtype=float)
-                    * 3.6
-                )
-                self.speed_ax.plot(
-                    distance_m, speed_kph, color=foreground,
-                    linestyle=line_style, linewidth=1.2, label=name,
-                )
+                values = np.asarray(result.telemetry[trace_channel], dtype=float) * scale
+            except KeyError:
+                continue
+            if horizontal.shape != values.shape or horizontal.size == 0:
+                continue
+            self.speed_ax.plot(
+                horizontal, values, color=foreground, linestyle=line_style,
+                linewidth=1.2, label=name,
+            )
+            plotted += 1
+        if self._comparison_results is not None and plotted:
             self.speed_ax.legend(
                 frameon=False, labelcolor=foreground, facecolor=background,
                 fontsize=8,
             )
-            self.speed_ax.set_title(
-                "Speed by distance · comparison", color=foreground,
-                loc="left", fontsize=11,
-            )
-        elif self._last_result is not None and self._last_result.telemetry is not None:
-            distance_m = np.asarray(
-                self._last_result.telemetry["vehicle.distance_m"], dtype=float
-            )
-            speed_kph = (
-                np.asarray(self._last_result.telemetry["vehicle.speed_mps"], dtype=float)
-                * 3.6
-            )
-            self.speed_ax.plot(distance_m, speed_kph, color=foreground, linewidth=1.2)
-            self.speed_ax.set_title("Speed by distance", color=foreground, loc="left", fontsize=11)
-        else:
+        if not plotted:
             self.speed_ax.text(
                 0.5,
                 0.5,
-                "Run one lap to display the speed trace",
+                "Run a lap to display this trace" if not runs else "Trace unavailable",
                 color=foreground,
                 ha="center",
                 va="center",
                 transform=self.speed_ax.transAxes,
             )
-            self.speed_ax.set_title("Speed by distance", color=foreground, loc="left", fontsize=11)
-        self.speed_ax.set_xlabel("Distance (m)", color=foreground, fontsize=9)
-        self.speed_ax.set_ylabel("Speed (km/h)", color=foreground, fontsize=9)
+        self.speed_ax.set_title(
+            f"{trace_label} by {horizontal_label.lower()}", color=foreground,
+            loc="left", fontsize=11,
+        )
+        self.speed_ax.set_xlabel(
+            "Time (s)" if horizontal_label == "Time" else "Distance (m)",
+            color=foreground, fontsize=9,
+        )
+        self.speed_ax.set_ylabel(f"{trace_label} ({unit})", color=foreground, fontsize=9)
         self.speed_ax.grid(False)
         self.canvas.draw_idle()
 
@@ -872,13 +925,50 @@ class LapSimDesktop:
 
     def _vehicle_for_profile(
         self, profile_id: str, setup: VehicleSetup | None
-    ) -> Any:
+    ) -> tuple[Any, Any]:
         if profile_id == "prius_2026_le" or profile_id.startswith("user:"):
             if setup is None:
                 raise ValueError("A saved Prius setup is required")
-            return make_prius_benchmark(setup)
-        vehicle, _manifest = build_vehicle(profile_id)
-        return vehicle
+            _, manifest = build_vehicle("prius_2026_le")
+            return make_prius_benchmark(setup), manifest
+        return build_vehicle(profile_id)
+
+    def _save_run_record(
+        self, *, result: Any, vehicle: Any, manifest: Any,
+        solver_track: Any, profile_id: str, profile_name: str,
+        setup: VehicleSetup | None, step_m: float, torque_fraction: float,
+    ) -> str:
+        """Persist the exact effective setup and aligned lap telemetry."""
+
+        settings = LapRunSettings.from_track(
+            solver_track,
+            track_id="team_endurance_fused_gnss_imu",
+            solver_step_m=step_m,
+            solver_settings=path_solver_settings(vehicle),
+            torque_request_fraction=torque_fraction,
+            endurance_config=endurance_run_config(vehicle),
+            profile_id=profile_id,
+            profile_label=profile_name,
+        )
+        default_prius = VehicleSetup(torque_request_fraction=torque_fraction)
+        overrides = (
+            asdict(setup)
+            if setup is not None and (
+                profile_id.startswith("user:") or setup != default_prius
+            )
+            else None
+        )
+        record = capture_lap_run(
+            result, manifest, settings, actual_vehicle=vehicle,
+            user_overrides=overrides,
+        )
+        record.save(default_run_directory() / f"{record.run_id}.json")
+        return record.run_id
+
+    def _open_dynamics_lab(self) -> None:
+        from .dynamics_lab import DynamicsLab
+
+        DynamicsLab(self.root, dark=self.is_dark.get())
 
     def _start_run(self) -> None:
         if self.run_in_progress:
@@ -943,7 +1033,7 @@ class LapSimDesktop:
     ) -> None:
         try:
             solver_track = resample_track(self.track, maximum_cell_length_m=step_m)
-            vehicle = self._vehicle_for_profile(profile_id, setup)
+            vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
             result = run_one_lap(
                 vehicle,
                 solver_track,
@@ -951,7 +1041,15 @@ class LapSimDesktop:
             )
             if result.completed:
                 summarize_lap(result, self.track.length_m)
-            self.result_queue.put(("single", (profile_name, step_m, result), None))
+            run_id = self._save_run_record(
+                result=result, vehicle=vehicle, manifest=manifest,
+                solver_track=solver_track, profile_id=profile_id,
+                profile_name=profile_name, setup=setup, step_m=step_m,
+                torque_fraction=torque_fraction,
+            )
+            self.result_queue.put(
+                ("single", (profile_name, step_m, result, run_id), None)
+            )
         except Exception as error:
             self.result_queue.put(("single", None, error))
 
@@ -964,16 +1062,30 @@ class LapSimDesktop:
         try:
             solver_track = resample_track(self.track, maximum_cell_length_m=step_m)
             outcomes = []
+            run_ids = []
             for profile_id, name, setup in plans:
-                vehicle = self._vehicle_for_profile(profile_id, setup)
+                vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
                 result = run_one_lap(
                     vehicle, solver_track, torque_request_fraction=torque_fraction
                 )
+                run_id = self._save_run_record(
+                    result=result, vehicle=vehicle, manifest=manifest,
+                    solver_track=solver_track, profile_id=profile_id,
+                    profile_name=name, setup=setup, step_m=step_m,
+                    torque_fraction=torque_fraction,
+                )
                 if not result.completed:
-                    raise ValueError(f"{name} did not complete: {result.failure_reason}")
+                    raise ValueError(
+                        f"{name} did not complete: {result.failure_reason}. "
+                        f"Saved run {run_id[:12]}"
+                    )
                 summarize_lap(result, self.track.length_m)
                 outcomes.append((name, result))
-            self.result_queue.put(("comparison", (step_m, tuple(outcomes)), None))
+                run_ids.append(run_id)
+            self.result_queue.put((
+                "comparison", (step_m, torque_fraction, tuple(outcomes), tuple(run_ids)),
+                None,
+            ))
         except Exception as error:
             self.result_queue.put(("comparison", None, error))
 
@@ -990,27 +1102,32 @@ class LapSimDesktop:
             self.status_text.set(f"Calculation failed: {error}")
             messagebox.showerror("Lap calculation failed", str(error), parent=self.root)
         elif kind == "single":
-            profile_name, step_m, result = payload
+            profile_name, step_m, result, run_id = payload
             if result.completed:
                 self._comparison_results = None
                 self._last_result = result
                 self._show_result(result)
                 self.status_text.set(
-                    f"{profile_name} completed in {elapsed_s:.1f} s · {step_m:g} m spacing"
+                    f"{profile_name} completed in {elapsed_s:.1f} s · "
+                    f"{step_m:g} m spacing · saved run {run_id[:12]}"
                 )
             else:
-                self.status_text.set(f"Lap did not complete: {result.failure_reason}")
+                self.status_text.set(
+                    f"Lap did not complete: {result.failure_reason} · "
+                    f"saved run {run_id[:12]}"
+                )
                 messagebox.showerror(
                     "Lap did not complete", str(result.failure_reason), parent=self.root
                 )
         else:
-            step_m, outcomes = payload
+            step_m, torque_fraction, outcomes, run_ids = payload
             self._comparison_results = outcomes
             self._last_result = outcomes[0][1]
             self._show_result(outcomes[0][1])
-            self._show_comparison(outcomes, step_m)
+            self._show_comparison(outcomes, step_m, torque_fraction, run_ids)
             self.status_text.set(
-                f"Comparison completed in {elapsed_s:.1f} s · {step_m:g} m spacing"
+                f"Comparison completed in {elapsed_s:.1f} s · "
+                f"saved A {run_ids[0][:10]}, B {run_ids[1][:10]}"
             )
         self.root.after(100, self._poll_result)
 
@@ -1029,7 +1146,8 @@ class LapSimDesktop:
         self._draw_plots(preserve_course_view=True)
 
     def _show_comparison(
-        self, outcomes: tuple[tuple[str, Any], ...], step_m: float
+        self, outcomes: tuple[tuple[str, Any], ...], step_m: float,
+        torque_fraction: float, run_ids: tuple[str, ...],
     ) -> None:
         first_name, first_result = outcomes[0]
         second_name, second_result = outcomes[1]
@@ -1037,7 +1155,7 @@ class LapSimDesktop:
         second = summarize_lap(second_result, self.track.length_m)
         window = tk.Toplevel(self.root)
         window.title("LapSim car comparison")
-        window.geometry("760x460")
+        window.geometry("760x490")
         box = tk.Frame(window, padx=12, pady=12)
         box.pack(fill="both", expand=True)
         tk.Label(box, text="Same course and run settings", font=FONT_TITLE).grid(
@@ -1046,7 +1164,7 @@ class LapSimDesktop:
         tk.Label(
             box,
             text=f"Solver step: {step_m:g} m · driver request: "
-                 f"{self.inputs['torque_request_percent'].get()}% · "
+                 f"{torque_fraction * 100:g}% · "
                  "Δ = B − A; positive lap-time Δ is slower",
             anchor="w", justify="left", wraplength=720,
         ).grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 12))
@@ -1088,6 +1206,11 @@ class LapSimDesktop:
                  "validated vehicle performance or measured energy use.",
             anchor="w", justify="left", wraplength=720,
         ).grid(row=9, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+        tk.Label(
+            box,
+            text=f"Saved records: A {run_ids[0][:16]} · B {run_ids[1][:16]}",
+            anchor="w", font=("Consolas", 9),
+        ).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(5, 0))
         self._apply_theme()
 
 

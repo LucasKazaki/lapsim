@@ -88,6 +88,21 @@ def run_one_lap(
     )
     vehicle.reset_state()
     constraints = PathConstraintSolver(
+        **path_solver_settings(vehicle),
+    ).solve(track, vehicle)
+    return EnduranceSimulator().run(
+        vehicle,
+        constraints,
+        profile,
+        endurance_run_config(vehicle),
+        record_telemetry=True,
+    )
+
+
+def path_solver_settings(vehicle: Vehicle) -> dict[str, float | int]:
+    """Settings used by the desktop path solver and saved run records."""
+
+    return dict(
         convergence_tolerance_mps=0.005,
         maximum_passes=120,
         maximum_entry_iterations=20,
@@ -95,15 +110,14 @@ def run_one_lap(
         gravity_mps2=vehicle.gravity_mps2,
         air_density_kgpm3=vehicle.air_density_kgpm3,
         maximum_brake_pressure_psi=vehicle.brakes.maximum_pressure_psi,
-    ).solve(track, vehicle)
-    return EnduranceSimulator().run(
-        vehicle,
-        constraints,
-        profile,
-        EnduranceRunConfig(
-            laps=1,
-            path_speed_tolerance_mps=0.06,
-            maximum_brake_pressure_psi=vehicle.brakes.maximum_pressure_psi,
-        ),
-        record_telemetry=True,
+    )
+
+
+def endurance_run_config(vehicle: Vehicle) -> EnduranceRunConfig:
+    """Configuration used by the desktop endurance controller."""
+
+    return EnduranceRunConfig(
+        laps=1,
+        path_speed_tolerance_mps=0.06,
+        maximum_brake_pressure_psi=vehicle.brakes.maximum_pressure_psi,
     )

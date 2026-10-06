@@ -41,7 +41,9 @@ main classes for concise imports.
 - [Endurance torque-profile optimizer](docs/endurance_optimizer.md): reusable
   track/vehicle architecture, Michigan 2026 scoring, sweeps, and limitations.
 - [LapSim desktop app](docs/simulator_desktop.md): editable vehicle setup,
-  top-down course navigation, lap outputs, and model assumptions.
+  top-down course navigation, saved lap records, and comparison traces.
+- [Four-wheel dynamics](docs/four_wheel_dynamics.md): synthetic independent-wheel
+  torque-allocation experiment, equations, and numerical limits.
 - [Source-backed vehicle profiles](docs/source_vehicle_profiles.md): local
   engineering registry, profile adapter, provenance, and headless commands.
 
@@ -58,7 +60,10 @@ application:
 Or double-click `launch_lapsim.cmd` in the repository folder. The app loads the
 team endurance course, offers editable 2026 Prius LE benchmark inputs, saved
 local car profiles, source-backed TREV5 working scenarios when the external
-data package is present, and a two-car lap comparison. The solver defaults to
+data package is present, and a two-car lap comparison. The **Four-wheel lab**
+opens a separate top-down torque-allocation comparison with individual wheel
+slip and force displays. Completed and interrupted lap runs save local JSON
+records of inputs and telemetry. The solver defaults to
 1 m cells; set it to 0.5 m to use the course data's full station resolution.
 See the [desktop guide](docs/simulator_desktop.md) for data and model limits.
 
