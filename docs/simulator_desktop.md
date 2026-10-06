@@ -65,7 +65,13 @@ dry seam-speed probe sends no live updates; Driver view shows accepted cells
 from the final recorded pass for each path.
 Rejected cells are not shown as completed movement. After a completed lap,
 the app starts a 1× replay with Play/Pause, Start, time scrub, playback rate,
-and wheel zoom. The course rotates around a fixed car marker. The replay uses
+and wheel zoom. **Replay lap** lets you switch between A and B after a
+completed two-car comparison, or between the geometric baseline and best
+tested AI path after a valid AI comparison. Each choice uses that run's
+recorded telemetry and its own processed path where applicable. Switching
+resets the playback cursor without rerunning physics; the menu is disabled
+for a single run or an unsuccessful comparison. The course rotates around a
+fixed car marker. The replay uses
 the solver's constant-acceleration cell relation between recorded exits.
 The lap physics uses a separate curvature channel, so the displayed map
 heading is not necessarily the model's integrated heading. This is a live
@@ -117,9 +123,10 @@ the selected record names its run ID and role. A third trial may have only its
 summary saved. These records do not provide a full ghost/session replay.
 
 The Timed sessions tab is explicitly a design placeholder for a future
-versioned Terps vehicle/controller, timed drive, ghost, full control capture,
-engineering replay check with numerical tolerances, and comparison report.
-Its Start button is disabled because those features are not implemented.
+versioned Terps vehicle/controller, timed drive, ghost, full session capture,
+and comparison report. A standalone, programmatic lap-record replay check
+exists as described below, but it is not a timed session or a tab workflow.
+The tab's Start button is disabled.
 
 **Run comparison** simulates two selected saved/built-in profiles with the
 same standard centerline course, solver spacing, and driver request. The
@@ -137,6 +144,39 @@ settings, result status, and aligned telemetry with units and validity flags.
 The status line shows the start of the record ID; comparison shows both IDs.
 Files stay on your computer and are not added to Git. A record is evidence of
 what the model calculated, not evidence that the real vehicle was calibrated.
+
+For a **completed v2 one-lap** record, an engineer can check the saved cell
+commands against the current model without opening the GUI:
+
+```python
+from lapsim.experiments import (
+    LapReplayTolerances, default_run_directory, replay_lap_record,
+)
+
+path = default_run_directory() / "<run_id>.json"
+report = replay_lap_record(path, tolerances=LapReplayTolerances())
+print(report.model_agreement, report.mismatch_reasons)
+print(report.provenance_warnings)
+for metric in report.metrics:
+    print(metric.name, metric.maximum_absolute_error, metric.tolerance, metric.passed)
+```
+
+The checker verifies the record ID and embedded model/track data, restores
+allowlisted vehicle constructor inputs, solves the saved path constraints,
+and feeds each saved accepted-cell control command back through the endurance
+model. It checks completed status and cell count, lap and total time, entry
+and exit speed, net pack energy, final SOC, and aligned time, station, speed,
+path-ceiling, and control traces. The default absolute limits are 0.01 s for
+time, 0.01 m/s for speed, 0.00001 kWh for energy, 0.00001 SOC, and 1e-8 m
+for station; recorded control channels must match exactly. The report separates
+numerical agreement from source commit, dirty-worktree, Python, platform,
+and dependency-version warnings. This check requires the installed model code
+and supports neither older v1 records nor incomplete laps. Agreement means
+the current code reproduced the selected saved model outputs. For a record
+made with explicit controls, the event checks speed ceilings but does not
+confirm that supplied steering tracked the prescribed course or stayed within
+boundaries. The replay is not validation against a measured car or a complete
+ghost/session workflow.
 
 **Four-wheel lab** opens a separate top-down, time-domain experiment. It
 compares two allocations of the same total requested wheel torque on one
@@ -185,12 +225,20 @@ kinematics. The path solver first finds tire-limited corner speeds, then
 performs cyclic backward braking passes. The endurance controller reduces
 drive torque or brakes to stay below those path-speed ceilings.
 
-The solver grid resamples curvature by a distance-weighted mean. This
-preserves the integrated signed curvature over each solver cell and over the
-lap; x/y coordinates are interpolated at cell boundaries. The grid spacing
-still affects how the path model resolves short features, so compare 0.5 m and
-1 m runs when numerical resolution matters. The Prius benchmark is for
-software demonstration and input checking, not engineering sign-off.
+The default solver grid resamples curvature by a distance-weighted mean. This
+preserves integrated signed curvature over the lap; x/y coordinates are
+interpolated at the new cell boundaries. A new global grid can average across
+old curvature discontinuities, changing the squared-curvature demand used by
+the tire model. For a diagnostic refinement of an existing `SpatialTrack`, the
+programmatic `track.refine(maximum_cell_length_m)` instead splits each original
+cell, retains every old boundary and its piecewise-constant curvature, and
+interpolates interior x/y points along the old chord. It preserves track
+length, each original cell's signed turn, and its length-weighted squared
+curvature, with a 100,000-cell safety cap. It does not change the desktop's
+default grid or repair an inconsistent source map. Grid spacing still affects
+the speed-envelope and cell integration, so resolution checks remain
+necessary. The Prius benchmark is for software demonstration and input
+checking, not engineering sign-off.
 
 The supplied ENME408 research report motivates a separate time-domain
 four-wheel model rather than changing this prescribed-path solver into a

@@ -318,6 +318,7 @@ class EnduranceSimulator:
         curvature_per_m: float,
         cell_length_m: float,
         target_speed_mps: float,
+        current_cell_corner_speed_mps: float,
         maximum_brake_pressure_psi: float | None,
         regenerative_braking_soc_threshold: float | None,
     ) -> tuple[Controls, float, bool, float, bool]:
@@ -329,6 +330,10 @@ class EnduranceSimulator:
         """
 
         initial_speed_mps = vehicle.speed_mps
+        # The next-cell braking ceiling alone may permit acceleration beyond
+        # the current curved cell's lateral limit before its exit. Both entry
+        # and exit must satisfy the current cell's prescribed curvature.
+        target_speed_mps = min(target_speed_mps, current_cell_corner_speed_mps)
         profile_torque_nm = request_fraction * (
             vehicle.drivetrain.motor.torque_limit_nm(
                 vehicle.drivetrain.motor_speed_rpm(initial_speed_mps)
@@ -522,6 +527,9 @@ class EnduranceSimulator:
                         curvature_per_m=curvature_per_m,
                         cell_length_m=cell_length_m,
                         target_speed_mps=target_speed_mps,
+                        current_cell_corner_speed_mps=(
+                            constraints.local_corner_speed_mps[cell_index]
+                        ),
                         maximum_brake_pressure_psi=(
                             config.maximum_brake_pressure_psi
                         ),
@@ -538,6 +546,20 @@ class EnduranceSimulator:
                 timestep_s = vehicle.time_s - time_before_step_s
                 if timestep_s <= 0.0:
                     failure_reason = "vehicle stalled on the endurance path"
+                    break
+                if (
+                    vehicle.speed_mps
+                    > constraints.local_corner_speed_mps[cell_index]
+                    + config.path_speed_tolerance_mps
+                ):
+                    failure_reason = (
+                        "supplied controls exceeded the current cell corner-speed "
+                        f"limit at lap {lap_index + 1}, cell {cell_index}: "
+                        f"entered {initial_speed_mps:.6f} m/s, "
+                        f"reached {vehicle.speed_mps:.6f} m/s, "
+                        "limit "
+                        f"{constraints.local_corner_speed_mps[cell_index]:.6f} m/s"
+                    )
                     break
                 if (
                     vehicle.speed_mps

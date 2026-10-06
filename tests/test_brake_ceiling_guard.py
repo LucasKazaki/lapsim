@@ -59,7 +59,10 @@ class BrakeCeilingGuardTests(TestCase):
         result = run_one_lap(vehicle, track, torque_request_fraction=1.0)
 
         self.assertTrue(result.completed, result.failure_reason)
-        self.assertAlmostEqual(result.driving_time_s, 78.77627333367595, delta=0.002)
+        # The automatic controller now keeps each curved cell's exit within
+        # that cell's corner-speed limit, so this lap is slightly slower than
+        # the historical next-cell-ceiling-only controller result.
+        self.assertAlmostEqual(result.driving_time_s, 78.7867124559307, delta=0.002)
         assert result.telemetry is not None
         self.assertLessEqual(
             max(result.telemetry["brakes.front_pressure_psi"]),

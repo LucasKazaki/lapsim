@@ -130,6 +130,9 @@ class LapSimDesktop:
         self.driver_playback: DriverPlayback | None = None
         self.driver_canvas: tk.Canvas | None = None
         self.driver_play_button: tk.Button | None = None
+        self.driver_replay_menu: tk.OptionMenu | None = None
+        self.driver_replay_var = tk.StringVar(value="—")
+        self._driver_replay_runs: dict[str, tuple[str, Any, str, Any]] = {}
         self.driver_run_label = tk.StringVar(value="Run a lap to load playback")
         self.driver_speed_var = tk.StringVar(value="1×")
         self.driver_progress_var = tk.DoubleVar(value=0.0)
@@ -880,6 +883,12 @@ class LapSimDesktop:
         tk.Button(controls, text="Start", command=self._reset_driver_playback).pack(
             side="left", padx=(0, 8)
         )
+        tk.Label(controls, text="Replay lap").pack(side="left", padx=(0, 3))
+        self.driver_replay_menu = tk.OptionMenu(
+            controls, self.driver_replay_var, "—",
+        )
+        self.driver_replay_menu.configure(state="disabled")
+        self.driver_replay_menu.pack(side="left", padx=(0, 8))
         tk.Label(controls, text="Playback").pack(side="left", padx=(0, 3))
         tk.OptionMenu(
             controls, self.driver_speed_var, "0.25×", "0.5×", "1×", "2×", "4×",
@@ -1009,6 +1018,40 @@ class LapSimDesktop:
             self.driver_play_button.configure(state="normal")
         self.driver_progress.configure(state="normal")
         self._render_driver_frame()
+
+    def _set_driver_replay_options(
+        self, options: dict[str, tuple[str, Any, str, Any]], *, selected: str,
+    ) -> None:
+        """Offer already solved laps for playback without running physics again."""
+
+        self._driver_replay_runs = dict(options)
+        self.driver_replay_var.set(selected if selected in options else "—")
+        if self.driver_replay_menu is None:
+            return
+        menu = self.driver_replay_menu.nametowidget(self.driver_replay_menu["menu"])
+        menu.delete(0, "end")
+        for label in options:
+            menu.add_command(
+                label=label,
+                command=lambda choice=label: self._select_driver_replay(choice),
+            )
+        if not options:
+            menu.add_command(label="—", state="disabled")
+        self.driver_replay_menu.configure(
+            state="normal" if len(options) > 1 else "disabled"
+        )
+
+    def _select_driver_replay(self, choice: str) -> None:
+        if choice not in self._driver_replay_runs or self.run_in_progress:
+            return
+        name, result, driving_mode, path_track = self._driver_replay_runs[choice]
+        was_playing = self._driver_playing
+        self.driver_replay_var.set(choice)
+        self._set_driver_run(
+            name, result, driving_mode=driving_mode, path_track=path_track,
+        )
+        if was_playing and self.driver_playback is not None:
+            self._toggle_driver_playback()
 
     def _activate_driver_playback(
         self, name: str, result: Any, *, driving_mode: str = "Centerline",
@@ -1496,6 +1539,7 @@ class LapSimDesktop:
         """Clear the old replay before accepted model cells arrive."""
 
         self.progress_queue = queue.Queue(maxsize=1)
+        self._set_driver_replay_options({}, selected="—")
         self._pause_driver_playback()
         self.driver_playback = None
         self._driver_playback_time_s = 0.0
@@ -2023,10 +2067,12 @@ class LapSimDesktop:
             self._draw_driver_view()
         elapsed_s = time.perf_counter() - self.run_started_at
         if error is not None:
+            self._set_driver_replay_options({}, selected="—")
             self.status_text.set(f"Calculation failed: {error}")
             messagebox.showerror("Lap calculation failed", str(error), parent=self.root)
         elif kind == "single":
             profile_name, step_m, result, run_id = payload
+            self._set_driver_replay_options({}, selected="—")
             if result.completed:
                 self._comparison_results = None
                 self._last_result = result
@@ -2122,11 +2168,28 @@ class LapSimDesktop:
                                   else "Geometric centerline"),
                     path_track=selected_track,
                 )
+                replay_options: dict[str, tuple[str, Any, str, Any]] = {}
+                if comparison.baseline_time_s is not None and comparison.baseline_run is not None:
+                    replay_options["Geometric centerline"] = (
+                        profile_name, comparison.baseline_run,
+                        "Geometric centerline", plan.baseline_track,
+                    )
+                if comparison.candidate_time_s is not None and comparison.candidate_run is not None:
+                    replay_options["Best tested AI path"] = (
+                        profile_name, comparison.candidate_run,
+                        "AI path", comparison.candidate_track,
+                    )
+                self._set_driver_replay_options(
+                    replay_options,
+                    selected=("Best tested AI path" if selected_mode.startswith("candidate")
+                              else "Geometric centerline"),
+                )
                 self.status_text.set(
                     f"Experimental path calculation: {selection} "
                     f"{elapsed_s:.1f} s · saved run {run_id[:12]}"
                 )
             else:
+                self._set_driver_replay_options({}, selected="—")
                 detail = (
                     comparison.baseline_error or comparison.candidate_error
                     or result.failure_reason or "No valid timed lap"
@@ -2142,6 +2205,13 @@ class LapSimDesktop:
             self._selected_path_track = None
             self._show_result(outcomes[0][1])
             self._set_driver_run(outcomes[0][0], outcomes[0][1])
+            replay_options = {
+                f"{letter} · {name}": (name, result, "Centerline", self.track)
+                for letter, (name, result) in zip("AB", outcomes, strict=True)
+            }
+            self._set_driver_replay_options(
+                replay_options, selected=next(iter(replay_options)),
+            )
             self._show_comparison(outcomes, step_m, torque_fraction, run_ids)
             self.status_text.set(
                 f"Comparison completed in {elapsed_s:.1f} s · "

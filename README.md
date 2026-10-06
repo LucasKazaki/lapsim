@@ -91,10 +91,15 @@ course has no surveyed widths, and its x/y map does not agree with its stored
 solver curvature; the Analysis tab displays the measured inconsistency. AI-mode times should be
 compared only with the AI-mode geometric baseline, not the ordinary centerline
 lap. The **Driver view** shows accepted solver-step progress on a reference
-path, then plays back numeric telemetry after a completed lap. AI comparisons
-save linked selected and counterpart run records when both paths return runs.
-**Timed sessions · WIP** is a disabled
-placeholder for a future ghost, complete control recording, and replay check.
+path, then plays back numeric telemetry after a completed lap. Its **Replay
+lap** menu switches between A and B after a two-car comparison, or between
+the geometric baseline and best tested AI path after a valid AI comparison,
+without running physics again. AI comparisons save linked selected and
+counterpart run records when both paths return runs. Completed v2 lap records
+can be checked on demand with the programmatic `replay_lap_record()` API: it
+reruns their recorded cell controls on the saved solver grid and reports
+numerical agreement. **Timed sessions · WIP** remains a disabled placeholder
+for an interactive drive, ghost, complete session capture, and report workflow.
 
 ## Basic use
 

@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from math import cos, sin
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import pytest
 
 from lapsim.core.telemetry import Telemetry
 from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.events.endurance import EnduranceRunResult
 from lapsim.ui.driver_view import DriverPlayback
 
 
@@ -228,5 +230,116 @@ def test_desktop_tabs_and_playback_smoke() -> None:
         assert app._driver_playback_time_s > 1.0
         app._switch_tab("Timed sessions · WIP")
         assert not app._driver_playing
+    finally:
+        root.destroy()
+
+
+def test_driver_replay_switches_comparison_cars_and_ai_paths_without_rerunning() -> None:
+    import time
+    import tkinter as tk
+
+    from lapsim.ui.app import LapSimDesktop
+
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+
+        def result_for(track: SpatialTrack, speed_mps: float) -> EnduranceRunResult:
+            duration_s = track.length_m / speed_mps
+            telemetry = lap_channels(**{
+                "vehicle.time_s": (duration_s / 2.0, duration_s),
+                "vehicle.distance_m": (track.length_m / 2.0, track.length_m),
+                "vehicle.speed_mps": (speed_mps, speed_mps),
+                "vehicle.lateral_acceleration_mps2": (0.0, 0.0),
+            })
+            return EnduranceRunResult(
+                completed_laps=1, driving_time_s=duration_s,
+                lap_times_s=(duration_s,), pack_energy_kwh=0.1,
+                final_state_of_charge=0.8, failure_reason=None,
+                telemetry=telemetry, starting_speed_mps=speed_mps,
+                ending_speed_mps=speed_mps,
+            )
+
+        first = result_for(app.track, 10.0)
+        second = result_for(app.track, 20.0)
+        app.result_queue.put((
+            "comparison",
+            (1.0, 1.0, (("Car A", first), ("Car B", second)),
+             ("a" * 64, "b" * 64)),
+            None,
+        ))
+        with patch.object(app, "_show_result"), patch.object(app, "_show_comparison"):
+            app._poll_result()
+        assert app.driver_replay_menu is not None
+        assert app.driver_replay_menu["state"] == "normal"
+        assert app.driver_replay_var.get() == "A · Car A"
+        assert app.driver_playback is not None
+        assert app.driver_playback.speeds[-1] == pytest.approx(10.0)
+
+        replay_menu = app.driver_replay_menu.nametowidget(
+            app.driver_replay_menu["menu"]
+        )
+        replay_menu.invoke(1)
+        assert app.driver_replay_var.get() == "B · Car B"
+        assert app.driver_run_label.get() == "Centerline · Car B"
+        assert app.driver_playback is not None
+        assert app.driver_playback.speeds[-1] == pytest.approx(20.0)
+        assert app.driver_playback.track is app.track
+
+        app._set_busy(True)
+        app._begin_live_calculation("Next car")
+        assert app.driver_replay_menu["state"] == "disabled"
+        assert app.driver_replay_var.get() == "—"
+        assert not app._driver_replay_runs
+        app.result_queue.put(("single", None, RuntimeError("planning failed")))
+        with patch("lapsim.ui.app.messagebox.showerror"):
+            app._poll_result()
+        assert app.driver_replay_menu["state"] == "disabled"
+
+        baseline_track = straight_map()
+        candidate_track = SpatialTrack(
+            distance_m=(0.0, 10.0, 20.0),
+            x_m=(0.0, 10.0, 20.0), y_m=(1.0, 1.0, 1.0),
+            curvature_per_m=(0.0, 0.0), closed=False,
+        )
+        baseline = result_for(baseline_track, 10.0)
+        candidate = result_for(candidate_track, 12.0)
+        plan = SimpleNamespace(
+            baseline_track=baseline_track, max_abs_offset_m=1.0,
+            source_vs_processed_length_fraction=0.02,
+        )
+        comparison = SimpleNamespace(
+            baseline_time_s=baseline.driving_time_s,
+            candidate_time_s=candidate.driving_time_s,
+            baseline_run=baseline, candidate_run=candidate,
+            candidate_track=candidate_track, candidate_strength=0.5,
+            trials=(SimpleNamespace(),),
+        )
+        app.run_started_at = time.perf_counter()
+        app.result_queue.put((
+            "ai_single",
+            ("AI car", candidate, candidate_track, "candidate", plan,
+             comparison, (2.0, 1.8, 0.2), "c" * 64),
+            None,
+        ))
+        with patch.object(app, "_show_result"):
+            app._poll_result()
+        assert app.driver_replay_menu["state"] == "normal"
+        assert app.driver_replay_var.get() == "Best tested AI path"
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is candidate_track
+        replay_menu.invoke(0)
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is baseline_track
+        assert app.driver_run_label.get() == "Geometric centerline · AI car"
+        assert app.driver_playback.speeds[-1] == pytest.approx(10.0)
+        replay_menu.invoke(1)
+        assert app.driver_playback is not None
+        assert app.driver_playback.track is candidate_track
+        assert app.driver_playback.speeds[-1] == pytest.approx(12.0)
     finally:
         root.destroy()

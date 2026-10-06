@@ -1,4 +1,4 @@
-"""Generic, uniformly discretized racing-line geometry."""
+"""Generic, cell-discretized racing-line geometry."""
 
 from __future__ import annotations
 
@@ -10,6 +10,9 @@ from pathlib import Path
 import csv
 
 from .track import Curve, Straight, Track
+
+
+_MAX_REFINED_CELL_COUNT = 100_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,6 +89,69 @@ class SpatialTrack:
         return tuple(
             0.5 * (lower + upper)
             for lower, upper in zip(self.distance_m, self.distance_m[1:])
+        )
+
+    def refine(self, maximum_cell_length_m: float) -> "SpatialTrack":
+        """Subdivide cells without changing their piecewise-constant curvature.
+
+        Original cell boundaries and point coordinates remain exact members of
+        the refined grid. Interior points lie on each original x/y chord. This
+        preserves path length and each cell's integrated turn and curvature
+        squared, unlike a new global grid that averages across boundaries.
+        """
+
+        if (
+            isinstance(maximum_cell_length_m, bool)
+            or not isfinite(maximum_cell_length_m)
+            or maximum_cell_length_m <= 0.0
+        ):
+            raise ValueError("maximum_cell_length_m must be finite and positive")
+        cell_lengths_m = self.cell_length_m
+        if all(length <= maximum_cell_length_m for length in cell_lengths_m):
+            return self
+
+        subdivision_counts: list[int] = []
+        total_cells = 0
+        for length_m in cell_lengths_m:
+            ratio = length_m / maximum_cell_length_m
+            remaining = _MAX_REFINED_CELL_COUNT - total_cells
+            if not isfinite(ratio) or ratio > remaining:
+                raise ValueError("refined track exceeds the 100000-cell compute cap")
+            count = ceil(ratio)
+            total_cells += count
+            subdivision_counts.append(count)
+
+        distance_m = [self.distance_m[0]]
+        x_m = [self.x_m[0]]
+        y_m = [self.y_m[0]]
+        curvature_per_m: list[float] = []
+        for index, (lower_m, upper_m, curvature) in enumerate(
+            zip(
+                self.distance_m[:-1],
+                self.distance_m[1:],
+                self.curvature_per_m,
+                strict=True,
+            )
+        ):
+            count = subdivision_counts[index]
+            delta_x_m = self.x_m[index + 1] - self.x_m[index]
+            delta_y_m = self.y_m[index + 1] - self.y_m[index]
+            for subdivision in range(1, count):
+                fraction = subdivision / count
+                distance_m.append(lower_m + fraction * (upper_m - lower_m))
+                x_m.append(self.x_m[index] + fraction * delta_x_m)
+                y_m.append(self.y_m[index] + fraction * delta_y_m)
+            distance_m.append(upper_m)
+            x_m.append(self.x_m[index + 1])
+            y_m.append(self.y_m[index + 1])
+            curvature_per_m.extend((curvature,) * count)
+
+        return SpatialTrack(
+            distance_m=tuple(distance_m),
+            x_m=tuple(x_m),
+            y_m=tuple(y_m),
+            curvature_per_m=tuple(curvature_per_m),
+            closed=self.closed,
         )
 
     def geometry_audit(self) -> TrackGeometryAudit:
