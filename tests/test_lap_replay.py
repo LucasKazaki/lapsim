@@ -162,6 +162,17 @@ def test_replay_rejects_condition_snapshot_mismatch(
         replay_lap_record(path)
 
 
+def test_replay_rejects_explicit_null_conditions_in_new_record(
+    saved_laps: dict[str, Path], tmp_path: Path,
+) -> None:
+    path = _mutated_record(
+        saved_laps["prius_2026_le"], tmp_path / "null_conditions.json",
+        lambda payload: payload["settings"].__setitem__("conditions", None),
+    )
+    with pytest.raises(ValueError, match="saved run conditions are invalid"):
+        replay_lap_record(path)
+
+
 @pytest.mark.parametrize("field", [
     "controls.steering_angle_rad", "controls.front_brake_pressure_psi",
     "controls.rear_brake_pressure_psi",

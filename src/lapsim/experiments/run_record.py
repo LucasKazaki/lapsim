@@ -68,9 +68,9 @@ def _road_grip_multiplier(value: Any) -> float:
 def _saved_road_grip_multiplier(settings: Mapping[str, Any]) -> float:
     """Old v2 records without conditions use the original reference grip."""
 
-    conditions = settings.get("conditions")
-    if conditions is None:
+    if "conditions" not in settings:
         return 1.0
+    conditions = settings["conditions"]
     if not isinstance(conditions, dict) or set(conditions) != {
         "road_grip_multiplier", "source"
     } or conditions.get("source") != "assumed_uniform_surface_sensitivity":

@@ -456,6 +456,30 @@ def test_curvature_arc_audit_uses_exact_heading_for_coherent_arc_cells() -> None
     assert audit.continuous_clearance_certified
 
 
+def test_curvature_arc_audit_rejects_an_open_map_labeled_closed() -> None:
+    """Reaching an open saved endpoint is not closing at the starting point."""
+
+    radius_m = 10.0
+    angles = np.linspace(0.0, 7.0 * pi / 4.0, 8)
+    track = SpatialTrack(
+        tuple(radius_m * angles),
+        tuple(radius_m * np.cos(angles)),
+        tuple(radius_m * np.sin(angles)),
+        (1.0 / radius_m,) * 7,
+        True,
+    )
+    corridor = TrackCorridor.constant(
+        track, left_width_m=20.0, right_width_m=20.0,
+        vehicle_width_m=1.0, source="open arc mislabeled closed",
+    )
+    audit = _audit_curvature_path(track, track, track.distance_m, corridor)
+    assert audit.initial_heading_policy == "coherent_first_arc_chord"
+    assert audit.maximum_corridor_excess_m == 0.0
+    assert audit.seam_position_error_m > 7.0
+    assert audit.clearance_status == "seam_failure"
+    assert not audit.valid
+
+
 def test_continuous_arc_clearance_rejects_between_quarter_excursion() -> None:
     """A coherent arc can leave a narrow corridor between audit samples."""
 

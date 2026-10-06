@@ -141,7 +141,7 @@ evaluates four positions per modeled cell plus every source corridor-cell
 boundary and midpoint, then bounds lateral clearance between evaluations and
 subdivides close intervals. An unresolved interval is ineligible. A shared
 boundary uses the narrower adjacent width, including at the closed seam.
-Allowable scalar corridor excess is 1e-8 m and the integrated seam gap must be
+Allowable scalar corridor excess is 1e-8 m and the worst integrated-path, saved-path, and reference seam gap must be
 at most 0.01 m. The certificate covers this continuous *normal-coordinate*
 inequality under the supplied width model. It does not certify the swept
 vehicle body, world-frame containment, or surveyed cone clearance.

@@ -847,9 +847,16 @@ def _audit_curvature_path(
         lateral_offset - lower, upper - lateral_offset,
     )))
     maximum_lateral_offset = float(np.max(np.abs(lateral_offset)))
-    seam_error = hypot(
-        float(entry_x[-1] + exit_dx[-1] - x[-1]),
-        float(entry_y[-1] + exit_dy[-1] - y[-1]),
+    seam_error = max(
+        hypot(
+            float(entry_x[-1] + exit_dx[-1] - x[0]),
+            float(entry_y[-1] + exit_dy[-1] - y[0]),
+        ),
+        hypot(float(x[-1] - x[0]), float(y[-1] - y[0])),
+        hypot(
+            float(reference_x[-1] - reference_x[0]),
+            float(reference_y[-1] - reference_y[0]),
+        ),
     )
     if not all(isfinite(value) for value in (
         maximum_excess, minimum_slack, seam_error,
@@ -857,9 +864,10 @@ def _audit_curvature_path(
     )):
         raise ValueError("curvature-path audit produced a nonfinite result")
     # Roundoff only for declared clearance. A generated closed solver path
-    # must also bring the integrated vehicle path back to its starting point
-    # within one centimeter. This fixed numerical closure tolerance is not a
-    # survey uncertainty or a vehicle tracking accuracy claim.
+    # must also bring the integrated vehicle path and both declared polygon
+    # endpoints back to their starts within one centimeter. Comparing only to
+    # the saved last vertex would let an open path marked closed pass.
+    # This fixed numerical tolerance is not a survey or tracking claim.
     numerical_epsilon_m = 1e-8
     seam_tolerance_m = 0.01
     clearance_certified = False

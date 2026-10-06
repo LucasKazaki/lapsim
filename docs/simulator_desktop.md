@@ -193,7 +193,7 @@ adaptive interval subdivision. Intervals that cannot be certified within
 the bounded work budget make the time ineligible. Shared width boundaries use
 the narrower adjacent width, including where the first and last cells meet.
 The scalar corridor excess allowance is **1e-8 m**, and the integrated end
-position must close within **0.01 m**. A certified minimum slack is a
+the integrated path and both saved polygon endpoints must close within **0.01 m**. A certified minimum slack is a
 conservative lower bound for this continuous scalar inequality under the
 supplied piecewise-width model. It is not a swept-body, world-frame
 containment, or surveyed cone-clearance certificate. If the processed baseline

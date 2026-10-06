@@ -267,7 +267,12 @@ def test_assumed_grip_reaches_every_ai_trial_record(tmp_path: Path) -> None:
         assert error is None, error
         assert kind == "ai_single"
         assert payload[8] == 0.7
-        assert payload[5].trials
+        comparison = payload[5]
+        assert comparison.trials
+        assert comparison.rank_status == "candidate_selected"
+        assert comparison.candidate_strength == 0.95
+        assert comparison.baseline_time_s == pytest.approx(19.733799, abs=0.002)
+        assert comparison.candidate_time_s == pytest.approx(17.035638, abs=0.002)
         records = [RunRecord.load(path).to_dict() for path in tmp_path.glob("*.json")]
         assert len(records) >= 2
         for record in records:
