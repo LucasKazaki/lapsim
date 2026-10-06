@@ -149,6 +149,7 @@ class LapRunSettings:
         endurance_config: EnduranceRunConfig,
         profile_id: str | None = None,
         profile_label: str | None = None,
+        path_planning: Mapping[str, Any] | None = None,
     ) -> LapRunSettings:
         if not isinstance(track_id, str) or not track_id.strip():
             raise ValueError("track_id must be a nonempty string")
@@ -192,6 +193,11 @@ class LapRunSettings:
             "profile_id": profile_id,
             "profile_label": profile_label,
         }
+        if path_planning is not None:
+            planning = _validated_mapping(path_planning, "path_planning")
+            if not planning:
+                raise ValueError("path_planning cannot be empty")
+            payload["path_planning"] = planning
         return cls(_canonical_json(payload))
 
     def to_dict(self) -> dict[str, Any]:

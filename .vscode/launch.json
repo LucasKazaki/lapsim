@@ -8,6 +8,10 @@
       "module": "lapsim.ui",
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1"
+      },
       "console": "integratedTerminal",
       "justMyCode": true
     }

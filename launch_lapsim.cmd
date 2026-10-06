@@ -2,6 +2,8 @@
 setlocal
 cd /d "%~dp0"
 if not exist ".venv\Scripts\pythonw.exe" goto missing_environment
+set "OPENBLAS_NUM_THREADS=1"
+set "OMP_NUM_THREADS=1"
 start "" ".venv\Scripts\pythonw.exe" -m lapsim.ui
 exit /b 0
 

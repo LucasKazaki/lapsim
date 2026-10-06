@@ -121,6 +121,47 @@ class RunRecordTests(unittest.TestCase):
                 runtime["dependencies"][dependency], distribution_version(dependency),
             )
 
+    def test_optional_path_planning_assumptions_round_trip(self) -> None:
+        planning = {
+            "mode": "experimental_racing_line",
+            "corridor": {"assumed_half_width_m": 3.0, "measured": False},
+            "candidate_count": 12,
+        }
+        settings = LapRunSettings.from_track(
+            self.track,
+            track_id="synthetic_loop",
+            solver_step_m=1.0,
+            solver_settings={"maximum_passes": 120},
+            torque_request_fraction=0.8,
+            endurance_config=EnduranceRunConfig(laps=1),
+            path_planning=planning,
+        )
+        planning["corridor"]["assumed_half_width_m"] = 9.0
+        self.assertEqual(
+            settings.to_dict()["path_planning"]["corridor"]["assumed_half_width_m"],
+            3.0,
+        )
+        record = capture_lap_run(
+            self._result(self._telemetry()), self.manifest, settings,
+            actual_vehicle=self.vehicle,
+        )
+        with TemporaryDirectory() as directory:
+            path = record.save(Path(directory) / "planned.json")
+            self.assertEqual(
+                RunRecord.load(path).to_dict()["settings"]["path_planning"]["mode"],
+                "experimental_racing_line",
+            )
+        with self.assertRaisesRegex(ValueError, "finite JSON"):
+            LapRunSettings.from_track(
+                self.track,
+                track_id="synthetic_loop",
+                solver_step_m=1.0,
+                solver_settings={"maximum_passes": 120},
+                torque_request_fraction=0.8,
+                endurance_config=EnduranceRunConfig(laps=1),
+                path_planning={"bad": float("nan")},
+            )
+
     def test_load_accepts_an_intact_legacy_v1_record(self) -> None:
         record = capture_lap_run(
             self._result(self._telemetry()), self.manifest, self.settings,

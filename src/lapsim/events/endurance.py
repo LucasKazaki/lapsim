@@ -135,6 +135,7 @@ class EnduranceSimulator:
         lateral_force_n: float,
         curvature_per_m: float,
         maximum_regenerative_brake_force_n: float = 0.0,
+        maximum_brake_pressure_psi: float | None = None,
     ) -> tuple[float, float, float, float]:
         """Allocate friction and driven-axle regen within contact-patch grip."""
 
@@ -241,14 +242,25 @@ class EnduranceSimulator:
                 vehicle.tire.rolling_radius_m,
             )
         )
-        if tire_capacity_saturated:
-            # The inverse pressure map reproduces the nominal force request,
-            # but a request exactly at the combined-slip boundary can land
-            # below the fixed point after load transfer is committed. Saturate
-            # the actuators whenever the target already needs all available
-            # tire capacity; the tire model remains the physical force limit.
-            front_pressure_psi = vehicle.brakes.maximum_pressure_psi
-            rear_pressure_psi = vehicle.brakes.maximum_pressure_psi
+        pressure_limit_psi = min(
+            vehicle.brakes.maximum_pressure_psi,
+            maximum_brake_pressure_psi
+            if maximum_brake_pressure_psi is not None
+            else vehicle.brakes.maximum_pressure_psi,
+        )
+        if (
+            tire_capacity_saturated
+            or front_pressure_psi >= pressure_limit_psi - 1e-9
+            or rear_pressure_psi >= pressure_limit_psi - 1e-9
+        ):
+            # The pressure inverse uses the target acceleration's estimated
+            # tire loads. At the limit, the committed load-transfer fixed
+            # point can provide slightly less force. The braking envelope
+            # assumes both hydraulic actuators are available at full pressure,
+            # so use that same bounded command when either axle saturates.
+            # Contact-patch combined slip remains the physical force cap.
+            front_pressure_psi = pressure_limit_psi
+            rear_pressure_psi = pressure_limit_psi
         return (
             front_pressure_psi,
             rear_pressure_psi,
@@ -323,10 +335,17 @@ class EnduranceSimulator:
                 maximum_regenerative_brake_force_n=(
                     maximum_regenerative_brake_force_n
                 ),
+                maximum_brake_pressure_psi=maximum_brake_pressure_psi,
+            )
+            pressure_limit_psi = min(
+                vehicle.brakes.maximum_pressure_psi,
+                maximum_brake_pressure_psi
+                if maximum_brake_pressure_psi is not None
+                else vehicle.brakes.maximum_pressure_psi,
             )
             brake_pressure_limited = (
-                front_pressure_psi >= vehicle.brakes.maximum_pressure_psi
-                or rear_pressure_psi >= vehicle.brakes.maximum_pressure_psi
+                front_pressure_psi >= pressure_limit_psi - 1e-9
+                or rear_pressure_psi >= pressure_limit_psi - 1e-9
             )
             if maximum_brake_pressure_psi is not None:
                 brake_pressure_limited |= (

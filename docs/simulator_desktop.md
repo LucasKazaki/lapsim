@@ -47,8 +47,51 @@ course map stays fixed rather than moving with the car. In the map,
 left-drag pans, the mouse wheel zooms around the cursor, and **Fit course**
 restores the full view.
 
+The right side has **Analysis**, **Driver view**, and **Timed sessions · WIP**
+tabs. Analysis remains the startup view. After a single completed lap, the
+app switches to Driver view and starts a 1× replay; Play/Pause, Start, time
+scrubbing, playback speed, and wheel zoom are available. The course rotates
+around a fixed car marker in a driver-centered top-down map. Numeric boxes
+show elapsed time, station, modeled speed and lateral acceleration, and map
+heading. The marker follows the distance-aligned x/y course visualization.
+The lap physics uses a separate recorded curvature channel, so the displayed
+map heading is not the heading solved by the force model. The lap solver does
+not simulate vehicle line tracking or a first-person camera. The playback is
+computed from the completed run; it is not a live physics integration.
+
+## Optional AI racing line
+
+The **Driving path** menu defaults to **Centerline (default)**. This uses the
+existing recorded curvature and runs no path search. Choose **AI racing line
+(experimental)** to supply an *assumed* uniform half-width, vehicle width,
+and safety margin. The app has no measured boundaries and does not infer
+vehicle body width from the car profile. A deterministic, bounded planner
+proposes one smooth lateral-offset line on a 2 m grid. It runs the same car and
+torque request through both a newly derived geometric centerline and the
+candidate path. It selects the candidate only if both laps complete and the
+candidate is faster. The left panel shows the two times, signed difference,
+selected path length, and assumptions; **Compare path numbers** shows time,
+distance, speed, equivalent energy, and lateral acceleration side by side.
+The selected path is used for the course plot, Driver view, and saved run
+record. A failed run returned by the solver is saved for diagnosis.
+
+This AI mode rebuilds arc length and curvature from the x/y map. The ordinary
+centerline mode uses the separate recorded curvature channel. On the packaged
+course those channels disagree materially; the two AI-mode paths can be
+compared with each other, but their times should not be compared directly to
+the ordinary lap time. The map is not a surveyed corridor, the planner does
+not steer a closed-loop car, and the vehicle model has simplified tire and
+controller physics. See [AI racer design and checks](ai_racer_design.md) for
+the objective, validation checks, and local benchmark results.
+
+The Timed sessions tab is explicitly a design placeholder for a future
+versioned Terps vehicle/controller, timed drive, ghost, full control capture,
+engineering replay check with numerical tolerances, and comparison report.
+Its Start button is disabled because those features are not implemented.
+
 **Run comparison** simulates two selected saved/built-in profiles with the
-same course, solver spacing, and driver request. The comparison window shows
+same standard centerline course, solver spacing, and driver request. The
+comparison window shows
 both values and B-minus-A differences for each numeric output. The speed plot
 uses solid and dashed black/white lines. Unsaved Prius edits are excluded from
 comparison until saved as a named profile. Differences show model sensitivity

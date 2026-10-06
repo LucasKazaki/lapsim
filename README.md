@@ -45,7 +45,10 @@ main classes for concise imports.
 - [Endurance torque-profile optimizer](docs/endurance_optimizer.md): reusable
   track/vehicle architecture, Michigan 2026 scoring, sweeps, and limitations.
 - [LapSim desktop app](docs/simulator_desktop.md): editable vehicle setup,
-  top-down course navigation, saved lap records, and comparison traces.
+  top-down course navigation, optional path planning, driver playback, saved
+  lap records, and comparison traces.
+- [Optional AI racer design and checks](docs/ai_racer_design.md): bounded path
+  search, geometry assumptions, model comparison, and known limits.
 - [Four-wheel dynamics](docs/four_wheel_dynamics.md): synthetic independent-wheel
   torque-allocation experiment, wind and local road grip, equations, and limits.
 - [Source-backed vehicle profiles](docs/source_vehicle_profiles.md): local
@@ -72,6 +75,18 @@ studies. Completed and interrupted lap runs save local JSON records of inputs
 and telemetry. The solver defaults to
 1 m cells; set it to 0.5 m to use the course data's full station resolution.
 See the [desktop guide](docs/simulator_desktop.md) for data and model limits.
+
+The **Driving path** control defaults to the ordinary centerline solver and
+does no path optimization. Its optional **AI racing line (experimental)** mode
+uses an assumed track half-width, vehicle width, and margin to propose one
+smooth line and compare it with a geometric centerline using the same car and
+physics solver. The app selects a candidate only when both laps complete and
+it is faster. The packaged course has no surveyed widths, and its x/y map
+does not agree with its stored solver curvature; AI-mode times should be
+compared only with the AI-mode geometric baseline, not the ordinary centerline
+lap. The **Driver view** plays back the selected reference path and numeric
+telemetry after a lap calculation. **Timed sessions · WIP** is a disabled
+placeholder for a future ghost, complete control recording, and replay check.
 
 ## Basic use
 

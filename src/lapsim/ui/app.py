@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from hashlib import sha256
+import json
 import queue
 import threading
 import time
@@ -18,6 +20,7 @@ from lapsim.experiments import LapRunSettings, capture_lap_run, default_run_dire
 from lapsim.profiles import build_vehicle, browse_records, list_profiles
 
 from .comparison import summarize_lap
+from .driver_view import DriverPlayback
 from .garage import CAR_INPUT_KEYS, ProfileStore, SavedCarProfile
 from .presets import VehicleSetup, make_prius_benchmark
 from .simulation import (
@@ -73,6 +76,17 @@ class LapSimDesktop:
         }
         self.builtin_profiles = {profile.profile_id: profile for profile in list_profiles()}
         self.profile_var = tk.StringVar()
+        self.driving_mode_var = tk.StringVar(value="Centerline (default)")
+        self.ai_half_width_var = tk.StringVar(value="2.0")
+        self.ai_vehicle_width_var = tk.StringVar(value="1.8")
+        self.ai_margin_var = tk.StringVar(value="0.2")
+        self.ai_result_text = tk.StringVar(value="Select AI racing line to compare modeled paths.")
+        self.ai_output_values: dict[str, tk.Label] = {}
+        self.ai_entries: list[tk.Entry] = []
+        self.ai_output_box: tk.LabelFrame | None = None
+        self.ai_compare_button: tk.Button | None = None
+        self._path_comparison: tuple[Any, Any, tuple[float, float, float]] | None = None
+        self._selected_path_track: Any = None
         self.compare_a_var = tk.StringVar()
         self.compare_b_var = tk.StringVar()
         self.trace_var = tk.StringVar(value="Speed")
@@ -107,6 +121,24 @@ class LapSimDesktop:
         ] | None = None
         self._last_result: Any = None
         self._comparison_results: tuple[tuple[str, Any], tuple[str, Any]] | None = None
+        self._active_tab = "Analysis"
+        self.tab_buttons: dict[str, tk.Button] = {}
+        self.driver_playback: DriverPlayback | None = None
+        self.driver_canvas: tk.Canvas | None = None
+        self.driver_play_button: tk.Button | None = None
+        self.driver_run_label = tk.StringVar(value="Run a lap to load playback")
+        self.driver_speed_var = tk.StringVar(value="1×")
+        self.driver_progress_var = tk.DoubleVar(value=0.0)
+        self.driver_values = {
+            key: tk.StringVar(value="—")
+            for key in ("time", "distance", "speed", "lateral", "heading")
+        }
+        self._driver_playing = False
+        self._driver_playback_time_s = 0.0
+        self._driver_last_clock_s = 0.0
+        self._driver_after_id: str | None = None
+        self._driver_updating_scale = False
+        self._driver_look_ahead_m = 80.0
         self._build_window()
         self._refresh_profile_menus()
         self._select_profile("prius_2026_le")
@@ -176,8 +208,7 @@ class LapSimDesktop:
                     -int(event.delta / 120), "units"
                 ),
             )
-        self._build_comparison(right)
-        self._build_plot(right)
+        self._build_workspace_tabs(right)
 
         footer = tk.Label(
             self.root,
@@ -300,6 +331,45 @@ class LapSimDesktop:
             wraplength=350,
         ).grid(row=12, column=0, columnspan=3, sticky="ew", pady=(4, 0))
 
+        path_box = tk.LabelFrame(
+            parent, text="Driving path", font=FONT_BOLD,
+            padx=8, pady=8, bd=1, relief="solid",
+        )
+        path_box.pack(fill="x", pady=(0, 8), before=box)
+        tk.Label(path_box, text="Mode", anchor="w").grid(row=0, column=0, sticky="w")
+        self.driving_mode_menu = tk.OptionMenu(
+            path_box, self.driving_mode_var,
+            "Centerline (default)", "AI racing line (experimental)",
+            command=lambda _value: self._on_driving_mode_change(),
+        )
+        self.driving_mode_menu.configure(relief="raised", bd=1, anchor="w", font=FONT)
+        self.driving_mode_menu.grid(row=0, column=1, sticky="ew", pady=(0, 5))
+        for row, (label, variable) in enumerate((
+            ("Assumed half-width", self.ai_half_width_var),
+            ("Vehicle width", self.ai_vehicle_width_var),
+            ("Safety margin", self.ai_margin_var),
+        ), start=1):
+            tk.Label(path_box, text=label, anchor="w").grid(row=row, column=0, sticky="w", pady=2)
+            entry = tk.Entry(
+                path_box, textvariable=variable, width=11, justify="right",
+                relief="solid", bd=1, font=FONT,
+            )
+            entry.grid(row=row, column=1, sticky="ew", pady=2)
+            self.ai_entries.append(entry)
+            tk.Label(path_box, text="m").grid(row=row, column=2, sticky="w", padx=(5, 0))
+        path_box.grid_columnconfigure(1, weight=1)
+        tk.Label(
+            path_box,
+            text=("AI mode uses a deterministic path optimizer and an assumed "
+                  "uniform corridor. No measured course widths are available. "
+                  "It uses a 2 m path grid and up to two model lap evaluations. "
+                  "Its rebuilt x/y course has different lap times from the "
+                  "default source-curvature course. Solver step above applies "
+                  "to centerline mode."),
+            justify="left", anchor="w", wraplength=350, font=("Segoe UI", 9),
+        ).grid(row=4, column=0, columnspan=3, sticky="ew", pady=(6, 0))
+        self._on_driving_mode_change()
+
     def _build_outputs(self, parent: tk.Widget) -> None:
         box = tk.LabelFrame(
             parent,
@@ -349,6 +419,96 @@ class LapSimDesktop:
             font=("Segoe UI", 9),
         ).grid(row=3, column=0, columnspan=2, sticky="ew", padx=2, pady=(5, 0))
 
+        self.ai_output_box = tk.LabelFrame(
+            parent, text="Experimental path comparison", font=FONT_BOLD,
+            padx=7, pady=7, bd=1, relief="solid",
+        )
+        for index, (label, key, unit) in enumerate((
+            ("Geometric centerline", "baseline", "s"),
+            ("AI candidate", "candidate", "s"),
+            ("Candidate − centerline", "difference", "s"),
+            ("Selected path length", "length", "m"),
+        )):
+            row, column = divmod(index, 2)
+            card = tk.Frame(self.ai_output_box, bd=1, relief="solid", padx=5, pady=4)
+            card.grid(row=row, column=column, sticky="ew", padx=2, pady=2)
+            tk.Label(card, text=f"{label} ({unit})", anchor="w", font=("Segoe UI", 9)).pack(fill="x")
+            value = tk.Label(
+                card, text="—", anchor="e", padx=5, pady=3,
+                relief="solid", bd=1, font=("Consolas", 13, "bold"),
+            )
+            value.pack(fill="x", pady=(2, 0))
+            self.ai_output_values[key] = value
+        self.ai_output_box.grid_columnconfigure(0, weight=1, uniform="ai_output")
+        self.ai_output_box.grid_columnconfigure(1, weight=1, uniform="ai_output")
+        tk.Label(
+            self.ai_output_box, textvariable=self.ai_result_text,
+            anchor="w", justify="left", wraplength=345,
+            font=("Segoe UI", 9),
+        ).grid(row=2, column=0, columnspan=2, sticky="ew", padx=2, pady=(5, 0))
+        self.ai_compare_button = tk.Button(
+            self.ai_output_box, text="Compare path numbers",
+            command=self._show_path_comparison, state="disabled",
+            relief="raised", bd=1,
+        )
+        self.ai_compare_button.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(6, 0))
+
+    def _build_workspace_tabs(self, parent: tk.Widget) -> None:
+        tab_bar = tk.Frame(parent)
+        tab_bar.grid(row=0, column=0, sticky="ew", pady=(0, 6))
+        for index, name in enumerate(("Analysis", "Driver view", "Timed sessions · WIP")):
+            button = tk.Button(
+                tab_bar,
+                text=name,
+                command=lambda selected=name: self._switch_tab(selected),
+                relief="raised",
+                bd=1,
+                font=FONT,
+                padx=12,
+                pady=5,
+            )
+            button.grid(row=0, column=index, sticky="ew", padx=(0, 5))
+            tab_bar.grid_columnconfigure(index, weight=1)
+            self.tab_buttons[name] = button
+
+        body = tk.Frame(parent)
+        body.grid(row=1, column=0, sticky="nsew")
+        body.grid_rowconfigure(0, weight=1)
+        body.grid_columnconfigure(0, weight=1)
+        self.tab_panels: dict[str, tk.Frame] = {}
+        for name in self.tab_buttons:
+            panel = tk.Frame(body)
+            panel.grid(row=0, column=0, sticky="nsew")
+            self.tab_panels[name] = panel
+
+        analysis = self.tab_panels["Analysis"]
+        analysis.grid_rowconfigure(1, weight=1)
+        analysis.grid_columnconfigure(0, weight=1)
+        self._build_comparison(analysis)
+        self._build_plot(analysis)
+        self._build_driver_view(self.tab_panels["Driver view"])
+        self._build_timed_sessions_tab(self.tab_panels["Timed sessions · WIP"])
+        self._switch_tab("Analysis")
+
+    def _switch_tab(self, name: str) -> None:
+        if name not in self.tab_panels:
+            raise ValueError(f"Unknown workspace tab: {name}")
+        if name != "Driver view":
+            self._pause_driver_playback()
+        self._active_tab = name
+        self.tab_panels[name].tkraise()
+        background, foreground = self._theme_colors()
+        for tab_name, button in self.tab_buttons.items():
+            selected = tab_name == name
+            button.configure(
+                background=foreground if selected else background,
+                foreground=background if selected else foreground,
+                relief="sunken" if selected else "raised",
+                font=FONT_BOLD if selected else FONT,
+            )
+        if name == "Driver view":
+            self._draw_driver_view()
+
     def _build_comparison(self, parent: tk.Widget) -> None:
         box = tk.LabelFrame(
             parent, text="Compare car profiles", font=FONT_BOLD, padx=8, pady=7,
@@ -368,7 +528,8 @@ class LapSimDesktop:
         )
         self.compare_button.grid(row=0, column=2, sticky="ew", pady=(0, 4))
         tk.Label(
-            box, text="Comparisons use saved profile values. Save any edits first.",
+            box, text=("Comparisons use saved profile values and the standard "
+                       "centerline. Save any edits first."),
             anchor="w", font=("Segoe UI", 9),
         ).grid(row=1, column=0, columnspan=3, sticky="ew", pady=(2, 0))
 
@@ -658,6 +819,318 @@ class LapSimDesktop:
         self.canvas.mpl_connect("scroll_event", self._wheel_zoom)
         self._draw_plots()
 
+    def _build_driver_view(self, parent: tk.Frame) -> None:
+        parent.grid_columnconfigure(0, weight=1)
+        parent.grid_rowconfigure(1, weight=1)
+        heading = tk.Frame(parent)
+        heading.grid(row=0, column=0, sticky="ew", pady=(2, 5))
+        tk.Label(
+            heading,
+            text="Driver-centered course view",
+            font=FONT_BOLD,
+            anchor="w",
+        ).pack(side="left")
+        tk.Label(
+            heading,
+            textvariable=self.driver_run_label,
+            anchor="e",
+        ).pack(side="right")
+
+        self.driver_canvas = tk.Canvas(
+            parent, highlightthickness=1, bd=0, relief="solid",
+        )
+        self.driver_canvas.grid(row=1, column=0, sticky="nsew")
+        self.driver_canvas.bind("<Configure>", lambda _event: self._draw_driver_view())
+        self.driver_canvas.bind("<MouseWheel>", self._zoom_driver_view)
+
+        controls = tk.Frame(parent)
+        controls.grid(row=2, column=0, sticky="ew", pady=(7, 2))
+        self.driver_play_button = tk.Button(
+            controls, text="Play", command=self._toggle_driver_playback,
+            state="disabled", width=8,
+        )
+        self.driver_play_button.pack(side="left", padx=(0, 4))
+        tk.Button(controls, text="Start", command=self._reset_driver_playback).pack(
+            side="left", padx=(0, 8)
+        )
+        tk.Label(controls, text="Playback").pack(side="left", padx=(0, 3))
+        tk.OptionMenu(
+            controls, self.driver_speed_var, "0.25×", "0.5×", "1×", "2×", "4×",
+        ).pack(side="left")
+        self.driver_progress = tk.Scale(
+            parent,
+            orient="horizontal",
+            from_=0,
+            to=1000,
+            resolution=1,
+            showvalue=False,
+            variable=self.driver_progress_var,
+            command=self._on_driver_scrub,
+            highlightthickness=0,
+        )
+        self.driver_progress.grid(row=3, column=0, sticky="ew")
+
+        measures = tk.Frame(parent)
+        measures.grid(row=4, column=0, sticky="ew", pady=(3, 5))
+        for column, (key, title) in enumerate((
+            ("time", "TIME (s)"),
+            ("distance", "STATION (m)"),
+            ("speed", "SPEED (km/h)"),
+            ("lateral", "LATERAL (g)"),
+            ("heading", "MAP HEADING (°)"),
+        )):
+            box = tk.Frame(measures, relief="solid", bd=1, padx=7, pady=5)
+            box.grid(row=0, column=column, sticky="ew", padx=(0, 4))
+            measures.grid_columnconfigure(column, weight=1)
+            tk.Label(box, text=title, font=("Segoe UI", 8)).pack(anchor="w")
+            tk.Label(
+                box, textvariable=self.driver_values[key], font=("Consolas", 12),
+                anchor="w",
+            ).pack(anchor="w")
+        tk.Label(
+            parent,
+            text=(
+                "Reference-map playback: position and heading come from the "
+                "distance-aligned x/y map; speed and lateral g come from the "
+                "solved run. The physics uses a separate curvature channel. "
+                "This is not a tracked vehicle pose or first-person camera."
+            ),
+            justify="left",
+            anchor="w",
+            wraplength=820,
+            font=("Segoe UI", 9),
+        ).grid(row=5, column=0, sticky="ew", pady=(2, 3))
+
+    def _build_timed_sessions_tab(self, parent: tk.Frame) -> None:
+        parent.grid_columnconfigure(0, weight=1)
+        tk.Label(
+            parent,
+            text="Timed sessions and ghost · Work in Progress",
+            font=FONT_TITLE,
+            anchor="w",
+        ).grid(row=0, column=0, sticky="ew", pady=(10, 12))
+        tk.Label(
+            parent,
+            text=(
+                "Planned teammate workflow: choose a versioned Terps vehicle and "
+                "controller, drive a timed session against a ghost, save the "
+                "complete run, and generate a comparison report. Recorded control "
+                "inputs would then replay through the engineering model with "
+                "defined numerical agreement tolerances."
+            ),
+            justify="left",
+            anchor="w",
+            wraplength=760,
+            font=FONT,
+        ).grid(row=1, column=0, sticky="ew", pady=(0, 16))
+        tk.Label(
+            parent,
+            text="Current state",
+            font=FONT_BOLD,
+            anchor="w",
+        ).grid(row=2, column=0, sticky="ew", pady=(0, 5))
+        tk.Label(
+            parent,
+            text=(
+                "The desktop app can compare car profiles and save modeled lap "
+                "records. Interactive driving, a live ghost, controller versions, "
+                "complete session capture, and an end-to-end replay gate are not "
+                "implemented in this tab yet."
+            ),
+            justify="left",
+            anchor="w",
+            wraplength=760,
+            font=FONT,
+        ).grid(row=3, column=0, sticky="ew", pady=(0, 16))
+        tk.Button(
+            parent, text="Start timed session (not available)", state="disabled",
+            relief="raised", bd=1,
+        ).grid(row=4, column=0, sticky="w")
+
+    def _set_driver_run(
+        self, name: str, result: Any, *, driving_mode: str = "Centerline",
+        path_track: Any = None,
+    ) -> None:
+        """Load a solved lap for lightweight, station-aligned map playback.
+
+        ``path_track`` lets another controller supply its own displayed x/y
+        geometry.  The result must have aligned time, distance, speed and
+        lateral-acceleration telemetry.  This does not synthesize a pose from
+        the vehicle dynamics.
+        """
+
+        self._pause_driver_playback()
+        self._driver_playback_time_s = 0.0
+        try:
+            if result.telemetry is None:
+                raise ValueError("no lap telemetry was recorded")
+            self.driver_playback = DriverPlayback(
+                path_track if path_track is not None else self.track,
+                result.telemetry,
+            )
+        except ValueError as error:
+            self.driver_playback = None
+            self.driver_run_label.set(f"Playback unavailable: {error}")
+            if self.driver_play_button is not None:
+                self.driver_play_button.configure(state="disabled")
+            self._draw_driver_view()
+            return
+        self.driver_run_label.set(f"{driving_mode} · {name}")
+        if self.driver_play_button is not None:
+            self.driver_play_button.configure(state="normal")
+        self._render_driver_frame()
+
+    def _activate_driver_playback(
+        self, name: str, result: Any, *, driving_mode: str = "Centerline",
+        path_track: Any = None,
+    ) -> None:
+        """Show and play a just-completed modeled lap at human viewing speed."""
+
+        self._set_driver_run(
+            name, result, driving_mode=driving_mode, path_track=path_track,
+        )
+        if self.driver_playback is not None:
+            self._switch_tab("Driver view")
+            self._toggle_driver_playback()
+
+    def _toggle_driver_playback(self) -> None:
+        if self.driver_playback is None:
+            return
+        if self._driver_playing:
+            self._pause_driver_playback()
+            return
+        if self._driver_playback_time_s >= self.driver_playback.duration_s:
+            self._driver_playback_time_s = 0.0
+        self._driver_playing = True
+        self._driver_last_clock_s = time.perf_counter()
+        if self.driver_play_button is not None:
+            self.driver_play_button.configure(text="Pause")
+        self._driver_tick()
+
+    def _pause_driver_playback(self) -> None:
+        self._driver_playing = False
+        if self._driver_after_id is not None:
+            self.root.after_cancel(self._driver_after_id)
+            self._driver_after_id = None
+        if self.driver_play_button is not None:
+            self.driver_play_button.configure(text="Play")
+
+    def _driver_tick(self) -> None:
+        self._driver_after_id = None
+        if not self._driver_playing or self.driver_playback is None:
+            return
+        current = time.perf_counter()
+        playback_rate = float(self.driver_speed_var.get().replace("×", ""))
+        self._driver_playback_time_s = min(
+            self.driver_playback.duration_s,
+            self._driver_playback_time_s
+            + max(current - self._driver_last_clock_s, 0.0) * playback_rate,
+        )
+        self._driver_last_clock_s = current
+        self._render_driver_frame()
+        if self._driver_playback_time_s >= self.driver_playback.duration_s:
+            self._pause_driver_playback()
+        else:
+            self._driver_after_id = self.root.after(50, self._driver_tick)
+
+    def _reset_driver_playback(self) -> None:
+        self._pause_driver_playback()
+        self._driver_playback_time_s = 0.0
+        self._render_driver_frame()
+
+    def _on_driver_scrub(self, value: str) -> None:
+        if self._driver_updating_scale or self.driver_playback is None:
+            return
+        self._pause_driver_playback()
+        self._driver_playback_time_s = (
+            self.driver_playback.duration_s * float(value) / 1000.0
+        )
+        self._render_driver_frame()
+
+    def _zoom_driver_view(self, event: Any) -> None:
+        factor = 0.8 if event.delta > 0 else 1.25
+        self._driver_look_ahead_m = min(
+            180.0, max(30.0, self._driver_look_ahead_m * factor)
+        )
+        self._draw_driver_view()
+
+    def _render_driver_frame(self) -> None:
+        playback = self.driver_playback
+        if playback is None:
+            return
+        frame = playback.frame_at(self._driver_playback_time_s)
+        self.driver_values["time"].set(f"{frame.time_s:.2f} / {playback.duration_s:.2f}")
+        self.driver_values["distance"].set(
+            f"{frame.distance_m:.1f} / {playback.track.length_m:.1f}"
+        )
+        self.driver_values["speed"].set(f"{frame.speed_mps * 3.6:.1f}")
+        self.driver_values["lateral"].set(
+            f"{frame.lateral_acceleration_mps2 / 9.80665:+.2f}"
+        )
+        self.driver_values["heading"].set(
+            f"{float(np.degrees(frame.course_heading_rad)):+.1f}"
+        )
+        self._driver_updating_scale = True
+        self.driver_progress_var.set(
+            1000.0 * frame.time_s / playback.duration_s
+            if playback.duration_s > 0 else 0.0
+        )
+        self._driver_updating_scale = False
+        self._draw_driver_view()
+
+    def _draw_driver_view(self) -> None:
+        canvas = self.driver_canvas
+        if canvas is None:
+            return
+        background, foreground = self._theme_colors()
+        canvas.configure(background=background, highlightbackground=foreground)
+        canvas.delete("all")
+        width = max(canvas.winfo_width(), 200)
+        height = max(canvas.winfo_height(), 200)
+        playback = self.driver_playback
+        if playback is None:
+            canvas.create_text(
+                width / 2, height / 2,
+                text="Run a lap, then play its distance-aligned map view",
+                fill=foreground, font=FONT, width=width - 30,
+            )
+            return
+        frame = playback.frame_at(self._driver_playback_time_s)
+        ahead_m = self._driver_look_ahead_m
+        behind_m = ahead_m * 0.25
+        scale = height * 0.80 / (ahead_m + behind_m)
+        origin_x = width / 2.0
+        origin_y = height * 0.78
+        samples = playback.local_path_m(
+            frame, behind_m=behind_m, ahead_m=ahead_m,
+            spacing_m=max(0.75, ahead_m / 100.0),
+        )
+        coords: list[float] = []
+        for right_m, forward_m in samples:
+            coords.extend((origin_x + right_m * scale, origin_y - forward_m * scale))
+        if len(coords) >= 4:
+            canvas.create_line(*coords, fill=foreground, width=2, smooth=False)
+        # The triangular marker stays fixed; the displayed course rotates.
+        canvas.create_polygon(
+            origin_x, origin_y - 13,
+            origin_x - 9, origin_y + 11,
+            origin_x + 9, origin_y + 11,
+            outline=foreground, fill=background, width=2,
+        )
+        canvas.create_text(
+            12, 12, text="FORWARD ↑", anchor="nw", fill=foreground,
+            font=FONT_BOLD,
+        )
+        canvas.create_text(
+            width - 12, 12, text="MAP LINE ONLY", anchor="ne", fill=foreground,
+            font=("Consolas", 9),
+        )
+        canvas.create_text(
+            12, height - 12,
+            text=f"Look-ahead {ahead_m:.0f} m · wheel to zoom",
+            anchor="sw", fill=foreground, font=("Consolas", 9),
+        )
+
     def _theme_colors(self) -> tuple[str, str]:
         return ("#000000", "#ffffff") if self.is_dark.get() else ("#ffffff", "#000000")
 
@@ -695,8 +1168,14 @@ class LapSimDesktop:
             if widget.winfo_class() in {"Button", "Checkbutton"}:
                 options["activebackground"] = foreground
                 options["activeforeground"] = background
+            if widget.winfo_class() == "Button":
+                options["disabledforeground"] = foreground
             if widget.winfo_class() == "Checkbutton":
                 options["selectcolor"] = background
+            if widget.winfo_class() == "Scale":
+                options["troughcolor"] = background
+                options["activebackground"] = foreground
+                options["highlightbackground"] = foreground
             if widget.winfo_class() in {"Listbox", "Text"}:
                 options["selectbackground"] = foreground
                 options["selectforeground"] = background
@@ -709,7 +1188,9 @@ class LapSimDesktop:
                 widget.configure(**options)
             except tk.TclError:
                 pass
+        self._switch_tab(self._active_tab)
         self._draw_plots(preserve_course_view=True)
+        self._draw_driver_view()
 
     def _draw_plots(self, *, preserve_course_view: bool = False) -> None:
         if self.figure is None or self.canvas is None:
@@ -729,7 +1210,23 @@ class LapSimDesktop:
 
         x = np.asarray(self.track.x_m, dtype=float)
         y = np.asarray(self.track.y_m, dtype=float)
-        self.course_ax.plot(x, y, color=foreground, linewidth=1.4)
+        if self._selected_path_track is None:
+            self.course_ax.plot(x, y, color=foreground, linewidth=1.4)
+        else:
+            selected_x = np.asarray(self._selected_path_track.x_m, dtype=float)
+            selected_y = np.asarray(self._selected_path_track.y_m, dtype=float)
+            self.course_ax.plot(
+                x, y, color=foreground, linewidth=1.0, linestyle="--",
+                label="Source map",
+            )
+            self.course_ax.plot(
+                selected_x, selected_y, color=foreground, linewidth=1.7,
+                label="Selected model path",
+            )
+            self.course_ax.legend(
+                frameon=False, labelcolor=foreground, facecolor=background,
+                fontsize=8,
+            )
         self.course_ax.plot(
             [x[0]],
             [y[0]],
@@ -740,7 +1237,9 @@ class LapSimDesktop:
             linestyle="none",
         )
         self.course_ax.set_title(
-            f"Top-down course · {self.track.length_m:.0f} m",
+            (f"Top-down source map · {self.track.length_m:.0f} m"
+             if self._selected_path_track is None else
+             f"Top-down model path · {self._selected_path_track.length_m:.0f} m"),
             color=foreground,
             loc="left",
             fontsize=11,
@@ -904,6 +1403,31 @@ class LapSimDesktop:
             raise ValueError("Enter valid finite car values in every editable field.") from error
         return setup, solver_step_m, torque_fraction
 
+    def _ai_mode_selected(self) -> bool:
+        return self.driving_mode_var.get() == "AI racing line (experimental)"
+
+    def _on_driving_mode_change(self) -> None:
+        state = "normal" if self._ai_mode_selected() and not self.run_in_progress else "disabled"
+        for entry in self.ai_entries:
+            entry.configure(state=state)
+        if not self._ai_mode_selected() and self.ai_output_box is not None:
+            self.ai_output_box.pack_forget()
+
+    def _read_ai_assumptions(self) -> tuple[float, float, float]:
+        try:
+            half_width = float(self.ai_half_width_var.get())
+            vehicle_width = float(self.ai_vehicle_width_var.get())
+            margin = float(self.ai_margin_var.get())
+        except ValueError as error:
+            raise ValueError("Enter numeric AI corridor and vehicle-width assumptions.") from error
+        if not all(np.isfinite(value) for value in (half_width, vehicle_width, margin)):
+            raise ValueError("AI corridor assumptions must be finite.")
+        if half_width <= 0 or vehicle_width <= 0 or margin < 0:
+            raise ValueError("AI half-width and vehicle width must be positive; margin cannot be negative.")
+        if half_width <= 0.5 * vehicle_width + margin:
+            raise ValueError("Assumed half-width must exceed half the vehicle width plus margin.")
+        return half_width, vehicle_width, margin
+
     def _set_busy(self, busy: bool) -> None:
         self.run_in_progress = busy
         state = "disabled" if busy else "normal"
@@ -914,6 +1438,7 @@ class LapSimDesktop:
         self.compare_b_menu.configure(state=state)
         self.save_profile_button.configure(state=state)
         self.delete_profile_button.configure(state=state)
+        self.driving_mode_menu.configure(state=state)
         editable = (
             self.profile_display_to_id.get(self.profile_var.get()) == "prius_2026_le"
             or self.profile_display_to_id.get(self.profile_var.get()) in self.saved_profiles
@@ -922,6 +1447,7 @@ class LapSimDesktop:
             entry.configure(
                 state="disabled" if busy or (key in CAR_INPUT_KEYS and not editable) else "normal"
             )
+        self._on_driving_mode_change()
 
     def _vehicle_for_profile(
         self, profile_id: str, setup: VehicleSetup | None
@@ -937,18 +1463,21 @@ class LapSimDesktop:
         self, *, result: Any, vehicle: Any, manifest: Any,
         solver_track: Any, profile_id: str, profile_name: str,
         setup: VehicleSetup | None, step_m: float, torque_fraction: float,
+        track_id: str = "team_endurance_fused_gnss_imu",
+        path_planning: dict[str, Any] | None = None,
     ) -> str:
         """Persist the exact effective setup and aligned lap telemetry."""
 
         settings = LapRunSettings.from_track(
             solver_track,
-            track_id="team_endurance_fused_gnss_imu",
+            track_id=track_id,
             solver_step_m=step_m,
             solver_settings=path_solver_settings(vehicle),
             torque_request_fraction=torque_fraction,
             endurance_config=endurance_run_config(vehicle),
             profile_id=profile_id,
             profile_label=profile_name,
+            path_planning=path_planning,
         )
         default_prius = VehicleSetup(torque_request_fraction=torque_fraction)
         overrides = (
@@ -975,19 +1504,26 @@ class LapSimDesktop:
             return
         try:
             setup, step_m, torque_fraction = self._read_run_inputs()
+            ai_assumptions = self._read_ai_assumptions() if self._ai_mode_selected() else None
         except ValueError as error:
             messagebox.showerror("Check vehicle inputs", str(error), parent=self.root)
             return
         profile_id = self.profile_display_to_id[self.profile_var.get()]
         profile_name = self.profile_id_to_display[profile_id]
+        if ai_assumptions is not None:
+            self._path_comparison = None
+            if self.ai_compare_button is not None:
+                self.ai_compare_button.configure(state="disabled")
         self._set_busy(True)
         self.run_started_at = time.perf_counter()
         self.status_text.set(
-            f"Calculating {profile_name} at {step_m:g} m spacing…"
+            f"Calculating {profile_name}"
+            + (" with experimental AI path…" if ai_assumptions else f" at {step_m:g} m spacing…")
         )
         worker = threading.Thread(
-            target=self._calculate_single,
-            args=(profile_id, profile_name, setup, step_m, torque_fraction),
+            target=self._calculate_ai_single if ai_assumptions else self._calculate_single,
+            args=(profile_id, profile_name, setup, step_m, torque_fraction)
+                 + ((ai_assumptions,) if ai_assumptions else ()),
             daemon=True,
         )
         worker.start()
@@ -1053,6 +1589,134 @@ class LapSimDesktop:
         except Exception as error:
             self.result_queue.put(("single", None, error))
 
+    def _calculate_ai_single(
+        self,
+        profile_id: str,
+        profile_name: str,
+        setup: VehicleSetup | None,
+        step_m: float,
+        torque_fraction: float,
+        assumptions: tuple[float, float, float],
+    ) -> None:
+        """Compare geometry-derived paths without changing the default lap."""
+
+        try:
+            # Lazy import keeps the centerline button free of optimization work.
+            from lapsim.optimization.racing_line import (
+                RacingLinePlanner, TrackCorridor, compare_lines_with_lap_model,
+            )
+
+            half_width_m, vehicle_width_m, safety_margin_m = assumptions
+            vehicle, manifest = self._vehicle_for_profile(profile_id, setup)
+            corridor = TrackCorridor.constant(
+                self.track,
+                left_width_m=half_width_m,
+                right_width_m=half_width_m,
+                vehicle_width_m=vehicle_width_m,
+                safety_margin_m=safety_margin_m,
+                source="user-assumed uniform half-width; no surveyed boundaries",
+            )
+            planner = RacingLinePlanner()
+            plan = planner.plan(self.track, corridor)
+            comparison = compare_lines_with_lap_model(
+                vehicle, plan, torque_request_fraction=torque_fraction,
+            )
+            selected_mode = comparison.selected_mode
+            selected_run = comparison.selected_run
+            selected_track = comparison.selected_track
+            baseline_valid = comparison.baseline_time_s is not None
+            if (
+                not baseline_valid
+                and comparison.candidate_run is not None
+                and comparison.candidate_run.completed
+            ):
+                # Show the completed candidate, but never call it a time gain.
+                selected_mode = "candidate_only_baseline_failed"
+                selected_run = comparison.candidate_run
+                selected_track = plan.candidate_track
+            if selected_run is None:
+                # Preserve a failed attempt for diagnosis when the simulator
+                # returned a run object for at least one path.
+                selected_run = comparison.baseline_run or comparison.candidate_run
+                selected_track = (
+                    plan.baseline_track if comparison.baseline_run is not None
+                    else plan.candidate_track
+                )
+                selected_mode = "no_completed_path"
+            if selected_run is None:
+                raise ValueError(
+                    "Neither geometric path returned a lap record: "
+                    f"centerline={comparison.baseline_error}; "
+                    f"candidate={comparison.candidate_error}"
+                )
+            source_geometry = {
+                "distance_m": self.track.distance_m,
+                "x_m": self.track.x_m,
+                "y_m": self.track.y_m,
+                "curvature_per_m": self.track.curvature_per_m,
+            }
+            source_hash = sha256(
+                json.dumps(source_geometry, sort_keys=True, separators=(",", ":"),
+                           allow_nan=False).encode("utf-8")
+            ).hexdigest()
+            path_planning = {
+                "mode": "experimental_racing_line",
+                "algorithm": "periodic_cubic_minimum_curvature_slsqp_v1",
+                "selected_mode": selected_mode,
+                "comparison_is_valid": (
+                    baseline_valid and comparison.candidate_time_s is not None
+                ),
+                "source_geometry_sha256": source_hash,
+                "user_requested_centerline_step_m": step_m,
+                "planner_sample_spacing_m": planner.sample_spacing_m,
+                "actual_maximum_cell_length_m": max(selected_track.cell_length_m),
+                "planner_control_count": planner.control_count,
+                "planner_smoothing_m": planner.smoothing_m,
+                "planner_maximum_iterations": planner.maximum_iterations,
+                "planner_length_penalty": planner.length_penalty,
+                "corridor": {
+                    "source": corridor.source,
+                    "left_half_width_m": half_width_m,
+                    "right_half_width_m": half_width_m,
+                    "vehicle_width_m": vehicle_width_m,
+                    "safety_margin_m": safety_margin_m,
+                },
+                "baseline_lap_time_s": comparison.baseline_time_s,
+                "candidate_lap_time_s": comparison.candidate_time_s,
+                "baseline_error": comparison.baseline_error,
+                "candidate_error": comparison.candidate_error,
+                "baseline_length_m": plan.baseline_track.length_m,
+                "candidate_length_m": plan.candidate_track.length_m,
+                "max_abs_offset_m": plan.max_abs_offset_m,
+                "max_constraint_violation_m": plan.max_constraint_violation_m,
+                "source_closure_error_m": plan.source_closure_error_m,
+                "source_vs_processed_length_m": plan.source_vs_processed_length_m,
+                "source_vs_processed_length_fraction": plan.source_vs_processed_length_fraction,
+                "processing_shift_max_m": plan.processing_shift_max_m,
+                "planner_status": plan.status,
+                "planner_message": plan.message,
+                "planner_objective_evaluations": plan.objective_evaluations,
+                "planner_compute_time_s": plan.compute_time_s,
+                "lap_comparison_compute_time_s": comparison.compute_time_s,
+            }
+            run_id = self._save_run_record(
+                result=selected_run, vehicle=vehicle, manifest=manifest,
+                solver_track=selected_track, profile_id=profile_id,
+                profile_name=profile_name, setup=setup,
+                step_m=max(selected_track.cell_length_m),
+                torque_fraction=torque_fraction,
+                track_id="team_endurance_xy_derived_assumed_corridor",
+                path_planning=path_planning,
+            )
+            self.result_queue.put((
+                "ai_single",
+                (profile_name, selected_run, selected_track, selected_mode,
+                 plan, comparison, assumptions, run_id),
+                None,
+            ))
+        except Exception as error:
+            self.result_queue.put(("ai_single", None, error))
+
     def _calculate_comparison(
         self,
         plans: tuple[tuple[str, str, VehicleSetup | None], ...],
@@ -1106,7 +1770,9 @@ class LapSimDesktop:
             if result.completed:
                 self._comparison_results = None
                 self._last_result = result
+                self._selected_path_track = None
                 self._show_result(result)
+                self._activate_driver_playback(profile_name, result)
                 self.status_text.set(
                     f"{profile_name} completed in {elapsed_s:.1f} s · "
                     f"{step_m:g} m spacing · saved run {run_id[:12]}"
@@ -1119,11 +1785,82 @@ class LapSimDesktop:
                 messagebox.showerror(
                     "Lap did not complete", str(result.failure_reason), parent=self.root
                 )
+        elif kind == "ai_single":
+            (profile_name, result, selected_track, selected_mode,
+             plan, comparison, assumptions, run_id) = payload
+            self._path_comparison = (plan, comparison, assumptions)
+            if self.ai_compare_button is not None:
+                self.ai_compare_button.configure(
+                    state=("normal" if comparison.baseline_time_s is not None
+                           and comparison.candidate_time_s is not None else "disabled")
+                )
+            if self.ai_output_box is not None and not self.ai_output_box.winfo_manager():
+                self.ai_output_box.pack(fill="x", pady=(0, 8))
+            baseline_time = comparison.baseline_time_s
+            candidate_time = comparison.candidate_time_s
+            values = {
+                "baseline": f"{baseline_time:.3f}" if baseline_time is not None else "—",
+                "candidate": f"{candidate_time:.3f}" if candidate_time is not None else "—",
+                "difference": (
+                    f"{candidate_time - baseline_time:+.3f}"
+                    if baseline_time is not None and candidate_time is not None else "—"
+                ),
+                "length": f"{selected_track.length_m:.1f}",
+            }
+            for key, value in values.items():
+                self.ai_output_values[key].configure(text=value)
+            half_width_m, vehicle_width_m, margin_m = assumptions
+            if selected_mode == "no_completed_path":
+                selection = "Neither geometric path completed. A failed run was saved for diagnosis."
+            elif selected_mode == "candidate":
+                selection = "Faster completed AI path selected."
+            elif selected_mode == "candidate_only_baseline_failed":
+                selection = "AI path completed; geometric centerline failed, so no time gain is established."
+            elif candidate_time is not None:
+                selection = "AI candidate was slower; geometric centerline selected."
+            else:
+                selection = "No completed faster AI candidate; geometric centerline selected."
+            self.ai_result_text.set(
+                f"{selection} Assumed ±{half_width_m:g} m corridor, "
+                f"{vehicle_width_m:g} m car, {margin_m:g} m margin. "
+                f"Max offset {plan.max_abs_offset_m:.2f} m; "
+                f"source map length differs by {plan.source_vs_processed_length_fraction:+.1%}. "
+                "Compare only the two times in this box; the default lap uses "
+                "different source curvature. These are assumed model scenarios."
+            )
+            if result.completed:
+                self._selected_path_track = selected_track
+                self._last_result = result
+                runs = []
+                if comparison.baseline_run is not None and comparison.baseline_run.completed:
+                    runs.append(("Geometric centerline", comparison.baseline_run))
+                if comparison.candidate_run is not None and comparison.candidate_run.completed:
+                    runs.append(("AI candidate", comparison.candidate_run))
+                self._comparison_results = tuple(runs) if len(runs) == 2 else None
+                self._show_result(result, track_length_m=selected_track.length_m)
+                self._activate_driver_playback(
+                    profile_name, result,
+                    driving_mode=("AI path" if selected_mode.startswith("candidate")
+                                  else "Geometric centerline"),
+                    path_track=selected_track,
+                )
+                self.status_text.set(
+                    f"Experimental path calculation: {selection} "
+                    f"{elapsed_s:.1f} s · saved run {run_id[:12]}"
+                )
+            else:
+                detail = comparison.baseline_error or result.failure_reason
+                self.status_text.set(
+                    f"Experimental path did not complete: {detail} · saved run {run_id[:12]}"
+                )
+                messagebox.showerror("Lap did not complete", str(detail), parent=self.root)
         else:
             step_m, torque_fraction, outcomes, run_ids = payload
             self._comparison_results = outcomes
             self._last_result = outcomes[0][1]
+            self._selected_path_track = None
             self._show_result(outcomes[0][1])
+            self._set_driver_run(outcomes[0][0], outcomes[0][1])
             self._show_comparison(outcomes, step_m, torque_fraction, run_ids)
             self.status_text.set(
                 f"Comparison completed in {elapsed_s:.1f} s · "
@@ -1131,8 +1868,10 @@ class LapSimDesktop:
             )
         self.root.after(100, self._poll_result)
 
-    def _show_result(self, result: Any) -> None:
-        summary = summarize_lap(result, self.track.length_m)
+    def _show_result(self, result: Any, *, track_length_m: float | None = None) -> None:
+        summary = summarize_lap(
+            result, self.track.length_m if track_length_m is None else track_length_m
+        )
         values = {
             "lap_time": f"{summary.lap_time_s:.2f}",
             "peak_speed": f"{summary.peak_speed_kph:.1f}",
@@ -1144,6 +1883,74 @@ class LapSimDesktop:
         for key, value in values.items():
             self.output_values[key].configure(text=value)
         self._draw_plots(preserve_course_view=True)
+
+    def _show_path_comparison(self) -> None:
+        if self._path_comparison is None:
+            return
+        plan, comparison, assumptions = self._path_comparison
+        if (
+            comparison.baseline_run is None or not comparison.baseline_run.completed
+            or comparison.candidate_run is None or not comparison.candidate_run.completed
+        ):
+            return
+        baseline = summarize_lap(
+            comparison.baseline_run, plan.baseline_track.length_m
+        )
+        candidate = summarize_lap(
+            comparison.candidate_run, plan.candidate_track.length_m
+        )
+        window = tk.Toplevel(self.root)
+        window.title("LapSim path comparison")
+        window.geometry("800x440")
+        body = tk.Frame(window, padx=12, pady=12)
+        body.pack(fill="both", expand=True)
+        tk.Label(body, text="Experimental path comparison", font=FONT_TITLE).grid(
+            row=0, column=0, columnspan=4, sticky="w", pady=(0, 5)
+        )
+        tk.Label(
+            body,
+            text=(f"One car, one geometric source, assumed ±{assumptions[0]:g} m "
+                  "corridor. Candidate − centerline; negative lap-time Δ is faster."),
+            anchor="w", justify="left", wraplength=755,
+        ).grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 10))
+        for column, heading in enumerate((
+            "Measure", "Geometric centerline", "AI candidate", "Δ candidate − centerline",
+        )):
+            tk.Label(
+                body, text=heading, font=FONT_BOLD, anchor="w", wraplength=180,
+            ).grid(row=2, column=column, sticky="ew", padx=3, pady=3)
+        rows = (
+            ("Lap time (s)", "lap_time_s", 3),
+            ("Path length (m)", "distance_m", 1),
+            ("Peak speed (km/h)", "peak_speed_kph", 1),
+            ("Average speed (km/h)", "average_speed_kph", 1),
+            ("Equivalent energy (kWh)", "pack_energy_kwh", 3),
+            ("Peak lateral (g)", "peak_lateral_g", 2),
+        )
+        for row, (label, field, places) in enumerate(rows, start=3):
+            base_value = getattr(baseline, field)
+            candidate_value = getattr(candidate, field)
+            cells = (
+                label, f"{base_value:.{places}f}",
+                f"{candidate_value:.{places}f}",
+                f"{candidate_value - base_value:+.{places}f}",
+            )
+            for column, value in enumerate(cells):
+                tk.Label(
+                    body, text=value, anchor="w" if column == 0 else "e",
+                    relief="solid", bd=1, padx=6, pady=5,
+                    font=FONT if column == 0 else ("Consolas", 10),
+                ).grid(row=row, column=column, sticky="ew", padx=3, pady=2)
+        for column in range(4):
+            body.grid_columnconfigure(column, weight=1)
+        tk.Label(
+            body,
+            text=("Widths and vehicle envelope are assumptions. The source x/y map "
+                  "and recorded curvature disagree; these times are comparable model "
+                  "scenarios, not validated Terps lap predictions."),
+            anchor="w", justify="left", wraplength=755,
+        ).grid(row=9, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+        self._apply_theme()
 
     def _show_comparison(
         self, outcomes: tuple[tuple[str, Any], ...], step_m: float,
