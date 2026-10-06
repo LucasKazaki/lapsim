@@ -53,11 +53,46 @@ def test_controls_replay_pose_and_detect_changed_state(segment_run):
     assert mismatch.maximum_position_error_m >= 0.009
 
 
+@pytest.mark.parametrize(("field", "altered_value"), [
+    ("time_s", 999.0),
+    ("progress_m", 999.0),
+    ("cross_track_error_m", 999.0),
+    ("heading_error_rad", 1.0),
+    ("local_grip_multiplier", 0.1),
+    ("minimum_assumed_boundary_slack_m", -1.0),
+    ("projection_valid", False),
+])
+def test_replay_rejects_changed_pose_diagnostic(
+    segment_run, field, altered_value,
+):
+    changed_samples = list(segment_run.samples)
+    changed_samples[30] = replace(changed_samples[30], **{field: altered_value})
+    report = replay_pose_driver(replace(segment_run, samples=tuple(changed_samples)))
+    assert not report.passed
+    assert report.status_agrees
+
+
+def test_replay_rejects_changed_terminal_status_and_time_origin(segment_run):
+    changed_status = replay_pose_driver(replace(segment_run, status="maximum_control_steps"))
+    assert not changed_status.passed
+    assert not changed_status.status_agrees
+
+    shifted = replay_pose_driver(replace(
+        segment_run,
+        times_s=tuple(time + 0.1 for time in segment_run.times_s),
+        samples=tuple(replace(sample, time_s=sample.time_s + 0.1)
+                      for sample in segment_run.samples),
+    ))
+    assert not shifted.passed
+    assert shifted.maximum_sample_time_error_s >= 0.099
+
+
 def test_session_budgets_stop_stateful_simulator():
     settings = replace(PoseDriverSettings(), maximum_control_steps=2)
     run = run_pose_driver(settings=settings)
     assert run.status == "maximum_control_steps"
     assert len(run.controls) == 2
+    assert replay_pose_driver(run).passed
 
     per_control = run.internal_substeps // len(run.controls)
     capped = run_pose_driver(settings=replace(
@@ -66,6 +101,7 @@ def test_session_budgets_stop_stateful_simulator():
     assert capped.status == "maximum_internal_substeps"
     assert len(capped.controls) == 1
     assert capped.internal_substeps == per_control
+    assert replay_pose_driver(capped).passed
 
 
 def test_initial_road_and_assumed_footprint_are_checked_before_driving():
@@ -78,6 +114,13 @@ def test_initial_road_and_assumed_footprint_are_checked_before_driving():
     assert len(off_road.controls) == 0
     assert replay_pose_driver(off_road).passed
 
+    road_exited_after_step = run_pose_driver(environment=PlanarEnvironment(
+        road=PlanarRoad(valid_domain=RoadDomain(-1.0, 0.95, -1.0, 1.0)),
+    ))
+    assert road_exited_after_step.status == "road_domain_invalid"
+    assert len(road_exited_after_step.controls) == 1
+    assert replay_pose_driver(road_exited_after_step).passed
+
     circle = SpatialTrack.from_track(
         Track.from_segments((Curve(2.0, 2.0 * pi),)),
         maximum_cell_length_m=0.1,
@@ -89,6 +132,7 @@ def test_initial_road_and_assumed_footprint_are_checked_before_driving():
     assert outside.status == "outside_assumed_corridor"
     assert outside.minimum_assumed_boundary_slack_m < 0.0
     assert len(outside.controls) == 0
+    assert replay_pose_driver(outside).passed
 
 
 def test_lost_local_projection_keeps_trace_aligned(monkeypatch):
@@ -123,6 +167,7 @@ def test_local_grip_changes_closed_loop_commands():
     assert min(sample.local_grip_multiplier for sample in run.samples) == 0.3
     assert any(sum(control.brake_torques_nm) > 0.0
                for control in run.controls[150:])
+    assert replay_pose_driver(run).passed
 
     # Hold pose and speed fixed to isolate the controller's response to the
     # upcoming bend under the lower observed wheel-contact grip.

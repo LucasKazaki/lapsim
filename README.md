@@ -113,9 +113,11 @@ force capacities for a sensitivity run. It applies to centerline, AI, and
 two-car comparisons and is saved with each run for replay. It is an assumed
 uniform multiplier, not a measured wet/dry or local-surface model. Changing
 run inputs clears the previous displayed result and playback. The editable
-**Max cell length** defaults to 1 m and limits generated simulation cells in
-centerline, car-comparison, and optional AI runs. A smaller value uses more
-cells and can take longer; the recorded solver grid shows the actual lengths.
+**Cell size (max)** sits beside Run, defaults to 1 m, and limits generated
+simulation cells in centerline, car-comparison, and optional AI runs. A smaller value uses more
+cells and can take longer. The field shows the resulting solver-cell count or
+an invalid-size hint before a run; the recorded solver grid shows actual
+lengths.
 The fused course is resampled to that step; synthetic and imported coherent
 courses retain their exact source arc cells when the request is at least as
 large as their longest cell. For a finer request, the desktop strictly validates the source's
@@ -127,8 +129,9 @@ survey or evidence of measured course boundaries.
 AI mode independently rebuilds its processed baseline and offset paths until
 their generated cells meet the same requested maximum, or reports its 5,000
 point compute limit. Coherent source arcs can remain finer than the request.
-The fixed **Calculate** strip shows an animated bar during planning and speed
-preparation, then the accepted-cell fraction of the current model pass. It
+The fixed **Calculate** strip labels its **Calculation progress** bar and
+animates it during planning and speed preparation, then shows the accepted-cell
+fraction of the current model pass. It
 does not imply an overall completion percentage for multi-pass AI work.
 See the [desktop guide](docs/simulator_desktop.md) for data and model limits.
 
@@ -169,7 +172,7 @@ two 40 m and two 20 m straights joined by four 12 m radius quarter-circle
 arcs, stored in 0.5 m source cells. Its default AI inputs are an *assumed*
 ±3 m corridor, 1.8 m vehicle width, and 0.2 m safety margin. With the Prius
 benchmark at model torque fraction 0.8 (enter 80 in the desktop's percent box),
-assumed road grip 100%, and the initial **1 m Max cell length**, a current
+assumed road grip 100%, and **Cell size (max)** initially at **1 m**, a current
 speed-periodic model run gave
 **17.009011 s** on the eligible geometric baseline, **15.731759 s** on an
 eligible half-offset path, and **14.637831 s** on the selected 0.975-offset
@@ -188,7 +191,7 @@ The starting ±3 m AI half-width is an editable assumption. It has no surveyed
 cones, measured boundaries, passing zones, or official event layout, and its
 computed times are not competition predictions. The fused team recording
 remains the startup course and **Centerline** remains the default driving path.
-With the built-in Prius, 80% torque request, and initial 1 m Max cell length
+With the built-in Prius, 80% torque request, and **Cell size (max)** initially at 1 m
 on this analytic course, the optional AI comparison selected the full-offset
 path at **60.038711 s** against its eligible processed baseline at
 **60.362615 s**. The **0.323904 s** modeled
@@ -238,12 +241,13 @@ The optional pose preview uses `optimization/pose_driver.py` and the separate
 time-domain four-wheel model. A rear-axle pure-pursuit controller steers toward
 a lookahead point on the coherent synthetic loop, with bounded speed, control
 steps, integration work, and an assumed ±3 m corridor. Its default target is
-**80 m of progress**, not a complete lap. Driver view can play its actual
-simulated planar x/y and heading, labeled **synthetic four-wheel pose
-experiment**; its elapsed time is a pose-model duration, not the engineering
+**80 m of progress**, not a complete lap. Driver view shows its actual
+simulated planar x/y and heading during calculation and can replay it, labeled
+**synthetic four-wheel pose experiment**. Its elapsed time is a pose-model
+duration, not the engineering
 lap time shown by the default solver. The run retains issued controls and
 states in memory for `replay_pose_driver()` to check numerical agreement at
-declared position, heading, velocity, yaw-rate, and wheel-speed tolerances.
+declared state tolerances, as well as recorded pose samples and stop status.
 It is not a validated team-car controller, surveyed-boundary check, saved
 full session, or ghost comparison.
 

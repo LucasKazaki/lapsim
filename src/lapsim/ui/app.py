@@ -18,6 +18,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from lapsim.courses.course_bundle import CourseBundle
+from lapsim.dynamics.planar import PlanarState
 from lapsim.experiments import LapRunSettings, RunRecord, capture_lap_run, default_run_directory
 from lapsim.optimization.pose_driver import PoseDriverRun, PoseDriverSample, run_pose_driver
 from lapsim.profiles import build_vehicle, browse_records, list_profiles
@@ -25,12 +26,13 @@ from lapsim.profiles import build_vehicle, browse_records, list_profiles
 from .comparison import summarize_lap
 from .course_catalog import (
     COURSE_OPTIONS, DEFAULT_COURSE_ID, MAX_SAVED_COURSE_FILES,
+    SYNTHETIC_DEMO_COURSE_ID,
     course_source_metadata, imported_course_spec, load_course,
     load_imported_course_catalog, solver_cell_count_for_course,
     solver_track_for_course,
 )
 from .driver_view import DriverCellDecision, DriverPlayback
-from .pose_driver_playback import PoseDriverPlayback
+from .pose_driver_playback import PoseDriverLivePlayback, PoseDriverPlayback
 from .garage import CAR_INPUT_KEYS, ProfileStore, SavedCarProfile
 from .presets import VehicleSetup, make_prius_benchmark
 from .simulation import (
@@ -256,10 +258,13 @@ class LapSimDesktop:
         self.progress_queue: queue.Queue[tuple[str, str, Any, Any]] = queue.Queue(
             maxsize=1
         )
-        self.pose_progress_queue: queue.Queue[PoseDriverSample] = queue.Queue(maxsize=1)
+        self.pose_progress_queue: queue.Queue[
+            tuple[Any, PoseDriverSample, PlanarState]
+        ] = queue.Queue(maxsize=1)
         self.run_started_at = 0.0
         self.run_in_progress = False
         self.calculation_progress_text = tk.StringVar(value="Calculations · idle")
+        self.cell_count_text = tk.StringVar(value="")
         self._calculation_progress_mode = "idle"
         self._calculation_progress_fraction = 0.0
         self._calculation_progress_tick = 0
@@ -344,6 +349,7 @@ class LapSimDesktop:
             for key, _title, _scale, _format in DRIVER_CELL_BOXES
         }
         self.driver_decision_title_labels: list[tk.Label] = []
+        self.driver_heading_title_label: tk.Label | None = None
         self.driver_decision_title = tk.StringVar(value="Solved cell values")
         self._live_decision: DriverCellDecision | None = None
         self._driver_playing = False
@@ -355,6 +361,7 @@ class LapSimDesktop:
         self._driver_updating_scale = False
         self._driver_look_ahead_m = 80.0
         self._driver_live_mode = False
+        self._pose_live_mode = False
         self._driver_stream_active = False
         self._driver_preview_track: Any = None
         self._driver_live_update_serial = 0
@@ -564,7 +571,6 @@ class LapSimDesktop:
             ("Drag area CdA", "drag_area_m2", "m²"),
             ("Speed limit", "top_speed_kph", "km/h"),
             ("Driver request", "torque_request_percent", "%"),
-            ("Max cell length", "solver_step_m", "m"),
         )
         self.input_entries.clear()
         for row, (label, key, unit) in enumerate(rows, start=2):
@@ -643,7 +649,7 @@ class LapSimDesktop:
             path_box,
             text=("AI mode uses a deterministic path optimizer and an assumed "
                   "uniform corridor. No measured course widths are available. "
-                  "It uses the Max cell length above for its path grid and "
+                  "It uses Cell size (max) in Calculate for its path grid and "
                   "up to four paths, with two "
                   "speed-seam passes per path. Its fourth path can follow "
                   "the selected car's eligible lap times. "
@@ -658,6 +664,30 @@ class LapSimDesktop:
     def _build_run_controls(self, parent: tk.Widget) -> None:
         """Keep the run action and its progress visible while inputs scroll."""
 
+        settings = tk.LabelFrame(
+            parent, text="Calculation settings", font=FONT_BOLD,
+            padx=6, pady=4, bd=1, relief="solid",
+        )
+        settings.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 5))
+        tk.Label(settings, text="Cell size (max)").grid(
+            row=0, column=0, sticky="w", padx=(0, 5),
+        )
+        cell_entry = tk.Entry(
+            settings, textvariable=self.inputs["solver_step_m"], width=10,
+            justify="right", relief="solid", bd=1, font=FONT,
+        )
+        cell_entry.grid(row=0, column=1, sticky="ew")
+        self.entry_by_key["solver_step_m"] = cell_entry
+        tk.Label(settings, text="m").grid(row=0, column=2, sticky="w", padx=(5, 0))
+        tk.Label(settings, textvariable=self.cell_count_text, anchor="w").grid(
+            row=1, column=0, columnspan=3, sticky="ew", pady=(3, 0),
+        )
+        settings.grid_columnconfigure(1, weight=1)
+        self.inputs["solver_step_m"].trace_add(
+            "write", lambda *_change: self._update_cell_count_hint(),
+        )
+        self._update_cell_count_hint()
+
         self.run_button = tk.Button(
             parent,
             text="Run one lap",
@@ -668,7 +698,7 @@ class LapSimDesktop:
             pady=5,
             font=FONT_BOLD,
         )
-        self.run_button.grid(row=0, column=0, sticky="ew", padx=(0, 4), pady=(0, 3))
+        self.run_button.grid(row=1, column=0, sticky="ew", padx=(0, 4), pady=(0, 3))
         self.saved_runs_button = tk.Button(
             parent,
             text="Saved run details",
@@ -680,16 +710,19 @@ class LapSimDesktop:
             pady=5,
             font=FONT,
         )
-        self.saved_runs_button.grid(row=0, column=1, sticky="ew", pady=(0, 3))
+        self.saved_runs_button.grid(row=1, column=1, sticky="ew", pady=(0, 3))
+        tk.Label(parent, text="Calculation progress", anchor="w", font=FONT_BOLD).grid(
+            row=2, column=0, columnspan=2, sticky="ew", pady=(2, 0),
+        )
         tk.Label(
             parent, textvariable=self.calculation_progress_text,
             anchor="w", justify="left", wraplength=350,
-        ).grid(row=1, column=0, columnspan=2, sticky="ew", pady=(3, 2))
+        ).grid(row=3, column=0, columnspan=2, sticky="ew", pady=(3, 2))
         self.calculation_progress_bar = tk.Canvas(
             parent, height=15, bd=1, relief="solid", highlightthickness=0,
         )
         self.calculation_progress_bar.grid(
-            row=2, column=0, columnspan=2, sticky="ew",
+            row=4, column=0, columnspan=2, sticky="ew",
         )
         self.calculation_progress_bar.bind(
             "<Configure>", lambda _event: self._draw_calculation_progress(),
@@ -701,9 +734,24 @@ class LapSimDesktop:
             anchor="w",
             justify="left",
             wraplength=350,
-        ).grid(row=3, column=0, columnspan=2, sticky="ew", pady=(4, 0))
+        ).grid(row=5, column=0, columnspan=2, sticky="ew", pady=(4, 0))
         parent.grid_columnconfigure(0, weight=1)
         parent.grid_columnconfigure(1, weight=1)
+
+    def _update_cell_count_hint(self) -> None:
+        try:
+            cell_size_m = float(self.inputs["solver_step_m"].get())
+            if not np.isfinite(cell_size_m) or not 0.0 < cell_size_m <= self.track.length_m:
+                raise ValueError("invalid cell size")
+            count = solver_cell_count_for_course(
+                self.course_spec.course_id, self.track, cell_size_m,
+            )
+            if count > 5000:
+                raise ValueError("requested solver grid exceeds the compute cap")
+        except (ValueError, OverflowError):
+            self.cell_count_text.set("Enter a valid size within the 5,000-cell limit")
+        else:
+            self.cell_count_text.set(f"{count:,} solver cells on this course")
 
     def _set_displayed_run_records(
         self, records: tuple[tuple[str, str], ...],
@@ -1057,6 +1105,7 @@ class LapSimDesktop:
         self.course_spec = selected
         self.course_var.set(selected.label)
         self.track = track
+        self._update_cell_count_hint()
         self.course_source_json = source_json
         self.course_geometry_audit = track.geometry_audit()
         self.ai_half_width_var.set(f"{selected.default_ai_half_width_m:g}")
@@ -1069,6 +1118,7 @@ class LapSimDesktop:
         self._set_driver_box_mode(pose=False)
         self.driver_decision_title.set("Solved cell values")
         self._driver_live_mode = False
+        self._pose_live_mode = False
         self._driver_stream_active = False
         self._driver_preview_track = None
         self._driver_live_update_serial += 1
@@ -1456,7 +1506,10 @@ class LapSimDesktop:
             box = tk.Frame(measures, relief="solid", bd=1, padx=7, pady=5)
             box.grid(row=0, column=column, sticky="ew", padx=(0, 4))
             measures.grid_columnconfigure(column, weight=1)
-            tk.Label(box, text=title, font=("Segoe UI", 8)).pack(anchor="w")
+            title_label = tk.Label(box, text=title, font=("Segoe UI", 8))
+            title_label.pack(anchor="w")
+            if key == "heading":
+                self.driver_heading_title_label = title_label
             tk.Label(
                 box, textvariable=self.driver_values[key], font=("Consolas", 12),
                 anchor="w",
@@ -1579,6 +1632,7 @@ class LapSimDesktop:
         self._set_driver_box_mode(pose=False)
         self.driver_decision_title.set("Solved cell values")
         self._driver_live_mode = False
+        self._pose_live_mode = False
         self._driver_stream_active = False
         self._driver_preview_track = None
         self._driver_live_update_serial += 1
@@ -1606,6 +1660,10 @@ class LapSimDesktop:
         self._render_driver_frame()
 
     def _set_driver_box_mode(self, *, pose: bool) -> None:
+        if self.driver_heading_title_label is not None:
+            self.driver_heading_title_label.configure(
+                text="VEHICLE HEADING (°)" if pose else "MAP HEADING (°)"
+            )
         titles = POSE_DRIVER_BOX_TITLES if pose else tuple(
             item[1] for item in DRIVER_CELL_BOXES
         )
@@ -1618,6 +1676,7 @@ class LapSimDesktop:
         self._pause_driver_playback()
         self._live_decision = None
         self._driver_live_mode = False
+        self._pose_live_mode = False
         self._driver_stream_active = False
         self._driver_preview_track = None
         self._driver_live_update_serial += 1
@@ -1761,11 +1820,12 @@ class LapSimDesktop:
         self.driver_values["speed"].set(f"{frame.speed_mps * 3.6:.1f}")
         self.driver_values["lateral"].set(
             f"{frame.lateral_acceleration_mps2 / 9.80665:+.2f}"
+            if np.isfinite(frame.lateral_acceleration_mps2) else "—"
         )
         self.driver_values["heading"].set(
             f"{float(np.degrees(frame.course_heading_rad)):+.1f}"
         )
-        if isinstance(playback, PoseDriverPlayback):
+        if isinstance(playback, (PoseDriverPlayback, PoseDriverLivePlayback)):
             pose_values = playback.control_values_at(self._driver_playback_time_s)
             for index, (key, _title, _scale, _format) in enumerate(DRIVER_CELL_BOXES):
                 raw = pose_values[index] if pose_values is not None else None
@@ -1810,7 +1870,9 @@ class LapSimDesktop:
         if playback is None:
             canvas.create_text(
                 width / 2, height / 2,
-                text=(("Planning path and speed limits..."
+                text=("Waiting for the first synthetic pose step..."
+                      if self._pose_live_mode else
+                      ("Planning path and speed limits..."
                        if self._driver_stream_active else
                        "No accepted model step is available")
                       if self._driver_live_mode else
@@ -1849,7 +1911,9 @@ class LapSimDesktop:
         )
         canvas.create_text(
             width - 12, 12,
-            text=(("LIVE MODEL STEP" if self._driver_stream_active
+            text=("LIVE SYNTHETIC POSE · ASSUMED PATH"
+                  if isinstance(playback, PoseDriverLivePlayback) else
+                  ("LIVE MODEL STEP" if self._driver_stream_active
                    else "LAST ACCEPTED STEP") + " · REFERENCE PATH"
                   if self._driver_live_mode else
                   "SYNTHETIC POSE MODEL · EXPERIMENT"
@@ -2276,6 +2340,7 @@ class LapSimDesktop:
         self.driver_playback = None
         self._live_decision = None
         self._driver_live_mode = False
+        self._pose_live_mode = False
         self._driver_stream_active = False
         self._last_result = None
         self._set_displayed_run_records(())
@@ -2424,6 +2489,7 @@ class LapSimDesktop:
         self.driver_decision_title.set("Last accepted cell · model values")
         self._driver_playback_time_s = 0.0
         self._driver_live_mode = True
+        self._pose_live_mode = False
         self._driver_stream_active = True
         self._driver_preview_track = self.track
         self._driver_live_update_serial += 1
@@ -2611,6 +2677,28 @@ class LapSimDesktop:
         self.progress_queue = queue.Queue(maxsize=1)
         self.pose_progress_queue = queue.Queue(maxsize=1)
         self._set_busy(True)
+        self._set_driver_replay_options({}, selected="—")
+        self._pause_driver_playback()
+        self.driver_playback = None
+        self._live_decision = None
+        self._driver_playback_time_s = 0.0
+        self._driver_live_mode = True
+        self._pose_live_mode = True
+        self._driver_stream_active = True
+        self._driver_preview_track = None
+        self._driver_live_update_serial += 1
+        self.driver_note_var.set(POSE_DRIVER_NOTE)
+        self._set_driver_box_mode(pose=True)
+        self.driver_decision_title.set("Live pose and tracking · controls after replay")
+        self.driver_run_label.set("Synthetic pose model · preparing 80 m preview")
+        self.driver_progress_var.set(0.0)
+        self.driver_progress.configure(state="disabled")
+        if self.driver_play_button is not None:
+            self.driver_play_button.configure(state="disabled")
+        for value in self.driver_values.values():
+            value.set("—")
+        for value in self.driver_decision_values.values():
+            value.set("—")
         self._set_calculation_progress(
             "indeterminate", "Synthetic pose preview · preparing four-wheel model",
         )
@@ -2618,24 +2706,29 @@ class LapSimDesktop:
             "Running 80 m synthetic pose preview; engineering lap outputs are separate."
         )
         self.run_started_at = time.perf_counter()
+        self._switch_tab("Driver view")
+        self._draw_driver_view()
         threading.Thread(target=self._calculate_pose_preview, daemon=True).start()
 
     def _calculate_pose_preview(self) -> None:
         try:
-            def on_progress(sample: PoseDriverSample, _state: Any) -> None:
+            track = load_course(SYNTHETIC_DEMO_COURSE_ID)
+
+            def on_progress(sample: PoseDriverSample, state: PlanarState) -> None:
+                latest = (track, sample, state)
                 try:
-                    self.pose_progress_queue.put_nowait(sample)
+                    self.pose_progress_queue.put_nowait(latest)
                 except queue.Full:
                     try:
                         self.pose_progress_queue.get_nowait()
                     except queue.Empty:
                         pass
                     try:
-                        self.pose_progress_queue.put_nowait(sample)
+                        self.pose_progress_queue.put_nowait(latest)
                     except queue.Full:
                         pass
 
-            run = run_pose_driver(progress_callback=on_progress)
+            run = run_pose_driver(track=track, progress_callback=on_progress)
             self.result_queue.put(("pose_preview", run, None))
         except Exception as error:
             self.result_queue.put(("pose_preview", None, error))
@@ -2647,16 +2740,23 @@ class LapSimDesktop:
                 latest = self.pose_progress_queue.get_nowait()
             except queue.Empty:
                 break
-        if latest is None or not self.run_in_progress:
+        if latest is None or not self.run_in_progress or not self._pose_live_mode:
             return
+        track, sample, state = latest
         target_m = 80.0
-        fraction = min(max(latest.progress_m / target_m, 0.0), 1.0)
+        fraction = min(max(sample.progress_m / target_m, 0.0), 1.0)
         self._set_calculation_progress(
             "determinate",
-            f"Synthetic pose preview · {latest.progress_m:.1f}/{target_m:.0f} m "
+            f"Synthetic pose preview · {sample.progress_m:.1f}/{target_m:.0f} m "
             f"({fraction:.0%} of target distance)",
             fraction=fraction,
         )
+        self.driver_playback = PoseDriverLivePlayback(track, sample, state)
+        self._driver_playback_time_s = sample.time_s
+        self.driver_run_label.set(
+            f"Synthetic pose model · live · {sample.progress_m:.1f}/{target_m:.0f} m"
+        )
+        self._render_driver_frame()
 
     def _start_run(self) -> None:
         if self.run_in_progress:
@@ -3291,7 +3391,13 @@ class LapSimDesktop:
 
         if kind == "pose_preview":
             self._set_busy(False)
+            self._pose_live_mode = False
+            self._driver_stream_active = False
             if error is not None:
+                self._driver_live_mode = False
+                self.driver_playback = None
+                self.driver_run_label.set("Synthetic pose preview failed")
+                self._draw_driver_view()
                 self._set_calculation_progress(
                     "stopped", "Synthetic pose preview stopped · see status",
                 )
@@ -3322,6 +3428,13 @@ class LapSimDesktop:
                 )
                 if len(run.states) > 1:
                     self._activate_pose_preview(run)
+                else:
+                    self._driver_live_mode = False
+                    self.driver_playback = None
+                    self.driver_run_label.set(
+                        f"Synthetic pose model · {run.status} · no driven step"
+                    )
+                    self._draw_driver_view()
             self._schedule_after(100, self._poll_result)
             return
 

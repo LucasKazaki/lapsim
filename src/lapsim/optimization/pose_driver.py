@@ -155,6 +155,12 @@ class PoseReplayTolerances:
     body_velocity_mps: float = 1e-8
     yaw_rate_rad_s: float = 1e-8
     wheel_speed_rad_s: float = 1e-8
+    sample_time_s: float = 1e-9
+    progress_m: float = 1e-8
+    cross_track_m: float = 1e-8
+    sample_heading_rad: float = 1e-8
+    local_grip_multiplier: float = 1e-10
+    assumed_boundary_slack_m: float = 1e-8
 
     def __post_init__(self) -> None:
         for name in self.__dataclass_fields__:
@@ -173,6 +179,14 @@ class PoseReplayReport:
     maximum_yaw_rate_error_rad_s: float
     maximum_wheel_speed_error_rad_s: float
     road_valid_agrees: bool
+    maximum_sample_time_error_s: float
+    maximum_progress_error_m: float
+    maximum_cross_track_error_m: float
+    maximum_sample_heading_error_rad: float
+    maximum_local_grip_error: float
+    maximum_assumed_boundary_slack_error_m: float
+    projection_valid_agrees: bool
+    status_agrees: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -494,7 +508,11 @@ def run_pose_driver(
 def replay_pose_driver(
     run: PoseDriverRun, *, tolerances: PoseReplayTolerances | None = None,
 ) -> PoseReplayReport:
-    """Reintegrate saved controls and compare every recorded planar state."""
+    """Reintegrate controls and check recorded pose-derived diagnostics.
+
+    This checks the declared synthetic track, car, and road inputs. It does not
+    establish that those inputs describe a measured road or vehicle.
+    """
 
     if not isinstance(run, PoseDriverRun):
         raise TypeError("run must be PoseDriverRun")
@@ -502,8 +520,9 @@ def replay_pose_driver(
     if not isinstance(limits, PoseReplayTolerances):
         raise TypeError("tolerances must be PoseReplayTolerances")
     if (len(run.states) != len(run.controls) + 1 or
-            len(run.times_s) != len(run.states)):
-        raise ValueError("recorded controls and states are not aligned")
+            len(run.times_s) != len(run.states) or
+            len(run.samples) != len(run.states)):
+        raise ValueError("recorded controls, states, times, and samples are not aligned")
     if len(run.controls) > run.settings.maximum_control_steps:
         raise ValueError("recorded controls exceed the declared step budget")
     if run.times_s[-1] > run.settings.maximum_simulated_time_s + 1e-9:
@@ -511,6 +530,29 @@ def replay_pose_driver(
     simulator = PlanarSimulator(run.vehicle_config, run.states[0],
                                 environment=run.environment)
     max_position = max_heading = max_velocity = max_yaw = max_wheel = 0.0
+    expected_samples: list[PoseDriverSample] = []
+    projection = _project_local(
+        run.track, simulator.state.x_m, simulator.state.y_m, 0.0,
+        run.settings.local_projection_window_m,
+    )
+    initial_slack = _assumed_footprint_slack(
+        run.track, run.vehicle_config, run.settings, simulator.state,
+        projection.station_m,
+    )
+    expected_samples.append(PoseDriverSample(
+        0.0, projection.station_m, projection.cross_track_m,
+        remainder(simulator.state.heading_rad - projection.heading_rad, 2.0 * pi),
+        _conservative_local_grip(run.vehicle_config, run.environment, simulator.state),
+        initial_slack,
+    ))
+    initial_road_valid = _initial_road_valid(
+        run.vehicle_config, run.environment, simulator.state,
+    )
+    terminal_status = (
+        "road_domain_invalid" if not initial_road_valid else
+        "outside_assumed_corridor" if initial_slack < 0.0 else None
+    )
+    stopped_at = 0 if terminal_status is not None else None
     replayed_substeps = 0
     for index, command in enumerate(run.controls, start=1):
         dt_s = run.times_s[index] - run.times_s[index - 1]
@@ -538,12 +580,118 @@ def replay_pose_driver(
                 actual.wheel_speeds_rad_s, expected.wheel_speeds_rad_s,
                 strict=True,
             )))
+        prior_projection = projection
+        try:
+            projection = _project_local(
+                run.track, actual.x_m, actual.y_m,
+                prior_projection.station_m, run.settings.local_projection_window_m,
+            )
+            footprint_slack = _assumed_footprint_slack(
+                run.track, run.vehicle_config, run.settings, actual,
+                projection.station_m,
+            )
+        except ValueError:
+            # Match the driver's retained final state after a lost projection.
+            expected_samples.append(PoseDriverSample(
+                simulator.time_s, prior_projection.station_m,
+                prior_projection.cross_track_m,
+                remainder(actual.heading_rad - prior_projection.heading_rad, 2.0 * pi),
+                _conservative_local_grip(run.vehicle_config, run.environment, actual),
+                float("-inf"), False,
+            ))
+            projection = prior_projection
+            if terminal_status is None:
+                terminal_status, stopped_at = "projection_lost", index
+            continue
+        expected_samples.append(PoseDriverSample(
+            simulator.time_s, projection.station_m, projection.cross_track_m,
+            remainder(actual.heading_rad - projection.heading_rad, 2.0 * pi),
+            _conservative_local_grip(run.vehicle_config, run.environment, actual),
+            footprint_slack,
+        ))
+        if terminal_status is None:
+            if not simulator.road_valid:
+                terminal_status = "road_domain_invalid"
+            elif footprint_slack < 0.0:
+                terminal_status = "outside_assumed_corridor"
+            elif projection.station_m >= run.settings.target_progress_m:
+                terminal_status = "target_reached"
+            if terminal_status is not None:
+                stopped_at = index
     if replayed_substeps != run.internal_substeps:
         raise ValueError("recorded internal-substep count disagrees with controls")
-    road_agrees = (
-        _initial_road_valid(run.vehicle_config, run.environment, run.states[0])
-        and simulator.road_valid
-    ) == run.road_valid
+    road_agrees = (initial_road_valid and simulator.road_valid) == run.road_valid
+
+    # The driver checks these limits before trying another control hold.
+    if terminal_status is None:
+        if len(run.controls) >= run.settings.maximum_control_steps:
+            terminal_status = "maximum_control_steps"
+        elif simulator.time_s + run.settings.output_step_s > (
+            run.settings.maximum_simulated_time_s + 1e-12
+        ):
+            terminal_status = "maximum_simulated_time"
+        elif replayed_substeps + ceil(
+            run.settings.output_step_s / run.vehicle_config.integration_step_limit_s
+        ) > run.settings.maximum_internal_substeps:
+            terminal_status = "maximum_internal_substeps"
+        elif run.status == "projection_lost" or run.status.startswith("model_error: "):
+            try:
+                next_command, _ = _controller(
+                    run.track, run.vehicle_config, run.environment, run.settings,
+                    simulator.state, projection,
+                )
+            except ValueError:
+                terminal_status = "projection_lost"
+            else:
+                if run.status.startswith("model_error: "):
+                    try:
+                        simulator.step(next_command, run.settings.output_step_s)
+                    except (ValueError, ArithmeticError, OverflowError) as error:
+                        terminal_status = f"model_error: {error}"
+
+    def absolute_error(recorded: float, derived: float) -> float:
+        if recorded == derived:
+            return 0.0
+        if isfinite(recorded) and isfinite(derived):
+            return abs(recorded - derived)
+        return float("inf")
+
+    def angular_error(recorded: float, derived: float) -> float:
+        if isfinite(recorded) and isfinite(derived):
+            return abs(remainder(recorded - derived, 2.0 * pi))
+        return 0.0 if recorded == derived else float("inf")
+
+    max_sample_time = max_progress = max_cross_track = 0.0
+    max_sample_heading = max_grip = max_slack = 0.0
+    projection_valid_agrees = True
+    for recorded, derived, recorded_time in zip(
+        run.samples, expected_samples, run.times_s, strict=True,
+    ):
+        max_sample_time = max(
+            max_sample_time,
+            absolute_error(recorded.time_s, derived.time_s),
+            absolute_error(recorded_time, derived.time_s),
+        )
+        max_progress = max(max_progress,
+                           absolute_error(recorded.progress_m, derived.progress_m))
+        max_cross_track = max(max_cross_track, absolute_error(
+            recorded.cross_track_error_m, derived.cross_track_error_m,
+        ))
+        max_sample_heading = max(max_sample_heading, angular_error(
+            recorded.heading_error_rad, derived.heading_error_rad,
+        ))
+        max_grip = max(max_grip, absolute_error(
+            recorded.local_grip_multiplier, derived.local_grip_multiplier,
+        ))
+        max_slack = max(max_slack, absolute_error(
+            recorded.minimum_assumed_boundary_slack_m,
+            derived.minimum_assumed_boundary_slack_m,
+        ))
+        projection_valid_agrees &= (
+            recorded.projection_valid == derived.projection_valid
+        )
+    status_agrees = (run.status == terminal_status and
+                     (stopped_at is None or stopped_at == len(run.controls)))
     return PoseReplayReport(
         passed=(
             max_position <= limits.position_m
@@ -552,6 +700,14 @@ def replay_pose_driver(
             and max_yaw <= limits.yaw_rate_rad_s
             and max_wheel <= limits.wheel_speed_rad_s
             and road_agrees
+            and max_sample_time <= limits.sample_time_s
+            and max_progress <= limits.progress_m
+            and max_cross_track <= limits.cross_track_m
+            and max_sample_heading <= limits.sample_heading_rad
+            and max_grip <= limits.local_grip_multiplier
+            and max_slack <= limits.assumed_boundary_slack_m
+            and projection_valid_agrees
+            and status_agrees
         ),
         state_count=len(run.states),
         maximum_position_error_m=max_position,
@@ -560,6 +716,14 @@ def replay_pose_driver(
         maximum_yaw_rate_error_rad_s=max_yaw,
         maximum_wheel_speed_error_rad_s=max_wheel,
         road_valid_agrees=road_agrees,
+        maximum_sample_time_error_s=max_sample_time,
+        maximum_progress_error_m=max_progress,
+        maximum_cross_track_error_m=max_cross_track,
+        maximum_sample_heading_error_rad=max_sample_heading,
+        maximum_local_grip_error=max_grip,
+        maximum_assumed_boundary_slack_error_m=max_slack,
+        projection_valid_agrees=projection_valid_agrees,
+        status_agrees=status_agrees,
     )
 
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass, replace
-from math import isfinite
+from math import ceil, isfinite
 from numbers import Real
 from pathlib import Path
 
@@ -127,9 +127,17 @@ def resample_track(track: SpatialTrack, maximum_cell_length_m: float = 1.0) -> S
     are interpolated to the solver-cell boundaries.
     """
 
-    if maximum_cell_length_m <= 0.0:
-        raise ValueError("maximum_cell_length_m must be positive")
-    cell_count = int(np.ceil(track.length_m / maximum_cell_length_m))
+    if (
+        isinstance(maximum_cell_length_m, bool)
+        or not isinstance(maximum_cell_length_m, Real)
+        or not isfinite(maximum_cell_length_m)
+        or maximum_cell_length_m <= 0.0
+    ):
+        raise ValueError("maximum_cell_length_m must be finite and positive")
+    requested_cells = track.length_m / maximum_cell_length_m
+    if not isfinite(requested_cells) or requested_cells > 5000:
+        raise ValueError("requested solver grid exceeds the 5000-cell compute cap")
+    cell_count = ceil(requested_cells)
     distances = [
         min(index * maximum_cell_length_m, track.length_m)
         for index in range(cell_count + 1)

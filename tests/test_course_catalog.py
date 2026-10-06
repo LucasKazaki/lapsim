@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import FrozenInstanceError
 from hashlib import sha256
 import json
-from math import pi
+from math import ceil, pi
 
 import pytest
 
@@ -138,10 +138,19 @@ def test_synthetic_solver_grid_keeps_exact_arcs(
         )
 
 
-def test_fused_solver_grid_still_uses_recorded_curvature() -> None:
+@pytest.mark.parametrize("requested_maximum_m", [0.5, 1.0, 2.0, 5.0])
+def test_fused_solver_grid_still_uses_recorded_curvature(
+    requested_maximum_m: float,
+) -> None:
     source = load_course()
-    solver = solver_track_for_course(DEFAULT_COURSE_ID, source, 1.0)
-    assert solver.cell_count == 989
+    solver = solver_track_for_course(
+        DEFAULT_COURSE_ID, source, requested_maximum_m,
+    )
+    assert solver.cell_count == ceil(source.length_m / requested_maximum_m)
+    assert solver.cell_count == solver_cell_count_for_course(
+        DEFAULT_COURSE_ID, source, requested_maximum_m,
+    )
+    assert max(solver.cell_length_m) <= requested_maximum_m + 1e-12
     assert solver.geometry_audit().curvature_signed_turn_rad == pytest.approx(
         source.geometry_audit().curvature_signed_turn_rad
     )

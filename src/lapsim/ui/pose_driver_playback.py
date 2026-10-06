@@ -11,7 +11,11 @@ from math import hypot, isfinite, pi, remainder
 
 import numpy as np
 
-from lapsim.optimization.pose_driver import POSE_MODEL_LABEL, PoseDriverRun
+from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.dynamics.planar import PlanarState
+from lapsim.optimization.pose_driver import (
+    POSE_MODEL_LABEL, PoseDriverRun, PoseDriverSample,
+)
 
 from .driver_view import DriverFrame, DriverPlayback
 
@@ -130,4 +134,54 @@ class PoseDriverPlayback(DriverPlayback):
         )
 
 
-__all__ = ["PoseDriverPlayback"]
+class PoseDriverLivePlayback(DriverPlayback):
+    """One accepted pose state for the live, car-centered viewport.
+
+    The worker sends only its newest state. Controls and acceleration remain
+    unavailable until the completed run provides their recorded channels.
+    """
+
+    display_time_label = "Pose-model time"
+    evidence_label = POSE_MODEL_LABEL
+    has_battery_telemetry = False
+
+    def __init__(
+        self, track: SpatialTrack, sample: PoseDriverSample, state: PlanarState,
+    ) -> None:
+        self.track = track
+        self.track_distance = np.asarray(track.distance_m, dtype=float)
+        self.track_x = np.asarray(track.x_m, dtype=float)
+        self.track_y = np.asarray(track.y_m, dtype=float)
+        self.sample = sample
+        self.state = state
+        self.duration_s = sample.time_s
+
+    def frame_at(self, time_s: float) -> DriverFrame:
+        if not isfinite(time_s):
+            raise ValueError("Time must be finite")
+        return DriverFrame(
+            time_s=self.sample.time_s,
+            distance_m=self.sample.progress_m,
+            x_m=self.state.x_m,
+            y_m=self.state.y_m,
+            course_heading_rad=self.state.heading_rad,
+            speed_mps=hypot(self.state.u_mps, self.state.v_mps),
+            lateral_acceleration_mps2=float("nan"),
+            decision=None,
+        )
+
+    def control_values_at(self, time_s: float) -> tuple[float, ...]:
+        if not isfinite(time_s):
+            raise ValueError("Time must be finite")
+        unavailable = float("nan")
+        return (
+            unavailable, unavailable, unavailable, unavailable,
+            self.sample.cross_track_error_m,
+            self.sample.heading_error_rad * 180.0 / pi,
+            self.sample.local_grip_multiplier,
+            self.sample.minimum_assumed_boundary_slack_m,
+            self.state.yaw_rate_rad_s * 180.0 / pi,
+        )
+
+
+__all__ = ["PoseDriverPlayback", "PoseDriverLivePlayback"]

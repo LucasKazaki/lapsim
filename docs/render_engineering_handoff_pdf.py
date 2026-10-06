@@ -78,11 +78,11 @@ STYLES = {
         textColor=BLACK, spaceBefore=12, spaceAfter=5, keepWithNext=True,
     ),
     "body": ParagraphStyle(
-        "body", fontName="Arial", fontSize=9.2, leading=13.3,
+        "body", fontName="Arial", fontSize=9.2, leading=13.2,
         alignment=TA_LEFT, textColor=BLACK, spaceAfter=8,
     ),
     "bullet": ParagraphStyle(
-        "bullet", fontName="Arial", fontSize=9.2, leading=13.3,
+        "bullet", fontName="Arial", fontSize=9.2, leading=13.2,
         leftIndent=17, firstLineIndent=-13, textColor=BLACK, spaceAfter=5,
     ),
     "table": ParagraphStyle(

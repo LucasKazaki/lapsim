@@ -76,10 +76,11 @@ and speed limit. **Save current** creates another named local profile in
 The repository and source-backed profiles are read-only so source values and
 inherited model defaults remain distinguishable from edited assumptions.
 
-Driver request applies to every run. **Max cell length** is an editable
+Driver request applies to every run. **Cell size (max)** is an editable
 upper bound for the generated physics cells in centerline, two-car comparison,
-and optional AI runs. The desktop starts at 1 m. AI builds a separate
-x/y-derived path grid and adds samples until its processed baseline and full
+and optional AI runs. It sits in the fixed **Calculation settings** panel beside
+Run, with a live solver-cell count or invalid-size hint. The desktop starts at
+1 m. AI builds a separate x/y-derived path grid and adds samples until its processed baseline and full
 offset meet that bound; fractional offsets then fit it too. A smaller request
 can increase planning and lap time, and a request needing more than 5,000
 points is refused. The saved grid's individual lengths are authoritative.
@@ -125,7 +126,8 @@ left-drag pans, the mouse wheel zooms around the cursor, and **Fit course**
 restores the full view.
 
 The fixed **Calculate** strip remains visible when the input panel scrolls.
-Its monochrome bar animates during path planning, speed-limit preparation,
+Its labeled monochrome **Calculation progress** bar animates during path
+planning and speed-limit preparation,
 AI dry passes, and waits without accepted cells because those stages do not
 report a reliable total step count. During a recorded physics pass it fills
 from that pass's accepted-cell index and labels the active car/path and cell
@@ -280,7 +282,7 @@ example; its completed time remains diagnostic.
 For a controlled AI demonstration, choose **Synthetic loop · AI demo**, the
 Prius benchmark, desktop torque request **80% (enter 80; model fraction 0.8)**, and its initial assumed ±3 m
 half-width, 1.8 m vehicle width, and 0.2 m margin. Leave assumed uniform road
-grip at **100%** and **Max cell length** at its initial **1 m** for the stated
+grip at **100%** and **Cell size (max)** at its initial **1 m** for the stated
 numbers. The current speed-periodic model comparison produced an eligible
 **17.0090108038 s** geometric baseline,
 **15.7317585066 s** half-offset, and **14.6378307024 s** 0.975-offset
@@ -339,13 +341,16 @@ the separate time-domain four-wheel car on the coherent
 synthetic loop using rear-axle pure-pursuit steering, a short curvature/grip
 speed preview, and bounded drive/brake requests. The preview is limited by
 target progress, simulated time, control-step count, and internal integration
-steps. Driver view plays the model's actual planar x/y and heading instead of
-mapping station onto reference x/y as the ordinary lap playback does. The
+steps. It opens Driver view immediately and shows the latest simulated planar
+x/y and heading while solving, then plays the complete trace. This differs
+from mapping station onto reference x/y as ordinary lap playback does. The
 display labels its time as **pose-model time** and identifies the synthetic
 four-wheel experiment; it does not show an endurance-model lap time, energy,
-or battery result. Its number boxes switch to the recorded steering, rear
-wheel-drive and front-wheel-brake requests, tracking error, local grip,
-assumed footprint slack, and yaw rate. The default ±3 m corridor, 1.8 m vehicle width, and 0.2 m
+or battery result. During the live calculation it shows speed, progress,
+tracking error, local grip, assumed footprint slack, and yaw rate; controls
+and lateral acceleration display dashes until completed replay. Its replay
+number boxes then show recorded steering, rear-wheel drive, and front-wheel brake
+requests too. The default ±3 m corridor, 1.8 m vehicle width, and 0.2 m
 margin are assumptions. The sampled body-rectangle check covers the span
 between axle lines under that corridor, with no surveyed boundary, overhang,
 or between-sample swept-area certificate. A full interactive session, ghost,
@@ -426,8 +431,11 @@ state in its in-memory `PoseDriverRun`. For engineering checks,
 saved controls with the same four-wheel configuration and environment. Its
 default absolute tolerances are **1e-8 m** for position, **1e-8 rad** for
 heading, **1e-8 m/s** for body velocity, **1e-8 rad/s** for yaw rate, and
-**1e-8 rad/s** for wheel speed; it also checks road-validity agreement. This
-is numerical replay of a short synthetic maneuver, distinct from the saved
+**1e-8 rad/s** for wheel speed. It also recomputes the recorded sample times,
+path progress, cross-track and heading errors, local grip, assumed footprint
+slack, projection validity, and stop status under explicit tolerances, and
+checks road-validity agreement. This is numerical replay of a short synthetic
+maneuver, distinct from the saved
 v2 endurance-lap record replay and from a persistent full-session record.
 
 **Four-wheel lab** opens a separate top-down, time-domain experiment. It

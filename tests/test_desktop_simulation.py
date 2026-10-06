@@ -218,6 +218,16 @@ class DesktopSimulationMathTests(TestCase):
         self.assertTrue(isclose(solver_integral, source_integral, abs_tol=1e-12))
         self.assertLessEqual(max(solver_track.cell_length_m), 0.8 + 1e-12)
 
+    def test_resampling_rejects_invalid_or_excessive_cell_requests(self) -> None:
+        track = SpatialTrack.from_cells(
+            cell_length_m=(1.0, 1.0, 1.0, 1.0),
+            curvature_per_m=(0.0, 0.0, 0.0, 0.0),
+        )
+        for invalid in (True, 0.0, -1.0, float("nan"), float("inf"), 0.0001):
+            with self.subTest(maximum_cell_length_m=invalid):
+                with self.assertRaises(ValueError):
+                    resample_track(track, invalid)
+
     def test_path_solver_rejects_invalid_environment_values(self) -> None:
         for invalid_value in (0.0, -1.0, float("inf"), float("nan")):
             with self.subTest(invalid_value=invalid_value):
