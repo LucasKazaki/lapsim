@@ -687,6 +687,29 @@ def test_pose_playback_uses_recorded_vehicle_pose(segment_run):
     assert between[6] == pytest.approx(segment_run.samples[index].local_grip_multiplier)
 
 
+def test_pose_playback_holds_pre_step_lateral_evaluation(segment_run):
+    evaluations = segment_run.evaluations
+    differences = [
+        abs(second.cg_lateral_acceleration_mps2 -
+            first.cg_lateral_acceleration_mps2)
+        for first, second in zip(evaluations, evaluations[1:])
+    ]
+    index = max(range(len(differences)), key=differences.__getitem__)
+    assert differences[index] > 0.1  # The default preview has a real change.
+
+    playback = PoseDriverPlayback(segment_run)
+    midpoint_s = (segment_run.times_s[index] + segment_run.times_s[index + 1]) / 2
+    assert playback.frame_at(midpoint_s).lateral_acceleration_mps2 == (
+        evaluations[index].cg_lateral_acceleration_mps2
+    )
+    assert playback.frame_at(segment_run.times_s[index + 1]).lateral_acceleration_mps2 == (
+        evaluations[index + 1].cg_lateral_acceleration_mps2
+    )
+    assert playback.frame_at(playback.duration_s).lateral_acceleration_mps2 == (
+        evaluations[-1].cg_lateral_acceleration_mps2
+    )
+
+
 def test_pose_playback_uses_terminal_grip_sample_after_patch_crossing():
     road = PlanarRoad(patches=(
         RectangularGripPatch(0.15, 0.4, -0.5, 0.5, 0.3),

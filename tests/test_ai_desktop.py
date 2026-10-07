@@ -33,7 +33,10 @@ def _install_eligible_ai_grid_result(app: LapSimDesktop) -> SimpleNamespace:
 
     app.driving_mode_var.set("AI racing line (experimental)")
     app.root.update_idletasks()
-    complete = SimpleNamespace(completed=True, seam_speed_delta_mps=0.0)
+    complete = SimpleNamespace(
+        completed=True, starting_speed_mps=10.0, ending_speed_mps=10.0,
+        seam_speed_delta_mps=0.0,
+    )
     valid = SimpleNamespace(valid=True)
     comparison = SimpleNamespace(
         baseline_time_s=100.0,
@@ -143,6 +146,65 @@ def _window_grid_context(app: LapSimDesktop, window: tk.Toplevel) -> str:
     ]
     assert len(labels) == 1
     return labels[0].getvar(labels[0].cget("textvariable"))
+
+
+def test_ai_path_comparison_displays_path_specific_rolling_speeds() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        comparison = _install_eligible_ai_grid_result(app)
+        comparison.baseline_run = SimpleNamespace(
+            completed=True, starting_speed_mps=10.0,
+            ending_speed_mps=10.004, seam_speed_delta_mps=0.004,
+        )
+        comparison.candidate_run = SimpleNamespace(
+            completed=True, starting_speed_mps=12.014,
+            ending_speed_mps=12.010, seam_speed_delta_mps=-0.004,
+        )
+        summary = SimpleNamespace(
+            lap_time_s=100.0, distance_m=app.track.length_m,
+            peak_speed_kph=50.0, average_speed_kph=40.0,
+            pack_energy_kwh=0.1, peak_lateral_g=0.2,
+        )
+        with patch("lapsim.ui.app.summarize_lap", return_value=summary):
+            app._show_path_comparison()
+        popup = next(
+            child for child in root.winfo_children()
+            if isinstance(child, tk.Toplevel)
+            and child.title() == "LapSim path comparison"
+        )
+
+        def cells_at(row: int) -> tuple[str, ...]:
+            cells = {
+                int(widget.grid_info()["column"]): widget.cget("text")
+                for widget in app._walk_widgets(popup)
+                if isinstance(widget, tk.Label)
+                and widget.winfo_manager() == "grid"
+                and int(widget.grid_info()["row"]) == row
+            }
+            return tuple(cells[column] for column in range(4))
+
+        assert cells_at(10) == (
+            "Rolling start speed (km/h)", "36.0", "43.3", "+7.3",
+        )
+        assert cells_at(11) == (
+            "Finish speed (km/h)", "36.0", "43.2", "+7.2",
+        )
+        popup_text = " ".join(
+            widget.cget("text") for widget in app._walk_widgets(popup)
+            if isinstance(widget, tk.Label)
+        )
+        assert "speed-seam shooting; starts may differ" in popup_text
+        assert (
+            "effective vehicle configuration, initial pack state, and torque "
+            "request are the same for both paths"
+        ) in popup_text
+    finally:
+        root.destroy()
 
 
 @pytest.mark.parametrize(

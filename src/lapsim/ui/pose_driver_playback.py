@@ -63,9 +63,12 @@ class PoseDriverPlayback(DriverPlayback):
         body_u = first.u_mps + fraction * (second.u_mps - first.u_mps)
         body_v = first.v_mps + fraction * (second.v_mps - first.v_mps)
         if self.run.evaluations:
-            first_lateral = self.run.evaluations[min(lower, len(self.run.evaluations) - 1)].cg_lateral_acceleration_mps2
-            second_lateral = self.run.evaluations[min(upper, len(self.run.evaluations) - 1)].cg_lateral_acceleration_mps2
-            lateral = first_lateral + fraction * (second_lateral - first_lateral)
+            # Each evaluation was taken before its own held-control step.
+            # Show that recorded value for the active interval; blending with
+            # the next one would show a force from a future control interval.
+            lateral = self.run.evaluations[
+                min(lower, len(self.run.evaluations) - 1)
+            ].cg_lateral_acceleration_mps2
         else:
             lateral = 0.0
         return DriverFrame(

@@ -100,7 +100,8 @@ POSE_DRIVER_NOTE = (
     "The optional assumed lower-grip patch covers synthetic world x 36–55 m "
     "and y −3–16 m at 0.3× base grip. Neither condition uses measured dry or "
     "wet-road calibration. "
-    "The boxes show recorded pose controls and tracking values; endurance "
+    "Lateral g holds a recorded pre-step evaluation over each control "
+    "interval. The boxes show recorded pose controls and tracking values; endurance "
     "battery and force channels do not apply to this separate model."
 )
 POSE_SCENARIO_UNIFORM = "Uniform base grip (1.0×)"
@@ -5133,7 +5134,7 @@ class LapSimDesktop:
         synthetic_course = self.course_spec.synthetic
         window = tk.Toplevel(self.root)
         window.title("LapSim path comparison")
-        window.geometry("800x505")
+        window.geometry("800x575")
         body = tk.Frame(window, padx=12, pady=12)
         body.pack(fill="both", expand=True)
         tk.Label(body, text="Experimental path comparison", font=FONT_TITLE).grid(
@@ -5184,21 +5185,33 @@ class LapSimDesktop:
                     relief="solid", bd=1, padx=6, pady=5,
                     font=FONT if column == 0 else ("Consolas", 10),
                 ).grid(row=row, column=column, sticky="ew", padx=3, pady=2)
-        baseline_seam = comparison.baseline_run.seam_speed_delta_mps
-        candidate_seam = comparison.candidate_run.seam_speed_delta_mps
-        seam_cells = (
-            "Seam speed Δ (km/h)",
-            f"{baseline_seam * 3.6:+.1f}" if baseline_seam is not None else "—",
-            f"{candidate_seam * 3.6:+.1f}" if candidate_seam is not None else "—",
-            f"{(candidate_seam - baseline_seam) * 3.6:+.1f}"
-            if baseline_seam is not None and candidate_seam is not None else "—",
-        )
-        for column, value in enumerate(seam_cells):
-            tk.Label(
-                body, text=value, anchor="w" if column == 0 else "e",
-                relief="solid", bd=1, padx=6, pady=5,
-                font=FONT if column == 0 else ("Consolas", 10),
-            ).grid(row=10, column=column, sticky="ew", padx=3, pady=2)
+        for row, label, baseline_speed, candidate_speed in (
+            (10, "Rolling start speed (km/h)",
+             comparison.baseline_run.starting_speed_mps,
+             comparison.candidate_run.starting_speed_mps),
+            (11, "Finish speed (km/h)",
+             comparison.baseline_run.ending_speed_mps,
+             comparison.candidate_run.ending_speed_mps),
+            (12, "Seam speed Δ (km/h)",
+             comparison.baseline_run.seam_speed_delta_mps,
+             comparison.candidate_run.seam_speed_delta_mps),
+        ):
+            speed_format = "+.1f" if row == 12 else ".1f"
+            speed_cells = (
+                label,
+                f"{baseline_speed * 3.6:{speed_format}}"
+                if baseline_speed is not None else "—",
+                f"{candidate_speed * 3.6:{speed_format}}"
+                if candidate_speed is not None else "—",
+                f"{(candidate_speed - baseline_speed) * 3.6:+.1f}"
+                if baseline_speed is not None and candidate_speed is not None else "—",
+            )
+            for column, value in enumerate(speed_cells):
+                tk.Label(
+                    body, text=value, anchor="w" if column == 0 else "e",
+                    relief="solid", bd=1, padx=6, pady=5,
+                    font=FONT if column == 0 else ("Consolas", 10),
+                ).grid(row=row, column=column, sticky="ew", padx=3, pady=2)
         for column in range(4):
             body.grid_columnconfigure(column, weight=1)
         tk.Label(
@@ -5212,11 +5225,14 @@ class LapSimDesktop:
                 "map and recorded curvature disagree; these are model "
                 "scenarios, not validated Terps lap predictions. "
             ) + (
-                "Seam speed Δ is finish minus start; the timed AI trials "
-                "close it within 0.005 m/s at a fixed initial car and pack state."
+                "Rolling start speed is solved separately for each path by "
+                "speed-seam shooting; starts may differ. The effective "
+                "vehicle configuration, initial pack state, and torque "
+                "request are the same for both paths. Seam speed Δ is finish "
+                "minus start; the timed AI trials close it within 0.005 m/s."
             ),
             anchor="w", justify="left", wraplength=755,
-        ).grid(row=11, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+        ).grid(row=13, column=0, columnspan=4, sticky="ew", pady=(10, 0))
         self._apply_theme()
 
     def _show_comparison(

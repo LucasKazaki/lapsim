@@ -11,6 +11,13 @@ For a fresh Windows clone, run `setup_lapsim.cmd` once before this walkthrough; 
 3. Choose **Synthetic loop · AI demo**. Leave **Cell size (max)** at **1 m**, set Prius driver request to **80% (enter 80)** and **Assumed road grip** to **100%**, select **AI racing line (experimental)**, and run. The current synthetic example compares a **17.009 s** processed baseline with a **14.638 s** selected path, a **2.371 s modeled lead** under an *assumed* ±3 m corridor. Show **Compare path numbers**, replay the completed paths, and open **Saved run details** to inspect the primary record and linked trials. The calculation bar shows the current model pass, not an overall AI percentage. These are software-example times, not Racing Terps performance.
 4. Close with the missing inputs: a coherent surveyed course and boundaries, a controlled 2026–27 car configuration, and measured logs under stated conditions. Until then, use the outputs to inspect model behavior and sensitivity.
 
+In **Compare path numbers**, point out the separate rolling start and finish
+speeds for the processed centerline and AI candidate. Speed-seam shooting can
+choose different starts for those paths. The paths use the same effective
+vehicle configuration, initial pack state, and driver request, but their
+rolling speeds may differ. The lap-time difference compares path-specific
+speed-closed model laps; it is not a same-start or validated race result.
+
 ### Optional follow-ups
 
 - On the eligible uniform-road synthetic AI result, click **Check finer grid
@@ -32,6 +39,10 @@ For a fresh Windows clone, run `setup_lapsim.cmd` once before this walkthrough; 
 - Return to **Fused GNSS/IMU · default** in AI mode at 1 m, 100% Prius driver request, assumed half-width 2.0 m, vehicle width 1.78308 m, safety margin 0.3 m, and 100% assumed road grip. Read the *current* diagnostic status from the run: the processed baseline fails the path audit, completed times are starred diagnostics, **Compare path numbers** is disabled, and no AI winner is selected. **Saved run details** exposes the primary and linked trial files; Driver view can replay completed diagnostics. Changing course clears the previous result and evidence button.
 - Switch back to **Centerline (default)** and use **Run comparison** for two saved or built-in profiles. Read B-minus-A values and the shared rolling start, then open **Saved run details** for both full record IDs and files. Each car has one initial-condition lap; the source-backed TREV entries are partial working scenarios.
 - Open **Timed sessions · WIP** and, if time permits, run its **80 m synthetic pose preview**. After an eligible synthetic AI result, its second button can preview that selected polygon with the separate synthetic car. Driver view then plays actual modeled x/y and heading, with boxes for steering, wheel torque, tracking error, sampled grip, and assumed clearance. On replay, controls hold over their recorded intervals; **GRIP SAMPLE (×)** reads the latest pose sample, including the terminal sample, without another physics step. Its duration is pose-model time, not the endurance lap time. A saved v2 pose trace checks both recorded-input dynamics replay and whether the declared controller issued its controls; a zero-step trace has no controller choices to check. The tab cannot start a full timed session or ghost yet.
+
+During that pose replay, the lateral-acceleration box holds the recorded
+pre-step force evaluation until the next control boundary. It is an interval
+display value, not a continuous force or acceleration sample.
 
 If terminal path projection is lost, the pose summary gives the last confirmed
 station and marks assumed footprint slack unavailable. Actual pose and

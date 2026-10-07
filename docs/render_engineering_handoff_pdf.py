@@ -144,7 +144,7 @@ def _footer(canvas, document) -> None:
     canvas.setLineWidth(0.35)
     canvas.line(LEFT, 42, PAGE_WIDTH - RIGHT, 42)
     canvas.setFont("Arial", 7.8)
-    canvas.drawString(LEFT, 29, "LapSim | Engineering handoff | 6 October 2026")
+    canvas.drawString(LEFT, 29, "LapSim | Engineering handoff | 7 October 2026")
     canvas.drawRightString(PAGE_WIDTH - RIGHT, 29, f"Page {document.page}")
     canvas.restoreState()
 
