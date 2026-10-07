@@ -215,11 +215,14 @@ entry heading. It reports the original and refined candidate-minus-centerline
 differences, sign, and selection-margin stability. If either the sign or the
 provisional 0.05 s selection-margin crossing changes in a completed check,
 the main AI headline and status say **grid-sensitive; ranking unresolved**.
-The original-grid path and numbers remain displayed, and saved records stay
-available; the check does not reselect or rewrite them. A stable check leaves
-the headline unchanged. It is an on-demand fixed-path numerical sensitivity
-check, limited to 5,000 cells per path; it does not re-audit clearance, establish
-convergence, or validate the assumed road. The API's separate explicit
+The path-comparison and saved-evidence windows, including already-open ones,
+and ordinary AI replay context show the same caveat. The original-grid path
+and numbers remain displayed, and saved records stay available; the check does
+not reselect or rewrite them. A later completed stable check clears the caveat;
+a failed retry does not resolve it. Older popups retain their caveat beside
+frozen numbers after input changes. This on-demand fixed-path numerical
+sensitivity check is limited to 5,000 cells per path; it does not re-audit
+clearance, establish convergence, or validate the assumed road. The API's separate explicit
 per-cell grip-tuple mode still repeats each original cell's value over its
 subdivisions; that mode does not remap a world-fixed patch. The two road-input
 modes cannot be combined in one check.

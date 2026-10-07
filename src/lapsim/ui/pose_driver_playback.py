@@ -97,8 +97,9 @@ class PoseDriverPlayback(DriverPlayback):
 
         Controls are held over their output interval. Geometry diagnostics are
         linearly displayed between recorded boundary samples; this display
-        interpolation does not add a new physics evaluation. Grip uses the
-        latest recorded sample, including the terminal sample.
+        interpolation does not add a new physics evaluation. Projection-based
+        values are unavailable past a lost projection. Grip uses the latest
+        recorded sample, including the terminal sample.
         """
 
         if not isfinite(time_s):
@@ -119,18 +120,34 @@ class PoseDriverPlayback(DriverPlayback):
         def linear(a: float, b: float) -> float:
             return a + fraction * (b - a)
 
+        if first.projection_valid and fraction == 0.0:
+            cross_track_m = first.cross_track_error_m
+            heading_error_rad = first.heading_error_rad
+            boundary_slack_m = first.minimum_assumed_boundary_slack_m
+        elif first.projection_valid and second.projection_valid:
+            cross_track_m = linear(first.cross_track_error_m,
+                                   second.cross_track_error_m)
+            heading_error_rad = first.heading_error_rad + fraction * remainder(
+                second.heading_error_rad - first.heading_error_rad, 2.0 * pi,
+            )
+            boundary_slack_m = linear(
+                first.minimum_assumed_boundary_slack_m,
+                second.minimum_assumed_boundary_slack_m,
+            )
+        else:
+            # The failed endpoint retains the last known projection only to
+            # keep the trace aligned; it is not a current tracking measurement.
+            cross_track_m = heading_error_rad = boundary_slack_m = float("nan")
+
         return (
             command.steering_angles_rad[0] * 180.0 / pi,
             command.drive_torques_nm[2],
             command.brake_torques_nm[0],
             command.brake_torques_nm[1],
-            linear(first.cross_track_error_m, second.cross_track_error_m),
-            (first.heading_error_rad + fraction * remainder(
-                second.heading_error_rad - first.heading_error_rad, 2.0 * pi,
-            )) * 180.0 / pi,
+            cross_track_m,
+            heading_error_rad * 180.0 / pi,
             self.run.samples[sample_index].local_grip_multiplier,
-            linear(first.minimum_assumed_boundary_slack_m,
-                   second.minimum_assumed_boundary_slack_m),
+            boundary_slack_m,
             linear(first_state.yaw_rate_rad_s, second_state.yaw_rate_rad_s)
             * 180.0 / pi,
         )

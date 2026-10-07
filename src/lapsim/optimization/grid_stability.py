@@ -119,7 +119,7 @@ def diagnose_paired_grid_stability(
     original_baseline_time_s: float,
     original_candidate_time_s: float,
     torque_request_fraction: float,
-    speed_periodic: bool = True,
+    speed_periodic: bool = False,
     maximum_refined_cell_length_m: float | None = None,
     selection_margin_s: float = 0.05,
     baseline_cell_road_grip_multiplier: tuple[float, ...] | None = None,
@@ -131,8 +131,9 @@ def diagnose_paired_grid_stability(
     ``vehicle`` is the same configured, pre-run car used for the original
     comparison. It is copied for each refined path, so the caller's instance
     is not advanced. The original times are trusted inputs; callers must have
-    established both original paths' audit eligibility separately. The same
-    speed-only periodic policy as the original comparison must be selected.
+    established both original paths' audit eligibility separately. The default
+    is a one-pass lap, matching racing-line comparison; callers that compared
+    speed-periodic laps must explicitly request the same policy here.
 
     The default target halves the smaller of the two original maximum cell
     lengths. A count above 5,000 on either path returns ``cell_cap_exceeded``

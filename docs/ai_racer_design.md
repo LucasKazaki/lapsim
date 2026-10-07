@@ -282,13 +282,26 @@ When a completed report finds either a sign change or a crossing of the
 provisional 0.05 s selection margin, the main AI headline and status mark the
 modeled ranking **grid-sensitive; unresolved**. The original-grid path,
 numbers, and saved trial records remain in place; a stable report leaves the
-headline unchanged, and stale or non-completed reports do not add this warning.
+original-grid headline unqualified, and stale or non-completed reports do not
+add this warning.
+The warning also appears on an already-open path comparison, saved-run
+evidence window, and ordinary AI replay context, so a retained original-grid
+rank is not mistaken for a refined-grid decision. A later completed stable
+check removes the warning; a failed retry supplies no contrary evidence.
+An older popup retains its warning beside frozen old-run numbers after the
+current input/result is cleared, while a new popup starts from the new result.
 The API's separate explicit per-cell grip mode repeats each original cell's
 value through its subdivisions; that is **not** world-fixed remapping. The API
 rejects combining explicit per-cell tuples with a world-fixed road. The
 check reports sensitivity without changing the selection, re-auditing
 corridor clearance, proving convergence, or validating the assumed road.
 Ordinary centerline and AI runs incur no finer-grid work.
+
+The callable grid diagnostic defaults to the same **one-pass** start policy
+as `compare_lines_with_lap_model`. A caller comparing speed-periodic times
+must pass `speed_periodic=True` to both; the desktop does so explicitly.
+Changing the start policy between original and refined laps can create a
+larger time shift than the 0.05 s ranking margin even on an unchanged grid.
 
 ## Bounded synthetic pose-aware driver experiment
 
@@ -307,6 +320,12 @@ In completed replay, steering and torque/brake commands are held from their
 recorded control interval. The box labeled **GRIP SAMPLE (×)** uses the latest
 recorded pose sample, including the final sample after the last control.
 Interpolated display geometry and this sampled grip add no physics step.
+The tracking-error, heading-error, and assumed-boundary-slack boxes use an
+exact recorded value at a valid sample boundary. If the next local-path
+projection fails, these three projection-derived displays become unavailable
+for the rest of that interval and at the failed endpoint. Commands, sampled
+grip, yaw, and actual simulated pose remain visible; no recorded value is
+changed.
 
 When a pose run stops with `road_domain_invalid`, its local-grip value may be
 the base-road diagnostic fallback for a query outside the declared road

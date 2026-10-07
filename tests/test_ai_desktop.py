@@ -22,6 +22,7 @@ from lapsim.ui.app import (
     _course_geometry_warning,
 )
 from lapsim.ui.course_catalog import COURSE_OPTIONS, SYNTHETIC_DEMO_COURSE_ID
+from lapsim.ui.pose_driver_playback import PoseDriverPlayback
 from lapsim.ui.presets import VehicleSetup
 from lapsim.ui.simulation import prepare_one_lap_constraints
 from vehicle_model import Vehicle
@@ -32,7 +33,7 @@ def _install_eligible_ai_grid_result(app: LapSimDesktop) -> SimpleNamespace:
 
     app.driving_mode_var.set("AI racing line (experimental)")
     app.root.update_idletasks()
-    complete = SimpleNamespace(completed=True)
+    complete = SimpleNamespace(completed=True, seam_speed_delta_mps=0.0)
     valid = SimpleNamespace(valid=True)
     comparison = SimpleNamespace(
         baseline_time_s=100.0,
@@ -42,6 +43,7 @@ def _install_eligible_ai_grid_result(app: LapSimDesktop) -> SimpleNamespace:
         baseline_path_audit=valid,
         candidate_path_audit=valid,
         candidate_track=app.track,
+        candidate_strength=0.95,
         selection_margin_s=0.05,
     )
     app._path_comparison = (
@@ -87,6 +89,53 @@ def _deliver_grid_report(
     app._poll_result()
 
 
+def _open_grid_secondary_views(app: LapSimDesktop) -> tuple[tk.Toplevel, tk.Toplevel]:
+    """Open original-grid popup and evidence before a sensitivity result arrives."""
+
+    run_id = app._displayed_run_records[0][1]
+    summary = SimpleNamespace(
+        lap_time_s=100.0, distance_m=app.track.length_m,
+        peak_speed_kph=20.0, average_speed_kph=18.0,
+        pack_energy_kwh=0.1, peak_lateral_g=0.2,
+    )
+    with patch("lapsim.ui.app.summarize_lap", return_value=summary):
+        app._show_path_comparison()
+    record = {
+        "run_id": run_id,
+        "settings": {
+            "track": {},
+            "path_planning": {
+                "mode": "experimental_racing_line",
+                "rank_status": "candidate_selected",
+            },
+        },
+        "configuration": {}, "result": {},
+    }
+    with (
+        patch("lapsim.ui.app._saved_run_path", return_value=Path(f"{run_id}.json")),
+        patch("lapsim.ui.app.RunRecord.load", return_value=SimpleNamespace(
+            to_dict=lambda: record,
+        )),
+    ):
+        app._open_saved_run_details()
+    windows = {
+        child.title(): child for child in app.root.winfo_children()
+        if isinstance(child, tk.Toplevel)
+    }
+    return windows["LapSim path comparison"], windows["Saved run evidence"]
+
+
+def _window_grid_context(app: LapSimDesktop, window: tk.Toplevel) -> str:
+    context = window._ai_grid_warning_var
+    labels = [
+        child for child in app._walk_widgets(window)
+        if isinstance(child, tk.Label)
+        and str(child.cget("textvariable")) == str(context)
+    ]
+    assert len(labels) == 1
+    return labels[0].getvar(labels[0].cget("textvariable"))
+
+
 @pytest.mark.parametrize(
     ("refined_delta_s", "sign_stable", "margin_stable", "warn"),
     (
@@ -119,6 +168,15 @@ def test_ai_grid_check_qualifies_unstable_main_result_without_reselection(
         original_records = app._displayed_run_records
         selected_run = comparison.candidate_run
         selected_track = comparison.candidate_track
+        replay_options = {
+            "Geometric centerline": ("AI car", comparison.baseline_run,
+                                     "Geometric centerline", app.track),
+            "Best tested AI path": ("AI car", selected_run, "AI path", selected_track),
+        }
+        app._set_driver_replay_options(replay_options, selected="Best tested AI path")
+        popup, evidence = _open_grid_secondary_views(app)
+        assert _window_grid_context(app, popup) == ""
+        assert _window_grid_context(app, evidence) == ""
         report = replace(
             _completed_grid_report(),
             refined_candidate_time_s=99.9 + refined_delta_s,
@@ -132,19 +190,72 @@ def test_ai_grid_check_qualifies_unstable_main_result_without_reselection(
             assert app.ai_result_text.get().startswith(AI_GRID_SENSITIVE_PREFIX)
             assert app.ai_result_text.get().endswith(original_headline)
             assert "ranking unresolved" in app.status_text.get()
+            assert "ranking unresolved" in _window_grid_context(app, popup)
+            assert "saved rank" in _window_grid_context(app, evidence)
+            assert app.driver_replay_heading.get() == (
+                "Replay original grid · rank unresolved"
+            )
+            assert "ranking unresolved" in app.driver_note_var.get()
             _deliver_grid_report(app, comparison, report)
             assert app.ai_result_text.get().count(AI_GRID_SENSITIVE_PREFIX) == 1
         else:
             assert app.ai_result_text.get() == original_headline
             assert "grid-sensitive" not in app.status_text.get()
+            assert _window_grid_context(app, popup) == ""
+            assert _window_grid_context(app, evidence) == ""
+            assert app.driver_replay_heading.get() == "Replay lap"
+            assert "ranking unresolved" not in app.driver_note_var.get()
+        evidence_text = " ".join(
+            child.get("1.0", "end-1c") for child in app._walk_widgets(evidence)
+            if isinstance(child, tk.Text)
+        )
+        assert "AI rank status: candidate_selected" in evidence_text
         assert app._path_comparison[1] is comparison
         assert comparison.candidate_run is selected_run
         assert comparison.candidate_track is selected_track
         assert app._displayed_run_records == original_records
+        assert app._driver_replay_runs == replay_options
+        assert app.driver_replay_var.get() == "Best tested AI path"
         assert {
             key: app.ai_output_values[key].cget("text")
             for key in original_numbers
         } == original_numbers
+        if warn:
+            app._set_driver_replay_options({}, selected="—")
+            assert app.driver_replay_heading.get() == "Replay lap"
+            app._set_driver_replay_options(
+                replay_options, selected="Best tested AI path",
+            )
+            assert app.driver_replay_heading.get() == (
+                "Replay original grid · rank unresolved"
+            )
+            _deliver_grid_report(app, comparison, _completed_grid_report())
+            assert app.ai_result_text.get() == original_headline
+            assert _window_grid_context(app, popup) == ""
+            assert _window_grid_context(app, evidence) == ""
+            assert app.driver_replay_heading.get() == "Replay lap"
+            _deliver_grid_report(app, comparison, report)
+            app._active_run_input_signature = ("stale inputs",)
+            app.result_queue.put((
+                "ai_grid_check",
+                (app._ai_grid_check_serial, comparison, _completed_grid_report()),
+                None,
+            ))
+            app._poll_result()
+            assert app.ai_grid_context_text.get() == ""
+            assert app.driver_replay_heading.get() == "Replay lap"
+            assert not app.ai_result_text.get().startswith(AI_GRID_SENSITIVE_PREFIX)
+            assert "ranking unresolved" in _window_grid_context(app, popup)
+
+            fresh_comparison = _install_eligible_ai_grid_result(app)
+            app._displayed_run_records = (("AI result", "fresh-original-run"),)
+            fresh_popup, fresh_evidence = _open_grid_secondary_views(app)
+            assert fresh_popup is not popup
+            assert _window_grid_context(app, fresh_popup) == ""
+            assert _window_grid_context(app, fresh_evidence) == ""
+            _deliver_grid_report(app, fresh_comparison, _completed_grid_report())
+            assert _window_grid_context(app, fresh_popup) == ""
+            assert "ranking unresolved" in _window_grid_context(app, popup)
     finally:
         root.destroy()
 
@@ -163,6 +274,8 @@ def test_ai_grid_check_without_completed_current_result_keeps_main_headline(
         comparison = _install_eligible_ai_grid_result(app)
         headline = "Faster AI path selected on the original grid."
         app.ai_result_text.set(headline)
+        app._displayed_run_records = (("AI result", "saved-original-run"),)
+        popup, evidence = _open_grid_secondary_views(app)
         reversing = replace(
             _completed_grid_report(),
             refined_candidate_time_s=99.92,
@@ -184,6 +297,106 @@ def test_ai_grid_check_without_completed_current_result_keeps_main_headline(
             ))
         assert app.ai_result_text.get() == headline
         assert app._path_comparison[1] is comparison
+        assert _window_grid_context(app, popup) == ""
+        assert _window_grid_context(app, evidence) == ""
+        assert app.driver_replay_heading.get() == "Replay lap"
+    finally:
+        root.destroy()
+
+
+@pytest.mark.parametrize("outcome", ("failed", "noncompleted"))
+def test_ai_grid_retry_without_comparison_preserves_prior_sensitivity(
+    outcome: str,
+) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        comparison = _install_eligible_ai_grid_result(app)
+        headline = "Faster AI path selected on the original grid."
+        app.ai_result_text.set(headline)
+        app._displayed_run_records = (("AI result", "saved-original-run"),)
+        replay_options = {
+            "Geometric centerline": ("AI car", comparison.baseline_run,
+                                     "Geometric centerline", app.track),
+            "Best tested AI path": ("AI car", comparison.candidate_run,
+                                    "AI path", comparison.candidate_track),
+        }
+        app._set_driver_replay_options(replay_options, selected="Best tested AI path")
+        popup, evidence = _open_grid_secondary_views(app)
+        reversing = replace(
+            _completed_grid_report(),
+            refined_candidate_time_s=99.92,
+            refined_candidate_minus_baseline_s=0.02,
+            sign_stable=False,
+            selection_margin_stable=False,
+        )
+        _deliver_grid_report(app, comparison, reversing)
+        if outcome == "failed":
+            _deliver_grid_report(
+                app, comparison, None, error=RuntimeError("retry failed"),
+            )
+        else:
+            _deliver_grid_report(app, comparison, replace(
+                reversing, status="cell_cap_exceeded",
+                refined_candidate_time_s=None,
+                refined_candidate_minus_baseline_s=None,
+                sign_stable=None,
+                selection_margin_stable=None,
+            ))
+        assert app.ai_result_text.get() == AI_GRID_SENSITIVE_PREFIX + headline
+        assert "ranking unresolved" in _window_grid_context(app, popup)
+        assert "ranking unresolved" in _window_grid_context(app, evidence)
+        assert app.driver_replay_heading.get() == (
+            "Replay original grid · rank unresolved"
+        )
+        assert "prior grid-sensitive finding remains" in app.status_text.get()
+        assert app._displayed_run_records == (("AI result", "saved-original-run"),)
+        assert app._driver_replay_runs == replay_options
+
+        _deliver_grid_report(app, comparison, _completed_grid_report())
+        assert app.ai_result_text.get() == headline
+        assert _window_grid_context(app, popup) == ""
+        assert _window_grid_context(app, evidence) == ""
+        assert app.driver_replay_heading.get() == "Replay lap"
+    finally:
+        root.destroy()
+
+
+def test_ai_grid_check_does_not_replace_pose_preview_note() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        comparison = _install_eligible_ai_grid_result(app)
+        app._pose_live_mode = True
+        app._set_driver_replay_options({}, selected="—")
+        pose_note = "Synthetic pose-model time and sampled road condition."
+        app.driver_note_var.set(pose_note)
+        reversing = replace(
+            _completed_grid_report(),
+            refined_candidate_time_s=99.92,
+            refined_candidate_minus_baseline_s=0.02,
+            sign_stable=False,
+            selection_margin_stable=False,
+        )
+        _deliver_grid_report(app, comparison, reversing)
+        assert app.ai_grid_context_text.get()
+        assert app.driver_note_var.get() == pose_note
+        assert app.driver_replay_heading.get() == "Replay lap"
+
+        app._pose_live_mode = False
+        app.driver_playback = PoseDriverPlayback.__new__(PoseDriverPlayback)
+        completed_pose_note = "Recorded pose-model time; no endurance lap result."
+        app.driver_note_var.set(completed_pose_note)
+        _deliver_grid_report(app, comparison, reversing)
+        assert app.driver_note_var.get() == completed_pose_note
     finally:
         root.destroy()
 

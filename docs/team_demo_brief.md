@@ -80,7 +80,11 @@ numerical sensitivity observation, not convergence, surveyed road validity,
 or renewed clearance proof.
 If a completed check reverses the sign or crosses the 0.05 s margin, describe
 the modeled ranking as **grid-sensitive and unresolved**. The displayed
-original-grid path, numbers, and saved records stay in place.
+original-grid path, numbers, and saved records stay in place. The path
+comparison, saved-evidence window, and ordinary AI replay context also show
+the warning, even if their windows were already open. A failed retry does not
+settle the ranking; only a completed stable check removes the warning. An
+older popup keeps its caveat with its frozen numbers after inputs change.
 
 The car and path comparison popups display the selected course label; an open
 popup retains that label if the main course choice changes.

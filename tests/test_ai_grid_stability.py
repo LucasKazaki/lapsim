@@ -46,6 +46,53 @@ def _periodic(time_s: float, *, converged: bool = True) -> SimpleNamespace:
     )
 
 
+def test_default_grid_check_uses_one_pass_laps() -> None:
+    source = _circle()
+
+    def completed(time_s: float) -> SimpleNamespace:
+        return SimpleNamespace(
+            completed=True, driving_time_s=time_s, failure_reason=None,
+        )
+
+    with (
+        patch("lapsim.ui.simulation.run_one_lap",
+              side_effect=(completed(90.0), completed(89.0))) as one_pass,
+        patch("lapsim.ui.simulation.run_speed_periodic_lap",
+              side_effect=AssertionError("default must stay one-pass")) as periodic,
+    ):
+        report = diagnose_paired_grid_stability(
+            Vehicle(), source, source,
+            original_baseline_time_s=100.0,
+            original_candidate_time_s=99.0,
+            torque_request_fraction=0.8,
+        )
+    assert report.status == "completed"
+    assert report.refined_candidate_minus_baseline_s == -1.0
+    assert one_pass.call_count == 2
+    periodic.assert_not_called()
+
+
+def test_explicit_periodic_grid_check_uses_periodic_laps() -> None:
+    source = _circle()
+    with (
+        patch("lapsim.ui.simulation.run_one_lap",
+              side_effect=AssertionError("periodic check must use periodic laps")) as one_pass,
+        patch("lapsim.ui.simulation.run_speed_periodic_lap",
+              side_effect=(_periodic(90.0), _periodic(89.0))) as periodic,
+    ):
+        report = diagnose_paired_grid_stability(
+            Vehicle(), source, source,
+            original_baseline_time_s=100.0,
+            original_candidate_time_s=99.0,
+            torque_request_fraction=0.8,
+            speed_periodic=True,
+        )
+    assert report.status == "completed"
+    assert report.refined_candidate_minus_baseline_s == -1.0
+    assert periodic.call_count == 2
+    one_pass.assert_not_called()
+
+
 @pytest.mark.parametrize(
     ("refined_times", "expected_sign_stable", "expected_margin_stable"),
     (
@@ -72,6 +119,7 @@ def test_paired_grid_report_keeps_sign_and_margin_separate(
             original_baseline_time_s=100.0,
             original_candidate_time_s=99.9,
             torque_request_fraction=0.8,
+            speed_periodic=True,
         )
 
     assert report.status == "completed"
@@ -135,6 +183,7 @@ def test_original_cell_grip_is_held_over_its_exact_subdivisions() -> None:
             torque_request_fraction=0.8,
             baseline_cell_road_grip_multiplier=baseline_grip,
             candidate_cell_road_grip_multiplier=candidate_grip,
+            speed_periodic=True,
         )
     assert report.status == "completed"
     assert len(seen) == 2
@@ -170,6 +219,7 @@ def test_world_patch_is_remapped_on_each_refined_path_with_original_heading() ->
             torque_request_fraction=0.8,
             maximum_refined_cell_length_m=2.5,
             road=road,
+            speed_periodic=True,
         )
 
     assert report.status == "completed"
@@ -228,6 +278,7 @@ def test_refined_candidate_failure_is_not_reported_as_stable() -> None:
             original_baseline_time_s=100.0,
             original_candidate_time_s=99.0,
             torque_request_fraction=0.8,
+            speed_periodic=True,
         )
     assert report.status == "candidate_failed"
     assert report.refined_baseline_time_s == 90.0

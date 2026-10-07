@@ -68,6 +68,10 @@ AI_GRID_SENSITIVE_PREFIX = (
     "unresolved; the original-grid path and numbers remain displayed. "
     "Original-grid result: "
 )
+AI_GRID_SENSITIVE_CONTEXT = (
+    "GRID-SENSITIVE · Displayed path, numbers, and saved rank are from the "
+    "original grid; modeled time ranking unresolved."
+)
 
 
 def _ai_road_label(road: PlanarRoad | None, base_grip: float) -> str:
@@ -395,6 +399,8 @@ class LapSimDesktop:
         self.ai_compare_button: tk.Button | None = None
         self.ai_grid_check_button: tk.Button | None = None
         self.ai_grid_check_text = tk.StringVar(value="")
+        self.ai_grid_context_text = tk.StringVar(value="")
+        self._ai_grid_window_contexts: list[tk.StringVar] = []
         self._ai_grid_check_inputs: tuple[Any, float] | None = None
         self._ai_grid_source_signature: tuple[str, ...] | None = None
         self._ai_grid_check_serial = 0
@@ -443,6 +449,7 @@ class LapSimDesktop:
         self.driver_play_button: tk.Button | None = None
         self.driver_replay_menu: tk.OptionMenu | None = None
         self.driver_replay_var = tk.StringVar(value="—")
+        self.driver_replay_heading = tk.StringVar(value="Replay lap")
         self._driver_replay_runs: dict[str, tuple[str, Any, str, Any]] = {}
         self.driver_run_label = tk.StringVar(value="Run a lap to load playback")
         self.driver_note_var = tk.StringVar(value=REFERENCE_DRIVER_NOTE)
@@ -990,6 +997,11 @@ class LapSimDesktop:
             anchor="w", justify="left", wraplength=750,
         )
         guidance.pack(fill="x", pady=(0, 8))
+        grid_warning = tk.Label(
+            body, textvariable=self._window_ai_grid_context(window), font=FONT_BOLD,
+            anchor="w", justify="left", wraplength=750,
+        )
+        grid_warning.pack(fill="x", pady=(0, 4))
         scroll = tk.Scrollbar(body)
         scroll.pack(side="right", fill="y")
         details = tk.Text(
@@ -1001,9 +1013,9 @@ class LapSimDesktop:
         details.insert("1.0", "\n\n".join(sections))
         details.configure(state="disabled")
         background, foreground = self._theme_colors()
-        for widget in (window, body, title, guidance, details):
+        for widget in (window, body, title, guidance, grid_warning, details):
             widget.configure(background=background)
-        for widget in (title, guidance, details):
+        for widget in (title, guidance, grid_warning, details):
             widget.configure(foreground=foreground)
         details.configure(selectbackground=foreground, selectforeground=background)
 
@@ -1660,7 +1672,9 @@ class LapSimDesktop:
         tk.Button(controls, text="Start", command=self._reset_driver_playback).pack(
             side="left", padx=(0, 8)
         )
-        tk.Label(controls, text="Replay lap").pack(side="left", padx=(0, 3))
+        tk.Label(
+            controls, textvariable=self.driver_replay_heading,
+        ).pack(side="left", padx=(0, 3))
         self.driver_replay_menu = tk.OptionMenu(
             controls, self.driver_replay_var, "—",
         )
@@ -2057,7 +2071,7 @@ class LapSimDesktop:
 
         self._pause_driver_playback()
         self._live_decision = None
-        self.driver_note_var.set(REFERENCE_DRIVER_NOTE)
+        self.driver_note_var.set(self._reference_driver_note())
         self._set_driver_box_mode(pose=False)
         self.driver_decision_title.set("Solved cell values")
         self._driver_live_mode = False
@@ -2169,6 +2183,7 @@ class LapSimDesktop:
         """Offer already solved laps for playback without running physics again."""
 
         self._driver_replay_runs = dict(options)
+        self._update_driver_replay_heading()
         self.driver_replay_var.set(selected if selected in options else "—")
         if self.driver_replay_menu is None:
             return
@@ -4263,7 +4278,12 @@ class LapSimDesktop:
             elif error is not None:
                 self._set_calculation_progress("stopped", "Finer-grid check failed")
                 self.ai_grid_check_text.set(f"Finer-grid check failed: {error}")
-                self.status_text.set("Finer-grid check failed; displayed runs are unchanged")
+                self.status_text.set(
+                    "Finer-grid retry failed; prior grid-sensitive finding remains; "
+                    "original-grid path displayed"
+                    if self.ai_grid_context_text.get() else
+                    "Finer-grid check failed; displayed runs are unchanged"
+                )
             else:
                 self.ai_grid_check_text.set(self._ai_grid_check_summary(
                     report, world_road=self._displayed_ai_road is not None,
@@ -4273,12 +4293,8 @@ class LapSimDesktop:
                     and (report.sign_stable is False
                          or report.selection_margin_stable is False)
                 )
-                if grid_sensitive:
-                    current_result = self.ai_result_text.get()
-                    if not current_result.startswith(AI_GRID_SENSITIVE_PREFIX):
-                        self.ai_result_text.set(
-                            AI_GRID_SENSITIVE_PREFIX + current_result
-                        )
+                if report.status == "completed":
+                    self._set_ai_grid_sensitive(grid_sensitive)
                 self._set_calculation_progress(
                     "complete" if report.status == "completed" else "stopped",
                     ("Finer-grid check finished" if report.status == "completed"
@@ -4291,6 +4307,9 @@ class LapSimDesktop:
                     if grid_sensitive else
                     "Finer-grid sensitivity checked; displayed path selection unchanged"
                     if report.status == "completed" else
+                    "Finer-grid retry unavailable; prior grid-sensitive finding "
+                    "remains; original-grid path displayed"
+                    if self.ai_grid_context_text.get() else
                     "Finer-grid sensitivity unavailable; displayed runs unchanged"
                 )
             self._update_ai_grid_check_button()
@@ -4910,11 +4929,56 @@ class LapSimDesktop:
                        and self._ai_grid_check_eligible() else "disabled"),
             )
 
+    def _reference_driver_note(self) -> str:
+        context = (
+            self.ai_grid_context_text.get()
+            if self._path_comparison is not None else ""
+        )
+        return f"{REFERENCE_DRIVER_NOTE} {context}" if context else REFERENCE_DRIVER_NOTE
+
+    def _update_driver_replay_heading(self) -> None:
+        self.driver_replay_heading.set(
+            "Replay original grid · rank unresolved"
+            if self.ai_grid_context_text.get() and self._driver_replay_runs
+            else "Replay lap"
+        )
+
+    def _window_ai_grid_context(self, window: tk.Toplevel) -> tk.StringVar:
+        context = tk.StringVar(master=window, value=self.ai_grid_context_text.get())
+        # Keep the variable alive after a new result detaches this window.
+        window._ai_grid_warning_var = context
+        self._ai_grid_window_contexts.append(context)
+        return context
+
+    def _set_ai_grid_sensitive(self, sensitive: bool) -> None:
+        """Qualify current UI views without changing runs, replay targets, or JSON."""
+
+        current_result = self.ai_result_text.get()
+        if sensitive and not current_result.startswith(AI_GRID_SENSITIVE_PREFIX):
+            self.ai_result_text.set(AI_GRID_SENSITIVE_PREFIX + current_result)
+        elif not sensitive and current_result.startswith(AI_GRID_SENSITIVE_PREFIX):
+            self.ai_result_text.set(current_result[len(AI_GRID_SENSITIVE_PREFIX):])
+        context = AI_GRID_SENSITIVE_CONTEXT if sensitive else ""
+        self.ai_grid_context_text.set(context)
+        for window_context in self._ai_grid_window_contexts:
+            window_context.set(context)
+        self._update_driver_replay_heading()
+        if (
+            not self._pose_live_mode
+            and not isinstance(
+                self.driver_playback, (PoseDriverPlayback, PoseDriverLivePlayback),
+            )
+        ):
+            self.driver_note_var.set(self._reference_driver_note())
+
     def _clear_ai_grid_check(self) -> None:
         self._ai_grid_check_serial += 1
         self._ai_grid_check_inputs = None
         self._ai_grid_source_signature = None
         self.ai_grid_check_text.set("")
+        # Old comparison windows keep the warning beside their frozen numbers.
+        self._ai_grid_window_contexts.clear()
+        self._set_ai_grid_sensitive(False)
         self._update_ai_grid_check_button()
 
     def _start_ai_grid_check(self) -> None:
@@ -5025,12 +5089,16 @@ class LapSimDesktop:
         synthetic_course = self.course_spec.synthetic
         window = tk.Toplevel(self.root)
         window.title("LapSim path comparison")
-        window.geometry("800x475")
+        window.geometry("800x505")
         body = tk.Frame(window, padx=12, pady=12)
         body.pack(fill="both", expand=True)
         tk.Label(body, text="Experimental path comparison", font=FONT_TITLE).grid(
             row=0, column=0, columnspan=4, sticky="w", pady=(0, 5)
         )
+        tk.Label(
+            body, textvariable=self._window_ai_grid_context(window), font=FONT_BOLD,
+            anchor="w", justify="left", wraplength=755,
+        ).grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 5))
         tk.Label(
             body,
             text=(f"Course: {course_label}. One car, one geometric source, "
@@ -5043,13 +5111,13 @@ class LapSimDesktop:
                   )
                   + "Candidate − centerline; negative lap-time Δ is faster."),
             anchor="w", justify="left", wraplength=755,
-        ).grid(row=1, column=0, columnspan=4, sticky="ew", pady=(0, 10))
+        ).grid(row=2, column=0, columnspan=4, sticky="ew", pady=(0, 10))
         for column, heading in enumerate((
             "Measure", "Geometric centerline", "Best tested AI path", "Δ candidate − centerline",
         )):
             tk.Label(
                 body, text=heading, font=FONT_BOLD, anchor="w", wraplength=180,
-            ).grid(row=2, column=column, sticky="ew", padx=3, pady=3)
+            ).grid(row=3, column=column, sticky="ew", padx=3, pady=3)
         rows = (
             ("Lap time (s)", "lap_time_s", 3),
             ("Path length (m)", "distance_m", 1),
@@ -5058,7 +5126,7 @@ class LapSimDesktop:
             ("Equivalent energy (kWh)", "pack_energy_kwh", 3),
             ("Peak lateral (g)", "peak_lateral_g", 2),
         )
-        for row, (label, field, places) in enumerate(rows, start=3):
+        for row, (label, field, places) in enumerate(rows, start=4):
             base_value = getattr(baseline, field)
             candidate_value = getattr(candidate, field)
             cells = (
@@ -5086,7 +5154,7 @@ class LapSimDesktop:
                 body, text=value, anchor="w" if column == 0 else "e",
                 relief="solid", bd=1, padx=6, pady=5,
                 font=FONT if column == 0 else ("Consolas", 10),
-            ).grid(row=9, column=column, sticky="ew", padx=3, pady=2)
+            ).grid(row=10, column=column, sticky="ew", padx=3, pady=2)
         for column in range(4):
             body.grid_columnconfigure(column, weight=1)
         tk.Label(
@@ -5104,7 +5172,7 @@ class LapSimDesktop:
                 "close it within 0.005 m/s at a fixed initial car and pack state."
             ),
             anchor="w", justify="left", wraplength=755,
-        ).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+        ).grid(row=11, column=0, columnspan=4, sticky="ew", pady=(10, 0))
         self._apply_theme()
 
     def _show_comparison(

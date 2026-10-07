@@ -162,9 +162,30 @@ def test_lost_local_projection_keeps_trace_aligned(monkeypatch):
     monkeypatch.setattr(pose_driver, "_project_local", lose_after_first_step)
     run = run_pose_driver()
     assert run.status == "projection_lost"
+    assert len(run.controls) == 1
     assert len(run.states) == len(run.times_s) == len(run.samples)
     assert not run.samples[-1].projection_valid
-    assert PoseDriverPlayback(run).frame_at(run.elapsed_pose_model_time_s)
+    playback = PoseDriverPlayback(run)
+    start = playback.control_values_at(run.times_s[-2])
+    midway = playback.control_values_at(
+        (run.times_s[-2] + run.times_s[-1]) / 2.0
+    )
+    terminal = playback.control_values_at(run.times_s[-1])
+    assert start is not None and midway is not None and terminal is not None
+    assert start[4] == pytest.approx(run.samples[-2].cross_track_error_m)
+    assert start[5] == pytest.approx(run.samples[-2].heading_error_rad * 180.0 / pi)
+    assert start[7] == pytest.approx(run.samples[-2].minimum_assumed_boundary_slack_m)
+    for displayed in (midway, terminal):
+        assert all(np.isnan(displayed[index]) for index in (4, 5, 7))
+        assert displayed[:4] == start[:4]
+        assert np.isfinite(displayed[6])
+        assert np.isfinite(displayed[8])
+    assert midway[6] == run.samples[-2].local_grip_multiplier
+    assert terminal[6] == run.samples[-1].local_grip_multiplier
+    assert terminal[8] == pytest.approx(run.states[-1].yaw_rate_rad_s * 180.0 / pi)
+    frame = playback.frame_at(run.elapsed_pose_model_time_s)
+    assert frame.x_m == pytest.approx(run.states[-1].x_m)
+    assert frame.y_m == pytest.approx(run.states[-1].y_m)
 
 
 def test_local_grip_changes_closed_loop_commands():
