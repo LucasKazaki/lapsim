@@ -76,7 +76,9 @@ def test_evidence_summary_names_model_limits_and_source_assumptions() -> None:
     assert "synthetic: yes" in summary
     assert "Source boundary status: absent" in summary
     assert "user-assumed uniform half-width" in summary
+    assert "AI rank status (saved original grid): invalid_processed_baseline" in summary
     assert "diagnostic only: yes" in summary
+    assert "Optional finer-grid findings are not stored in this run record." in summary
 
     measured_source = _record(PRIMARY_ID, "Imported car", planning=planning)
     measured_source["settings"]["track"]["source_course"].update({
@@ -88,6 +90,22 @@ def test_evidence_summary_names_model_limits_and_source_assumptions() -> None:
     assert "Source boundary status: measured" in measured_summary
     assert "Source corridor: measured; used by AI planner: no" in measured_summary
     assert "AI corridor: user-assumed uniform half-width" in measured_summary
+
+
+def test_saved_ai_rank_is_labeled_as_original_grid_even_when_candidate_selected() -> None:
+    planning = {
+        "mode": "experimental_racing_line",
+        "corridor": {"source": "user-assumed uniform half-width"},
+        "rank_status": "candidate_selected",
+        "diagnostic_only": False,
+    }
+    summary = _run_evidence_text(
+        "AI result", Path("C:/runs") / f"{PRIMARY_ID}.json",
+        _record(PRIMARY_ID, "Prius benchmark", planning=planning),
+    )
+    assert "AI rank status (saved original grid): candidate_selected" in summary
+    assert "diagnostic only: no" in summary
+    assert "Optional finer-grid findings are not stored in this run record." in summary
 
 
 def test_linked_ai_references_include_only_saved_trials() -> None:

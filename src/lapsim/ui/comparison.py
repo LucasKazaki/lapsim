@@ -42,9 +42,17 @@ def summarize_lap(result: EnduranceRunResult, track_length_m: float) -> LapSumma
         raise ValueError("Lap time must be finite and positive")
     if not isfinite(result.pack_energy_kwh):
         raise ValueError("Run energy must be finite")
+    starting_speed_mps = result.starting_speed_mps
+    if starting_speed_mps is not None and (
+        not isfinite(starting_speed_mps) or starting_speed_mps < 0.0
+    ):
+        raise ValueError("Starting speed must be finite and nonnegative")
+    peak_speed_mps = float(np.max(speed_mps))
+    if starting_speed_mps is not None:
+        peak_speed_mps = max(peak_speed_mps, starting_speed_mps)
     return LapSummary(
         lap_time_s=result.driving_time_s,
-        peak_speed_kph=float(np.max(speed_mps)) * 3.6,
+        peak_speed_kph=peak_speed_mps * 3.6,
         average_speed_kph=track_length_m / result.driving_time_s * 3.6,
         distance_m=track_length_m,
         pack_energy_kwh=result.pack_energy_kwh,

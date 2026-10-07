@@ -499,14 +499,14 @@ Research basis: [TUM FTM's variable-friction minimum-time implementation](https:
 | Run one lap | Worker executes one rolling-start prescribed-path lap in default mode; AI mode plans one geometry candidate and tests full, half, and one bounded fourth offset against its processed centerline |
 | Calculation progress bar | Labeled fixed monochrome strip: local corner-limit cells and current recorded-lap accepted cells have measured within-phase fractions; cyclic braking names its pass and processed cells while remaining indeterminate until convergence; planning, explicitly labeled speed-seam probes, and the transition to the final lap remain indeterminate; complete/stopped state at result |
 | Compare car profiles | Two saved/built-in profiles run against the same course, step, driver fraction, and feasible rolling-start speed; B-minus-A numbers and separate finish/seam speeds are model differences |
-| Eight boxes | Lap time, peak speed, average speed (`course_length/time`), course distance, signed net pack-model energy, peak `abs(lateral acceleration)/g`, and entry/exit speeds |
+| Eight boxes | Lap time, peak speed from the rolling start and recorded cell exits, average speed (`course_length/time`), course distance, signed net pack-model energy, peak `abs(lateral acceleration)/g`, and entry/exit speeds |
 | AI result boxes | Eligible baseline/candidate times and signed difference when both audits pass; completed audit-failed times carry `*`, difference is blank, Compare path numbers is disabled, and text gives observed excess, certification status, and seam gap |
 | Check finer grid (optional) | Enabled for two eligible completed AI paths on uniform road or the assumed rectangle. A worker reruns the same fixed paths with the frozen effective car and driver request on a finer grid, up to 5,000 cells per path and four additional speed-seam lap passes. For patch trials it remaps the world-fixed rectangle separately on each refined path using that path's original modeled entry heading. It reports original/refined signed time differences, sign and the fixed pair's 0.05 s selection-threshold crossing; other AI trials are not rerun. A completed sign or threshold-crossing change flags the main result, path comparison, saved-evidence window, and AI replay context as grid-sensitive/unresolved while leaving the original-grid path, numbers, and records intact. A stable pairwise check does not confirm global trial ordering, convergence, renewed clearance, or measured-road validity |
 | Trace selector | Speed, acceleration, drive/braking forces, inferred driven slip, or battery power from named telemetry channels, against time or distance |
 | Course map | Selected source x/y reference, fixed top-down; mouse drag pans and wheel zooms; a selected AI rectangle is outlined in black/white. The fused course displays its geometry warning while the synthetic choices are labeled as assumed examples |
 | Driver view tab | Static labeled source-course preview while preparing; latest accepted physics cell on the exact trial grid during a solve; then timed top-down replay on each run's saved solver-grid x/y with fixed car marker, play/pause, scrub, rate, wheel zoom, cell control/force number boxes, and a Replay lap menu for completed comparisons; the separately labeled synthetic pose preview uses simulated x/y and heading |
 | Timed sessions · WIP tab | Optional bounded 80 m synthetic four-wheel pose preview on the coherent demo centerline, plus a selected eligible AI candidate path preview on that same demo using an explicit sampled-polyline reference. Both use a separate synthetic car, uniform base grip or a labeled assumed 0.3× first-bend patch, and a signed initial offset inside a nominal ±1.9 m input bound. Save/Load persists and numerically checks only this separate synthetic trace; the versioned team controller, ghost, full session capture, and comparison workflow remain unavailable |
-| Saved run details | Read-only text window for the currently displayed lap or A/B result: full content IDs and files, profile, result, source/boundary status, solver path, AI rank/assumptions, and available linked AI trial records |
+| Saved run details | Read-only text window for the currently displayed lap or A/B result: full content IDs and files, profile, result, source/boundary status, solver path, AI original-grid rank/assumptions, and available linked AI trial records. Optional finer-grid findings are not in the saved lap record |
 | Source data / model notes | Inspect reviewed records, origins, model use, and caveats; inspection does not change the active vehicle |
 | Dark mode | Reverses white/black Tk and Matplotlib surfaces; it does not change a simulation parameter |
 
@@ -530,6 +530,16 @@ energy history. For exact values and full channels use the saved JSON record.
 For A/B, `prepare_one_lap_constraints` solves each car's limits once on the same grid. Its wrapper binds the limits to that vehicle; reuse with another car or track is rejected. The app starts both at `min(ceiling_A[0], ceiling_B[0])` m/s. Keep each car's setup unchanged between limit preparation and running.
 
 Both cars then complete one recorded pass with that explicit rolling start and the same constant driver torque fraction. The constraints are reused instead of solved again; the extra shared-start selection adds no lap-model pass. Both records freeze the same start speed in their endurance settings, so `replay_lap_record()` can reproduce each saved command trace. Each car still has its own tire/powertrain limits, battery state, achieved finish speed, and nonperiodic speed seam. The B-minus-A lap difference is a same-start **model sensitivity comparison**, not a steady-state race prediction or validation against either car.
+
+`ui/comparison.py::summarize_lap` computes displayed peak speed from the
+rolling start **and** every recorded accepted-cell exit. Telemetry starts
+after the first cell, so a car that slows through its opening cell could
+otherwise report a peak below the shared start speed shown in the A/B popup.
+For a complete synthetic two-cell example starting at **20 m/s** with
+recorded exits **10 and 8 m/s**, the corrected peak is **72 km/h** rather
+than **36 km/h**. Legacy records without a start speed retain the exit-only
+summary. This is a peak of the modeled boundary samples, not an independent
+continuous-speed measurement.
 
 **Compare path numbers** shows each AI path's rolling start speed, finish speed, and finish-minus-start seam speed beside its lap metrics. Speed-seam shooting solves the rolling start independently for the processed baseline and candidate. The paths use the same effective vehicle configuration, initial pack state, and driver torque request, but their rolling start speeds may differ. The displayed AI lap-time difference compares those two path-specific speed-closed model laps; it is not a same-start experiment or a validated race-time advantage.
 
@@ -744,9 +754,14 @@ of stale geometry or a fabricated number. Held commands, grip, yaw rate,
 and the simulated x/y pose remain visible. This presentation rule does not
 alter the recorded state, controller, or physics integration.
 If terminal projection is lost, the pose summary labels distance as the
-**last confirmed station** and reports assumed footprint slack as unavailable;
-actual pose and recorded controls remain available. The prior station is not
-a projection of the final simulated pose.
+**last confirmed station** and reports assumed footprint slack as unavailable.
+The Driver view's **STATION** box shows an unavailable dash through the
+failed interval and at its terminal sample rather than presenting that stale
+station as the current pose projection. Live invalid samples also mask their
+tracking, heading-error, and assumed-slack boxes. The retained numeric
+station remains internal to viewport sampling; actual pose, speed, and
+recorded controls remain visible. The prior station is not a projection of
+the final simulated pose.
 
 The path is a reference for steering; the state evolves from the four-wheel
 forces and yaw equations above. This gives a controlled pose experiment,
@@ -1110,8 +1125,12 @@ The desktop's **Saved run details** button opens a read-only text viewer for
 the currently displayed lap or A/B comparison. It loads each named run by
 its full content ID and file path, reports the profile, result status, source
 course and boundary status, solver path and cell count, and AI assumption and
-rank status where present. For a primary AI result it follows available
-baseline and candidate trial IDs, showing a load error if a linked file is
+rank status where present. The AI rank is explicitly labeled as the saved
+**original-grid** decision. An optional finer-grid finding can qualify the
+current desktop view, but it is not stored in that immutable lap record and
+will not reappear merely by reopening the JSON after a restart. For a primary
+AI result it follows available baseline and candidate trial IDs, showing a
+load error if a linked file is
 missing or invalid. The viewer does not rerun physics, certify boundaries,
 or turn a diagnostic trial into a ranked path. The separate WIP pose Save/Load
 controls use Section 14.4's synthetic pose schema, not this v2 lap-record
@@ -1252,6 +1271,23 @@ module passed **48/48**, and `scripts/check_desktop.py` passed its startup
 preflight. The new UI regressions check separately solved baseline/candidate
 start speeds and interval-boundary lateral values. These are display and
 software checks; they do not change or validate the physical vehicle model.
+
+A later 7 October 2026 sweep passed all **61 test files** after correcting
+three reporting issues: the synthetic Driver view now masks its STATION box
+when local projection is lost, saved AI evidence labels its rank as an
+original-grid decision and discloses that optional finer-grid findings are
+not in the run record, and displayed peak speed includes the rolling start
+as well as accepted-cell exits. The first sweep exposed three outdated AI
+desktop assertions expecting the former evidence label; after updating that
+test expectation, the full sweep had no failures. One AI Tk case skipped
+intermittently on an `init.tcl` read error and its entire three-case
+parameterization passed **3/3** in a fresh process. Focused checks passed
+**52/52** across pose driver/status, **7/7** saved-evidence UI, and **3/3**
+profile/summary cases; `scripts/check_desktop.py` passed. In the synthetic
+projection-loss reproduction, the pose advanced about **0.226 m** while
+the retained station stayed at **0.0 m**; the STATION box now displays an
+unavailable dash during the failed interval and at the terminal sample.
+These are reporting and model-summary checks, not physical validation.
 
 The cell-length regressions verify that the planner bounds generated baseline and candidate physics cells, tries the allowed 5,000-point grid before rejecting a tight request, and handles a one-ulp final-station discrepancy on the FSAE-style practice course without relaxing its clearance checks. A desktop regression changes the visible cell-size entry from 2 m to 1 m and confirms that the actual model grid and requested maximum passed to record capture change. The WIP pose UI checks its finer/coarser effective grid, 5,000-cell rejection, selected-path eligibility gate, frozen worker path, live pose-model labels, saved-record mode, and scrolling access to status at the 1080 × 720 window minimum. Desktop progress regressions verify current-pass accepted-cell fractions, explicit speed-seam probe and final-lap transitions without a fabricated percentage, indeterminate preparation and gap states, completion/failure reset, dark-mode contrast, and cancellation of pending animation callbacks at window close. Detour regressions check bounded construction, lower wheel-contact exposure, corridor refusal, full-model selection, slower-detour rejection, exact saved strategy, and replay agreement.
 

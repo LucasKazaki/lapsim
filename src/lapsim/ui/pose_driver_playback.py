@@ -84,6 +84,21 @@ class PoseDriverPlayback(DriverPlayback):
             decision=None,
         )
 
+    def projection_valid_at(self, time_s: float) -> bool:
+        """Whether the displayed station belongs to a confirmed projection."""
+
+        if not isfinite(time_s):
+            raise ValueError("Time must be finite")
+        instant = min(max(time_s, 0.0), self.duration_s)
+        index = bisect_right(self.times, instant) - 1
+        if index >= len(self.run.samples) - 1:
+            return self.run.samples[-1].projection_valid
+        return (
+            self.run.samples[index].projection_valid
+            and (instant == self.times[index]
+                 or self.run.samples[index + 1].projection_valid)
+        )
+
     def local_path_m(
         self, frame: DriverFrame, *, behind_m: float, ahead_m: float,
         spacing_m: float = 2.0,
@@ -192,16 +207,24 @@ class PoseDriverLivePlayback(DriverPlayback):
             decision=None,
         )
 
+    def projection_valid_at(self, time_s: float) -> bool:
+        if not isfinite(time_s):
+            raise ValueError("Time must be finite")
+        return self.sample.projection_valid
+
     def control_values_at(self, time_s: float) -> tuple[float, ...]:
         if not isfinite(time_s):
             raise ValueError("Time must be finite")
         unavailable = float("nan")
+        projection_valid = self.sample.projection_valid
         return (
             unavailable, unavailable, unavailable, unavailable,
-            self.sample.cross_track_error_m,
-            self.sample.heading_error_rad * 180.0 / pi,
+            self.sample.cross_track_error_m if projection_valid else unavailable,
+            self.sample.heading_error_rad * 180.0 / pi
+            if projection_valid else unavailable,
             self.sample.local_grip_multiplier,
-            self.sample.minimum_assumed_boundary_slack_m,
+            self.sample.minimum_assumed_boundary_slack_m
+            if projection_valid else unavailable,
             self.state.yaw_rate_rad_s * 180.0 / pi,
         )
 

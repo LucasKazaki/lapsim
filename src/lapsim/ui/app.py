@@ -245,8 +245,12 @@ def _run_evidence_text(label: str, path: Path, record: dict[str, Any]) -> str:
             "AI corridor: " + str(corridor.get("source") or "assumption not recorded")
         )
         lines.append(
-            f"AI rank status: {planning.get('rank_status') or 'not recorded'}; "
+            "AI rank status (saved original grid): "
+            f"{planning.get('rank_status') or 'not recorded'}; "
             f"diagnostic only: {'yes' if planning.get('diagnostic_only') else 'no'}"
+        )
+        lines.append(
+            "Optional finer-grid findings are not stored in this run record."
         )
         strategy = planning.get("selected_strategy") or planning.get("strategy")
         if isinstance(strategy, str):
@@ -2312,8 +2316,14 @@ class LapSimDesktop:
             f"{frame.time_s:.2f} elapsed" if self._driver_live_mode
             else f"{frame.time_s:.2f} / {playback.duration_s:.2f}"
         )
+        station_available = (
+            playback.projection_valid_at(self._driver_playback_time_s)
+            if isinstance(playback, (PoseDriverPlayback, PoseDriverLivePlayback))
+            else True
+        )
         self.driver_values["distance"].set(
             f"{frame.distance_m:.1f} / {playback.track.length_m:.1f}"
+            if station_available else "—"
         )
         self.driver_values["speed"].set(f"{frame.speed_mps * 3.6:.1f}")
         self.driver_values["lateral"].set(

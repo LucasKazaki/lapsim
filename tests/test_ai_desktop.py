@@ -290,7 +290,7 @@ def test_ai_grid_check_qualifies_unstable_main_result_without_reselection(
             child.get("1.0", "end-1c") for child in app._walk_widgets(evidence)
             if isinstance(child, tk.Text)
         )
-        assert "AI rank status: candidate_selected" in evidence_text
+        assert "AI rank status (saved original grid): candidate_selected" in evidence_text
         assert app._path_comparison[1] is comparison
         assert comparison.candidate_run is selected_run
         assert comparison.candidate_track is selected_track

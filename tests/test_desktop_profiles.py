@@ -48,3 +48,23 @@ class DesktopProfileTests(TestCase):
         self.assertAlmostEqual(summary.distance_m, 100.0)
         self.assertAlmostEqual(summary.pack_energy_kwh, 0.2)
         self.assertAlmostEqual(summary.peak_lateral_g, 1.0)
+
+    def test_lap_summary_includes_rolling_start_in_peak_speed(self) -> None:
+        result = EnduranceRunResult(
+            completed_laps=1,
+            driving_time_s=10.0,
+            lap_times_s=(10.0,),
+            pack_energy_kwh=0.2,
+            final_state_of_charge=0.8,
+            failure_reason=None,
+            telemetry={
+                "vehicle.speed_mps": (10.0, 8.0),
+                "vehicle.lateral_acceleration_mps2": (0.0, 0.0),
+            },
+            starting_speed_mps=20.0,
+            ending_speed_mps=8.0,
+        )
+
+        summary = summarize_lap(result, 100.0)
+
+        self.assertAlmostEqual(summary.peak_speed_kph, 72.0)

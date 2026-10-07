@@ -295,6 +295,12 @@ modeled ranking **grid-sensitive; unresolved**. The original-grid path,
 numbers, and saved trial records remain in place; a stable report leaves the
 original-grid headline unqualified, and stale or non-completed reports do not
 add this warning.
+The optional finer-grid report is held in the desktop session, not in the
+content-addressed lap record saved before the check. **Saved run details**
+therefore labels its AI rank as the saved original-grid decision and says the
+optional finding is absent from that record. Reopening the JSON alone cannot
+recover a later grid-sensitive warning; a separate linked diagnostic archive
+is still future work.
 While that warning is active, the WIP selected-path synthetic pose preview
 cannot start another run. A completed stable finer-grid check or a new eligible
 AI run restores its availability. An existing pose trace and its saved file,
