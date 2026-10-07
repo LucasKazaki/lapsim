@@ -97,7 +97,8 @@ class PoseDriverPlayback(DriverPlayback):
 
         Controls are held over their output interval. Geometry diagnostics are
         linearly displayed between recorded boundary samples; this display
-        interpolation does not add a new physics evaluation.
+        interpolation does not add a new physics evaluation. Grip uses the
+        latest recorded sample, including the terminal sample.
         """
 
         if not isfinite(time_s):
@@ -105,7 +106,8 @@ class PoseDriverPlayback(DriverPlayback):
         if not self.run.controls:
             return None
         instant = min(max(time_s, 0.0), self.duration_s)
-        index = min(bisect_right(self.times, instant) - 1, len(self.run.controls) - 1)
+        sample_index = bisect_right(self.times, instant) - 1
+        index = min(sample_index, len(self.run.controls) - 1)
         interval_s = self.times[index + 1] - self.times[index]
         fraction = 0.0 if interval_s <= 0.0 else (
             instant - self.times[index]
@@ -126,7 +128,7 @@ class PoseDriverPlayback(DriverPlayback):
             (first.heading_error_rad + fraction * remainder(
                 second.heading_error_rad - first.heading_error_rad, 2.0 * pi,
             )) * 180.0 / pi,
-            first.local_grip_multiplier,
+            self.run.samples[sample_index].local_grip_multiplier,
             linear(first.minimum_assumed_boundary_slack_m,
                    second.minimum_assumed_boundary_slack_m),
             linear(first_state.yaw_rate_rad_s, second_state.yaw_rate_rad_s)

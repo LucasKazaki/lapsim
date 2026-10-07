@@ -432,6 +432,7 @@ def test_pose_playback_labels_separate_model_and_reference_mode_restores_note() 
         assert "base-road fallback" not in app.driver_note_var.get()
         assert "14.75 s pose-model time" in app.driver_run_label.get()
         assert app.driver_decision_title_labels[0].cget("text") == "STEER FRONT (°)"
+        assert app.driver_decision_title_labels[6].cget("text") == "GRIP SAMPLE (×)"
 
         with (
             patch("lapsim.ui.app.DriverPlayback", return_value=object()),

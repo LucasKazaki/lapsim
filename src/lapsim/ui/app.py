@@ -62,6 +62,12 @@ FONT_TITLE = ("Segoe UI", 16, "bold")
 AI_SELECTION_MARGIN_S = 0.05
 AI_ROAD_UNIFORM = "Uniform (default)"
 AI_ROAD_PATCH = "One rectangular low-grip patch (assumed)"
+AI_GRID_SENSITIVE_PREFIX = (
+    "GRID-SENSITIVE · The fixed paths changed time order or crossed the "
+    "selection margin on a finer grid. Their modeled time ranking is "
+    "unresolved; the original-grid path and numbers remain displayed. "
+    "Original-grid result: "
+)
 
 
 def _ai_road_label(road: PlanarRoad | None, base_grip: float) -> str:
@@ -302,7 +308,7 @@ DRIVER_CELL_BOXES = (
 POSE_DRIVER_BOX_TITLES = (
     "STEER FRONT (°)", "REAR DRIVE (N·m/wheel)",
     "BRAKE FL (N·m)", "BRAKE FR (N·m)", "CROSS-TRACK (m)",
-    "HEADING ERROR (°)", "LOCAL GRIP (×)", "ASSUMED SLACK (m)",
+    "HEADING ERROR (°)", "GRIP SAMPLE (×)", "ASSUMED SLACK (m)",
     "YAW RATE (°/s)",
 )
 POSE_DRIVER_BOX_FORMATS = (
@@ -4262,6 +4268,17 @@ class LapSimDesktop:
                 self.ai_grid_check_text.set(self._ai_grid_check_summary(
                     report, world_road=self._displayed_ai_road is not None,
                 ))
+                grid_sensitive = (
+                    report.status == "completed"
+                    and (report.sign_stable is False
+                         or report.selection_margin_stable is False)
+                )
+                if grid_sensitive:
+                    current_result = self.ai_result_text.get()
+                    if not current_result.startswith(AI_GRID_SENSITIVE_PREFIX):
+                        self.ai_result_text.set(
+                            AI_GRID_SENSITIVE_PREFIX + current_result
+                        )
                 self._set_calculation_progress(
                     "complete" if report.status == "completed" else "stopped",
                     ("Finer-grid check finished" if report.status == "completed"
@@ -4269,6 +4286,9 @@ class LapSimDesktop:
                     fraction=1.0 if report.status == "completed" else 0.0,
                 )
                 self.status_text.set(
+                    "Finer-grid timing is grid-sensitive; ranking unresolved; "
+                    "original-grid path remains displayed"
+                    if grid_sensitive else
                     "Finer-grid sensitivity checked; displayed path selection unchanged"
                     if report.status == "completed" else
                     "Finer-grid sensitivity unavailable; displayed runs unchanged"
@@ -4964,7 +4984,7 @@ class LapSimDesktop:
             return (
                 f"Finer-grid check {report.status.replace('_', ' ')}: "
                 f"{report.failure_reason or 'no refined comparison available'}. "
-                "Displayed path selection is unchanged."
+                "Displayed path is unchanged."
             )
         sign = "yes" if report.sign_stable else "no"
         margin = "yes" if report.selection_margin_stable else "no"
@@ -4979,7 +4999,7 @@ class LapSimDesktop:
             f"max {report.maximum_refined_cell_length_m:.3g} m "
             f"({report.refined_baseline_cells:,}/{report.refined_candidate_cells:,} cells). "
             f"Sign stable: {sign}; {report.selection_margin_s:.2f} s selection "
-            f"margin stable: {margin}. {road_note}Selection is unchanged. One refinement "
+            f"margin stable: {margin}. {road_note}Displayed path is unchanged. One refinement "
             "does not certify convergence, corridor clearance, or real-car time."
         )
 

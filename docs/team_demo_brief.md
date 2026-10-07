@@ -17,11 +17,14 @@ For a fresh Windows clone, run `setup_lapsim.cmd` once before this walkthrough; 
   (optional)**. The same fixed baseline/candidate paths and frozen car are
   rerun once at finer spacing; the current example's modeled difference
   changes from about **−2.371 s** to **−2.352 s** while retaining its sign and
-  0.05 s selection-margin crossing. The selected line is unchanged. This is
-  one numerical sensitivity check, not convergence or boundary validation.
+  0.05 s selection-margin crossing. The original-grid path remains displayed.
+  If either check changes on a different run, the main result says
+  **grid-sensitive; ranking unresolved** while its original-grid numbers and
+  saved records remain available. This is one numerical sensitivity check,
+  not convergence or boundary validation.
 - Return to **Fused GNSS/IMU · default** in AI mode at 1 m, 100% Prius driver request, assumed half-width 2.0 m, vehicle width 1.78308 m, safety margin 0.3 m, and 100% assumed road grip. Read the *current* diagnostic status from the run: the processed baseline fails the path audit, completed times are starred diagnostics, **Compare path numbers** is disabled, and no AI winner is selected. **Saved run details** exposes the primary and linked trial files; Driver view can replay completed diagnostics. Changing course clears the previous result and evidence button.
 - Switch back to **Centerline (default)** and use **Run comparison** for two saved or built-in profiles. Read B-minus-A values and the shared rolling start, then open **Saved run details** for both full record IDs and files. Each car has one initial-condition lap; the source-backed TREV entries are partial working scenarios.
-- Open **Timed sessions · WIP** and, if time permits, run its **80 m synthetic pose preview**. After an eligible synthetic AI result, its second button can preview that selected polygon with the separate synthetic car. Driver view then plays actual modeled x/y and heading, with boxes for steering, wheel torque, tracking error, grip, and assumed clearance. Its duration is pose-model time, not the endurance lap time. A saved v2 pose trace checks both recorded-input dynamics replay and whether the declared controller issued its controls; a zero-step trace has no controller choices to check. The tab cannot start a full timed session or ghost yet.
+- Open **Timed sessions · WIP** and, if time permits, run its **80 m synthetic pose preview**. After an eligible synthetic AI result, its second button can preview that selected polygon with the separate synthetic car. Driver view then plays actual modeled x/y and heading, with boxes for steering, wheel torque, tracking error, sampled grip, and assumed clearance. On replay, controls hold over their recorded intervals; **GRIP SAMPLE (×)** reads the latest pose sample, including the terminal sample, without another physics step. Its duration is pose-model time, not the endurance lap time. A saved v2 pose trace checks both recorded-input dynamics replay and whether the declared controller issued its controls; a zero-step trace has no controller choices to check. The tab cannot start a full timed session or ghost yet.
 
 If a pose trace stops with `road_domain_invalid`, its local-grip box may show
 the base-road diagnostic fallback outside the declared road domain. Read the
@@ -75,6 +78,9 @@ from about **−2.591 s** to **−2.612 s**; the sign and 0.05 s selection-margi
 decision stayed the same. The selected line does not change. This is one
 numerical sensitivity observation, not convergence, surveyed road validity,
 or renewed clearance proof.
+If a completed check reverses the sign or crosses the 0.05 s margin, describe
+the modeled ranking as **grid-sensitive and unresolved**. The displayed
+original-grid path, numbers, and saved records stay in place.
 
 The car and path comparison popups display the selected course label; an open
 popup retains that label if the main course choice changes.

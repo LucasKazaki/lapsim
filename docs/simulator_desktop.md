@@ -307,7 +307,11 @@ remaps the same world-fixed rectangle independently on each refined path and
 retains each original path's modeled entry heading; it does not repeat the
 coarse path's grip cells. It reports both candidate-minus-centerline time
 differences, refined cell counts, sign stability, and whether the provisional
-0.05 s selection decision crosses its threshold. It never reselects the path.
+0.05 s selection decision crosses its threshold. If a completed check changes
+either the sign or that margin crossing, the main AI headline and status mark
+the modeled ranking **grid-sensitive; unresolved**. The original-grid path,
+numbers, and saved records stay visible; no path is reselected. A stable check
+leaves the headline unchanged, and stale or non-completed checks add no warning.
 Each refined path is capped at 5,000 cells; the two paths can add up to four
 lap-model passes under the speed-seam policy. One extra grid is not a
 convergence proof, a renewed path-clearance audit, or validation of the
@@ -466,8 +470,11 @@ or battery result. During the live calculation it shows speed, progress,
 tracking error, local grip, assumed footprint slack, and yaw rate; controls
 and lateral acceleration display dashes until completed replay. Its replay
 number boxes then show recorded steering, rear-wheel drive, and front-wheel brake
-requests too. The default ±3 m corridor, 1.8 m vehicle width, and 0.2 m
-margin are assumptions. The sampled body-rectangle check covers the span
+requests too. The **GRIP SAMPLE (×)** box uses the latest recorded pose sample,
+including the terminal sample; issued controls stay held over their recorded
+intervals. Display interpolation adds no new physics evaluation. The default
+±3 m corridor, 1.8 m vehicle width, and 0.2 m margin are assumptions. The
+sampled body-rectangle check covers the span
 between axle lines under that corridor, with no surveyed boundary, overhang,
 or between-sample swept-area certificate. The future-speed calculation is a
 planning heuristic, not a tire-force or clearance certificate. A run that

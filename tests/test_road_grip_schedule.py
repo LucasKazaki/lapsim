@@ -73,6 +73,43 @@ def test_narrow_patch_between_cell_samples_and_path_specific_map() -> None:
     ) * track.cell_count
 
 
+@pytest.mark.parametrize("later_bounds", (
+    (-100.0, 100.0, -100.0, 100.0),  # Full overlap.
+    (5.0, 15.0, 5.0, 15.0),  # Partial overlap.
+    (10.0, 20.0, 0.0, 10.0),  # Inclusive shared edge.
+))
+def test_overlapping_patches_rejected_before_mapping(
+    later_bounds: tuple[float, float, float, float],
+) -> None:
+    first = RectangularGripPatch(0.0, 10.0, 0.0, 10.0, 0.8)
+    later = RectangularGripPatch(*later_bounds, 0.3)
+    road = PlanarRoad(patches=(first, later))
+    if later_bounds == (-100.0, 100.0, -100.0, 100.0):
+        assert road.query(5.0, 5.0).friction_multiplier == 0.8
+    with pytest.raises(ValueError, match="overlapping patches"):
+        world_patch_grip_schedule(_rounded_rectangle(), Vehicle(), road)
+
+
+def test_disjoint_patches_map_the_same_as_individual_patches() -> None:
+    track = _rounded_rectangle()
+    vehicle = Vehicle()
+    first = RectangularGripPatch(7.225, 7.235, -0.62, -0.57, 0.3)
+    later = RectangularGripPatch(17.225, 17.235, -0.62, -0.57, 0.6)
+    together = world_patch_grip_schedule(
+        track, vehicle, PlanarRoad(patches=(first, later)),
+    )
+    separate_first = world_patch_grip_schedule(
+        track, vehicle, PlanarRoad(patches=(first,)),
+    )
+    separate_later = world_patch_grip_schedule(
+        track, vehicle, PlanarRoad(patches=(later,)),
+    )
+    assert together == tuple(
+        min(a, b) for a, b in zip(separate_first, separate_later, strict=True)
+    )
+    assert 0.3 in together and 0.6 in together
+
+
 def test_refined_coherent_arc_keeps_original_world_heading() -> None:
     source = _rounded_rectangle()
     source.validate_coherent_arcs()

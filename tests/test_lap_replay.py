@@ -178,6 +178,17 @@ def test_world_patch_record_checks_geometry_and_grip_after_rehash(
     with pytest.raises(ValueError, match="does not reproduce cell grip schedule"):
         replay_lap_record(changed_rectangle)
 
+    overlapping_rectangle = _mutated_record(
+        path, tmp_path / "overlapping_rectangle.json",
+        lambda payload: payload["settings"]["path_planning"]["road_condition"]
+        ["patches"].append(dict(
+            payload["settings"]["path_planning"]["road_condition"]["patches"][0],
+            friction_multiplier=0.3,
+        )),
+    )
+    with pytest.raises(ValueError, match="overlapping patches"):
+        replay_lap_record(overlapping_rectangle)
+
     claimed_uniform = _mutated_record(
         path, tmp_path / "claimed_uniform.json",
         lambda payload: (

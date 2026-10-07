@@ -169,6 +169,9 @@ screens up to 12 constructed geometries, times at most one extra detour with
 the full lap model, and still selects a path only after the modeled-path audit
 and the same gain threshold. This is a conservative sensitivity model, not
 measured grip, independent-wheel road forces, or a closed-loop driver.
+The programmatic multi-patch mapper rejects rectangles that overlap or share
+an edge: inclusive first-match road queries and minimum-per-cell mapping
+would otherwise disagree. The desktop still offers just one rectangle.
 
 The **Driving path** control defaults to the ordinary centerline solver and
 does no path optimization. Its optional **AI racing line (experimental)** mode
@@ -209,9 +212,13 @@ same paths with the same frozen car and driver request on a finer grid. In an
 assumed rectangular-patch trial, it remaps that same world-fixed rectangle
 independently onto each refined path, retaining each original path's modeled
 entry heading. It reports the original and refined candidate-minus-centerline
-differences, sign, and selection-margin stability without changing the
-selected line. It is an on-demand fixed-path numerical sensitivity check,
-limited to 5,000 cells per path; it does not re-audit clearance, establish
+differences, sign, and selection-margin stability. If either the sign or the
+provisional 0.05 s selection-margin crossing changes in a completed check,
+the main AI headline and status say **grid-sensitive; ranking unresolved**.
+The original-grid path and numbers remain displayed, and saved records stay
+available; the check does not reselect or rewrite them. A stable check leaves
+the headline unchanged. It is an on-demand fixed-path numerical sensitivity
+check, limited to 5,000 cells per path; it does not re-audit clearance, establish
 convergence, or validate the assumed road. The API's separate explicit
 per-cell grip-tuple mode still repeats each original cell's value over its
 subdivisions; that mode does not remap a world-fixed patch. The two road-input
@@ -334,6 +341,10 @@ duration, not the engineering
 lap time shown by the default solver. The run retains issued controls and
 states in memory for `replay_pose_driver()` to check numerical agreement at
 declared state tolerances, as well as recorded pose samples and stop status.
+During replay, Driver view holds each recorded control over its interval and
+shows grip from the latest recorded **sample**, including the terminal pose
+sample. This display adds no physics evaluation.
+
 If the run stops with `road_domain_invalid`, its local-grip number can be the
 base-road diagnostic fallback outside the declared road domain. The display
 warns that this number is not valid road data.

@@ -18,7 +18,8 @@ from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.dynamics.conditions import PlanarRoad, RectangularGripPatch
 from lapsim.optimization.grid_stability import PairedGridStabilityReport
 from lapsim.ui.app import (
-    AI_ROAD_PATCH, LapSimDesktop, _course_geometry_warning,
+    AI_GRID_SENSITIVE_PREFIX, AI_ROAD_PATCH, LapSimDesktop,
+    _course_geometry_warning,
 )
 from lapsim.ui.course_catalog import COURSE_OPTIONS, SYNTHETIC_DEMO_COURSE_ID
 from lapsim.ui.presets import VehicleSetup
@@ -73,6 +74,118 @@ def _completed_grid_report() -> PairedGridStabilityReport:
         refined_baseline_cells=200,
         refined_candidate_cells=240,
     )
+
+
+def _deliver_grid_report(
+    app: LapSimDesktop, comparison: SimpleNamespace,
+    report: PairedGridStabilityReport | None, *,
+    error: Exception | None = None, stale_serial: bool = False,
+) -> None:
+    app._active_run_input_signature = app._run_input_signature()
+    serial = app._ai_grid_check_serial - 1 if stale_serial else app._ai_grid_check_serial
+    app.result_queue.put(("ai_grid_check", (serial, comparison, report), error))
+    app._poll_result()
+
+
+@pytest.mark.parametrize(
+    ("refined_delta_s", "sign_stable", "margin_stable", "warn"),
+    (
+        (0.02, False, False, True),       # The numerical winner reverses.
+        (-0.03, True, False, True),       # Same winner, but gain falls below margin.
+        (-0.17, True, True, False),       # Original claim survives this check.
+    ),
+)
+def test_ai_grid_check_qualifies_unstable_main_result_without_reselection(
+    refined_delta_s: float, sign_stable: bool, margin_stable: bool, warn: bool,
+) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        comparison = _install_eligible_ai_grid_result(app)
+        original_headline = "Faster AI path selected at 0.95× of the proposed offset."
+        app.ai_result_text.set(original_headline)
+        app.ai_output_values["baseline"].configure(text="100.000")
+        app.ai_output_values["candidate"].configure(text="99.800")
+        app.ai_output_values["difference"].configure(text="-0.200")
+        original_numbers = {
+            key: app.ai_output_values[key].cget("text")
+            for key in ("baseline", "candidate", "difference")
+        }
+        app._displayed_run_records = (("AI result", "saved-original-run"),)
+        original_records = app._displayed_run_records
+        selected_run = comparison.candidate_run
+        selected_track = comparison.candidate_track
+        report = replace(
+            _completed_grid_report(),
+            refined_candidate_time_s=99.9 + refined_delta_s,
+            refined_candidate_minus_baseline_s=refined_delta_s,
+            sign_stable=sign_stable,
+            selection_margin_stable=margin_stable,
+        )
+
+        _deliver_grid_report(app, comparison, report)
+        if warn:
+            assert app.ai_result_text.get().startswith(AI_GRID_SENSITIVE_PREFIX)
+            assert app.ai_result_text.get().endswith(original_headline)
+            assert "ranking unresolved" in app.status_text.get()
+            _deliver_grid_report(app, comparison, report)
+            assert app.ai_result_text.get().count(AI_GRID_SENSITIVE_PREFIX) == 1
+        else:
+            assert app.ai_result_text.get() == original_headline
+            assert "grid-sensitive" not in app.status_text.get()
+        assert app._path_comparison[1] is comparison
+        assert comparison.candidate_run is selected_run
+        assert comparison.candidate_track is selected_track
+        assert app._displayed_run_records == original_records
+        assert {
+            key: app.ai_output_values[key].cget("text")
+            for key in original_numbers
+        } == original_numbers
+    finally:
+        root.destroy()
+
+
+@pytest.mark.parametrize("outcome", ("stale", "failed", "noncompleted"))
+def test_ai_grid_check_without_completed_current_result_keeps_main_headline(
+    outcome: str,
+) -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        comparison = _install_eligible_ai_grid_result(app)
+        headline = "Faster AI path selected on the original grid."
+        app.ai_result_text.set(headline)
+        reversing = replace(
+            _completed_grid_report(),
+            refined_candidate_time_s=99.92,
+            refined_candidate_minus_baseline_s=0.02,
+            sign_stable=False,
+            selection_margin_stable=False,
+        )
+        if outcome == "stale":
+            _deliver_grid_report(app, comparison, reversing, stale_serial=True)
+        elif outcome == "failed":
+            _deliver_grid_report(app, comparison, None, error=RuntimeError("probe failed"))
+        else:
+            _deliver_grid_report(app, comparison, replace(
+                reversing, status="cell_cap_exceeded",
+                refined_candidate_time_s=None,
+                refined_candidate_minus_baseline_s=None,
+                sign_stable=None,
+                selection_margin_stable=None,
+            ))
+        assert app.ai_result_text.get() == headline
+        assert app._path_comparison[1] is comparison
+    finally:
+        root.destroy()
 
 
 def test_ai_grid_check_is_optional_and_requires_eligible_pair() -> None:
@@ -195,7 +308,7 @@ def test_ai_grid_check_passes_frozen_world_patch_to_worker() -> None:
         assert observed[0]["road"] is not road
         assert app._path_comparison[1] is comparison
         assert "World-fixed patch remapped on each refined path" in app.ai_grid_check_text.get()
-        assert "Selection is unchanged" in app.ai_grid_check_text.get()
+        assert "Displayed path is unchanged" in app.ai_grid_check_text.get()
         assert app.ai_grid_check_button["state"] == "normal"
     finally:
         root.destroy()
@@ -284,7 +397,7 @@ def test_ai_grid_check_cell_cap_reports_without_changing_displayed_result() -> N
         app._poll_result()
         assert app._path_comparison[1] is comparison
         assert "exceed 5000 cells" in app.ai_grid_check_text.get()
-        assert "selection is unchanged" in app.ai_grid_check_text.get().lower()
+        assert "displayed path is unchanged" in app.ai_grid_check_text.get().lower()
         assert app.ai_grid_check_button["state"] == "normal"
     finally:
         root.destroy()
@@ -326,7 +439,7 @@ def test_real_synthetic_ai_desktop_finer_grid_check(tmp_path: Path) -> None:
         assert app.ai_grid_check_button["state"] == "normal"
         assert "Sign stable: yes" in app.ai_grid_check_text.get()
         assert "0.05 s selection margin stable: yes" in app.ai_grid_check_text.get()
-        assert "Selection is unchanged" in app.ai_grid_check_text.get()
+        assert "Displayed path is unchanged" in app.ai_grid_check_text.get()
         assert "Finer-grid sensitivity checked" in app.status_text.get()
     finally:
         root.destroy()
@@ -1309,7 +1422,7 @@ def test_assumed_world_patch_ai_trials_save_their_own_replayable_grip(
         assert "Sign stable: yes" in app.ai_grid_check_text.get()
         assert "0.05 s selection margin stable: yes" in app.ai_grid_check_text.get()
         assert "World-fixed patch remapped on each refined path" in app.ai_grid_check_text.get()
-        assert "Selection is unchanged" in app.ai_grid_check_text.get()
+        assert "Displayed path is unchanged" in app.ai_grid_check_text.get()
         assert app.ai_grid_check_button["state"] == "normal"
 
         records = list(tmp_path.glob("*.json"))

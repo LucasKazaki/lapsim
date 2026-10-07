@@ -658,3 +658,33 @@ def test_pose_playback_uses_recorded_vehicle_pose(segment_run):
     )
     assert displayed[4] == pytest.approx(segment_run.samples[index].cross_track_error_m)
     assert displayed[6] == pytest.approx(segment_run.samples[index].local_grip_multiplier)
+    between = playback.control_values_at(
+        (segment_run.times_s[index] + segment_run.times_s[index + 1]) / 2.0
+    )
+    assert between is not None
+    assert between[:4] == displayed[:4]
+    assert between[6] == pytest.approx(segment_run.samples[index].local_grip_multiplier)
+
+
+def test_pose_playback_uses_terminal_grip_sample_after_patch_crossing():
+    road = PlanarRoad(patches=(
+        RectangularGripPatch(0.15, 0.4, -0.5, 0.5, 0.3),
+    ))
+    run = run_pose_driver(
+        environment=PlanarEnvironment(road=road),
+        settings=PoseDriverSettings(
+            target_progress_m=0.1, maximum_control_steps=2,
+            maximum_simulated_time_s=0.1,
+        ),
+    )
+    assert run.status == "target_reached"
+    assert len(run.controls) == 1
+    assert [sample.local_grip_multiplier for sample in run.samples] == [1.0, 0.3]
+
+    playback = PoseDriverPlayback(run)
+    during = playback.control_values_at(run.times_s[-1] / 2.0)
+    terminal = playback.control_values_at(playback.duration_s)
+    assert during is not None and terminal is not None
+    assert during[6] == 1.0
+    assert terminal[6] == run.samples[-1].local_grip_multiplier
+    assert terminal[:4] == during[:4]

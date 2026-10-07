@@ -247,6 +247,15 @@ def world_patch_grip_schedule(
         for patch in road.patches
     ):
         raise ValueError("world road patches must be positive grip reductions")
+    for index, patch in enumerate(road.patches):
+        for later in road.patches[index + 1:]:
+            if _rectangles_overlap(
+                patch.x_min_m, patch.x_max_m,
+                patch.y_min_m, patch.y_max_m, later,
+            ):
+                raise ValueError(
+                    "world road mapping does not support overlapping patches"
+                )
     uniform = reference * base
     if not isfinite(uniform) or uniform <= 0.0:
         raise ValueError("world road schedule contains an invalid grip factor")

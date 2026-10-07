@@ -58,8 +58,13 @@ It raises on its finite work limit instead of silently missing a patch.
 All tire force capacity in a touched **whole cell** is reduced; this can
 understate performance, and it is not independent-wheel surface physics.
 The desktop offers one patch; the mapper supports up to 128 positive
-low-grip rectangles and rejects unsupported bounded-road domains. The
-mapping version is
+low-grip rectangles and rejects unsupported bounded-road domains. Programmatic
+multi-patch inputs must have pairwise disjoint rectangles: even a shared edge
+is rejected because patch boundaries are inclusive. `PlanarRoad.query`
+assigns an overlapping point to the first matching patch, whereas the mapper
+uses the minimum touched factor for each whole solver cell. Rejecting overlaps
+keeps those rules from silently disagreeing. The single-patch desktop input
+is unaffected. The mapping version is
 `integrated_arc_nominal_wheel_min_cell_v1`. Trial records retain the assumed
 rectangle and mapping version as planning metadata, plus the exact absolute
 schedule in `settings.conditions` and accepted grip telemetry. Replay uses
@@ -273,6 +278,11 @@ rectangle independently onto each refined baseline and candidate path. It
 freezes each original path's modeled entry heading when refining, because
 interpolated x/y chords can otherwise change the mapper's automatic heading
 choice. A failed refined road mapping returns a non-completed diagnostic.
+When a completed report finds either a sign change or a crossing of the
+provisional 0.05 s selection margin, the main AI headline and status mark the
+modeled ranking **grid-sensitive; unresolved**. The original-grid path,
+numbers, and saved trial records remain in place; a stable report leaves the
+headline unchanged, and stale or non-completed reports do not add this warning.
 The API's separate explicit per-cell grip mode repeats each original cell's
 value through its subdivisions; that is **not** world-fixed remapping. The API
 rejects combining explicit per-cell tuples with a world-fixed road. The
@@ -293,6 +303,11 @@ both phases. Neither setting represents a measured dry or wet surface. This
 controller does not steer the distance-domain endurance car, use the selected
 Prius/TREV profile, or produce an engineering lap time or battery energy. Its
 model-time duration is one finite synthetic maneuver, not a closed lap.
+In completed replay, steering and torque/brake commands are held from their
+recorded control interval. The box labeled **GRIP SAMPLE (×)** uses the latest
+recorded pose sample, including the final sample after the last control.
+Interpolated display geometry and this sampled grip add no physics step.
+
 When a pose run stops with `road_domain_invalid`, its local-grip value may be
 the base-road diagnostic fallback for a query outside the declared road
 domain; the Driver view and status warn that it is not valid road data.
