@@ -212,7 +212,9 @@ same paths with the same frozen car and driver request on a finer grid. In an
 assumed rectangular-patch trial, it remaps that same world-fixed rectangle
 independently onto each refined path, retaining each original path's modeled
 entry heading. It reports the original and refined candidate-minus-centerline
-differences, sign, and selection-margin stability. If either the sign or the
+differences, sign, and whether that fixed pair crosses the 0.05 s selection
+threshold. Other AI trials are not rerun, so an unchanged threshold does not
+confirm the best-trial ordering. If either the sign or the
 provisional 0.05 s selection-margin crossing changes in a completed check,
 the main AI headline and status say **grid-sensitive; ranking unresolved**.
 The path-comparison and saved-evidence windows, including already-open ones,
@@ -226,6 +228,9 @@ clearance, establish convergence, or validate the assumed road. The API's separa
 per-cell grip-tuple mode still repeats each original cell's value over its
 subdivisions; that mode does not remap a world-fixed patch. The two road-input
 modes cannot be combined in one check.
+While the grid-sensitive warning is active, the WIP selected-path pose preview
+cannot start another run. An already displayed selected-path synthetic trace
+remains inspectable with an original-grid uncertainty label.
 
 The detour uses a periodic, C2-smooth lateral shift with finite lead-in and
 lead-out shoulders. A cheap reduction in wheel-contact low-grip exposure

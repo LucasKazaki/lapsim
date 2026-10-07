@@ -269,7 +269,9 @@ stations, and curvature agree.
 a bounded, opt-in paired timing check for already eligible baseline and
 candidate paths. It preflights each refined grid against 5,000 cells, reruns
 the same selected car and start policy on both fixed paths, and reports whether
-the candidate-minus-baseline sign or 0.05 s margin crossing changes. The
+the fixed candidate-minus-baseline sign or 0.05 s margin crossing changes.
+Other original AI trials, including any runner-up, are not rerun; a stable
+pairwise check does not confirm the global best-path ordering. The
 desktop's **Check finer grid (optional)** action uses the frozen effective
 pre-run car and enables for two eligible completed paths on either uniform
 road or the assumed rectangular-patch setting; its worker can add at most
@@ -284,6 +286,13 @@ modeled ranking **grid-sensitive; unresolved**. The original-grid path,
 numbers, and saved trial records remain in place; a stable report leaves the
 original-grid headline unqualified, and stale or non-completed reports do not
 add this warning.
+While that warning is active, the WIP selected-path synthetic pose preview
+cannot start another run. A completed stable finer-grid check or a new eligible
+AI run restores its availability. An existing pose trace and its saved file,
+if any, remain available. A currently displayed selected-path trace gains an
+original-grid uncertainty qualifier without recalculating its states; a
+separately loaded trace retains its generic recorded-sampled label because
+the archive does not attest the current AI ranking.
 The warning also appears on an already-open path comparison, saved-run
 evidence window, and ordinary AI replay context, so a retained original-grid
 rank is not mistaken for a refined-grid decision. A later completed stable
@@ -326,6 +335,10 @@ projection fails, these three projection-derived displays become unavailable
 for the rest of that interval and at the failed endpoint. Commands, sampled
 grip, yaw, and actual simulated pose remain visible; no recorded value is
 changed.
+If the terminal projection is lost, the run summary labels its distance as
+the **last confirmed station** and marks assumed footprint slack unavailable
+instead of attributing stale path geometry to the final pose. Actual pose and
+recorded controls remain available.
 
 When a pose run stops with `road_domain_invalid`, its local-grip value may be
 the base-road diagnostic fallback for a query outside the declared road

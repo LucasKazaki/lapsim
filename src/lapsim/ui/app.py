@@ -1941,6 +1941,7 @@ class LapSimDesktop:
             self.course_spec.course_id != SYNTHETIC_DEMO_COURSE_ID
             or not self._ai_mode_selected()
             or self._path_comparison is None
+            or bool(self.ai_grid_context_text.get())
             or not isinstance(self._selected_path_track, SpatialTrack)
         ):
             return None
@@ -1970,6 +1971,12 @@ class LapSimDesktop:
             message = "Selected AI path preview is available only on Synthetic loop · AI demo."
         elif not self._ai_mode_selected():
             message = "Select AI racing line and run it to unlock the selected-path preview."
+        elif self.ai_grid_context_text.get():
+            message = (
+                "Finer-grid timing made the original-grid path ranking unresolved. "
+                "The selected-path pose preview is unavailable until a stable "
+                "finer-grid check or a new eligible AI run."
+            )
         elif selected is None:
             message = (
                 "Run AI racing line on this course. Only an eligible, faster "
@@ -2124,6 +2131,14 @@ class LapSimDesktop:
         return description
 
     @staticmethod
+    def _pose_progress_text(run: PoseDriverRun) -> str:
+        """Do not present a stale station as the terminal pose's projection."""
+
+        station = f"{run.samples[-1].progress_m:.1f} m"
+        return (station if getattr(run.samples[-1], "projection_valid", True)
+                else f"last confirmed progress {station}")
+
+    @staticmethod
     def _pose_road_domain_warning(status: str) -> str:
         if status == "road_domain_invalid":
             return (
@@ -2167,7 +2182,7 @@ class LapSimDesktop:
         self.driver_playback = PoseDriverPlayback(run)
         self.driver_run_label.set(
             f"Synthetic pose model · {self._active_pose_description()} · {run.status} · "
-            f"{run.samples[-1].progress_m:.1f} m / {run.settings.target_progress_m:.0f} m · "
+            f"{self._pose_progress_text(run)} / {run.settings.target_progress_m:.0f} m · "
             f"{run.elapsed_pose_model_time_s:.2f} s pose-model time"
         )
         if self.driver_play_button is not None:
@@ -4302,10 +4317,11 @@ class LapSimDesktop:
                     fraction=1.0 if report.status == "completed" else 0.0,
                 )
                 self.status_text.set(
-                    "Finer-grid timing is grid-sensitive; ranking unresolved; "
+                    "Finer-grid fixed pair is grid-sensitive; ranking unresolved; "
                     "original-grid path remains displayed"
                     if grid_sensitive else
-                    "Finer-grid sensitivity checked; displayed path selection unchanged"
+                    "Finer-grid fixed-pair threshold unchanged; other AI trials "
+                    "not rerun; best-trial ordering untested"
                     if report.status == "completed" else
                     "Finer-grid retry unavailable; prior grid-sensitive finding "
                     "remains; original-grid path displayed"
@@ -4383,7 +4399,7 @@ class LapSimDesktop:
                 )
                 self.pose_preview_status.set(
                     f"Recorded {self._active_pose_description()} · {run.status}: "
-                    f"{run.samples[-1].progress_m:.1f} m in "
+                    f"{self._pose_progress_text(run)} in "
                     f"{run.elapsed_pose_model_time_s:.2f} s pose-model time. "
                     "This is not an engineering lap time."
                     + (f" {road_warning}" if road_warning else "")
@@ -4451,6 +4467,12 @@ class LapSimDesktop:
                 run: PoseDriverRun = payload
                 completed = run.completed
                 road_warning = self._pose_road_domain_warning(run.status)
+                slack_text = (
+                    f"minimum assumed footprint slack "
+                    f"{run.minimum_assumed_boundary_slack_m:.2f} m"
+                    if getattr(run.samples[-1], "projection_valid", True) else
+                    "assumed footprint slack unavailable after projection loss"
+                )
                 self._set_calculation_progress(
                     "complete" if completed else "stopped",
                     (f"Synthetic pose preview · {description} · finished"
@@ -4464,11 +4486,10 @@ class LapSimDesktop:
                 )
                 self.pose_preview_status.set(
                     f"{description} · {run.status}: "
-                    f"{run.samples[-1].progress_m:.1f} m in "
+                    f"{self._pose_progress_text(run)} in "
                     f"{run.elapsed_pose_model_time_s:.2f} s pose-model time; "
                     f"maximum center error {run.maximum_absolute_cross_track_error_m:.2f} m; "
-                    f"minimum assumed footprint slack "
-                    f"{run.minimum_assumed_boundary_slack_m:.2f} m. "
+                    f"{slack_text}. "
                     "This is not an engineering lap time."
                     + (f" {road_warning}" if road_warning else "")
                 )
@@ -4963,6 +4984,27 @@ class LapSimDesktop:
         for window_context in self._ai_grid_window_contexts:
             window_context.set(context)
         self._update_driver_replay_heading()
+        self._update_pose_ai_preview_availability()
+        # A completed synthetic pose trace remains the same recorded trace,
+        # but its original-grid AI reference must not read as a settled rank.
+        pose_prefix = "GRID-SENSITIVE · original-grid AI rank unresolved. "
+        selected_pose_visible = (
+            isinstance(self.driver_playback, PoseDriverPlayback)
+            and self._active_pose_reference_label.startswith(
+                "eligible selected AI path"
+            )
+        )
+        for view_text in (self.driver_run_label, self.pose_preview_status):
+            current = view_text.get()
+            bare = (
+                current[len(pose_prefix):]
+                if current.startswith(pose_prefix) else current
+            )
+            updated = (
+                pose_prefix + bare if sensitive and selected_pose_visible else bare
+            )
+            if updated != current:
+                view_text.set(updated)
         if (
             not self._pose_live_mode
             and not isinstance(
@@ -5062,8 +5104,10 @@ class LapSimDesktop:
             f"{report.refined_candidate_minus_baseline_s:+.3f} s at "
             f"max {report.maximum_refined_cell_length_m:.3g} m "
             f"({report.refined_baseline_cells:,}/{report.refined_candidate_cells:,} cells). "
-            f"Sign stable: {sign}; {report.selection_margin_s:.2f} s selection "
-            f"margin stable: {margin}. {road_note}Displayed path is unchanged. One refinement "
+            f"Sign stable: {sign}; fixed candidate − centerline "
+            f"{report.selection_margin_s:.2f} s threshold crossing unchanged: "
+            f"{margin}. {road_note}Other AI trials were not rerun; "
+            "best-trial ordering untested. Displayed path is unchanged. One refinement "
             "does not certify convergence, corridor clearance, or real-car time."
         )
 

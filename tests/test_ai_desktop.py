@@ -78,6 +78,15 @@ def _completed_grid_report() -> PairedGridStabilityReport:
     )
 
 
+def test_grid_summary_names_fixed_pair_and_unchecked_trials() -> None:
+    report = _completed_grid_report()
+    text = LapSimDesktop._ai_grid_check_summary(report)
+    assert "fixed candidate − centerline 0.05 s threshold crossing unchanged: yes" in text
+    assert "Other AI trials were not rerun; best-trial ordering untested" in text
+    assert "selection margin stable" not in text
+    assert report.selection_margin_stable is True
+
+
 def _deliver_grid_report(
     app: LapSimDesktop, comparison: SimpleNamespace,
     report: PairedGridStabilityReport | None, *,
@@ -186,10 +195,19 @@ def test_ai_grid_check_qualifies_unstable_main_result_without_reselection(
         )
 
         _deliver_grid_report(app, comparison, report)
+        assert (
+            "fixed candidate − centerline 0.05 s threshold crossing unchanged: "
+            f"{'yes' if margin_stable else 'no'}"
+        ) in app.ai_grid_check_text.get()
+        assert "Other AI trials were not rerun; best-trial ordering untested" in (
+            app.ai_grid_check_text.get()
+        )
         if warn:
             assert app.ai_result_text.get().startswith(AI_GRID_SENSITIVE_PREFIX)
             assert app.ai_result_text.get().endswith(original_headline)
-            assert "ranking unresolved" in app.status_text.get()
+            assert "fixed pair is grid-sensitive; ranking unresolved" in (
+                app.status_text.get()
+            )
             assert "ranking unresolved" in _window_grid_context(app, popup)
             assert "saved rank" in _window_grid_context(app, evidence)
             assert app.driver_replay_heading.get() == (
@@ -201,6 +219,7 @@ def test_ai_grid_check_qualifies_unstable_main_result_without_reselection(
         else:
             assert app.ai_result_text.get() == original_headline
             assert "grid-sensitive" not in app.status_text.get()
+            assert "best-trial ordering untested" in app.status_text.get()
             assert _window_grid_context(app, popup) == ""
             assert _window_grid_context(app, evidence) == ""
             assert app.driver_replay_heading.get() == "Replay lap"
@@ -651,9 +670,15 @@ def test_real_synthetic_ai_desktop_finer_grid_check(tmp_path: Path) -> None:
         assert comparison.selected_run is original_selected_run
         assert app.ai_grid_check_button["state"] == "normal"
         assert "Sign stable: yes" in app.ai_grid_check_text.get()
-        assert "0.05 s selection margin stable: yes" in app.ai_grid_check_text.get()
+        assert (
+            "fixed candidate − centerline 0.05 s threshold crossing unchanged: yes"
+            in app.ai_grid_check_text.get()
+        )
+        assert "Other AI trials were not rerun; best-trial ordering untested" in (
+            app.ai_grid_check_text.get()
+        )
         assert "Displayed path is unchanged" in app.ai_grid_check_text.get()
-        assert "Finer-grid sensitivity checked" in app.status_text.get()
+        assert "best-trial ordering untested" in app.status_text.get()
     finally:
         root.destroy()
 
@@ -1633,7 +1658,13 @@ def test_assumed_world_patch_ai_trials_save_their_own_replayable_grip(
         assert app._path_comparison[1] is comparison
         assert comparison.selected_run is original_selected_run
         assert "Sign stable: yes" in app.ai_grid_check_text.get()
-        assert "0.05 s selection margin stable: yes" in app.ai_grid_check_text.get()
+        assert (
+            "fixed candidate − centerline 0.05 s threshold crossing unchanged: yes"
+            in app.ai_grid_check_text.get()
+        )
+        assert "Other AI trials were not rerun; best-trial ordering untested" in (
+            app.ai_grid_check_text.get()
+        )
         assert "World-fixed patch remapped on each refined path" in app.ai_grid_check_text.get()
         assert "Displayed path is unchanged" in app.ai_grid_check_text.get()
         assert app.ai_grid_check_button["state"] == "normal"

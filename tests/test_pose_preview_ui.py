@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 import tkinter as tk
@@ -12,6 +13,7 @@ import pytest
 from lapsim.dynamics.conditions import PlanarEnvironment, PlanarRoad, RoadDomain
 from lapsim.dynamics.planar import PlanarState
 from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.optimization.grid_stability import PairedGridStabilityReport
 from lapsim.optimization.pose_driver import (
     PoseDriverSample, PoseDriverSettings, run_pose_driver,
 )
@@ -270,6 +272,107 @@ def test_eligible_selected_ai_path_uses_frozen_sampled_reference() -> None:
         assert settings.target_progress_m == 80.0
         assert "vehicle_config" not in driver.call_args.kwargs
         assert app.result_queue.get_nowait()[0] == "pose_preview"
+    finally:
+        root.destroy()
+
+
+def test_grid_sensitive_ai_rank_blocks_selected_pose_preview_until_stable() -> None:
+    root, app = _desktop()
+    try:
+        selected_track = _offer_selected_ai_path(app)
+        comparison = app._path_comparison[1]
+        replay_options = {
+            "Original-grid AI path": (
+                "AI car", comparison.candidate_run, "AI path", selected_track,
+            ),
+        }
+        app._set_driver_replay_options(
+            replay_options, selected="Original-grid AI path",
+        )
+        app._displayed_run_records = (("AI result", "original-grid-run"),)
+        app.ai_output_values["difference"].configure(text="-1.000")
+        app.driver_playback = PoseDriverPlayback.__new__(PoseDriverPlayback)
+        app._active_pose_reference_label = "eligible selected AI path (sampled polyline)"
+        pose_heading = "Synthetic pose model · eligible selected AI path"
+        pose_status = "Recorded eligible selected AI path · 80 m synthetic trace"
+        pose_note = "Synthetic pose-model time; separate from engineering lap."
+        app.driver_run_label.set(pose_heading)
+        app.pose_preview_status.set(pose_status)
+        app.driver_note_var.set(pose_note)
+        assert app.pose_ai_preview_button.cget("state") == "normal"
+
+        unstable = PairedGridStabilityReport(
+            status="completed",
+            original_baseline_time_s=20.0,
+            original_candidate_time_s=19.0,
+            original_candidate_minus_baseline_s=-1.0,
+            refined_baseline_time_s=20.0,
+            refined_candidate_time_s=20.1,
+            refined_candidate_minus_baseline_s=0.1,
+            sign_stable=False,
+            selection_margin_stable=False,
+            selection_margin_s=0.05,
+            maximum_refined_cell_length_m=0.5,
+            original_baseline_cells=4,
+            original_candidate_cells=4,
+            refined_baseline_cells=8,
+            refined_candidate_cells=8,
+        )
+
+        def deliver(report: PairedGridStabilityReport) -> None:
+            app._active_run_input_signature = app._run_input_signature()
+            app.result_queue.put((
+                "ai_grid_check", (app._ai_grid_check_serial, comparison, report), None,
+            ))
+            app._poll_result()
+
+        deliver(unstable)
+        assert app.pose_ai_preview_button.cget("state") == "disabled"
+        assert "ranking unresolved" in app.pose_ai_availability.get()
+        assert app.driver_run_label.get().startswith(
+            "GRID-SENSITIVE · original-grid AI rank unresolved. "
+        )
+        assert app.driver_run_label.get().endswith(pose_heading)
+        assert app.pose_preview_status.get().endswith(pose_status)
+        assert app.driver_note_var.get() == pose_note
+        with (
+            patch("lapsim.ui.app.messagebox.showerror") as showerror,
+            patch("lapsim.ui.app.threading.Thread") as thread,
+        ):
+            app._start_pose_preview(use_selected_ai_path=True)
+        showerror.assert_called_once()
+        assert "ranking unresolved" in showerror.call_args.args[1]
+        thread.assert_not_called()
+        assert app._driver_replay_runs == replay_options
+        assert app.driver_replay_var.get() == "Original-grid AI path"
+        assert app._displayed_run_records == (("AI result", "original-grid-run"),)
+        assert app.ai_output_values["difference"].cget("text") == "-1.000"
+
+        deliver(unstable)
+        assert app.driver_run_label.get().count("GRID-SENSITIVE") == 1
+        assert app.pose_preview_status.get().count("GRID-SENSITIVE") == 1
+
+        deliver(replace(
+            unstable,
+            refined_candidate_time_s=19.0,
+            refined_candidate_minus_baseline_s=-1.0,
+            sign_stable=True,
+            selection_margin_stable=True,
+        ))
+        assert app.pose_ai_preview_button.cget("state") == "normal"
+        assert "Eligible selected AI path ready" in app.pose_ai_availability.get()
+        assert app._eligible_selected_ai_pose_track() is selected_track
+        assert app.driver_run_label.get() == pose_heading
+        assert app.pose_preview_status.get() == pose_status
+        assert app.driver_note_var.get() == pose_note
+        assert app._driver_replay_runs == replay_options
+
+        app._active_pose_reference_label = "synthetic centerline (coherent arcs)"
+        app.driver_run_label.set("Synthetic pose model · centerline")
+        app.pose_preview_status.set("Recorded centerline pose trace")
+        deliver(unstable)
+        assert app.driver_run_label.get() == "Synthetic pose model · centerline"
+        assert app.pose_preview_status.get() == "Recorded centerline pose trace"
     finally:
         root.destroy()
 
