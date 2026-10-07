@@ -8,9 +8,9 @@ not a convergence proof, path-clearance audit, or reason to promote a new line.
 
 An optional per-cell grip tuple means an absolute, piecewise-constant road
 multiplier on each original path cell. Refinement repeats that value across
-the cell's subdivisions. A world-fixed road patch must be mapped separately
-onto each original path before calling this function; station alignment alone
-does not locate a patch in world coordinates.
+the cell's subdivisions. Alternatively, a supplied world-fixed road is
+remapped onto each refined modeled path, using the original path's entry
+heading so chord interpolation cannot rotate a coherent course.
 """
 
 from __future__ import annotations
@@ -21,6 +21,10 @@ from math import ceil, isfinite
 from numbers import Real
 
 from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.dynamics.conditions import PlanarRoad
+from lapsim.optimization.road_grip_schedule import (
+    modeled_entry_heading_rad, world_patch_grip_schedule,
+)
 from vehicle_model import Vehicle
 
 
@@ -120,6 +124,7 @@ def diagnose_paired_grid_stability(
     selection_margin_s: float = 0.05,
     baseline_cell_road_grip_multiplier: tuple[float, ...] | None = None,
     candidate_cell_road_grip_multiplier: tuple[float, ...] | None = None,
+    road: PlanarRoad | None = None,
 ) -> PairedGridStabilityReport:
     """Rerun an eligible baseline/candidate pair on boundary-preserving grids.
 
@@ -133,7 +138,10 @@ def diagnose_paired_grid_stability(
     lengths. A count above 5,000 on either path returns ``cell_cap_exceeded``
     before allocation or physics. Model failures are reported without treating
     a missing refined time as evidence of stability. This routine does not
-    re-audit corridor geometry and never selects a path.
+    re-audit corridor geometry and never selects a path. A world-fixed ``road``
+    is mutually exclusive with original per-cell grip schedules; the latter
+    are station-local values, not world-fixed rectangles. Road mapping failure
+    produces an explicit non-completed report before either physics solve.
     """
 
     if not isinstance(baseline_track, SpatialTrack) or not isinstance(candidate_track, SpatialTrack):
@@ -142,6 +150,13 @@ def diagnose_paired_grid_stability(
         raise ValueError("paired grid stability requires two closed tracks")
     if type(speed_periodic) is not bool:
         raise TypeError("speed_periodic must be bool")
+    if road is not None and not isinstance(road, PlanarRoad):
+        raise TypeError("road must be a PlanarRoad or None")
+    if road is not None and (
+        baseline_cell_road_grip_multiplier is not None
+        or candidate_cell_road_grip_multiplier is not None
+    ):
+        raise ValueError("road cannot be combined with original per-cell grip schedules")
     baseline_time_s = _finite_number(
         original_baseline_time_s, "original_baseline_time_s", positive=True,
     )
@@ -238,8 +253,35 @@ def diagnose_paired_grid_stability(
     ):
         raise RuntimeError("refined grid does not match preflight subdivision counts")
 
-    baseline_refined_grip = _refined_grip(baseline_grip, baseline_counts)
-    candidate_refined_grip = _refined_grip(candidate_grip, candidate_counts)
+    if road is None:
+        baseline_refined_grip = _refined_grip(baseline_grip, baseline_counts)
+        candidate_refined_grip = _refined_grip(candidate_grip, candidate_counts)
+    else:
+        try:
+            # The original comparison used the original path's modeled
+            # heading. Chord-interpolated refinement can change an automatic
+            # coherent-arc versus polygon-tangent decision, so freeze it.
+            baseline_heading = (
+                modeled_entry_heading_rad(baseline_track)
+                if road.patches else None
+            )
+            candidate_heading = (
+                modeled_entry_heading_rad(candidate_track)
+                if road.patches else None
+            )
+            baseline_refined_grip = world_patch_grip_schedule(
+                refined_baseline, vehicle, road,
+                initial_heading_rad=baseline_heading,
+            )
+            candidate_refined_grip = world_patch_grip_schedule(
+                refined_candidate, vehicle, road,
+                initial_heading_rad=candidate_heading,
+            )
+        except (ValueError, RuntimeError, ArithmeticError, OverflowError) as error:
+            return report(
+                "road_mapping_failed",
+                failure_reason=f"Refined world road mapping failed: {type(error).__name__}: {error}",
+            )
     from lapsim.ui.simulation import run_one_lap, run_speed_periodic_lap
 
     def run_refined(

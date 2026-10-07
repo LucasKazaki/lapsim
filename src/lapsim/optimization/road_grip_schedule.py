@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import atan2, cos, hypot, isfinite, pi, remainder, sin
+from numbers import Real
 
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.dynamics.conditions import PlanarRoad, RectangularGripPatch
@@ -63,8 +64,17 @@ class _ModeledCell:
         )
 
 
-def _modeled_cells(track: SpatialTrack) -> tuple[_ModeledCell, ...]:
-    """Use the racing-line audit's coherent-arc or polygon-tangent seed."""
+def _modeled_cells(
+    track: SpatialTrack, *, initial_heading_rad: float | None = None,
+) -> tuple[_ModeledCell, ...]:
+    """Use the audit's heading seed, or a frozen seed after grid refinement."""
+
+    if initial_heading_rad is not None and (
+        isinstance(initial_heading_rad, bool)
+        or not isinstance(initial_heading_rad, Real)
+        or not isfinite(initial_heading_rad)
+    ):
+        raise ValueError("initial_heading_rad must be finite when provided")
 
     lengths = track.cell_length_m
     first_dx = track.x_m[1] - track.x_m[0]
@@ -77,25 +87,28 @@ def _modeled_cells(track: SpatialTrack) -> tuple[_ModeledCell, ...]:
         previous_dx * first_dy - previous_dy * first_dx,
         previous_dx * first_dx + previous_dy * first_dy,
     )
-    coherent_arc_chords = all(
-        abs(abs(length * _sinc(0.5 * length * curvature)) - hypot(
-            track.x_m[index + 1] - track.x_m[index],
-            track.y_m[index + 1] - track.y_m[index],
-        )) <= max(1e-8, 1e-8 * hypot(
-            track.x_m[index + 1] - track.x_m[index],
-            track.y_m[index + 1] - track.y_m[index],
-        ))
-        for index, (length, curvature) in enumerate(
-            zip(lengths, track.curvature_per_m, strict=True)
+    if initial_heading_rad is None:
+        coherent_arc_chords = all(
+            abs(abs(length * _sinc(0.5 * length * curvature)) - hypot(
+                track.x_m[index + 1] - track.x_m[index],
+                track.y_m[index + 1] - track.y_m[index],
+            )) <= max(1e-8, 1e-8 * hypot(
+                track.x_m[index + 1] - track.x_m[index],
+                track.y_m[index + 1] - track.y_m[index],
+            ))
+            for index, (length, curvature) in enumerate(
+                zip(lengths, track.curvature_per_m, strict=True)
+            )
         )
-    )
-    first_arc_chord_m = lengths[0] * _sinc(
-        0.5 * lengths[0] * track.curvature_per_m[0]
-    )
-    heading = atan2(first_dy, first_dx) - 0.5 * (
-        lengths[0] * track.curvature_per_m[0]
-        if coherent_arc_chords else first_turn
-    ) - (pi if coherent_arc_chords and first_arc_chord_m < 0.0 else 0.0)
+        first_arc_chord_m = lengths[0] * _sinc(
+            0.5 * lengths[0] * track.curvature_per_m[0]
+        )
+        heading = atan2(first_dy, first_dx) - 0.5 * (
+            lengths[0] * track.curvature_per_m[0]
+            if coherent_arc_chords else first_turn
+        ) - (pi if coherent_arc_chords and first_arc_chord_m < 0.0 else 0.0)
+    else:
+        heading = float(initial_heading_rad)
     x_m = track.x_m[0]
     y_m = track.y_m[0]
     cells: list[_ModeledCell] = []
@@ -116,6 +129,21 @@ def _modeled_cells(track: SpatialTrack) -> tuple[_ModeledCell, ...]:
     if abs(remainder(total_turn, 2.0 * pi)) > _HEADING_SEAM_TOLERANCE_RAD:
         raise ValueError("world road mapping needs a closed modeled heading")
     return tuple(cells)
+
+
+def modeled_entry_heading_rad(track: SpatialTrack) -> float:
+    """Return the original modeled path's heading for a refined-grid probe.
+
+    ``SpatialTrack.refine`` retains curvature and original cell boundaries,
+    but interpolates new x/y points on old chords. A coherent arc can then
+    look polygonal to the automatic heading policy. Passing this original
+    heading to ``world_patch_grip_schedule`` keeps the world-fixed road in
+    the same frame after refinement. The modeled path must close first.
+    """
+
+    if not isinstance(track, SpatialTrack) or not track.closed:
+        raise ValueError("modeled entry heading requires a closed SpatialTrack")
+    return _modeled_cells(track)[0].entry_heading_rad
 
 
 def _wheel_offsets(vehicle: Vehicle) -> tuple[tuple[float, float], ...]:
@@ -180,6 +208,7 @@ def _wheel_touches_patch(
 
 def world_patch_grip_schedule(
     track: SpatialTrack, vehicle: Vehicle, road: PlanarRoad,
+    *, initial_heading_rad: float | None = None,
 ) -> tuple[float, ...]:
     """Map assumed world-fixed low-grip rectangles onto one modeled path.
 
@@ -196,6 +225,12 @@ def world_patch_grip_schedule(
         raise TypeError("world road mapping requires a Vehicle")
     if not isinstance(road, PlanarRoad):
         raise TypeError("world road mapping requires a PlanarRoad")
+    if initial_heading_rad is not None and (
+        isinstance(initial_heading_rad, bool)
+        or not isinstance(initial_heading_rad, Real)
+        or not isfinite(initial_heading_rad)
+    ):
+        raise ValueError("initial_heading_rad must be finite when provided")
     if track.cell_count > _MAX_CELLS:
         raise ValueError("world road mapping exceeds the 5000-cell compute cap")
     if len(road.patches) > _MAX_PATCHES:
@@ -218,7 +253,7 @@ def world_patch_grip_schedule(
     if not road.patches:
         return (uniform,) * track.cell_count
 
-    cells = _modeled_cells(track)
+    cells = _modeled_cells(track, initial_heading_rad=initial_heading_rad)
     wheel_offsets = _wheel_offsets(vehicle)
     maximum_offset = max(hypot(*offset) for offset in wheel_offsets)
     work = [0]
@@ -248,5 +283,6 @@ def world_patch_grip_schedule(
 
 
 __all__ = [
-    "ROAD_GRIP_SCHEDULE_MAPPING_VERSION", "world_patch_grip_schedule",
+    "ROAD_GRIP_SCHEDULE_MAPPING_VERSION", "modeled_entry_heading_rad",
+    "world_patch_grip_schedule",
 ]

@@ -266,13 +266,19 @@ candidate paths. It preflights each refined grid against 5,000 cells, reruns
 the same selected car and start policy on both fixed paths, and reports whether
 the candidate-minus-baseline sign or 0.05 s margin crossing changes. The
 desktop's **Check finer grid (optional)** action uses the frozen effective
-pre-run car and only enables for two eligible completed uniform-road paths;
-its worker can add at most four lap-model passes. It reports the sensitivity
-without changing the selection. It does not re-audit corridor clearance or
-prove convergence. The API can repeat an original per-cell grip schedule
-through that cell's subdivisions, but this does **not** remap a world-fixed
-rectangle on the refined geometry, so the desktop disables the action for
-patch trials. Ordinary centerline and AI runs incur no finer-grid work.
+pre-run car and enables for two eligible completed paths on either uniform
+road or the assumed rectangular-patch setting; its worker can add at most
+four lap-model passes. For a patch trial, the checker maps the same world-fixed
+rectangle independently onto each refined baseline and candidate path. It
+freezes each original path's modeled entry heading when refining, because
+interpolated x/y chords can otherwise change the mapper's automatic heading
+choice. A failed refined road mapping returns a non-completed diagnostic.
+The API's separate explicit per-cell grip mode repeats each original cell's
+value through its subdivisions; that is **not** world-fixed remapping. The API
+rejects combining explicit per-cell tuples with a world-fixed road. The
+check reports sensitivity without changing the selection, re-auditing
+corridor clearance, proving convergence, or validating the assumed road.
+Ordinary centerline and AI runs incur no finer-grid work.
 
 ## Bounded synthetic pose-aware driver experiment
 
@@ -287,6 +293,9 @@ both phases. Neither setting represents a measured dry or wet surface. This
 controller does not steer the distance-domain endurance car, use the selected
 Prius/TREV profile, or produce an engineering lap time or battery energy. Its
 model-time duration is one finite synthetic maneuver, not a closed lap.
+When a pose run stops with `road_domain_invalid`, its local-grip value may be
+the base-road diagnostic fallback for a query outside the declared road
+domain; the Driver view and status warn that it is not valid road data.
 
 At each **0.05 s** control step, a local projection first finds the CG's
 station and sampled corridor slack, then finds the rear axle's station for

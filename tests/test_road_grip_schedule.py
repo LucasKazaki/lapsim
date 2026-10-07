@@ -8,7 +8,9 @@ import pytest
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Straight, Track
 from lapsim.dynamics.conditions import PlanarRoad, RectangularGripPatch, RoadDomain
-from lapsim.optimization.road_grip_schedule import world_patch_grip_schedule
+from lapsim.optimization.road_grip_schedule import (
+    modeled_entry_heading_rad, world_patch_grip_schedule,
+)
 from vehicle_model import Vehicle
 
 
@@ -69,6 +71,39 @@ def test_narrow_patch_between_cell_samples_and_path_specific_map() -> None:
     assert world_patch_grip_schedule(translated, vehicle, road) == (
         1.0,
     ) * track.cell_count
+
+
+def test_refined_coherent_arc_keeps_original_world_heading() -> None:
+    source = _rounded_rectangle()
+    source.validate_coherent_arcs()
+    refined = source.refine(2.5)
+    vehicle = Vehicle()
+    road = _patch(1.0, 1.01, -0.62, -0.57)
+
+    original_heading = modeled_entry_heading_rad(source)
+    assert original_heading == pytest.approx(0.0, abs=1e-12)
+    assert modeled_entry_heading_rad(refined) == pytest.approx(-pi / 32.0)
+    assert world_patch_grip_schedule(source, vehicle, road)[0] == 0.3
+    # Chord interpolation in refine makes the same prescribed arcs appear
+    # polygonal to automatic heading inference, rotating the road frame.
+    assert world_patch_grip_schedule(refined, vehicle, road) == (
+        1.0,
+    ) * refined.cell_count
+    frozen = world_patch_grip_schedule(
+        refined, vehicle, road, initial_heading_rad=original_heading,
+    )
+    assert frozen[0] == 0.3
+    assert frozen[1] == 1.0
+    assert sum(value < 1.0 for value in frozen) == 1
+
+
+@pytest.mark.parametrize("heading", (True, float("nan"), float("inf"), "0"))
+def test_world_road_mapping_rejects_invalid_explicit_heading(heading: object) -> None:
+    with pytest.raises(ValueError, match="initial_heading_rad must be finite"):
+        world_patch_grip_schedule(
+            _rounded_rectangle(), Vehicle(), PlanarRoad(),
+            initial_heading_rad=heading,
+        )
 
 
 def test_patch_factor_multiplies_run_reference_tire_grip() -> None:

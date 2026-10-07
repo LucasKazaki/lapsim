@@ -203,14 +203,20 @@ For eligible paths, the app selects a candidate only when its gain over the
 geometric baseline is strictly greater than 0.05 s. A smaller positive gain
 is an unresolved numerical tie; the 0.05 s margin is a provisional selection
 heuristic, not a proven error bound.
-For two eligible completed paths on uniform road, **Check finer grid
-(optional)** reruns those same paths with the same frozen car and driver
-request on a finer grid. It reports the original and refined candidate-minus-
-centerline differences, sign, and selection-margin stability without changing
-the selected line. It is an on-demand fixed-path numerical sensitivity check,
-limited to 5,000 cells per path; it does not re-audit clearance or establish
-convergence. World-fixed patch trials do not offer it because repeating a
-coarse cell's grip on a finer grid would not remap that patch.
+
+For two eligible completed paths, **Check finer grid (optional)** reruns those
+same paths with the same frozen car and driver request on a finer grid. In an
+assumed rectangular-patch trial, it remaps that same world-fixed rectangle
+independently onto each refined path, retaining each original path's modeled
+entry heading. It reports the original and refined candidate-minus-centerline
+differences, sign, and selection-margin stability without changing the
+selected line. It is an on-demand fixed-path numerical sensitivity check,
+limited to 5,000 cells per path; it does not re-audit clearance, establish
+convergence, or validate the assumed road. The API's separate explicit
+per-cell grip-tuple mode still repeats each original cell's value over its
+subdivisions; that mode does not remap a world-fixed patch. The two road-input
+modes cannot be combined in one check.
+
 The detour uses a periodic, C2-smooth lateral shift with finite lead-in and
 lead-out shoulders. A cheap reduction in wheel-contact low-grip exposure
 chooses which candidate receives the extra model trial; reduced exposure alone
@@ -328,6 +334,10 @@ duration, not the engineering
 lap time shown by the default solver. The run retains issued controls and
 states in memory for `replay_pose_driver()` to check numerical agreement at
 declared state tolerances, as well as recorded pose samples and stop status.
+If the run stops with `road_domain_invalid`, its local-grip number can be the
+base-road diagnostic fallback outside the declared road domain. The display
+warns that this number is not valid road data.
+
 The WIP tab can **Save last synthetic trace…** to a separate versioned JSON
 file and **Load synthetic trace…** for checked Driver-view playback. The file
 captures the exact synthetic course grid, reference-geometry mode, car, road, controller settings,

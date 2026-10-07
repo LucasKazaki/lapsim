@@ -27,7 +27,7 @@ from vehicle_model import Vehicle
 
 
 def _install_eligible_ai_grid_result(app: LapSimDesktop) -> SimpleNamespace:
-    """Put a completed uniform-road AI pair in the desktop without a solve."""
+    """Put a completed eligible AI pair in the desktop without a solve."""
 
     app.driving_mode_var.set("AI racing line (experimental)")
     app.root.update_idletasks()
@@ -75,7 +75,7 @@ def _completed_grid_report() -> PairedGridStabilityReport:
     )
 
 
-def test_ai_grid_check_is_optional_and_requires_eligible_uniform_pair() -> None:
+def test_ai_grid_check_is_optional_and_requires_eligible_pair() -> None:
     try:
         root = tk.Tk()
     except tk.TclError as error:
@@ -92,7 +92,7 @@ def test_ai_grid_check_is_optional_and_requires_eligible_uniform_pair() -> None:
             RectangularGripPatch(1.0, 2.0, 1.0, 2.0, 0.3),
         ))
         app._update_ai_grid_check_button()
-        assert app.ai_grid_check_button["state"] == "disabled"
+        assert app.ai_grid_check_button["state"] == "normal"
         app._displayed_ai_road = None
         comparison.candidate_path_audit = SimpleNamespace(valid=False)
         app._update_ai_grid_check_button()
@@ -145,12 +145,58 @@ def test_ai_grid_check_uses_frozen_car_and_does_not_reselect_path() -> None:
         assert observed[0][3]["torque_request_fraction"] == 0.8
         assert observed[0][3]["speed_periodic"] is True
         assert observed[0][3]["selection_margin_s"] == 0.05
+        assert observed[0][3]["road"] is None
         assert app._path_comparison[1] is comparison
         assert app.ai_grid_check_button["state"] == "normal"
         assert "-0.200 s original" in app.ai_grid_check_text.get()
         assert "-0.170 s" in app.ai_grid_check_text.get()
         assert "One refinement does not certify convergence" in app.ai_grid_check_text.get()
         assert not app.run_in_progress
+    finally:
+        root.destroy()
+
+
+def test_ai_grid_check_passes_frozen_world_patch_to_worker() -> None:
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    try:
+        app = LapSimDesktop(root)
+        comparison = _install_eligible_ai_grid_result(app)
+        road = PlanarRoad(patches=(
+            RectangularGripPatch(1.0, 1.01, -0.62, -0.57, 0.3),
+        ))
+        app._displayed_ai_road = road
+        app._update_ai_grid_check_button()
+        assert app.ai_grid_check_button["state"] == "normal"
+        observed: list[dict[str, object]] = []
+
+        def fake_diagnostic(
+            _vehicle: Vehicle, _baseline: SpatialTrack,
+            _candidate: SpatialTrack, **kwargs: object,
+        ) -> PairedGridStabilityReport:
+            observed.append(kwargs)
+            return _completed_grid_report()
+
+        with patch("lapsim.ui.app.threading.Thread") as thread_class:
+            app._start_ai_grid_check()
+        assert "world patch remapped" in app.ai_grid_check_text.get()
+        worker = thread_class.call_args.kwargs
+        with patch(
+            "lapsim.optimization.grid_stability.diagnose_paired_grid_stability",
+            side_effect=fake_diagnostic,
+        ):
+            worker["target"](*worker["args"])
+        app._poll_result()
+
+        assert observed[0]["road"] == road
+        assert observed[0]["road"] is not road
+        assert app._path_comparison[1] is comparison
+        assert "World-fixed patch remapped on each refined path" in app.ai_grid_check_text.get()
+        assert "Selection is unchanged" in app.ai_grid_check_text.get()
+        assert app.ai_grid_check_button["state"] == "normal"
     finally:
         root.destroy()
 
@@ -1211,6 +1257,10 @@ def test_assumed_world_patch_ai_trials_save_their_own_replayable_grip(
         app.ai_patch_vars["x_max_m"].set("55")
         road = app._read_ai_road()
         assert road is not None
+        root.update_idletasks()
+        # This test invokes the worker directly; mirror the start-button
+        # signature capture so the optional follow-up uses this exact run.
+        app._active_run_input_signature = app._run_input_signature()
         with patch("lapsim.ui.app.default_run_directory", return_value=tmp_path):
             app._calculate_ai_single(
                 "prius_2026_le", "Prius patch sensitivity",
@@ -1243,8 +1293,24 @@ def test_assumed_world_patch_ai_trials_save_their_own_replayable_grip(
             for trial in comparison.trials if trial.run is not None
         )
         assert app._displayed_ai_road is road
+        assert app.ai_grid_check_button["state"] == "normal"
+        assert "world patch will be remapped" in app.ai_grid_check_text.get()
         assert len(app.course_ax.patches) == 1
         assert "rectangle x 36–55 m" in app.ai_result_text.get()
+
+        original_selected_run = comparison.selected_run
+        with patch("lapsim.ui.app.threading.Thread") as thread_class:
+            app._start_ai_grid_check()
+        worker = thread_class.call_args.kwargs
+        worker["target"](*worker["args"])
+        app._poll_result()
+        assert app._path_comparison[1] is comparison
+        assert comparison.selected_run is original_selected_run
+        assert "Sign stable: yes" in app.ai_grid_check_text.get()
+        assert "0.05 s selection margin stable: yes" in app.ai_grid_check_text.get()
+        assert "World-fixed patch remapped on each refined path" in app.ai_grid_check_text.get()
+        assert "Selection is unchanged" in app.ai_grid_check_text.get()
+        assert app.ai_grid_check_button["state"] == "normal"
 
         records = list(tmp_path.glob("*.json"))
         assert len(records) >= 2

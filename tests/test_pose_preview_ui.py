@@ -9,10 +9,12 @@ from unittest.mock import patch
 
 import pytest
 
-from lapsim.dynamics.conditions import PlanarEnvironment
+from lapsim.dynamics.conditions import PlanarEnvironment, PlanarRoad, RoadDomain
 from lapsim.dynamics.planar import PlanarState
 from lapsim.courses.spatial_track import SpatialTrack
-from lapsim.optimization.pose_driver import PoseDriverSample
+from lapsim.optimization.pose_driver import (
+    PoseDriverSample, PoseDriverSettings, run_pose_driver,
+)
 from lapsim.ui.app import (
     LapSimDesktop, POSE_DRIVER_NOTE, POSE_SCENARIO_PATCH,
     POSE_SCENARIO_UNIFORM, REFERENCE_DRIVER_NOTE,
@@ -427,6 +429,7 @@ def test_pose_playback_labels_separate_model_and_reference_mode_restores_note() 
         assert "initial offset +0.00 m" in app.driver_run_label.get()
         assert "recorded sampled polyline" in app.driver_run_label.get()
         assert "separate synthetic car" in app.driver_note_var.get()
+        assert "base-road fallback" not in app.driver_note_var.get()
         assert "14.75 s pose-model time" in app.driver_run_label.get()
         assert app.driver_decision_title_labels[0].cget("text") == "STEER FRONT (°)"
 
@@ -630,6 +633,95 @@ def test_zero_step_synthetic_trace_load_has_no_invented_motion(tmp_path: Path) -
         assert "no driven step" in app.driver_run_label.get()
         assert all(value.get() == "—" for value in app.driver_values.values())
         assert all(value.get() == "—" for value in app.driver_decision_values.values())
+    finally:
+        root.destroy()
+
+
+def test_invalid_road_pose_preview_labels_fallback_grip() -> None:
+    run = run_pose_driver(
+        environment=PlanarEnvironment(road=PlanarRoad(
+            valid_domain=RoadDomain(-2.0, 3.0, -2.0, 2.0),
+        )),
+        settings=PoseDriverSettings(
+            target_progress_m=5.0, maximum_simulated_time_s=3.0,
+        ),
+    )
+    assert run.status == "road_domain_invalid"
+    assert len(run.controls) > 0
+    assert run.samples[-1].local_grip_multiplier == 1.0
+
+    root, app = _desktop()
+    try:
+        app.result_queue.put(("pose_preview", run, None))
+        with patch.object(app, "_toggle_driver_playback"):
+            app._poll_result()
+        assert isinstance(app.driver_playback, PoseDriverPlayback)
+        for text in (
+            app.pose_preview_status.get(), app.status_text.get(),
+            app.driver_note_var.get(),
+        ):
+            assert "base-road fallback" in text
+            assert "not valid road data" in text
+
+        record = SimpleNamespace(
+            run=run, content_id="e" * 64, controller_report=None,
+        )
+        app.result_queue.put((
+            "pose_record_loaded", (Path("invalid_road.json"), record), None,
+        ))
+        with patch.object(app, "_toggle_driver_playback"):
+            app._poll_result()
+        assert isinstance(app.driver_playback, PoseDriverPlayback)
+        for text in (
+            app.pose_record_status.get(), app.pose_preview_status.get(),
+            app.status_text.get(), app.driver_note_var.get(),
+        ):
+            assert "base-road fallback" in text
+            assert "not valid road data" in text
+    finally:
+        root.destroy()
+
+
+def test_zero_step_loaded_invalid_road_trace_labels_fallback_grip(
+    tmp_path: Path,
+) -> None:
+    run = run_pose_driver(
+        environment=PlanarEnvironment(road=PlanarRoad(
+            valid_domain=RoadDomain(0.0, 3.0, -2.0, 2.0),
+        )),
+        settings=PoseDriverSettings(target_progress_m=5.0),
+    )
+    assert run.status == "road_domain_invalid"
+    assert len(run.controls) == 0
+    assert run.samples[-1].local_grip_multiplier == 1.0
+
+    root, app = _desktop()
+    try:
+        app.result_queue.put(("pose_preview", run, None))
+        app._poll_result()
+        assert app.driver_playback is None
+        for text in (
+            app.pose_preview_status.get(), app.status_text.get(),
+            app.driver_note_var.get(),
+        ):
+            assert "base-road fallback" in text
+            assert "not valid road data" in text
+
+        record = SimpleNamespace(
+            run=run, content_id="d" * 64, controller_report=None,
+        )
+        app.result_queue.put((
+            "pose_record_loaded", (tmp_path / "zero_step.json", record), None,
+        ))
+        app._poll_result()
+        assert app.driver_playback is None
+        assert "no driven step" in app.driver_run_label.get()
+        for text in (
+            app.pose_record_status.get(), app.pose_preview_status.get(),
+            app.status_text.get(), app.driver_note_var.get(),
+        ):
+            assert "base-road fallback" in text
+            assert "not valid road data" in text
     finally:
         root.destroy()
 

@@ -2104,14 +2104,26 @@ class LapSimDesktop:
         return description
 
     @staticmethod
-    def _pose_reference_note(reference_geometry: str) -> str:
-        if reference_geometry == "sampled_polyline":
+    def _pose_road_domain_warning(status: str) -> str:
+        if status == "road_domain_invalid":
             return (
+                "Local grip may show a base-road fallback outside the declared "
+                "road domain; that number is not valid road data."
+            )
+        return ""
+
+    @staticmethod
+    def _pose_reference_note(reference_geometry: str, status: str = "") -> str:
+        if reference_geometry == "sampled_polyline":
+            note = (
                 "Sampled AI-style path reference, driven for 80 m by a separate "
                 "synthetic car and controller. Its pose-model time is not a "
                 "Prius, TREV, or Formula SAE lap time. " + POSE_DRIVER_NOTE
             )
-        return POSE_DRIVER_NOTE
+        else:
+            note = POSE_DRIVER_NOTE
+        warning = LapSimDesktop._pose_road_domain_warning(status)
+        return f"{note} {warning}" if warning else note
 
     def _activate_pose_preview(self, run: PoseDriverRun) -> None:
         """Show simulated pose while keeping its model separate from lap results."""
@@ -2127,6 +2139,7 @@ class LapSimDesktop:
         self.driver_note_var.set(
             self._pose_reference_note(
                 getattr(run.settings, "reference_geometry", "coherent_arcs"),
+                run.status,
             )
         )
         self._set_driver_box_mode(pose=True)
@@ -2325,7 +2338,7 @@ class LapSimDesktop:
                        "No accepted model step is available")
                       if self._driver_live_mode else
                       "Run the synthetic pose preview to view this road condition"
-                      if self.driver_note_var.get() == POSE_DRIVER_NOTE else
+                      if POSE_DRIVER_NOTE in self.driver_note_var.get() else
                       "Run a lap, then play its distance-aligned map view"),
                 fill=foreground, font=FONT, width=width - 30,
             )
@@ -4246,7 +4259,9 @@ class LapSimDesktop:
                 self.ai_grid_check_text.set(f"Finer-grid check failed: {error}")
                 self.status_text.set("Finer-grid check failed; displayed runs are unchanged")
             else:
-                self.ai_grid_check_text.set(self._ai_grid_check_summary(report))
+                self.ai_grid_check_text.set(self._ai_grid_check_summary(
+                    report, world_road=self._displayed_ai_road is not None,
+                ))
                 self._set_calculation_progress(
                     "complete" if report.status == "completed" else "stopped",
                     ("Finer-grid check finished" if report.status == "completed"
@@ -4289,6 +4304,7 @@ class LapSimDesktop:
             else:
                 path, record = payload
                 run = record.run
+                road_warning = self._pose_road_domain_warning(run.status)
                 scenario = next((
                     name for name in (POSE_SCENARIO_UNIFORM, POSE_SCENARIO_PATCH)
                     if run.environment == _pose_preview_environment(name)
@@ -4324,14 +4340,19 @@ class LapSimDesktop:
                         controller_report.checked_controls
                         if controller_report is not None else None
                     )
+                    + (f" · {road_warning}" if road_warning else "")
                 )
                 self.pose_preview_status.set(
                     f"Recorded {self._active_pose_description()} · {run.status}: "
                     f"{run.samples[-1].progress_m:.1f} m in "
                     f"{run.elapsed_pose_model_time_s:.2f} s pose-model time. "
                     "This is not an engineering lap time."
+                    + (f" {road_warning}" if road_warning else "")
                 )
-                self.status_text.set("Synthetic pose trace loaded and checked")
+                self.status_text.set(
+                    "Synthetic pose trace loaded and checked"
+                    + (f" · {road_warning}" if road_warning else "")
+                )
                 if len(run.states) > 1:
                     self._activate_pose_preview(run)
                 else:
@@ -4345,7 +4366,7 @@ class LapSimDesktop:
                     self._driver_live_update_serial += 1
                     self._driver_playback_time_s = 0.0
                     self.driver_note_var.set(
-                        self._pose_reference_note(reference_geometry)
+                        self._pose_reference_note(reference_geometry, run.status)
                     )
                     self._set_driver_box_mode(pose=True)
                     self.driver_decision_title.set("Pose model · no driven controls")
@@ -4390,6 +4411,7 @@ class LapSimDesktop:
             else:
                 run: PoseDriverRun = payload
                 completed = run.completed
+                road_warning = self._pose_road_domain_warning(run.status)
                 self._set_calculation_progress(
                     "complete" if completed else "stopped",
                     (f"Synthetic pose preview · {description} · finished"
@@ -4409,10 +4431,12 @@ class LapSimDesktop:
                     f"minimum assumed footprint slack "
                     f"{run.minimum_assumed_boundary_slack_m:.2f} m. "
                     "This is not an engineering lap time."
+                    + (f" {road_warning}" if road_warning else "")
                 )
                 self.status_text.set(
                     f"Synthetic pose preview · {description} · "
                     f"{run.status} · separate four-wheel model"
+                    + (f" · {road_warning}" if road_warning else "")
                 )
                 if len(run.states) > 1:
                     self._activate_pose_preview(run)
@@ -4423,6 +4447,10 @@ class LapSimDesktop:
                         f"Synthetic pose model · {description} · "
                         f"{run.status} · no driven step"
                     )
+                    self.driver_note_var.set(self._pose_reference_note(
+                        getattr(run.settings, "reference_geometry", "coherent_arcs"),
+                        run.status,
+                    ))
                     self._draw_driver_view()
             self._schedule_after(100, self._poll_result)
             return
@@ -4515,9 +4543,12 @@ class LapSimDesktop:
             )
             self._ai_grid_source_signature = completed_input_signature
             self.ai_grid_check_text.set(
-                "Optional finer-grid check is available for eligible uniform-road paths."
+                ("Optional finer-grid check is available; the assumed world "
+                 "patch will be remapped on each fixed path."
+                 if self._displayed_ai_road is not None else
+                 "Optional finer-grid check is available for eligible paths.")
                 if self._ai_grid_check_eligible() else
-                "Finer-grid check requires two eligible completed paths on uniform road."
+                "Finer-grid check requires two eligible completed paths."
             )
             self._update_ai_grid_check_button()
             if self.ai_compare_button is not None:
@@ -4836,10 +4867,6 @@ class LapSimDesktop:
             or self._ai_grid_source_signature != self._run_input_signature()
         ):
             return False
-        if self._displayed_ai_road is not None:
-            # The existing diagnostic repeats per-cell grip. That is not a
-            # fresh mapping of a world-fixed patch on the finer path.
-            return False
         plan, comparison, _assumptions = self._path_comparison
         return bool(
             isinstance(plan.baseline_track, SpatialTrack)
@@ -4888,7 +4915,12 @@ class LapSimDesktop:
             "indeterminate",
             "Finer-grid check · two fixed paths · pass progress unavailable",
         )
-        self.ai_grid_check_text.set("Checking numerical sensitivity on the same fixed paths…")
+        road = deepcopy(self._displayed_ai_road)
+        self.ai_grid_check_text.set(
+            "Checking two fixed paths with the world patch remapped on each finer path…"
+            if road is not None else
+            "Checking numerical sensitivity on the same fixed paths…"
+        )
         self.status_text.set("Checking eligible AI path times on a finer grid…")
         threading.Thread(
             target=self._calculate_ai_grid_check,
@@ -4896,7 +4928,7 @@ class LapSimDesktop:
                 serial, comparison, deepcopy(vehicle), plan.baseline_track,
                 comparison.candidate_track, comparison.baseline_time_s,
                 comparison.candidate_time_s, torque_fraction,
-                comparison.selection_margin_s,
+                comparison.selection_margin_s, road,
             ),
             daemon=True,
         ).start()
@@ -4906,6 +4938,7 @@ class LapSimDesktop:
         baseline_track: SpatialTrack, candidate_track: SpatialTrack,
         baseline_time_s: float, candidate_time_s: float,
         torque_fraction: float, selection_margin_s: float,
+        road: PlanarRoad | None,
     ) -> None:
         try:
             from lapsim.optimization.grid_stability import diagnose_paired_grid_stability
@@ -4917,13 +4950,16 @@ class LapSimDesktop:
                 torque_request_fraction=torque_fraction,
                 speed_periodic=True,
                 selection_margin_s=selection_margin_s,
+                road=road,
             )
             self.result_queue.put(("ai_grid_check", (serial, comparison, report), None))
         except Exception as error:
             self.result_queue.put(("ai_grid_check", (serial, comparison, None), error))
 
     @staticmethod
-    def _ai_grid_check_summary(report: Any) -> str:
+    def _ai_grid_check_summary(
+        report: Any, *, world_road: bool = False,
+    ) -> str:
         if report.status != "completed":
             return (
                 f"Finer-grid check {report.status.replace('_', ' ')}: "
@@ -4932,6 +4968,10 @@ class LapSimDesktop:
             )
         sign = "yes" if report.sign_stable else "no"
         margin = "yes" if report.selection_margin_stable else "no"
+        road_note = (
+            "World-fixed patch remapped on each refined path. "
+            if world_road else "Uniform road held fixed. "
+        )
         return (
             "Fixed-path grid sensitivity: candidate − centerline "
             f"{report.original_candidate_minus_baseline_s:+.3f} s original, "
@@ -4939,7 +4979,7 @@ class LapSimDesktop:
             f"max {report.maximum_refined_cell_length_m:.3g} m "
             f"({report.refined_baseline_cells:,}/{report.refined_candidate_cells:,} cells). "
             f"Sign stable: {sign}; {report.selection_margin_s:.2f} s selection "
-            f"margin stable: {margin}. Selection is unchanged. One refinement "
+            f"margin stable: {margin}. {road_note}Selection is unchanged. One refinement "
             "does not certify convergence, corridor clearance, or real-car time."
         )
 

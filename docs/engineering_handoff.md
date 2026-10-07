@@ -452,7 +452,7 @@ run record stores `candidate_trials[].strategy="grip_detour"` with null
 offline proposal is not learned from laps, a swept-body or pose-tracking
 guarantee, or a measured-road model.
 
-`optimization/grid_stability.py::diagnose_paired_grid_stability` is an on-demand timing sensitivity check for two already eligible paths. It preserves the original cell boundaries and curvature, halves the smaller maximum cell length by default, preflights each refined grid against a 5,000-cell cap, and reruns the same start policy with independent car copies. It reports original/refined candidate-minus-baseline time, sign stability, and whether the 0.05 s selection-margin crossing is stable. The desktop's **Check finer grid (optional)** action uses the effective pre-run car frozen by the AI worker and offers this check only when both path audits and completed times are eligible on uniform road. It does not rerun the corridor audit or promote a path. Supplied per-cell grip is repeated across each original cell's subdivisions; this **does not** remap a world rectangle at finer resolution, so the desktop disables the action for patch-mode results. The check can add four full lap-model passes and is outside the desktop's default calculation.
+`optimization/grid_stability.py::diagnose_paired_grid_stability` is an on-demand timing sensitivity check for two already eligible paths. It preserves the original cell boundaries and curvature, halves the smaller maximum cell length by default, preflights each refined grid against a 5,000-cell cap, and reruns the same start policy with independent car copies. It reports original/refined candidate-minus-baseline time, sign stability, and whether the 0.05 s selection-margin crossing is stable. The desktop's **Check finer grid (optional)** action uses the effective pre-run car frozen by the AI worker and offers this check when both path audits and completed times are eligible on uniform road or the assumed rectangular-patch setting. For a patch, it maps the same world-fixed rectangle independently onto each refined path, freezing that path's original modeled entry heading because chord interpolation can otherwise change the mapper's automatic heading choice. A failed refined road mapping yields an explicit non-completed diagnostic. The API's separate explicit per-cell grip-tuple mode repeats each original cell's value over its subdivisions; that mode **does not** remap a world rectangle. The check does not rerun the corridor audit, validate the road assumption, or promote a path. It can add four full lap-model passes and is outside the desktop's default calculation.
 
 An unmerged **in-memory biarc prototype** explored connecting the intended x/y endpoints with curvature-consistent arc segments. It reduced geometric mismatch to roughly **1e-9 m**, but took **2.2–2.5×** as long and changed modeled lap times by **5–7 s** because of curvature spikes. A separate unmerged one-circular-arc-per-edge experiment used an odd **991-cell** path and closed its integrated geometry to about **2e-11 m**, but increased peak absolute curvature and adjacent curvature jumps. Its one-pass times shifted by **5–7 s**, one TREV numerical ranking reversed, and compute rose about **2.5×**. Exact position closure alone does not establish physical or numerical validity. Neither prototype is used by the simulator; any replacement needs consistent geometry, controlled curvature, course review, and independent resolution and vehicle checks.
 
@@ -474,7 +474,7 @@ Research basis: [TUM FTM's variable-friction minimum-time implementation](https:
 | Compare car profiles | Two saved/built-in profiles run against the same course, step, driver fraction, and feasible rolling-start speed; B-minus-A numbers and separate finish/seam speeds are model differences |
 | Eight boxes | Lap time, peak speed, average speed (`course_length/time`), course distance, signed net pack-model energy, peak `abs(lateral acceleration)/g`, and entry/exit speeds |
 | AI result boxes | Eligible baseline/candidate times and signed difference when both audits pass; completed audit-failed times carry `*`, difference is blank, Compare path numbers is disabled, and text gives observed excess, certification status, and seam gap |
-| Check finer grid (optional) | Enabled only for two eligible completed uniform-road AI paths. A worker reruns the same fixed paths with the frozen effective car and driver request on a finer grid, up to 5,000 cells per path and four additional speed-seam lap passes. It reports original/refined signed time differences, sign and selection-margin stability without changing the selected path. Patch trials are excluded because repeating a coarse cell's grip would not remap its world-fixed rectangle; one grid refinement is neither convergence proof nor renewed clearance audit |
+| Check finer grid (optional) | Enabled for two eligible completed AI paths on uniform road or the assumed rectangle. A worker reruns the same fixed paths with the frozen effective car and driver request on a finer grid, up to 5,000 cells per path and four additional speed-seam lap passes. For patch trials it remaps the world-fixed rectangle separately on each refined path using that path's original modeled entry heading. It reports original/refined signed time differences, sign and selection-margin stability without changing the selected path. One grid refinement is neither convergence proof, renewed clearance audit, nor measured-road validation |
 | Trace selector | Speed, acceleration, drive/braking forces, inferred driven slip, or battery power from named telemetry channels, against time or distance |
 | Course map | Selected source x/y reference, fixed top-down; mouse drag pans and wheel zooms; a selected AI rectangle is outlined in black/white. The fused course displays its geometry warning while the synthetic choices are labeled as assumed examples |
 | Driver view tab | Static labeled source-course preview while preparing; latest accepted physics cell on the exact trial grid during a solve; then timed top-down replay on each run's saved solver-grid x/y with fixed car marker, play/pause, scrub, rate, wheel zoom, cell control/force number boxes, and a Replay lap menu for completed comparisons; the separately labeled synthetic pose preview uses simulated x/y and heading |
@@ -619,7 +619,7 @@ intermediate updates, but no extra physics pass is performed.
 For a centerline lap, including either car in a profile comparison, the displayed path is the exact centerline solver-grid x/y frozen in the saved run; for an AI trial it is that trial's processed solver path. Live progress and completed replay therefore interpolate the same per-run reference geometry. The separate Analysis course plot still shows the source x/y, which can differ after solver resampling. None of these **lap views** is the integrated `Vehicle` x/y/heading state. In particular, the fused default track's x/y and curvature disagree numerically even on the saved grid. The lap view is a useful time/station and speed preview but does **not** show steering error, tire path tracking, cone proximity, a true driver's camera, or interactive driving. The desktop switches to this tab when a lap calculation starts and shows a static labeled source-course map with the start marked and **NO VEHICLE POSE** until an accepted cell arrives. A pause between accepted cells returns to that preview; completed laps start replay. The optional WIP pose preview instead plays the separate four-wheel model's actual simulated x/y and heading with an explicit synthetic model-time label. It does not validate the lap solver's reference-path playback. A full timed session remains unavailable until a versioned controller contract, complete input/state/environment capture, replay tolerance policy, and linked comparison report exist.
 
 During the pose preview, the nine decision boxes change labels. Live updates
-show reference cross-track error (m), heading error (degrees), observed local
+show reference cross-track error (m), heading error (degrees), sampled local
 road-grip multiplier, assumed axle-span footprint slack (m), and yaw rate
 (degrees/s); the four control boxes and lateral acceleration display dashes
 because that callback does not supply them. Completed replay additionally
@@ -629,6 +629,12 @@ output interval; geometric diagnostics and yaw rate are interpolated between
 recorded states for replay display only. Switching back to a lap restores the
 endurance-model box labels and telemetry. The pose boxes do not imply motor,
 pack, or hydraulic brake hardware modeling.
+
+If the pose status is `road_domain_invalid`, a local-grip sample may contain
+the base-road diagnostic fallback from a query outside the declared road
+domain. The desktop warns in the status and Driver view that this displayed
+number is not valid road data; it must not be read as measured grip or as
+coverage of the missing domain.
 
 ## 10. Four-wheel lab: state, control, tire, and motion equations
 
@@ -1069,7 +1075,7 @@ Read the JSON in this order: `schema_version` and `simulation_mode`; `runtime` a
 | Four-wheel widgets | `ui/dynamics_lab.py` | Freezes `ManeuverSettings`, runs matched A/B in worker, saves one record, draws top-down/force views |
 | Shipped course and gridding | `ui/simulation.py`, `courses/spatial_track.py` | Reads source CSV and creates path cells; on-demand `SpatialTrack.refine` preserves existing cell boundaries for resolution checks |
 | Optional path proposal and A/B timing | `optimization/racing_line.py`, `optimization/grip_detour.py`, `optimization/road_grip_schedule.py` | Builds processed geometric baseline and bounded full/half/fourth-offset candidates; optional one-patch mode screens at most 12 local detour geometries and can add one fifth full-model trial. Each path's nominal wheel contacts get their own scalar grip schedule. Integrated curvature paths need continuous scalar normal-coordinate clearance and position closure before ranking. At most eight lap-model passes without a patch or ten with one patch in the desktop speed-seam policy |
-| Optional fixed-path resolution diagnostic | `optimization/grid_stability.py`, `ui/app.py` | On request, reruns an eligible uniform-road baseline/candidate pair on one finer grid with the frozen car and no path reselection; caps each path at 5,000 cells and reports sign/margin sensitivity without a convergence claim |
+| Optional fixed-path resolution diagnostic | `optimization/grid_stability.py`, `ui/app.py` | On request, reruns an eligible uniform-road or assumed-patch baseline/candidate pair on one finer grid with the frozen car and no path reselection; patch mode remaps the same world rectangle on each refined path with its original modeled entry heading. Caps each path at 5,000 cells and reports sign/margin sensitivity without a convergence or road-validation claim |
 | Car selection and local saved profiles | `profiles/registry.py`, `profiles/adapter.py`, `ui/garage.py` | Constructs fresh `Vehicle` and provenance; seven editable garage fields |
 | Spatial speed constraints | `solvers/path_constraints.py` | Computes local tire-limited and cyclic braking entry ceilings; optional absolute per-cell grip tuple and within-phase progress snapshots |
 | One-lap event | `events/endurance.py` | Starts a rolling initial-condition lap, applies driver/automatic brake actions, calls cell update, records accepted telemetry and seam speeds; uses any saved constraint's per-cell grip schedule and restores configured grip afterward |
@@ -1126,6 +1132,18 @@ desktop startup preflight passed. A combined pose UI/record invocation had
 one intermittent Windows Tk skip; the affected UI module passed in the
 fresh run just noted. These tests check implementation and replay behavior,
 not track survey, tire calibration, or real-car lap accuracy.
+
+After patch-mode finer-grid remapping and the pose road-domain display warning,
+`scripts/check_all.ps1` again passed all **60 test files** in isolated
+processes on 6 October 2026. The AI desktop module passed **25/25**, including
+an unmocked synthetic Prius patch run followed by the optional refined-grid
+worker; the paired-grid module passed **12/12**, and the pose UI module passed
+**39/39**. `scripts/check_desktop.py` passed its startup preflight. Focused
+checks additionally cover a narrow world rectangle at a refined-cell boundary,
+the original modeled entry heading, road-mapping failure before physics, a
+frozen patch passed to the desktop worker, and both driven and zero-step
+invalid-road pose traces. These checks establish deterministic behavior of
+the current software model; they do not calibrate the car, surface, or course.
 
 The cell-length regressions verify that the planner bounds generated baseline and candidate physics cells, tries the allowed 5,000-point grid before rejecting a tight request, and handles a one-ulp final-station discrepancy on the FSAE-style practice course without relaxing its clearance checks. A desktop regression changes the visible cell-size entry from 2 m to 1 m and confirms that the actual model grid and requested maximum passed to record capture change. The WIP pose UI checks its finer/coarser effective grid, 5,000-cell rejection, selected-path eligibility gate, frozen worker path, live pose-model labels, saved-record mode, and scrolling access to status at the 1080 × 720 window minimum. Desktop progress regressions verify current-pass accepted-cell fractions, explicit speed-seam probe and final-lap transitions without a fabricated percentage, indeterminate preparation and gap states, completion/failure reset, dark-mode contrast, and cancellation of pending animation callbacks at window close. Detour regressions check bounded construction, lower wheel-contact exposure, corridor refusal, full-model selection, slower-detour rejection, exact saved strategy, and replay agreement.
 
@@ -1322,6 +1340,21 @@ approximately **0.01953 s** change shows that cell spacing affects the
 reported gain. Because this held the original paths fixed, did not renew
 their corridor audit, and sampled only one finer grid, it is a sensitivity
 observation, not a convergence certificate or validation against cones.
+
+A fresh optional paired probe with the same synthetic course and Prius at
+**80%** driver request used the assumed world rectangle X **36–55 m**, Y
+**−3–16 m**, at **0.3×** base grip. The original eligible fixed-path
+**206/206-cell** baseline/candidate completed in **20.3465718414 s** and
+**17.7554582838 s**. The diagnostic mapped that same world-fixed rectangle
+separately onto the **412/542-cell** refined paths with each original path's
+modeled entry heading retained; the refined times were **20.3100544665 s**
+and **17.6978407275 s**. The candidate-minus-baseline difference changed
+from **−2.5911135576 s** to **−2.6122137390 s**; both its sign and the
+**0.05 s** selection-margin decision remained stable. This optional check
+took about **15.1 s** on this computer, beyond the ordinary AI calculation.
+It is one synthetic fixed-path sensitivity observation. It neither proves
+grid convergence nor re-audits corridor clearance, and the assumed rectangle
+is not a surveyed road condition.
 
 Before the grip-detour proposal was added, a separate **assumed local-surface**
 run on that same car, course, cell-size request, and corridor used one

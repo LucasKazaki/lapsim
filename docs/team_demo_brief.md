@@ -23,6 +23,10 @@ For a fresh Windows clone, run `setup_lapsim.cmd` once before this walkthrough; 
 - Switch back to **Centerline (default)** and use **Run comparison** for two saved or built-in profiles. Read B-minus-A values and the shared rolling start, then open **Saved run details** for both full record IDs and files. Each car has one initial-condition lap; the source-backed TREV entries are partial working scenarios.
 - Open **Timed sessions · WIP** and, if time permits, run its **80 m synthetic pose preview**. After an eligible synthetic AI result, its second button can preview that selected polygon with the separate synthetic car. Driver view then plays actual modeled x/y and heading, with boxes for steering, wheel torque, tracking error, grip, and assumed clearance. Its duration is pose-model time, not the endurance lap time. A saved v2 pose trace checks both recorded-input dynamics replay and whether the declared controller issued its controls; a zero-step trace has no controller choices to check. The tab cannot start a full timed session or ghost yet.
 
+If a pose trace stops with `road_domain_invalid`, its local-grip box may show
+the base-road diagnostic fallback outside the declared road domain. Read the
+status warning; that number is not valid road data.
+
 For a longer course demonstration, select **Synthetic FSAE-style · practice**
 and run a fresh centerline lap or an experimental AI comparison. This is an
 analytic **817.079633 m** closed loop with 60 m and 45 m straights, alternating
@@ -62,6 +66,15 @@ the detour's eligible time with baseline and other paths, and inspect
 Do not promise an avoidance gain: a candidate can fail clearance, fail the
 lap, or lose on time. This is a deterministic offline proposal, not learning
 from driven laps or proof of cone clearance.
+
+If both patch-mode paths are eligible and complete, **Check finer grid
+(optional)** remaps the same world-fixed rectangle independently onto each
+refined fixed path, retaining each original path's modeled entry heading. In
+one synthetic Prius probe, the candidate-minus-centerline difference moved
+from about **−2.591 s** to **−2.612 s**; the sign and 0.05 s selection-margin
+decision stayed the same. The selected line does not change. This is one
+numerical sensitivity observation, not convergence, surveyed road validity,
+or renewed clearance proof.
 
 The car and path comparison popups display the selected course label; an open
 popup retains that label if the main course choice changes.

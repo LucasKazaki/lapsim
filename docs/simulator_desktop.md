@@ -299,16 +299,20 @@ show their signed difference and allow **Compare path numbers** for time,
 distance, speed, equivalent energy, and lateral acceleration. That window
 names the selected course, as does the two-car comparison window, so an open
 comparison retains its source label after the main course selection changes.
-For two eligible completed paths on the uniform road setting, **Check finer
-grid (optional)** runs a separate paired sensitivity check on the same fixed
-paths and the frozen effective car. It reports both candidate-minus-centerline
-time differences, refined cell counts, sign stability, and whether the
-provisional 0.05 s selection decision crosses its threshold. It never
-reselects the path. It is disabled for the world-fixed patch because the
-current fixed-path checker would repeat coarse cell grip instead of remapping
-the rectangle. Each refined path is capped at 5,000 cells and can require
-two additional speed-seam passes. One extra grid is not a convergence proof
-or a renewed path-clearance audit.
+
+For two eligible completed paths on uniform road or the assumed rectangular
+patch, **Check finer grid (optional)** runs a separate paired sensitivity
+check on the same fixed paths and frozen effective car. For a patch trial, it
+remaps the same world-fixed rectangle independently on each refined path and
+retains each original path's modeled entry heading; it does not repeat the
+coarse path's grip cells. It reports both candidate-minus-centerline time
+differences, refined cell counts, sign stability, and whether the provisional
+0.05 s selection decision crosses its threshold. It never reselects the path.
+Each refined path is capped at 5,000 cells; the two paths can add up to four
+lap-model passes under the speed-seam policy. One extra grid is not a
+convergence proof, a renewed path-clearance audit, or validation of the
+assumed road.
+
 A failed run returned by the solver is saved for diagnosis. Its record labels
 the last checked cell's time, distance, speed, and SOC separately from the
 vehicle state after an attempted rejected cell; partial times cannot be ranked.
@@ -466,8 +470,12 @@ requests too. The default ±3 m corridor, 1.8 m vehicle width, and 0.2 m
 margin are assumptions. The sampled body-rectangle check covers the span
 between axle lines under that corridor, with no surveyed boundary, overhang,
 or between-sample swept-area certificate. The future-speed calculation is a
-planning heuristic, not a tire-force or clearance certificate. This WIP
-preview always uses the fixed 300 kg synthetic four-wheel car and does not
+planning heuristic, not a tire-force or clearance certificate. A run that
+stops with `road_domain_invalid` may show the base-road fallback in the
+local-grip box after a query outside the declared road domain. The status and
+Driver view warn that this number is not valid road data.
+
+This WIP preview always uses the fixed 300 kg synthetic four-wheel car and does not
 use the selected Prius/TREV profile or feed the default centerline lap. A full
 interactive session, ghost,
 Terps vehicle/controller, and linked comparison report remain future work.
