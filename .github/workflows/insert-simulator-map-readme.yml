@@ -1,0 +1,105 @@
+name: Insert simulator map in README
+
+on:
+  push:
+    branches:
+      - docs/interactive-simulator-flowchart
+    paths:
+      - .github/workflows/insert-simulator-map-readme.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-readme:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the documentation branch
+        uses: actions/checkout@v4
+        with:
+          ref: docs/interactive-simulator-flowchart
+          fetch-depth: 0
+
+      - name: Insert the interactive map section
+        shell: bash
+        run: |
+          python - <<'PY'
+          from hashlib import sha1
+          from pathlib import Path
+
+          path = Path("README.md")
+          raw = path.read_bytes()
+          blob_sha = sha1(f"blob {len(raw)}\0".encode() + raw).hexdigest()
+          expected_sha = "03cd7909744ec31d1f1ecece776dc347f69392a4"
+          if blob_sha != expected_sha and "## Interactive simulator map" not in raw.decode("utf-8"):
+              raise SystemExit(f"README changed unexpectedly: {blob_sha}")
+
+          text = raw.decode("utf-8")
+          if "## Interactive simulator map" not in text:
+              section = '''## Interactive simulator map
+
+          The repository includes two synchronized views of the simulator:
+
+          - [Open the full interactive simulator map](docs/simulator_flowchart/index.html)
+            from a local checkout. It supports pan, wheel/pinch zoom, draggable nodes,
+            search, source links, and progressive expansion from the single `LapSim
+            simulator` node to equation-level details.
+          - [Read the map controls and maintenance guide](docs/simulator_flowchart/README.md).
+
+          GitHub renders this compact overview directly. The interactive map expands every
+          branch further and labels implemented, optional, experimental, assumption,
+          limitation, and future nodes.
+
+          ```mermaid
+          flowchart LR
+              ROOT["LapSim simulator"]
+              ROOT --> ENTRY["Entry points & orchestration"]
+              ROOT --> INPUTS["Inputs, config & provenance"]
+              ROOT --> LAP["Distance-domain lap pipeline"]
+              ROOT --> CELL["Vehicle.update_state · one cell"]
+              ROOT --> COMPONENTS["Vehicle component physics"]
+              ROOT --> RACING["Optional racing-line & local grip"]
+              ROOT --> PLANAR["Separate four-wheel time-domain model"]
+              ROOT --> OUTPUTS["Results, scoring & replay"]
+              ROOT --> VALIDATION["Verification, evidence & limits"]
+
+              ENTRY --> LAP
+              INPUTS --> LAP
+              LAP --> CELL
+              CELL --> COMPONENTS
+              RACING --> LAP
+              PLANAR --> OUTPUTS
+              LAP --> OUTPUTS
+              OUTPUTS --> VALIDATION
+          ```
+
+          '''
+              marker = "## Documentation\n\n"
+              if marker not in text:
+                  raise SystemExit("README documentation marker not found")
+              text = text.replace(marker, section + marker, 1)
+
+          bullet = "- [Interactive simulator map](docs/simulator_flowchart/README.md): controls,\n  equation-level coverage, model-status labels, and maintenance instructions.\n"
+          documentation_marker = "## Documentation\n\n"
+          if bullet not in text:
+              text = text.replace(documentation_marker, documentation_marker + bullet, 1)
+
+          if "```mermaid\nflowchart LR" not in text:
+              raise SystemExit("Mermaid overview was not inserted")
+          for linked in (Path("docs/simulator_flowchart/index.html"), Path("docs/simulator_flowchart/README.md")):
+              if not linked.is_file():
+                  raise SystemExit(f"Missing linked map file: {linked}")
+
+          path.write_text(text, encoding="utf-8", newline="")
+          PY
+
+      - name: Commit the README and remove this one-time workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git rm .github/workflows/insert-simulator-map-readme.yml
+          git commit -m "Document interactive simulator map in README"
+          git push origin HEAD:docs/interactive-simulator-flowchart
