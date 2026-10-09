@@ -14,8 +14,47 @@ organized by the `electrical`, `aero`, `powertrain`, and `mech` subteam
 packages, while the root `vehicle_model` package continues to re-export the
 main classes for concise imports.
 
+## Interactive simulator map
+
+The repository includes two synchronized views of the simulator:
+
+- [Open the full interactive simulator map](docs/simulator_flowchart/index.html)
+  from a local checkout. It supports pan, wheel/pinch zoom, draggable nodes,
+  search, source links, and progressive expansion from the single `LapSim
+  simulator` node to equation-level details.
+- [Read the map controls and maintenance guide](docs/simulator_flowchart/README.md).
+
+GitHub renders this compact overview directly. The interactive map expands every
+branch further and labels implemented, optional, experimental, assumption,
+limitation, and future nodes.
+
+```mermaid
+flowchart LR
+    ROOT["LapSim simulator"]
+    ROOT --> ENTRY["Entry points & orchestration"]
+    ROOT --> INPUTS["Inputs, config & provenance"]
+    ROOT --> LAP["Distance-domain lap pipeline"]
+    ROOT --> CELL["Vehicle.update_state · one cell"]
+    ROOT --> COMPONENTS["Vehicle component physics"]
+    ROOT --> RACING["Optional racing-line & local grip"]
+    ROOT --> PLANAR["Separate four-wheel time-domain model"]
+    ROOT --> OUTPUTS["Results, scoring & replay"]
+    ROOT --> VALIDATION["Verification, evidence & limits"]
+
+    ENTRY --> LAP
+    INPUTS --> LAP
+    LAP --> CELL
+    CELL --> COMPONENTS
+    RACING --> LAP
+    PLANAR --> OUTPUTS
+    LAP --> OUTPUTS
+    OUTPUTS --> VALIDATION
+```
+
 ## Documentation
 
+- [Interactive simulator map](docs/simulator_flowchart/README.md): controls,
+  equation-level coverage, model-status labels, and maintenance instructions.
 - [Engineering handoff](docs/engineering_handoff.md): the complete software,
   math, GUI, data, verification, and model-limit walkthrough for a new lead.
 - [Engineering handoff PDF](output/pdf/LapSim_Engineering_Handoff.pdf): a
