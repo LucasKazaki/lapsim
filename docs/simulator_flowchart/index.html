@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Interactive, expandable architecture and equation map for the LapSim Formula SAE simulator.">
+  <title>LapSim interactive simulator flowchart</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="title-block">
+      <p class="eyebrow">Formula SAE Event Simulator</p>
+      <h1>LapSim interactive flowchart</h1>
+      <p id="subtitle" class="subtitle">Expandable from one system node to equation-level implementation details.</p>
+    </div>
+    <div class="header-meta">
+      <span id="visible-count" class="count-pill">0 visible</span>
+      <span id="total-count" class="count-pill">0 total</span>
+      <a class="repo-link" href="../../README.md">Repository README</a>
+    </div>
+  </header>
+
+  <section class="toolbar" aria-label="Flowchart controls">
+    <div class="toolbar-group search-group">
+      <label class="sr-only" for="search-input">Search the simulator map</label>
+      <input id="search-input" type="search" autocomplete="off" placeholder="Search equations, files, subsystems…">
+      <button id="search-next" type="button" title="Open the next search result">Next</button>
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </div>
+
+    <div class="toolbar-group">
+      <button id="collapse-all" type="button">Collapse all</button>
+      <button id="default-view" type="button">Default</button>
+      <button id="expand-level" type="button">Expand one level</button>
+      <button id="expand-all" type="button">Expand all</button>
+    </div>
+
+    <div class="toolbar-group compact">
+      <button id="zoom-out" class="icon-button" type="button" aria-label="Zoom out">−</button>
+      <button id="fit-view" type="button">Fit</button>
+      <button id="zoom-in" class="icon-button" type="button" aria-label="Zoom in">+</button>
+      <button id="reset-positions" type="button">Reset positions</button>
+    </div>
+
+    <label class="toggle-control">
+      <input id="show-related" type="checkbox">
+      <span>Related links</span>
+    </label>
+  </section>
+
+  <main class="workspace">
+    <section id="graph-panel" class="graph-panel" aria-label="Interactive simulator graph">
+      <svg id="graph" role="tree" aria-label="LapSim expandable simulator flowchart" tabindex="0">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+          <filter id="node-shadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity="0.16"></feDropShadow>
+          </filter>
+        </defs>
+        <g id="viewport">
+          <g id="related-edges"></g>
+          <g id="tree-edges"></g>
+          <g id="nodes"></g>
+        </g>
+      </svg>
+
+      <div class="graph-hint" aria-hidden="true">
+        Drag empty space to pan · scroll or pinch to zoom · drag nodes to rearrange · double-click a node to expand
+      </div>
+
+      <div class="legend" aria-label="Model maturity legend">
+        <span><i class="legend-dot implemented"></i>Implemented</span>
+        <span><i class="legend-dot optional"></i>Optional</span>
+        <span><i class="legend-dot experimental"></i>Experimental</span>
+        <span><i class="legend-dot assumption"></i>Assumption</span>
+        <span><i class="legend-dot limitation"></i>Limitation</span>
+        <span><i class="legend-dot future"></i>Future</span>
+      </div>
+    </section>
+
+    <aside id="details" class="details-panel" aria-live="polite">
+      <div class="details-placeholder">
+        <h2>Select a node</h2>
+        <p>Click any node to inspect its role, inputs, outputs, equations, assumptions, source files, and related subsystems.</p>
+        <p>The root can collapse the complete repository into one node. Expanding branches progressively reveals implementation and equation-level detail.</p>
+      </div>
+    </aside>
+  </main>
+
+  <noscript>
+    <p class="noscript">This flowchart requires JavaScript. The data remains readable in <code>data.js</code>.</p>
+  </noscript>
+
+  <script src="data/core.js"></script>
+  <script src="data/01-entrypoints.js"></script>
+  <script src="data/02-inputs.js"></script>
+  <script src="data/03-distance-pipeline.js"></script>
+  <script src="data/04-vehicle-cell.js"></script>
+  <script src="data/05-component-physics.js"></script>
+  <script src="data/06-racing-line.js"></script>
+  <script src="data/07-planar-model.js"></script>
+  <script src="data/08-results.js"></script>
+  <script src="data/09-verification.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
