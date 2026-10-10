@@ -26,7 +26,9 @@ distance-domain lap solver, one-cell vehicle update, component physics,
 racing-line and road-grip workflows, the separate time-domain four-wheel model,
 results/replay/scoring, and verification limits. A tenth branch, **Source
 variables and exact expressions**, is generated from every Python module under
-`src/`. It covers module/class fields, constants, function parameters, local
+`src/` and the Python browser bridge under `web/`. The browser entry-point
+branch also exposes each JSON input's units and limits. The catalog covers
+module/class fields, constants, function parameters, local
 assignment/iteration/context bindings, exact definitions, returns, and branch
 or loop bounds. Default expressions and Python types are shown without importing
 or executing simulator code.

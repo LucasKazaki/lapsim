@@ -37,7 +37,7 @@ def test_source_catalog_is_current(inventory):
 
 
 def test_source_catalog_covers_all_modules_declarations_and_exact_expressions(inventory):
-    files = sorted((REPO / "src").rglob("*.py"))
+    files = sorted([*(REPO / "src").rglob("*.py"), *(REPO / "web").glob("*.py")])
     assert inventory["counts"]["modules"] == len(files)
     assert {item["path"] for item in inventory["sources"]} == {file.relative_to(REPO).as_posix() for file in files}
     nodes = list(walk(inventory["root"]))

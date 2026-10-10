@@ -191,9 +191,13 @@ class Catalog:
                          declaration=self.source.splitlines()[definition.lineno - 1].strip(), children=children)
 
 
+def source_files() -> list[Path]:
+    return sorted([*(REPO / "src").rglob("*.py"), *(REPO / "web").glob("*.py")])
+
+
 def build_catalog() -> dict:
     modules, counts, sources = [], Counter(), []
-    for file in sorted((REPO / "src").rglob("*.py")):
+    for file in source_files():
         path = file.relative_to(REPO).as_posix()
         raw = file.read_bytes()
         # Git checkouts may use LF or CRLF on different systems. Normalize only
@@ -207,7 +211,7 @@ def build_catalog() -> dict:
         sources.append({"path": path, "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()})
     return {"version": 1, "counts": {"modules": len(modules), **dict(counts)}, "sources": sources,
             "root": {"id": "source-catalog", "title": "Source variables and exact expressions", "kind": "data", "status": "implemented",
-                     "summary": "Generated directly from every Python module under src/. Expand a module, class or function to inspect individual variables, exact assignments, returns, and decision bounds. This static catalog complements the curated physics map; it does not validate the model or infer undocumented units.",
+                     "summary": "Generated directly from every Python model module under src/ and the browser bridge under web/. Expand a module, class or function to inspect individual variables, exact assignments, returns, and decision bounds. This static catalog complements the curated physics map; it does not validate the model or infer undocumented units.",
                      "assumptions": ["Units are declared naming/type evidence, not automatic dimensional analysis. Unknown units are marked not declared.", "Expressions are source text; Python ** means exponentiation. Numerical decisions and data expressions are not automatically physical laws.", "Static declarations cannot enumerate dynamically created runtime dictionary keys, array elements, or attributes. Indexed bindings remain explicit source expressions.", "Imports, comprehension-internal bindings, and anonymous lambda parameters are visible within expressions but are not separate declaration nodes."],
                      "children": modules}}
 

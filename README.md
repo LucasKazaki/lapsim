@@ -14,6 +14,19 @@ organized by the `electrical`, `aero`, `powertrain`, and `mech` subteam
 packages, while the root `vehicle_model` package continues to re-export the
 main classes for concise imports.
 
+## Browser simulator and shareable physics map
+
+The team browser release combines a prescribed-path lap simulator, the full
+expandable source/physics map, and [driving-control research](docs/simulator_research.md).
+Publication destination: [LapSim Team Lab](https://lapsim-team-lab.kazagpt.chatgpt.site).
+Share the simulator link or a map node's URL directly in Slack.
+
+The browser runs the existing Python physics in a module worker. It loads the
+pinned scientific runtime on first use, needs an internet connection, and keeps
+run inputs/results on the visitor's device. Completed runs can be compared and
+downloaded as replayable JSON. See the [browser guide](docs/web_simulator.md) for
+supported inputs, limitations, build steps, and verification evidence.
+
 ## Run or share the Windows app
 
 The portable team release is **`LapSim-Windows-x64.zip`**. Extract it and

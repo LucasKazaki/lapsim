@@ -8,6 +8,8 @@ on:
       - ".nojekyll"
       - "index.html"
       - "docs/simulator_flowchart/**"
+      - "src/**"
+      - "web/**"
       - "scripts/check_flowchart_data.mjs"
       - "scripts/check_flowchart_site.py"
   pull_request:
@@ -16,6 +18,8 @@ on:
       - ".nojekyll"
       - "index.html"
       - "docs/simulator_flowchart/**"
+      - "src/**"
+      - "web/**"
       - "scripts/check_flowchart_data.mjs"
       - "scripts/check_flowchart_site.py"
   workflow_dispatch:
@@ -47,6 +51,9 @@ jobs:
 
       - name: Validate static site files
         run: python scripts/check_flowchart_site.py
+
+      - name: Reject stale source variables and equations
+        run: python docs/simulator_flowchart/generate_inventory.py --check
 
       - name: Validate JavaScript syntax
         shell: bash
