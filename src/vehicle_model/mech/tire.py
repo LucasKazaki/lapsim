@@ -173,6 +173,12 @@ class Tire:
     def validate(self) -> None:
         """Validate mutable lookup tables and slip parameters."""
 
+        for name in (
+            "rolling_radius_m", "peak_longitudinal_slip_ratio",
+            "longitudinal_slip_relaxation_length_m",
+        ):
+            if not isfinite(getattr(self, name)):
+                raise ValueError(f"{name} must be finite")
         if self.rolling_radius_m <= 0:
             raise ValueError("rolling_radius_m must be positive")
         table_length = len(self.normal_loads_n)
@@ -182,17 +188,23 @@ class Tire:
             raise ValueError("lateral_coefficients must match normal_loads_n")
         if len(self.longitudinal_coefficients) != table_length:
             raise ValueError("longitudinal_coefficients must match normal_loads_n")
-        if any(load <= 0 for load in self.normal_loads_n):
-            raise ValueError("normal loads must be positive")
+        if any(not isfinite(load) or load <= 0 for load in self.normal_loads_n):
+            raise ValueError("normal loads must be finite and positive")
         if any(
             upper <= lower
             for lower, upper in zip(self.normal_loads_n, self.normal_loads_n[1:])
         ):
             raise ValueError("normal loads must be strictly increasing")
-        if any(coefficient <= 0 for coefficient in self.lateral_coefficients):
-            raise ValueError("lateral coefficients must be positive")
-        if any(coefficient <= 0 for coefficient in self.longitudinal_coefficients):
-            raise ValueError("longitudinal coefficients must be positive")
+        if any(
+            not isfinite(coefficient) or coefficient <= 0
+            for coefficient in self.lateral_coefficients
+        ):
+            raise ValueError("lateral coefficients must be finite and positive")
+        if any(
+            not isfinite(coefficient) or coefficient <= 0
+            for coefficient in self.longitudinal_coefficients
+        ):
+            raise ValueError("longitudinal coefficients must be finite and positive")
         if not isfinite(self.camber_angle_rad):
             raise ValueError("camber_angle_rad must be finite")
         if not isfinite(self.inflation_pressure_pa) or self.inflation_pressure_pa <= 0:
@@ -203,9 +215,12 @@ class Tire:
             self.pacejka_longitudinal.validate()
         if (
             self.constant_friction_coefficient is not None
-            and self.constant_friction_coefficient <= 0
+            and (
+                not isfinite(self.constant_friction_coefficient)
+                or self.constant_friction_coefficient <= 0
+            )
         ):
-            raise ValueError("constant_friction_coefficient must be positive")
+            raise ValueError("constant_friction_coefficient must be finite and positive")
         if (
             isinstance(self.road_grip_multiplier, bool)
             or not isinstance(self.road_grip_multiplier, Real)

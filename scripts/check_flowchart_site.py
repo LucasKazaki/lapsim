@@ -25,6 +25,8 @@ EXPECTED_SCRIPTS = [
     "data/07-planar-model.js",
     "data/08-results.js",
     "data/09-verification.js",
+    "data/equation-variables.js",
+    "data/source-inventory.js",
     "data.js",
     "app.js",
 ]

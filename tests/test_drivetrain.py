@@ -5,12 +5,34 @@ from unittest import TestCase
 
 from utils.units import miles_per_hour_to_meters_per_second
 from vehicle_model import Vehicle
-from vehicle_model.electrical import Battery
+from vehicle_model.electrical import Battery, OCVPackBattery, RCTheveninBattery
 from vehicle_model.mech import Tire
 from vehicle_model.powertrain import ChainDrive, Drivetrain, FinalDrive, Motor
 
 
 class DrivetrainTests(TestCase):
+    def test_depleted_pack_has_no_propulsion_even_at_standstill(self) -> None:
+        drivetrain = Drivetrain()
+        for battery_type in (OCVPackBattery, RCTheveninBattery):
+            battery = battery_type(initial_state_of_charge=0.0)
+            for speed_mps in (0.0, 0.001, 5.0):
+                with self.subTest(battery=battery_type.__name__, speed_mps=speed_mps):
+                    self.assertEqual(
+                        drivetrain.available_motor_torque_nm(speed_mps, battery),
+                        0.0,
+                    )
+                    self.assertEqual(
+                        drivetrain.available_wheel_force_n(speed_mps, battery),
+                        0.0,
+                    )
+
+    def test_powered_pack_preserves_stall_torque(self) -> None:
+        drivetrain = Drivetrain()
+        self.assertEqual(
+            drivetrain.available_motor_torque_nm(0.0, Battery()),
+            drivetrain.motor.torque_limit_nm(0.0),
+        )
+
     def test_endurance_calibration_is_the_default_propulsion_setup(self) -> None:
         drivetrain = Drivetrain()
 

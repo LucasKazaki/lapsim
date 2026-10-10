@@ -32,12 +32,18 @@ def test_destroy_retires_owned_callbacks_without_closing_child_events() -> None:
         pending = set(app._owned_after_ids)
         assert len(pending) >= 4
         assert pending.issubset(set(root.tk.call("after", "info")))
+        assert app.canvas is not None
+        app.canvas.draw_idle()
+        plot_callbacks = set(root.tk.call("after", "info")) - pending
+        assert plot_callbacks
     finally:
         root.destroy()
 
     assert app._closed
     assert app._owned_after_ids == set()
     assert pending.isdisjoint(set(root.tk.call("after", "info")))
+    assert plot_callbacks.isdisjoint(set(root.tk.call("after", "info")))
+    assert not root.tk.call("after", "info")
 
     # Closing one app must not prevent a later independent window from
     # scheduling and receiving its own update loop.

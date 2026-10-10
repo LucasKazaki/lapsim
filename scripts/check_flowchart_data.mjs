@@ -21,6 +21,8 @@ const dataScripts = [
   "data/07-planar-model.js",
   "data/08-results.js",
   "data/09-verification.js",
+  "data/equation-variables.js",
+  "data/source-inventory.js",
   "data.js",
 ];
 
@@ -41,7 +43,8 @@ assert(data && data.root && data.meta, "Data scripts did not assemble LAPSIM_FLO
 assert(data.root.id === "lapsim", `Unexpected root id: ${data.root.id}`);
 assert(data.meta.repository === "LucasKazaki/lapsim", "Repository metadata is incorrect.");
 assert(Array.isArray(data.root.children), "The root must contain top-level branches.");
-assert(data.root.children.length === 9, `Expected 9 top-level branches, found ${data.root.children.length}.`);
+assert(data.root.children.length === 10, `Expected 10 top-level branches, found ${data.root.children.length}.`);
+assert(data.meta.sourceCatalog?.modules >= 79, "Full source catalog is missing.");
 
 const validStatuses = new Set([
   "implemented",
@@ -130,7 +133,7 @@ assert(
       .join("; "),
 );
 
-assert(nodeCount >= 50, `The map unexpectedly shrank to ${nodeCount} nodes.`);
+assert(nodeCount >= 13000, `The map unexpectedly shrank to ${nodeCount} nodes.`);
 assert(equationCount >= 25, `The map unexpectedly shrank to ${equationCount} equation/logic entries.`);
 assert(sourceCount >= 40, `The map unexpectedly shrank to ${sourceCount} source references.`);
 assert(deepestLevel >= 4, `The map no longer reaches equation-level depth (depth=${deepestLevel}).`);

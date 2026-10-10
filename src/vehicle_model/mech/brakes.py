@@ -56,6 +56,12 @@ class Brakes:
     def validate(self) -> None:
         """Validate the current mutable braking-model parameters."""
 
+        for name in (
+            "solver_tolerance_mps2", "front_torque_per_pressure_lbfin_per_psi",
+            "rear_torque_per_pressure_lbfin_per_psi", "pressure_deadband_psi",
+        ):
+            if not isfinite(getattr(self, name)):
+                raise ValueError(f"{name} must be finite")
         if self.solver_tolerance_mps2 <= 0:
             raise ValueError("solver_tolerance_mps2 must be positive")
         if self.front_torque_per_pressure_lbfin_per_psi < 0:
@@ -78,9 +84,12 @@ class Brakes:
             )
         if (
             self.maximum_force_request_n is not None
-            and self.maximum_force_request_n <= 0
+            and (
+                not isfinite(self.maximum_force_request_n)
+                or self.maximum_force_request_n <= 0
+            )
         ):
-            raise ValueError("maximum_force_request_n must be positive")
+            raise ValueError("maximum_force_request_n must be finite and positive")
 
     @property
     def front_torque_per_pressure_nm_per_psi(self) -> float:

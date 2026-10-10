@@ -1,16 +1,19 @@
 # Rotational Inertia
 
 The simulator includes a simple effective-mass model for longitudinal
-rotational inertia. The current inputs come from
-`Emrax228_Motor_Parameters.xlsx`:
+rotational inertia. The current rotor value is identified in
+`vehicle_model/powertrain/motor.py` as EMRAX 228 MV datasheet inertia; the
+historical `Emrax228_Motor_Parameters.xlsx` also contains these input values:
 
 - Motor rotor inertia: `0.02521 kg*m^2`, at motor speed
 - Final-drive input inertia: `0.00005 kg*m^2`, at motor speed
 - Final-drive output inertia: `0.003 kg*m^2`, at wheel speed
 
-The workbook labels all three values as placeholders. Ryder's simulator only
-contains a yaw-inertia parameter and does not provide longitudinal rotating
-component inertias.
+The workbook labels its values as placeholders; that historical label does not
+establish a measured chain-drive inertia. The rotor source and assumed input/
+output-drive inertias should remain distinguishable in configuration reviews.
+Ryder's simulator only contains a yaw-inertia parameter and does not provide
+longitudinal rotating component inertias.
 
 ## Current model
 
@@ -19,7 +22,8 @@ inertias are reflected to wheel speed:
 
 \[
 I_\mathrm{wheel} =
-\left(I_\mathrm{motor}+I_\mathrm{input}\right)G^2+I_\mathrm{output}
+\left(I_\mathrm{motor}+I_\mathrm{input}\right)G^2
++I_\mathrm{output}+I_\mathrm{driven\ wheels}
 \]
 
 The wheel-referenced inertia is then converted to equivalent translating mass:
@@ -28,13 +32,14 @@ The wheel-referenced inertia is then converted to equivalent translating mass:
 m_\mathrm{rotating}=\frac{I_\mathrm{wheel}}{r^2}
 \]
 
-where `G` is the chain-drive ratio and `r` is the loaded tire rolling radius.
+where `G` is the chain-drive ratio and `r` is the configured tire rolling radius.
 At the current `3.455` ratio and `0.2032 m` radius, including the configured
 `0.75 kg*m^2` combined driven-wheel inertia, the model produces:
 
-- Wheel-referenced inertia: approximately `0.8986 kg*m^2`
-- Equivalent rotating mass: approximately `21.76 kg`
-- Total effective longitudinal mass: approximately `316.59 kg`
+- Wheel-referenced inertia: approximately `1.054529 kg*m^2`
+- Equivalent rotating mass: approximately `25.539431 kg`
+- Physical baseline mass: approximately `285.763193 kg` (630 lb)
+- Total effective longitudinal mass: approximately `311.302624 kg`
 
 The simulator uses effective mass only when converting net longitudinal force
 to acceleration or braking deceleration. Physical vehicle mass remains in

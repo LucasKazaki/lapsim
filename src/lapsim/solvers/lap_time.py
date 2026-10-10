@@ -334,6 +334,12 @@ class LapTimeSolver:
         starting_speed_mps: float,
         passes: int,
     ) -> LapResult:
+        for index in range(len(speed_limit_map.cell_length_m)):
+            if speeds[index] + speeds[index + 1] <= 0.0:
+                raise ValueError(
+                    f"cannot traverse cell {index}: vehicle has no moving speed "
+                    "under the available propulsion and speed limits"
+                )
         lap_time_s = sum(
             cell_length_m / (0.5 * (speeds[index] + speeds[index + 1]))
             for index, cell_length_m in enumerate(speed_limit_map.cell_length_m)

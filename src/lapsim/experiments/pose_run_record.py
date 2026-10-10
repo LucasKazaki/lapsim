@@ -95,14 +95,23 @@ def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 
 def _source_identity() -> dict[str, Any]:
-    root = Path(__file__).resolve().parents[3]
-    source_root = Path(__file__).resolve().parents[1]
+    from lapsim.resources import build_identity, repository_root
+
+    identity = build_identity()
+    root = repository_root()
+    source_root = root / "src" / "lapsim"
     source_files_sha256: dict[str, str | None] = {}
     for name in _SOURCE_FILES:
         try:
             source_files_sha256[name] = sha256((source_root / name).read_bytes()).hexdigest()
         except OSError:
             source_files_sha256[name] = None
+    if identity is not None:
+        return {
+            "code_commit": identity.get("code_commit"),
+            "dirty_worktree": identity.get("dirty_worktree"),
+            "source_files_sha256": source_files_sha256,
+        }
     try:
         commit = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, check=True,

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Run the LapSim vehicle physics in your browser, inspect lap telemetry, and explore the equations behind every result.">
+  <title>LapSim Team Lab · Browser simulator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#simulation">Skip to simulator</a>
+  <header class="site-header">
+    <a class="wordmark" href="./index.html" aria-label="LapSim simulator home"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M5 19V9a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="m5 13 6-4 5 10 7-6"/></svg><span>LapSim</span></a>
+    <nav aria-label="Main navigation"><a href="./index.html" aria-current="page">Simulator</a><a href="./map/index.html">Physics map <span aria-hidden="true">↗</span></a><a href="./research/index.html">Research <span aria-hidden="true">↗</span></a></nav>
+    <span class="header-note">Team Lab · engineering workspace</span>
+  </header>
+
+  <main id="simulation">
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">FROM INPUTS TO INSIGHT</p><h1 id="page-title">A lap, explained.</h1><p class="lede">Choose a car and a course. Run the physics, inspect the result,<br class="desktop-break"> and follow every calculation back to its source.</p></div>
+      <div class="intro-aside"><span class="model-pill">Prescribed-path model</span><p>One centerline lap.<br>Real Python physics in your browser.</p></div>
+    </section>
+
+    <div class="simulation-layout">
+      <aside class="setup-panel panel" aria-labelledby="setup-title">
+        <div class="section-heading"><div><p class="eyebrow">SETUP</p><h2 id="setup-title">Build your run</h2></div><span class="quiet-badge">1 lap</span></div>
+        <form id="run-form">
+          <fieldset id="run-settings">
+            <legend class="sr-only">Simulation settings</legend>
+            <div class="field"><label for="vehicle-profile">Vehicle</label><select id="vehicle-profile" name="vehicleProfile"><option value="prius_2026_le">Prius LE · power-equivalent benchmark</option><option value="repository_baseline">Repository baseline · Formula SAE</option></select><p id="profile-note" class="field-note">An idealized Prius power-equivalent benchmark. Tire and chassis estimates remain assumptions.</p></div>
+            <div class="field"><label for="course">Course</label><select id="course" name="courseId"><option value="synthetic_rounded_rectangle_v1">Synthetic loop · demo</option><option value="synthetic_fsae_endurance_style_v1">Synthetic FSAE-style · practice</option></select><p id="course-note" class="field-note">A coherent analytic loop. Geometry and grip are scenario assumptions.</p></div>
+            <div class="field"><label for="drive-style">Drive-demand preset</label><select id="drive-style"><option value="0.55">Smooth · 55% torque request</option><option value="0.8" selected>Balanced · 80% torque request</option><option value="1">Full request · 100%</option><option value="custom">Custom demand</option></select><p class="field-note">These presets change motor demand. All use the same automatic predictive braking.</p></div>
+            <div class="field"><div class="label-row"><label for="torque">Drive demand</label><output id="torque-value" for="torque">80%</output></div><input id="torque" name="torqueFraction" type="range" min="0" max="1" value="0.8" step="0.05" aria-describedby="torque-note"><div class="range-labels" aria-hidden="true"><span>Coast request</span><span>Full request</span></div><p id="torque-note" class="field-note">Motor torque request. Tire, power, corner, and braking limits still apply.</p></div>
+            <details id="advanced-settings" class="advanced"><summary>Advanced settings<span class="summary-hint">Grip, braking, numerics</span></summary>
+              <div class="advanced-fields">
+                <div class="field"><label for="grip">Uniform grip multiplier</label><div class="input-unit"><input id="grip" name="gripMultiplier" type="number" min="0.2" max="1.5" step="0.05" value="1" required><span>×</span></div><p class="field-note">Scales all tire force capacities. 1.0 is the selected profile's baseline.</p></div>
+                <div class="field"><label for="cell-size">Maximum cell length</label><select id="cell-size" name="maxCellLengthM"><option value="5">5 m · quick preview</option><option value="2" selected>2 m · balanced</option><option value="1">1 m · finer grid</option></select><p class="field-note">Smaller cells improve spatial resolution and take longer to solve.</p></div>
+                <div class="field"><label for="start-mode">Lap start</label><select id="start-mode"><option value="automatic">Automatic feasible rolling start</option><option value="custom">Set initial speed</option></select></div>
+                <div id="start-speed-field" class="field" hidden><label for="start-speed">Initial speed</label><div class="input-unit"><input id="start-speed" name="initialSpeedMps" type="number" min="0" max="40" step="0.5" value="5"><span>m/s</span></div></div>
+                <div class="field"><label for="brake-pressure">Brake pressure cap</label><div class="input-unit"><input id="brake-pressure" name="brakePressurePsi" type="number" min="10" max="500" step="1" value="300" required><span>psi</span></div><p class="field-note">The path controller commands friction brakes within this maximum.</p></div>
+                <label class="check-row" for="regen"><input id="regen" name="regenEnabled" type="checkbox"><span><strong>Permit pack-limited regeneration</strong><small id="regen-note">Both supplied profiles accept no charge power: expect 0 energy recovery. This setting cannot add charge capacity.</small></span></label>
+              </div>
+            </details>
+          </fieldset>
+          <p id="input-error" class="inline-error" role="alert" hidden></p>
+          <div class="run-actions"><button id="run-button" class="primary-button" type="submit"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6Z"/></svg><span>Run simulation</span></button><button id="cancel-button" class="secondary-button" type="button" hidden>Cancel</button></div>
+        </form>
+        <div class="runtime-status"><span id="runtime-dot" class="status-dot"></span><span id="runtime-label">Engine loads on first run</span></div>
+        <div class="setup-footnote"><a href="./map/index.html#distance-pipeline">Explore how a lap is solved <span aria-hidden="true">→</span></a><p>Runs compute on this device. First launch downloads the Python runtime; your settings and results stay in this browser.</p></div>
+      </aside>
+
+      <section class="results-column" aria-labelledby="results-title">
+        <div id="progress-panel" class="progress-panel" role="status" hidden><div class="progress-copy"><strong id="progress-title">Preparing the engine</strong><span id="progress-description">Loading the browser physics runtime…</span></div><progress id="run-progress" aria-label="Simulation progress"></progress><span id="progress-elapsed" class="progress-elapsed">0 s</span></div>
+        <div id="run-error" class="error-panel" role="alert" hidden><strong id="error-title">The run could not finish</strong><p id="error-description"></p><button id="retry-button" type="button" class="secondary-button">Try again</button><details id="error-details" hidden><summary>Technical details</summary><pre id="error-technical"></pre></details></div>
+
+        <section class="panel result-panel" aria-labelledby="results-title">
+          <div class="section-heading"><div><p class="eyebrow">RESULTS</p><h2 id="results-title">Your lap at a glance</h2></div><span id="result-state" class="quiet-badge">Ready to run</span></div>
+          <p id="result-context" class="result-context">Results appear after a run. Change an input to explore its effect.</p>
+          <div class="metrics-grid">
+            <div class="metric"><span id="time-label">Lap time</span><strong id="metric-time">—</strong><small id="time-detail">s</small></div>
+            <div class="metric"><span id="energy-label">Pack energy</span><strong id="metric-energy">—</strong><small id="energy-detail">kWh · terminal net</small></div>
+            <div class="metric"><span>Peak speed</span><strong id="metric-speed">—</strong><small>m/s</small></div>
+            <div class="metric"><span id="soc-label">Final charge</span><strong id="metric-soc">—</strong><small id="soc-detail">% SOC</small></div>
+          </div>
+          <div id="result-note" class="result-note"><span class="note-icon" aria-hidden="true">i</span><p>Synthetic courses and inherited vehicle parameters support engineering exploration. Model output is an estimate; inspect the source evidence before making a team-car prediction.</p></div>
+          <div id="result-actions" class="result-actions" hidden><button id="save-run" type="button" class="secondary-button">Download run JSON</button><button id="pin-run" type="button" class="text-button">Use as comparison</button><button id="clear-comparison" type="button" class="text-button" hidden>Clear comparison</button><span id="comparison-note" class="field-note"></span></div>
+        </section>
+
+        <div class="visual-grid">
+          <section class="panel course-panel" aria-labelledby="course-title"><div class="section-heading"><div><p class="eyebrow">GEOMETRY</p><h2 id="course-title">The course</h2></div><span id="course-kind" class="quiet-badge">Synthetic</span></div><div class="course-canvas"><svg id="course-svg" role="img" aria-labelledby="course-svg-title" viewBox="0 0 360 250"><title id="course-svg-title">Coherent synthetic loop course preview</title><defs><linearGradient id="course-gradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#165fc3"/><stop offset="1" stop-color="#6b94c9"/></linearGradient></defs><path class="course-shadow" d="M84 54h120a36 36 0 0 1 36 36v60a36 36 0 0 1-36 36H84a36 36 0 0 1-36-36V90a36 36 0 0 1 36-36Z"/><path id="course-path" class="course-line" d="M84 54h120a36 36 0 0 1 36 36v60a36 36 0 0 1-36 36H84a36 36 0 0 1-36-36V90a36 36 0 0 1 36-36Z"/><circle id="course-start" class="course-start" cx="84" cy="54" r="5"/><circle id="course-cursor" class="course-cursor" cx="84" cy="54" r="6" hidden/><text id="course-start-label" x="84" y="40" class="svg-label">START / FINISH</text></svg></div><div class="course-caption"><strong id="course-length">195.4 m</strong><span id="course-caption">Analytic centerline · preview</span></div></section>
+          <section class="panel plot-panel" aria-labelledby="plot-title"><div class="section-heading"><div><p class="eyebrow">TELEMETRY</p><h2 id="plot-title">Along the lap</h2></div><label class="sr-only" for="chart-channel">Telemetry channel</label><select id="chart-channel" class="channel-select"><option value="vehicle.speed_mps">Speed · m/s</option><option value="battery.power_w">Battery power · kW</option><option value="vehicle.longitudinal_acceleration_mps2">Acceleration · m/s²</option><option value="battery.state_of_charge">State of charge · %</option></select></div><div id="chart-empty" class="chart-empty"><svg viewBox="0 0 120 42" aria-hidden="true"><path d="M2 35h116M2 5v30"/><path d="m7 29 19-8 17 4 24-17 20 5 25-10"/></svg><p>Every result has a trace.</p><span>Run a lap to see speed, force, and energy unfold.</span></div><div id="chart-content" hidden><svg id="telemetry-svg" viewBox="0 0 620 255" role="img" aria-labelledby="chart-svg-title"><title id="chart-svg-title">Telemetry versus distance</title></svg><div class="chart-legend"><span><i class="current-line"></i>Current run</span><span id="reference-legend" hidden><i class="reference-line"></i>Comparison</span><span id="chart-unit"></span></div></div></section>
+        </div>
+
+        <section id="inspect-panel" class="panel inspect-panel" aria-labelledby="inspect-title" hidden><div class="section-heading"><div><p class="eyebrow">INSPECT</p><h2 id="inspect-title">One point. Every quantity.</h2></div><output id="sample-station" for="sample-slider">0.0 m</output></div><label class="sr-only" for="sample-slider">Select telemetry sample along the lap</label><input id="sample-slider" type="range" min="0" max="1" step="1" value="0"><div class="sample-values"><div><span>Elapsed time</span><strong id="sample-time">—</strong></div><div><span>Speed</span><strong id="sample-speed">—</strong></div><div><span>Battery power</span><strong id="sample-power">—</strong></div><div><span>Longitudinal acceleration</span><strong id="sample-acceleration">—</strong></div></div><details class="channel-details"><summary>All recorded channels <span id="channel-count"></span></summary><div class="channel-table-wrap"><table><caption class="sr-only">All source telemetry channels at the selected sample</caption><thead><tr><th scope="col">Source channel</th><th scope="col">Value</th></tr></thead><tbody id="channel-table"></tbody></table></div></details></section>
+        <div class="bottom-note"><p><strong>Follow the reasoning.</strong> Expand the map from the lap pipeline into forces, component models, equations, and source variables.</p><a href="./map/index.html">Open physics map <span aria-hidden="true">↗</span></a></div>
+      </section>
+    </div>
+  </main>
+  <footer><span>LapSim · source-backed engineering exploration</span><a href="./research/index.html">Model assumptions and research</a></footer>
+  <noscript><p class="noscript">Enable JavaScript to run the browser simulator. The physics map and research documentation are available through the links above.</p></noscript>
+  <script src="app.js" defer></script>
+</body>
+</html>

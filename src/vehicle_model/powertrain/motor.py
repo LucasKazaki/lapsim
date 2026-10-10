@@ -1,7 +1,7 @@
 """Powertrain-subteam electric-motor model."""
 
 from dataclasses import dataclass, field
-from math import pi
+from math import isfinite, pi
 
 DEFAULT_TORQUE_CURVE_RPM = (0.0, 2_000.0, 3_000.0, 4_000.0, 5_000.0)
 DEFAULT_TORQUE_CURVE_NM = (230.0, 230.0, 224.0, 218.0, 206.0)
@@ -54,6 +54,12 @@ class Motor:
         self.validate()
 
     def validate(self) -> None:
+        for name in (
+            "peak_power_w", "continuous_power_w", "max_speed_rpm",
+            "efficiency", "rotor_inertia_kgm2",
+        ):
+            if not isfinite(getattr(self, name)):
+                raise ValueError(f"{name} must be finite")
         if self.peak_power_w <= 0 or self.continuous_power_w <= 0:
             raise ValueError("Motor power limits must be positive")
         if self.continuous_power_w > self.peak_power_w:
@@ -83,6 +89,8 @@ class Motor:
     ) -> None:
         if len(speed_rpm) < 2 or len(torque_nm) != len(speed_rpm):
             raise ValueError(f"{name} requires matching arrays of at least 2 points")
+        if any(not isfinite(value) for value in (*speed_rpm, *torque_nm)):
+            raise ValueError(f"{name} RPM and torque values must be finite")
         if any(value < 0 for value in speed_rpm):
             raise ValueError(f"{name} RPM values cannot be negative")
         if any(upper <= lower for lower, upper in zip(speed_rpm, speed_rpm[1:])):

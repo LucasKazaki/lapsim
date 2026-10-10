@@ -14,6 +14,33 @@ organized by the `electrical`, `aero`, `powertrain`, and `mech` subteam
 packages, while the root `vehicle_model` package continues to re-export the
 main classes for concise imports.
 
+## Browser simulator and shareable physics map
+
+The team browser release combines a prescribed-path lap simulator, the full
+expandable source/physics map, and [driving-control research](docs/simulator_research.md).
+Publication destination: [LapSim Team Lab](https://lapsim-team-lab.kazagpt.chatgpt.site).
+Share the simulator link or a map node's URL directly in Slack.
+
+The browser runs the existing Python physics in a module worker. It loads the
+pinned scientific runtime on first use, needs an internet connection, and keeps
+run inputs/results on the visitor's device. Completed runs can be compared and
+downloaded as replayable JSON. See the [browser guide](docs/web_simulator.md) for
+supported inputs, limitations, build steps, and verification evidence.
+
+## Run or share the Windows app
+
+The portable team release is **`LapSim-Windows-x64.zip`**. Extract it and
+double-click **`LapSim.exe`** on Windows x64; recipients do not need Python.
+The single-file executable includes the runtime and mandatory course data.
+The ZIP also includes offline documentation, the expandable simulator map,
+source snapshot, and test evidence. Click **Simulator map** in the desktop
+header to open a durable offline map with source references.
+
+Start with the [team guide](docs/team_guide.md) for a repeatable synthetic demo,
+units, saved evidence, and troubleshooting. See [release instructions](docs/release.md)
+for rebuilding, frozen self-test options, and the unsigned-binary distribution
+details. Source setup remains available below for developers.
+
 ## Interactive simulator map
 
 The repository includes two synchronized views of the simulator:
@@ -53,6 +80,12 @@ flowchart LR
 
 ## Documentation
 
+- [Team guide](docs/team_guide.md): portable/source startup, a repeatable demo,
+  configuration units, model boundaries, saved records, and troubleshooting.
+- [Windows release](docs/release.md): single-file executable, distribution
+  contents, build files, resource paths, and reproducible release acceptance.
+- [Verification](docs/verification.md): test coverage, skipped-test interpretation,
+  replay evidence, and packaged-app smoke checks.
 - [Interactive simulator map](docs/simulator_flowchart/README.md): controls,
   equation-level coverage, model-status labels, and maintenance instructions.
 - [Engineering handoff](docs/engineering_handoff.md): the complete software,
@@ -119,15 +152,16 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup_lapsim.ps1
 ```
 
 Run the complete repository checks with
-`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\check_all.ps1`.
-The setup installs pytest; the checker runs every test file in small, separate
-processes to fit a memory-limited Windows machine.
+`.venv\Scripts\python.exe scripts\check_all.py`. It runs each test module in
+a fresh process and writes the aggregate report to `work/test-results.xml`.
+Setup installs pytest. See [verification](docs/verification.md) to save the
+full log and interpret skips. The older PowerShell checker also remains available.
 
 The launcher checks Python, Tk, app imports, and the bundled course before
 opening a console-free window. A later startup error is shown in a message box
-and saved under `%LOCALAPPDATA%\LapSim\logs\desktop_startup.log`. The app runs
-from this source checkout because the default course is stored here; it is not
-a standalone EXE. The app defaults
+and saved under `%LOCALAPPDATA%\LapSim\logs\desktop_startup.log`. This launcher
+uses the source checkout. The separate portable `LapSim.exe` bundles its runtime
+and read-only resources; see the [release guide](docs/release.md). The app defaults
 to the fused team endurance course and has an explicit **Course** menu for
 synthetic rounded-rectangle and FSAE-style practice courses. **Import course…**
 adds a validated, versioned course prepared from a coherent CSV and preserves

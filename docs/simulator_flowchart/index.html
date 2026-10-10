@@ -24,9 +24,9 @@
   <section class="toolbar" aria-label="Flowchart controls">
     <div class="toolbar-group search-group">
       <label class="sr-only" for="search-input">Search the simulator map</label>
-      <input id="search-input" type="search" autocomplete="off" placeholder="Search equations, files, subsystems…">
+      <input id="search-input" type="search" autocomplete="off" placeholder="Search variables, equations, files…" aria-controls="search-results" aria-expanded="false">
       <button id="search-next" type="button" title="Open the next search result">Next</button>
-      <div id="search-results" class="search-results" role="listbox" hidden></div>
+      <div id="search-results" class="search-results" aria-label="Matching map nodes" hidden></div>
     </div>
 
     <div class="toolbar-group">
@@ -68,7 +68,7 @@
       </svg>
 
       <div class="graph-hint" aria-hidden="true">
-        Drag empty space to pan · scroll or pinch to zoom · drag nodes to rearrange · double-click a node to expand
+        Drag to pan · scroll to zoom · arrows navigate focused nodes · Space expands · Enter inspects
       </div>
 
       <div class="legend" aria-label="Model maturity legend">
@@ -104,6 +104,8 @@
   <script src="data/07-planar-model.js"></script>
   <script src="data/08-results.js"></script>
   <script src="data/09-verification.js"></script>
+  <script src="data/equation-variables.js"></script>
+  <script src="data/source-inventory.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
