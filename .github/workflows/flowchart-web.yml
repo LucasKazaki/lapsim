@@ -1,0 +1,109 @@
+name: Flowchart web checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/flowchart-web.yml"
+      - ".nojekyll"
+      - "index.html"
+      - "docs/simulator_flowchart/**"
+      - "scripts/check_flowchart_data.mjs"
+      - "scripts/check_flowchart_site.py"
+  pull_request:
+    paths:
+      - ".github/workflows/flowchart-web.yml"
+      - ".nojekyll"
+      - "index.html"
+      - "docs/simulator_flowchart/**"
+      - "scripts/check_flowchart_data.mjs"
+      - "scripts/check_flowchart_site.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flowchart-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate static site files
+        run: python scripts/check_flowchart_site.py
+
+      - name: Validate JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find docs/simulator_flowchart -type f -name '*.js' -print0 | sort -z)
+
+      - name: Validate graph data and source links
+        run: node scripts/check_flowchart_data.mjs
+
+      - name: Run headless-browser smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m http.server 4173 --directory . >/tmp/lapsim-flowchart-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:4173/ >/tmp/lapsim-root.html; then
+              break
+            fi
+            sleep 0.2
+          done
+          curl --fail --silent --show-error http://127.0.0.1:4173/docs/simulator_flowchart/styles.css >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/docs/simulator_flowchart/app.js >/dev/null
+
+          chrome="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [[ -z "$chrome" ]]; then
+            echo "A Chromium-compatible browser is required for the runtime smoke test." >&2
+            exit 1
+          fi
+
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=5000 \
+            --dump-dom \
+            "http://127.0.0.1:4173/#lapsim" \
+            >/tmp/lapsim-flowchart-dom.html
+
+          grep --fixed-strings 'data-node-id="lapsim"' /tmp/lapsim-flowchart-dom.html >/dev/null
+          grep --fixed-strings '<h2>LapSim simulator</h2>' /tmp/lapsim-flowchart-dom.html >/dev/null
+          grep --extended-regexp '[1-9][0-9]* total' /tmp/lapsim-flowchart-dom.html >/dev/null
+          grep --fixed-strings 'docs/simulator_flowchart/' /tmp/lapsim-root.html >/dev/null
+
+      - name: Upload browser diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flowchart-browser-diagnostics
+          path: |
+            /tmp/lapsim-flowchart-server.log
+            /tmp/lapsim-flowchart-dom.html
+            /tmp/lapsim-root.html
+          if-no-files-found: ignore

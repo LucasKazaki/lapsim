@@ -1,0 +1,89 @@
+# Verifies the internet-facing GitHub Pages site after every publication.
+name: Flowchart live site smoke
+
+on:
+  push:
+    branches: [main, gh-pages]
+    paths:
+      - ".github/workflows/flowchart-live-smoke.yml"
+      - ".nojekyll"
+      - "index.html"
+      - "docs/simulator_flowchart/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flowchart-live-site-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check published files from the public internet
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://lucaskazaki.github.io/lapsim"
+          root_file="$(mktemp)"
+          page_file="$(mktemp)"
+          entry_file="$(mktemp)"
+          results_file="$(mktemp)"
+
+          published=false
+          for attempt in {1..60}; do
+            if curl --fail --silent --show-error --location --max-time 20 "$base/" -o "$root_file" \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/docs/simulator_flowchart/" -o "$page_file" \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/docs/simulator_flowchart/data/01-entrypoints.js" -o "$entry_file" \
+              && curl --fail --silent --show-error --location --max-time 20 "$base/docs/simulator_flowchart/data/08-results.js" -o "$results_file" \
+              && grep --fixed-strings 'docs/simulator_flowchart/' "$root_file" >/dev/null \
+              && grep --fixed-strings '<title>LapSim interactive simulator flowchart</title>' "$page_file" >/dev/null \
+              && grep --fixed-strings 'calculation progress and worker callbacks' "$entry_file" >/dev/null \
+              && ! grep --fixed-strings 'calculation_progress.py' "$entry_file" >/dev/null \
+              && grep --fixed-strings 'src/lapsim/solvers/plotting.py' "$results_file" >/dev/null \
+              && ! grep --fixed-strings 'src/lapsim/plotting.py' "$results_file" >/dev/null; then
+              published=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [[ "$published" != true ]]; then
+            echo "The public Pages site did not publish the expected revision." >&2
+            exit 1
+          fi
+
+      - name: Render the public site in headless Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [[ -z "$chrome" ]]; then
+            echo "A Chromium-compatible browser is required for the live smoke test." >&2
+            exit 1
+          fi
+
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --virtual-time-budget=7000 \
+            --dump-dom \
+            "https://lucaskazaki.github.io/lapsim/#lapsim" \
+            >/tmp/lapsim-live-dom.html
+
+          grep --fixed-strings 'data-node-id="lapsim"' /tmp/lapsim-live-dom.html >/dev/null
+          grep --fixed-strings '<h2>LapSim simulator</h2>' /tmp/lapsim-live-dom.html >/dev/null
+          grep --extended-regexp '[1-9][0-9]* total' /tmp/lapsim-live-dom.html >/dev/null
+
+      - name: Upload live browser diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flowchart-live-browser-diagnostics
+          path: /tmp/lapsim-live-dom.html
+          if-no-files-found: ignore

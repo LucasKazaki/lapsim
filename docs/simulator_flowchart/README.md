@@ -1,5 +1,16 @@
 # LapSim interactive simulator flowchart
 
+The [GitHub Pages viewer](https://lucaskazaki.github.io/lapsim/) publishes the
+repository's Pages revision. The team browser release combines the complete
+source catalog with the simulator; see [the browser guide](../web_simulator.md).
+Share a node's URL fragment to open its equations directly.
+
+The public Pages checks in `.github/workflows/flowchart-web.yml` validate static
+assets, graph integrity, source links, and a real Chromium load. The separate
+live smoke workflow verifies the published Pages revision. Locally, run
+`python scripts/check_flowchart_site.py` and
+`node scripts/check_flowchart_data.mjs` before publication.
+
 Open [`index.html`](index.html) from a local checkout or the share bundle. No
 package installation, build step, server, account, or network connection is
 required. The viewer also works as a static GitHub Pages site.
