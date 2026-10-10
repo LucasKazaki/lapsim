@@ -1,8 +1,10 @@
 # LapSim interactive simulator flowchart
 
-Open [`index.html`](index.html) from a local checkout. No package installation,
-build step, server, account, or network connection is required. The viewer also
-works as a static GitHub Pages site if Pages is enabled for the repository.
+**Public web view:** [https://lucaskazaki.github.io/lapsim/](https://lucaskazaki.github.io/lapsim/)
+
+The same viewer remains available offline at [`index.html`](index.html) from a
+local checkout. No package installation, build step, account, or network
+connection is required for local use.
 
 The root represents the complete simulator as one node. Each branch can expand
 through subsystem responsibilities and execution order to equation-level leaves.
@@ -28,8 +30,23 @@ time-domain four-wheel model, outputs, replay, scoring, and validation limits.
   **Expand all** exposes every documented node.
 
 A URL fragment selects a node directly, for example
-`index.html#battery-current-root`. Source links are repository-relative and
-open the implementation or documentation file in a new tab.
+[`https://lucaskazaki.github.io/lapsim/#battery-current-root`](https://lucaskazaki.github.io/lapsim/#battery-current-root).
+Source links are repository-relative when opened locally. The published site is
+served from the complete public repository tree, so the same links remain valid
+on GitHub Pages.
+
+## Publication and automated checks
+
+- `main` is the source of truth for the site and simulator documentation.
+- The repository-root `index.html` preserves query strings and URL fragments,
+  then redirects to `docs/simulator_flowchart/`.
+- The public `gh-pages` branch points to a reviewed `main` commit so GitHub Pages
+  can serve the same files without a separate generated copy.
+- `.github/workflows/flowchart-web.yml` runs static-file, JavaScript syntax,
+  graph-integrity, source-link, and headless-Chromium smoke checks for changes to
+  the viewer.
+- `scripts/check_flowchart_site.py` and `scripts/check_flowchart_data.mjs` can be
+  run locally before publishing.
 
 ## Maturity labels
 
@@ -70,7 +87,8 @@ When simulator behavior changes:
 1. Update the relevant branch file under `data/` in the same pull request as the
    code change.
 2. Add or revise source paths and maturity labels.
-3. Check that every related ID resolves and every node ID remains unique.
+3. Run `python scripts/check_flowchart_site.py` and
+   `node scripts/check_flowchart_data.mjs` from the repository root.
 4. Open `index.html`, expand the changed branch, search for its primary symbol,
    and verify source links.
 5. Update the compact Mermaid overview in the repository root `README.md` only
