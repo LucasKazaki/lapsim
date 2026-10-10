@@ -28,7 +28,9 @@ from vehicle_model import Vehicle
 from vehicle_model.mech.tire import Tire
 
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+from lapsim.resources import repository_root
+
+REPOSITORY_ROOT = repository_root()
 ENDURANCE_TRACK_PATH = (
     REPOSITORY_ROOT / "analysis" / "data" / "track" / "gnss_imu_endurance_track.csv"
 )

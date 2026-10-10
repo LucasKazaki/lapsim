@@ -3,6 +3,7 @@
 from bisect import bisect_left
 from dataclasses import dataclass, field
 from math import exp, isfinite
+from numbers import Integral
 
 from .battery_ocv import CELL_OCV_TABLE
 
@@ -86,6 +87,18 @@ class OCVPackBattery:
     def validate(self) -> None:
         """Validate model parameters and lookup-table ordering and coverage."""
 
+        finite_parameters = {
+            "cell_capacity_ah": self.cell_capacity_ah,
+            "max_discharge_power_w": self.max_discharge_power_w,
+            "max_charge_power_w": self.max_charge_power_w,
+            "initial_state_of_charge": self.initial_state_of_charge,
+            "cell_internal_resistance_ohm": self.cell_internal_resistance_ohm,
+            "minimum_cell_voltage_v": self.minimum_cell_voltage_v,
+            "maximum_cell_voltage_v": self.maximum_cell_voltage_v,
+        }
+        for name, value in finite_parameters.items():
+            if not isfinite(value):
+                raise ValueError(f"{name} must be finite")
         if self.cell_capacity_ah <= 0:
             raise ValueError("cell_capacity_ah must be positive")
         if self.max_discharge_power_w <= 0:
@@ -94,8 +107,12 @@ class OCVPackBattery:
             raise ValueError("max_charge_power_w cannot be negative")
         if not 0.0 <= self.initial_state_of_charge <= 1.0:
             raise ValueError("initial_state_of_charge must be between 0 and 1")
-        if self.series_cells <= 0 or self.parallel_cells <= 0:
-            raise ValueError("series_cells and parallel_cells must be positive")
+        for name, count in (
+            ("series_cells", self.series_cells),
+            ("parallel_cells", self.parallel_cells),
+        ):
+            if isinstance(count, bool) or not isinstance(count, Integral) or count <= 0:
+                raise ValueError(f"{name} must be a positive integer")
         if self.cell_internal_resistance_ohm <= 0:
             raise ValueError("cell_internal_resistance_ohm must be positive")
         if self.minimum_cell_voltage_v <= 0:
@@ -109,6 +126,8 @@ class OCVPackBattery:
 
         previous_soc = -1.0
         for state_of_charge, voltage_v in self.cell_ocv_table:
+            if not isfinite(state_of_charge) or not isfinite(voltage_v):
+                raise ValueError("cell_ocv_table SOC and voltages must be finite")
             if not 0.0 <= state_of_charge <= 1.0:
                 raise ValueError("cell_ocv_table SOC values must be between 0 and 1")
             if state_of_charge <= previous_soc:
@@ -258,6 +277,8 @@ class OCVPackBattery:
     def limit_discharge_power_w(self, requested_power_w: float) -> float:
         """Limit a nonnegative terminal-discharge request in watts."""
 
+        if not isfinite(requested_power_w):
+            raise ValueError("requested_power_w must be finite")
         if requested_power_w < 0:
             raise ValueError("requested_power_w cannot be negative")
         return min(requested_power_w, self.discharge_power_limit_w)
@@ -265,6 +286,8 @@ class OCVPackBattery:
     def limit_charge_power_w(self, requested_power_w: float) -> float:
         """Limit a nonnegative terminal-charge request magnitude in watts."""
 
+        if not isfinite(requested_power_w):
+            raise ValueError("requested_power_w must be finite")
         if requested_power_w < 0:
             raise ValueError("requested_power_w cannot be negative")
         return min(requested_power_w, self.charge_power_limit_w)
@@ -272,6 +295,8 @@ class OCVPackBattery:
     def current_for_terminal_power_a(self, power_w: float) -> float:
         """Return physical pack current for terminal power using the low-I root."""
 
+        if not isfinite(power_w):
+            raise ValueError("power_w must be finite")
         if power_w > self.discharge_power_limit_w:
             raise ValueError("power_w exceeds present discharge_power_limit_w")
         if -power_w > self.charge_power_limit_w:
@@ -292,8 +317,8 @@ class OCVPackBattery:
     def update_state(self, power_w: float, timestep_s: float) -> None:
         """Apply terminal power and Coulomb-count SOC for one positive timestep."""
 
-        if timestep_s <= 0:
-            raise ValueError("timestep_s must be positive")
+        if not isfinite(timestep_s) or timestep_s <= 0:
+            raise ValueError("timestep_s must be finite and positive")
         operating_open_circuit_voltage_v = self.open_circuit_voltage_v
         current_a = self.current_for_terminal_power_a(power_w)
         self.current_power_w = power_w
@@ -338,10 +363,16 @@ class RCTheveninBattery(OCVPackBattery):
         """Validate the base pack and RC-branch parameters."""
 
         OCVPackBattery.validate(self)
-        if self.cell_polarization_resistance_ohm <= 0:
-            raise ValueError("cell_polarization_resistance_ohm must be positive")
-        if self.cell_polarization_capacitance_f <= 0:
-            raise ValueError("cell_polarization_capacitance_f must be positive")
+        if (
+            not isfinite(self.cell_polarization_resistance_ohm)
+            or self.cell_polarization_resistance_ohm <= 0
+        ):
+            raise ValueError("cell_polarization_resistance_ohm must be finite and positive")
+        if (
+            not isfinite(self.cell_polarization_capacitance_f)
+            or self.cell_polarization_capacitance_f <= 0
+        ):
+            raise ValueError("cell_polarization_capacitance_f must be finite and positive")
         if not isfinite(self.initial_polarization_voltage_v):
             raise ValueError("initial_polarization_voltage_v must be finite")
 
@@ -447,6 +478,8 @@ class RCTheveninBattery(OCVPackBattery):
     def current_for_terminal_power_a(self, power_w: float) -> float:
         """Return current for terminal power at the present RC state."""
 
+        if not isfinite(power_w):
+            raise ValueError("power_w must be finite")
         if power_w > self.discharge_power_limit_w:
             raise ValueError("power_w exceeds present discharge_power_limit_w")
         if -power_w > self.charge_power_limit_w:
@@ -465,8 +498,8 @@ class RCTheveninBattery(OCVPackBattery):
     def update_state(self, power_w: float, timestep_s: float) -> None:
         """Apply terminal power, then advance SOC and polarization state."""
 
-        if timestep_s <= 0:
-            raise ValueError("timestep_s must be positive")
+        if not isfinite(timestep_s) or timestep_s <= 0:
+            raise ValueError("timestep_s must be finite and positive")
 
         operating_open_circuit_voltage_v = self.open_circuit_voltage_v
         operating_polarization_voltage_v = self.polarization_voltage_v
@@ -510,6 +543,11 @@ class Battery:
     def validate(self) -> None:
         """Validate the current mutable battery parameters."""
 
+        if (
+            not isfinite(self.max_discharge_power_w)
+            or not isfinite(self.max_charge_power_w)
+        ):
+            raise ValueError("battery power limits must be finite")
         if self.max_discharge_power_w <= 0:
             raise ValueError("max_discharge_power_w must be positive")
         if self.max_charge_power_w < 0:
@@ -544,8 +582,10 @@ class Battery:
     def update_state(self, power_w: float, timestep_s: float) -> None:
         """Retain terminal power; positive discharges and negative charges."""
 
-        if timestep_s <= 0:
-            raise ValueError("timestep_s must be positive")
+        if not isfinite(timestep_s) or timestep_s <= 0:
+            raise ValueError("timestep_s must be finite and positive")
+        if not isfinite(power_w):
+            raise ValueError("power_w must be finite")
         if power_w > self.max_discharge_power_w:
             raise ValueError("power_w exceeds max_discharge_power_w")
         if -power_w > self.max_charge_power_w:
@@ -555,6 +595,8 @@ class Battery:
     def limit_discharge_power_w(self, requested_power_w: float) -> float:
         """Apply the battery's present discharge-power limit."""
 
+        if not isfinite(requested_power_w):
+            raise ValueError("requested_power_w must be finite")
         if requested_power_w < 0:
             raise ValueError("requested_power_w cannot be negative")
         return min(requested_power_w, self.max_discharge_power_w)
@@ -562,6 +604,8 @@ class Battery:
     def limit_charge_power_w(self, requested_power_w: float) -> float:
         """Apply the battery's charge-power limit to a positive magnitude."""
 
+        if not isfinite(requested_power_w):
+            raise ValueError("requested_power_w must be finite")
         if requested_power_w < 0:
             raise ValueError("requested_power_w cannot be negative")
         return min(requested_power_w, self.max_charge_power_w)

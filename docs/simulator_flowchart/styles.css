@@ -322,6 +322,8 @@ h1 {
 .node.kind-experimental .node-accent { fill: var(--kind-experimental); }
 .node.kind-optional .node-accent { fill: var(--kind-optional); }
 .node.kind-limitation .node-accent { fill: var(--kind-limitation); }
+.node.kind-variable .node-accent { fill: var(--kind-data); }
+.overview-mark { fill: var(--border-strong); opacity: 0.65; pointer-events: none; }
 
 .node-title {
   fill: var(--text);
@@ -450,6 +452,8 @@ h1 {
 }
 
 .details-panel p { margin: 0.45rem 0; }
+.details-panel h2, .details-panel p, .details-panel li, .breadcrumb { min-width: 0; overflow-wrap: anywhere; }
+.details-panel .small-note { font-size: 0.8rem; color: var(--muted); }
 .details-panel ul { margin: 0.35rem 0 0; padding-left: 1.2rem; }
 .details-panel li + li { margin-top: 0.3rem; }
 
@@ -519,6 +523,19 @@ h1 {
 }
 .source-link:hover { border-color: var(--accent); }
 .source-symbol { display: block; margin-top: 0.15rem; color: var(--muted); font-family: monospace; font-size: 0.72rem; }
+.source-entry button { margin-top: 0.3rem; font-size: 0.8rem; }
+.variable-definition { margin: 0; font-size: 0.86rem; overflow-wrap: anywhere; }
+.variable-definition dt { margin-top: 0.7rem; font-weight: 650; color: var(--muted); }
+.variable-definition dd { margin: 0.12rem 0 0; }
+.expression-disclosure { margin: 0.5rem 0; }
+.expression-disclosure summary { padding: 0.45rem 0; cursor: pointer; color: var(--accent); font-size: 0.84rem; }
+.expression-disclosure summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.expression-disclosure .equation { white-space: pre; overflow-wrap: normal; }
+.dependency-name { padding: 0.35rem; border-radius: 5px; background: var(--surface-muted); font-size: 0.76rem; overflow-wrap: anywhere; }
+.child-list { display: grid; gap: 0.35rem; }
+.child-list button { text-align: left; padding: 0.55rem 0.65rem; }
+.child-list strong { display: block; font-size: 0.85rem; overflow-wrap: anywhere; }
+.child-list small { display: block; color: var(--muted); margin-top: 0.1rem; }
 
 .related-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .related-buttons button { min-height: 30px; font-size: 0.76rem; }
@@ -582,4 +599,19 @@ h1 {
   .workspace { display: block; }
   .graph-panel { height: 8in; border: 1px solid #aaa; }
   .details-panel { border: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+  button:active { transform: none; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .legend, .graph-hint { background: var(--surface-raised); backdrop-filter: none; }
+}
+
+@media (prefers-contrast: more) {
+  :root { --muted: var(--text); --border: var(--border-strong); }
+  button:focus-visible, input:focus-visible, .repo-link:focus-visible { outline-color: var(--focus); }
+  .legend, .graph-hint { background: var(--surface-raised); backdrop-filter: none; }
 }

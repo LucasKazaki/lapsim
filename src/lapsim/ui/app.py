@@ -524,6 +524,8 @@ class LapSimDesktop:
         self._refresh_profile_menus()
         self._select_profile("prius_2026_le")
         self._apply_theme()
+        # Finish initial layout/theme idle work before this window can close.
+        self.root.update_idletasks()
         self._watch_run_inputs()
         self.root.bind("<Destroy>", self._on_root_destroy, add="+")
         self._schedule_after(100, self._poll_result)
@@ -559,7 +561,14 @@ class LapSimDesktop:
         self._driver_playing = False
         self._driver_after_id = None
         self._pending_input_invalidation = False
-        for after_id in tuple(self._owned_after_ids):
+        pending = set(self._owned_after_ids)
+        # Closing this root retires its entire Tcl interpreter. Matplotlib and
+        # ttk also schedule idle callbacks, independently of our polling chain.
+        try:
+            pending.update(str(identifier) for identifier in self.root.tk.call("after", "info"))
+        except tk.TclError:
+            pass
+        for after_id in pending:
             try:
                 self.root.after_cancel(after_id)
             except tk.TclError:
@@ -597,6 +606,10 @@ class LapSimDesktop:
         ).pack(side="right")
         tk.Button(
             header, text="Four-wheel lab", command=self._open_dynamics_lab,
+            relief="raised", bd=1, font=FONT,
+        ).pack(side="right", padx=(0, 9))
+        tk.Button(
+            header, text="Simulator map", command=self._open_simulator_map,
             relief="raised", bd=1, font=FONT,
         ).pack(side="right", padx=(0, 9))
 
@@ -639,6 +652,12 @@ class LapSimDesktop:
         self._build_inputs(input_panel)
         self._build_run_controls(calculation_panel)
         self._build_outputs(input_panel)
+        # Follow the actual label width, including Windows text/display scaling
+        # and the narrower grid spans beside course-import controls.
+        for panel in (input_panel, calculation_panel):
+            for widget in self._walk_widgets(panel):
+                if isinstance(widget, tk.Label) and widget.winfo_pixels(widget.cget("wraplength")) > 0:
+                    widget.bind("<Configure>", self._wrap_label_to_width, add="+")
         for widget in (left_canvas, input_panel, *self._walk_widgets(input_panel)):
             widget.bind(
                 "<MouseWheel>",
@@ -3316,6 +3335,22 @@ class LapSimDesktop:
         )
         record.save(default_run_directory() / f"{record.run_id}.json")
         return record.run_id
+
+    @staticmethod
+    def _wrap_label_to_width(event: tk.Event) -> None:
+        if event.width > 40:
+            width = event.width - 8
+            if event.widget.winfo_pixels(event.widget.cget("wraplength")) != width:
+                event.widget.configure(wraplength=width)
+
+    def _open_simulator_map(self) -> None:
+        from lapsim.resources import open_simulator_map
+
+        try:
+            if not open_simulator_map():
+                raise OSError("No browser could open the simulator map. Open docs/simulator_flowchart/index.html from the team ZIP.")
+        except (OSError, ValueError) as error:
+            messagebox.showerror("Could not open simulator map", str(error), parent=self.root)
 
     def _open_dynamics_lab(self) -> None:
         from .dynamics_lab import DynamicsLab

@@ -1,8 +1,13 @@
 # Real acceleration log validation
 
-> Status note: the explicit-slip experiment documented below was subsequently
-> removed from the simulator. The current distance-domain model uses the
-> no-slip point-mass baseline; these results are retained for comparison only.
+> Historical analysis snapshot: the explicit-slip experiment documented below
+> was subsequently removed. Statements about the "current" simulator in the
+> original analysis refer to that historical configuration, not today's release.
+> Today's distance-domain tire model includes quasi-static per-tire slip and
+> optional relaxation; the separate planar lab integrates wheel-speed states.
+> See the engineering handoff for their current behavior. The raw MF4/DBC inputs
+> and generated `outputs/real_accel_validation` files are external/local
+> artifacts and are not included in this checkout or portable team release.
 
 ## Post-slip-model rerun
 
@@ -30,8 +35,10 @@ Scaling tire grip by 1.3978 makes the simulated rear-wheel-equivalent crossing
 time exactly 3.760 s, but does not improve the motor-speed trace. It therefore
 is not a defensible tire calibration by itself.
 
-See [the post-slip overlay](../outputs/real_accel_validation/run13_slip_validation.png)
-and [its numerical summary](../outputs/real_accel_validation/run13_slip_validation_summary.csv).
+The original post-slip overlay was saved as
+`outputs/real_accel_validation/run13_slip_validation.png` and its summary as
+`outputs/real_accel_validation/run13_slip_validation_summary.csv` in the local
+analysis workspace; those artifacts are not shipped here.
 
 ## Executive summary
 
@@ -48,13 +55,13 @@ Adding the recorded launch schedule and the 70 kW mechanical cap to the existing
 
 That last number is **not an independently measured vehicle time**. Both front wheel-speed channels are invalid and zero throughout the log, while the reported VCU speed is derived from motor/rear-wheel speed. The motor trace shows a large speed surge and drop consistent with wheelspin, wheel hop, or another driven-wheel oscillation. Consequently, the complete RPM trace cannot be calibrated as vehicle speed with the current no-slip point-mass model.
 
-No simulator source files were changed during the original analysis. All model variations in the tables below were applied at runtime. The temporary calibration variants were discarded; only this report and the analysis outputs remain.
+No simulator source files were changed during the original analysis. All model variations in the tables below were applied at runtime. The temporary calibration variants were discarded. This report is retained in the repository; the original analysis outputs require the external analysis workspace.
 
 ## Source data and decoding
 
 | Item | Result |
 |---|---:|
-| File | [`logs/6.24_accel.MF4`](../logs/6.24_accel.MF4) |
+| File | `logs/6.24_accel.MF4` (external/local, not shipped) |
 | File size | 166,073,098 bytes |
 | MDF version | 4.11 |
 | Recording start | 2026-06-24 04:54:48 UTC |
@@ -99,11 +106,13 @@ This predicts 191 N·m at 3,500 RPM, 167 N·m at 4,000 RPM, and 149 N·m at 4,50
 
 During the selected run, median motor mechanical power in the high-power region is about 72 kW, median pack power is about 74 kW, and peak pack power is about 76 kW. This is consistent with a 70 kW mechanical target plus electrical and drivetrain losses. Modeling the setting as a 70 kW battery-terminal cap would double-count those losses and underpredict motor torque.
 
-See [the observed torque table](../outputs/real_accel_validation/run13_observed_torque_curve.csv) and [the torque comparison plot](../outputs/real_accel_validation/run13_torque_curve_comparison.png).
+The external analysis workspace contains the observed torque table at
+`outputs/real_accel_validation/run13_observed_torque_curve.csv` and the torque
+plot at `outputs/real_accel_validation/run13_torque_curve_comparison.png`.
 
 ## Simulation experiments
 
-All variants used the current 650 lb vehicle, 3.7 ratio, 16-inch tire, rotational inertias, aero model, rolling resistance, and load-sensitive tire model unless stated otherwise.
+All variants used the then-current 650 lb vehicle, 3.7 ratio, 16-inch tire, rotational inertias, aero model, rolling resistance, and load-sensitive tire model unless stated otherwise. These are historical study inputs; today's baseline values are listed in `model_parameters.md`.
 
 The comparison target below is 3.760 s, obtained by converting logged motor RPM through the simulator's 3.7 ratio and 0.2032 m radius and then integrating rear-wheel-equivalent speed through 0.3 m rollout plus 75 m. It is a useful consistency target, but it is not an official timing-gate measurement.
 
@@ -138,7 +147,8 @@ Direct torque replay therefore gives a similar integrated 75 m crossing while st
 
 Allowing an optimizer to change mass, tire grip, and drag did not solve the shape error. A whole-trace fit moved to 361.5 kg, 1.36× tire grip, and the 3.0 m² drag-area upper bound, yet still had 1,232 RPM RMS error. Fitting only after 1 s moved to 381.5 kg, 2.44× tire grip, and the same drag bound, with about 1,061 RPM RMS error over that region. Those boundary-seeking, implausible values show that this is a missing-state problem, not a normal scalar-parameter calibration problem.
 
-See [the full run-13 comparison](../outputs/real_accel_validation/run13_sim_comparison.png).
+The full historical run-13 comparison was saved externally as
+`outputs/real_accel_validation/run13_sim_comparison.png`.
 
 ## Recommended next model step
 
@@ -152,8 +162,8 @@ To match this type of real launch trace physically, the model needs a separate d
 
 Until an independent vehicle-speed source is available, the current point-mass model can be calibrated to total time or rear-wheel rotation, but a torque/grip calibration is not uniquely identifiable.
 
-## Retained outputs
+## Original external outputs
 
-- [Run-13 simulator comparison](../outputs/real_accel_validation/run13_sim_comparison.png)
-- [Observed torque versus drivetrain limits](../outputs/real_accel_validation/run13_torque_curve_comparison.png)
-- [Binned observed torque data](../outputs/real_accel_validation/run13_observed_torque_curve.csv)
+- `outputs/real_accel_validation/run13_sim_comparison.png`
+- `outputs/real_accel_validation/run13_torque_curve_comparison.png`
+- `outputs/real_accel_validation/run13_observed_torque_curve.csv`

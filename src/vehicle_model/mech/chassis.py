@@ -1,6 +1,7 @@
 """Mechanical-subteam chassis geometry and mass distribution."""
 
 from dataclasses import dataclass
+from math import isfinite
 
 from utils.units import inches_to_meters
 
@@ -47,6 +48,14 @@ class Chassis:
     def validate(self) -> None:
         """Validate the current mutable chassis parameters."""
 
+        for name in (
+            "wheelbase_m", "cg_height_m", "front_track_width_m",
+            "rear_track_width_m", "front_axle_height_m", "rear_axle_height_m",
+            "front_roll_axis_height_m", "rear_roll_axis_height_m",
+            "static_front_weight_fraction",
+        ):
+            if not isfinite(getattr(self, name)):
+                raise ValueError(f"{name} must be finite")
         if self.wheelbase_m <= 0:
             raise ValueError("wheelbase_m must be positive")
         if self.cg_height_m <= 0:
