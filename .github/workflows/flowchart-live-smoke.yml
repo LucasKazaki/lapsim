@@ -3,7 +3,7 @@ name: Flowchart live site smoke
 
 on:
   push:
-    branches: [gh-pages]
+    branches: [main, gh-pages]
     paths:
       - ".github/workflows/flowchart-live-smoke.yml"
       - ".nojekyll"
@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: flowchart-live-site
+  group: flowchart-live-site-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
