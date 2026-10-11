@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "research_date": "2026-10-11",
+  "repository": "LucasKazaki/lapsim",
+  "reviewed_commit": "67b3659a4d9dcf88a7074fb52b526f19d9aee30b",
+  "scope": "Proposed research-to-implementation work packages; no runtime changes implemented by this upload",
+  "source_documents": {
+    "S": "formula_racing_research_catalogue_2026-10-10.md",
+    "F": "f1_teams_and_telemetry.md",
+    "N": "additional_professional_teams.md"
+  },
+  "tasks": [
+    {
+      "id": "R01",
+      "title": "Signal metadata, quality and deterministic replay contract",
+      "priority": "P0",
+      "status": "proposed",
+      "depends_on": [],
+      "source_ids": ["N01", "N02", "F01", "F03", "S39"],
+      "existing_areas": ["src/lapsim/core/", "src/lapsim/data/", "docs/source_vehicle_profiles.md"],
+      "acceptance": ["Preserve optional component channels and NaN backfill", "Test timestamp/unit/validity round trips and missing or stale messages", "Keep measured, estimated and simulated channels distinguishable"]
+    },
+    {
+      "id": "R02",
+      "title": "Feasible actuator envelope for the transient four-wheel model",
+      "priority": "P0",
+      "status": "proposed",
+      "depends_on": ["R01"],
+      "source_ids": ["N04", "N19", "S27"],
+      "existing_areas": ["docs/four_wheel_dynamics.md", "src/vehicle_model/interfaces.py", "src/vehicle_model/powertrain/", "src/vehicle_model/electrical/"],
+      "acceptance": ["Report requested, limited and achieved torque with active constraints", "Test motor/wheel ratio and power signs without double-counted inertia", "Retain unconstrained cases only as labeled references"]
+    },
+    {
+      "id": "R03",
+      "title": "Multi-channel prediction and measurement correlation",
+      "priority": "P0",
+      "status": "proposed",
+      "depends_on": ["R01"],
+      "source_ids": ["N03", "F39", "S36"],
+      "existing_areas": ["analysis/", "src/lapsim/data/", "docs/battery_rc_validation.md"],
+      "acceptance": ["Preserve pre-test predictions and independent holdouts", "Separate alignment, numerical and parameter uncertainty", "Do not pass validation solely on lap time"]
+    },
+    {
+      "id": "R04",
+      "title": "Fixed-clock software-in-the-loop controller adapter",
+      "priority": "P1",
+      "status": "proposed",
+      "depends_on": ["R01", "R02"],
+      "source_ids": ["S08", "S31", "F03"],
+      "existing_areas": ["docs/architecture.md", "docs/four_wheel_dynamics.md", "src/lapsim/core/"],
+      "acceptance": ["Controller rate is independent of spatial cells and UI/logging frequency", "Test deterministic schedules, plant substeps and latency separately", "Inject sensor and communications faults; keep network services outside control"]
+    },
+    {
+      "id": "R05",
+      "title": "Tyre and load model identification with validity envelopes",
+      "priority": "P1",
+      "status": "proposed",
+      "depends_on": ["R01"],
+      "source_ids": ["F25", "N02", "S46", "S48"],
+      "existing_areas": ["src/vehicle_model/mech/tire.py", "src/vehicle_model/mech/suspension.py", "src/vehicle_model/mech/loads.py"],
+      "acceptance": ["Test combined slip, low loads and extrapolation status", "Preserve opt-in model selection until force scale is validated", "Keep restricted tyre measurements out of public fixtures"]
+    },
+    {
+      "id": "R06",
+      "title": "Regeneration and mechanical brake coordination",
+      "priority": "P1",
+      "status": "proposed",
+      "depends_on": ["R02", "R04"],
+      "source_ids": ["S27", "S29", "N04", "N19"],
+      "existing_areas": ["src/vehicle_model/powertrain/drivetrain.py", "src/vehicle_model/electrical/battery.py", "src/vehicle_model/mech/brakes.py"],
+      "acceptance": ["Respect battery charge acceptance and actual actuator topology", "Account separately for regeneration, friction braking and unmet demand", "Test transitions, low speed and loss of regeneration with consistent energy signs"]
+    },
+    {
+      "id": "R07",
+      "title": "Energy and thermal scenario studies",
+      "priority": "P2",
+      "status": "proposed",
+      "depends_on": ["R02", "R03", "R06"],
+      "source_ids": ["S27", "S29", "S36", "S43", "S44"],
+      "existing_areas": ["src/vehicle_model/electrical/", "src/vehicle_model/powertrain/", "src/lapsim/optimization/"],
+      "acceptance": ["Compare equal-energy pace and equal-pace energy scenarios", "Report initial SOC, ambient and thermal assumptions", "Prevent optimization from exploiting negative losses or unsupported maps"]
+    },
+    {
+      "id": "R08",
+      "title": "Aero and road geometry provenance and validity",
+      "priority": "P2",
+      "status": "proposed",
+      "depends_on": ["R01", "R03"],
+      "source_ids": ["N02", "F16", "F32", "N23"],
+      "existing_areas": ["src/vehicle_model/aero/model.py", "src/vehicle_model/environment.py", "src/lapsim/courses/", "docs/course_bundle_format.md"],
+      "acceptance": ["Track graphics/physics transformations and source geometry", "Preserve wind/ground-velocity and aero-work conventions", "Propagate invalid map/road queries into comparison status"]
+    },
+    {
+      "id": "R09",
+      "title": "Isolated STM32 and CAN hardware-in-the-loop bench",
+      "priority": "P2",
+      "status": "proposed",
+      "depends_on": ["R01", "R02", "R04", "R06"],
+      "source_ids": ["S08", "S31", "N06", "S38"],
+      "existing_areas": ["docs/four_wheel_dynamics.md", "src/vehicle_model/interfaces.py"],
+      "acceptance": ["Use reviewed real interface definitions and measure latency/jitter", "Repeat SIL fault scenarios and record deadline misses", "Require team safety review before energized vehicle integration"]
+    },
+    {
+      "id": "R10",
+      "title": "Driver and experiment interface without duplicated physics",
+      "priority": "P3",
+      "status": "proposed",
+      "depends_on": ["R01", "R03", "R04"],
+      "source_ids": ["S10", "S25", "S26", "N01", "N05"],
+      "existing_areas": ["src/lapsim/core/", "src/lapsim/events/", "docs/architecture.md"],
+      "acceptance": ["Keep presentation rate independent of plant and controller rates", "Synchronize inputs, alarms, commands, results and debrief markers", "Separate driver preference from objective performance claims"]
+    }
+  ]
+}
