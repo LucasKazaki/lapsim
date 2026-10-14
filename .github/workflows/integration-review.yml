@@ -1,0 +1,32 @@
+name: Integration review snapshot
+on:
+  pull_request:
+    paths: ['.github/workflows/integration-review.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Preserve complete reviewable history and PR diffs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit
+          git bundle create audit/history.bundle --all
+          git diff origin/main...origin/codex/portable-team-demo > audit/pr2.diff
+          git diff b42724d2768ddcdb5d8293f6bd224cfd21876ebe..1e8e35ac64093742caafa67c118ca02efa6e6537 > audit/pr4.diff
+          git log -10 --oneline > audit/revisions.txt
+          git rev-parse HEAD origin/main origin/codex/portable-team-demo origin/quality/five-tool-review-2026-10-14 >> audit/revisions.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: integration-review-history
+          path: audit/
+          retention-days: 7
+          if-no-files-found: error
