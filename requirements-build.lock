@@ -2,6 +2,7 @@ altgraph==0.17.5
 colorama==0.4.6
 contourpy==1.4.0
 cycler==0.12.1
+defusedxml==0.7.1
 et_xmlfile==2.0.0
 fonttools==4.66.1
 iniconfig==2.3.1

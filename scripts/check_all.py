@@ -7,6 +7,8 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
+from defusedxml import ElementTree as SafeET
+
 
 def merge_reports(paths: list[Path], destination: Path) -> dict[str, int]:
     """Combine measured reports without discarding failure or skip information."""
@@ -14,7 +16,12 @@ def merge_reports(paths: list[Path], destination: Path) -> dict[str, int]:
     totals = {name: 0 for name in ("tests", "failures", "errors", "skipped")}
     elapsed = 0.0
     for report in paths:
-        for suite in ET.parse(report).getroot().iter("testsuite"):
+        if report.stat().st_size > 16 * 1024 * 1024:
+            raise ValueError(f"JUnit report exceeds the 16 MiB limit: {report.name}")
+        parsed = SafeET.parse(
+            report, forbid_dtd=True, forbid_entities=True, forbid_external=True,
+        )
+        for suite in parsed.getroot().iter("testsuite"):
             aggregate.append(suite)
             for name in totals:
                 totals[name] += int(suite.get(name, 0))

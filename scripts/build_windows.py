@@ -147,6 +147,7 @@ def main() -> int:
     with TemporaryDirectory(prefix="LapSim team test ") as temporary:
         sandbox = Path(temporary)
         copied_exe = sandbox / "LapSim.exe"
+        sandbox_report = sandbox / "portable-self-test.json"
         shutil.copy2(executable, copied_exe)
         environment = os.environ.copy()
         environment["PATH"] = str(Path(environment.get("SystemRoot", "C:/Windows")) / "System32")
@@ -155,8 +156,13 @@ def main() -> int:
         environment.pop("PYTHONPATH", None)
         environment.pop("TCL_LIBRARY", None)
         environment.pop("TK_LIBRARY", None)
-        result = subprocess.run([str(copied_exe), "--self-test", str(report_path)], cwd=sandbox, env=environment, timeout=180)
-        if result.returncode or not report_path.is_file():
+        result = subprocess.run(
+            [str(copied_exe), "--self-test", str(sandbox_report)],
+            cwd=sandbox, env=environment, timeout=180, shell=False,
+        )
+        if sandbox_report.is_file():
+            shutil.copy2(sandbox_report, report_path)
+        if result.returncode or not sandbox_report.is_file():
             raise RuntimeError(f"Portable self-test failed; inspect {report_path}")
         report = json.loads(report_path.read_text(encoding="utf-8"))
         if report.get("status") != "passed" or not report.get("frozen"):
