@@ -3,95 +3,234 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Interactive, expandable architecture and equation map for the LapSim Formula SAE simulator.">
-  <title>LapSim interactive simulator flowchart</title>
+  <meta name="description" content="Interactive LapSim architecture map with source-aware engineering anatomy illustrations for the simulator and the 2026–27 RWD Formula SAE EV.">
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+  <title>LapSim map and engineering anatomy</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="anatomy-foundation.css">
+  <link rel="stylesheet" href="anatomy-cards.css">
+  <link rel="stylesheet" href="anatomy-figure.css">
 </head>
 <body>
-  <header class="app-header">
-    <div class="title-block">
-      <p class="eyebrow">Formula SAE Event Simulator</p>
-      <h1>LapSim interactive flowchart</h1>
-      <p id="subtitle" class="subtitle">Expandable from one system node to equation-level implementation details.</p>
-    </div>
-    <div class="header-meta">
-      <span id="visible-count" class="count-pill">0 visible</span>
-      <span id="total-count" class="count-pill">0 total</span>
-      <a class="repo-link" href="../../README.md">Repository README</a>
-    </div>
-  </header>
+  <a class="skip-link" href="#map-workspace">Skip to simulator map</a>
 
-  <section class="toolbar" aria-label="Flowchart controls">
-    <div class="toolbar-group search-group">
-      <label class="sr-only" for="search-input">Search the simulator map</label>
-      <input id="search-input" type="search" autocomplete="off" placeholder="Search equations, files, subsystems…">
-      <button id="search-next" type="button" title="Open the next search result">Next</button>
-      <div id="search-results" class="search-results" role="listbox" hidden></div>
-    </div>
+  <section id="map-top" class="map-shell" aria-label="LapSim interactive simulator map">
+    <header class="app-header">
+      <div class="title-block">
+        <p class="eyebrow">Formula SAE Event Simulator</p>
+        <h1>LapSim interactive flowchart</h1>
+        <p id="subtitle" class="subtitle">Expandable from one system node to equation-level implementation details.</p>
+      </div>
+      <div class="header-meta">
+        <span id="visible-count" class="count-pill">0 visible</span>
+        <span id="total-count" class="count-pill">0 total</span>
+        <a class="repo-link" href="#anatomy">Engineering anatomy</a>
+        <a class="repo-link" href="../../README.md">Repository README</a>
+      </div>
+    </header>
 
-    <div class="toolbar-group">
-      <button id="collapse-all" type="button">Collapse all</button>
-      <button id="default-view" type="button">Default</button>
-      <button id="expand-level" type="button">Expand one level</button>
-      <button id="expand-all" type="button">Expand all</button>
-    </div>
-
-    <div class="toolbar-group compact">
-      <button id="zoom-out" class="icon-button" type="button" aria-label="Zoom out">−</button>
-      <button id="fit-view" type="button">Fit</button>
-      <button id="zoom-in" class="icon-button" type="button" aria-label="Zoom in">+</button>
-      <button id="reset-positions" type="button">Reset positions</button>
-    </div>
-
-    <label class="toggle-control">
-      <input id="show-related" type="checkbox">
-      <span>Related links</span>
-    </label>
-  </section>
-
-  <main class="workspace">
-    <section id="graph-panel" class="graph-panel" aria-label="Interactive simulator graph">
-      <svg id="graph" role="tree" aria-label="LapSim expandable simulator flowchart" tabindex="0">
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z"></path>
-          </marker>
-          <filter id="node-shadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity="0.16"></feDropShadow>
-          </filter>
-        </defs>
-        <g id="viewport">
-          <g id="related-edges"></g>
-          <g id="tree-edges"></g>
-          <g id="nodes"></g>
-        </g>
-      </svg>
-
-      <div class="graph-hint" aria-hidden="true">
-        Drag empty space to pan · scroll or pinch to zoom · drag nodes to rearrange · double-click a node to expand
+    <section class="toolbar" aria-label="Flowchart controls">
+      <div class="toolbar-group search-group">
+        <label class="sr-only" for="search-input">Search the simulator map</label>
+        <input id="search-input" type="search" autocomplete="off" placeholder="Search equations, files, subsystems…">
+        <button id="search-next" type="button" title="Open the next search result">Next</button>
+        <div id="search-results" class="search-results" role="listbox" hidden></div>
       </div>
 
-      <div class="legend" aria-label="Model maturity legend">
-        <span><i class="legend-dot implemented"></i>Implemented</span>
-        <span><i class="legend-dot optional"></i>Optional</span>
-        <span><i class="legend-dot experimental"></i>Experimental</span>
-        <span><i class="legend-dot assumption"></i>Assumption</span>
-        <span><i class="legend-dot limitation"></i>Limitation</span>
-        <span><i class="legend-dot future"></i>Future</span>
+      <div class="toolbar-group">
+        <button id="collapse-all" type="button">Collapse all</button>
+        <button id="default-view" type="button">Default</button>
+        <button id="expand-level" type="button">Expand one level</button>
+        <button id="expand-all" type="button">Expand all</button>
       </div>
+
+      <div class="toolbar-group compact">
+        <button id="zoom-out" class="icon-button" type="button" aria-label="Zoom out">−</button>
+        <button id="fit-view" type="button">Fit</button>
+        <button id="zoom-in" class="icon-button" type="button" aria-label="Zoom in">+</button>
+        <button id="reset-positions" type="button">Reset positions</button>
+      </div>
+
+      <label class="toggle-control">
+        <input id="show-related" type="checkbox">
+        <span>Related links</span>
+      </label>
     </section>
 
-    <aside id="details" class="details-panel" aria-live="polite">
-      <div class="details-placeholder">
-        <h2>Select a node</h2>
-        <p>Click any node to inspect its role, inputs, outputs, equations, assumptions, source files, and related subsystems.</p>
-        <p>The root can collapse the complete repository into one node. Expanding branches progressively reveals implementation and equation-level detail.</p>
+    <main id="map-workspace" class="workspace">
+      <section id="graph-panel" class="graph-panel" aria-label="Interactive simulator graph">
+        <svg id="graph" role="tree" aria-label="LapSim expandable simulator flowchart" tabindex="0">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z"></path>
+            </marker>
+            <filter id="node-shadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity="0.16"></feDropShadow>
+            </filter>
+          </defs>
+          <g id="viewport">
+            <g id="related-edges"></g>
+            <g id="tree-edges"></g>
+            <g id="nodes"></g>
+          </g>
+        </svg>
+
+        <div class="graph-hint" aria-hidden="true">
+          Drag empty space to pan · scroll or pinch to zoom · drag nodes to rearrange · double-click a node to expand
+        </div>
+
+        <div class="legend" aria-label="Model maturity legend">
+          <span><i class="legend-dot implemented"></i>Implemented</span>
+          <span><i class="legend-dot optional"></i>Optional</span>
+          <span><i class="legend-dot experimental"></i>Experimental</span>
+          <span><i class="legend-dot assumption"></i>Assumption</span>
+          <span><i class="legend-dot limitation"></i>Limitation</span>
+          <span><i class="legend-dot future"></i>Future</span>
+        </div>
+      </section>
+
+      <aside id="details" class="details-panel" aria-live="polite">
+        <div class="details-placeholder">
+          <h2>Select a node</h2>
+          <p>Click any node to inspect its role, inputs, outputs, equations, assumptions, source files, and related subsystems.</p>
+          <p>The root can collapse the complete repository into one node. Expanding branches progressively reveals implementation and equation-level detail.</p>
+        </div>
+      </aside>
+    </main>
+  </section>
+
+  <section id="anatomy" class="anatomy-experience" aria-labelledby="anatomy-title">
+    <header class="anatomy-hero">
+      <div class="anatomy-hero-copy">
+        <p class="anatomy-overline">Interactive engineering anatomy</p>
+        <h2 id="anatomy-title">See the software and the car as working machines.</h2>
+        <p class="anatomy-lede">The first figure turns LapSim’s distance-domain pipeline into a physical test bench. The second explains the 2026–27 rear-wheel-drive EV at a system level. Select any assembly to see what it does, how confidently it is known, and where the repository documents it.</p>
       </div>
-    </aside>
-  </main>
+      <div class="anatomy-hero-actions" aria-label="Illustration shortcuts">
+        <a class="primary-action" href="#lapsim-anatomy">Explore LapSim</a>
+        <a class="secondary-action" href="#car-anatomy">Explore the car</a>
+      </div>
+    </header>
+
+    <nav class="anatomy-nav" aria-label="Engineering anatomy navigation">
+      <div class="anatomy-nav-links">
+        <a href="#map-top">Map</a>
+        <a href="#lapsim-anatomy">LapSim machine</a>
+        <a href="#car-anatomy">2026–27 RWD car</a>
+      </div>
+      <div class="anatomy-nav-controls">
+        <button id="appearance-toggle" class="quiet-control" type="button" aria-label="Change appearance" data-mode="auto">Appearance · Auto</button>
+        <button id="motion-toggle" class="quiet-control" type="button" aria-pressed="false">Pause motion</button>
+      </div>
+    </nav>
+
+    <div class="anatomy-stack">
+      <article id="lapsim-anatomy" class="anatomy-card anatomy-card-lapsim" data-running="true" data-in-view="true" aria-labelledby="lapsim-title">
+        <header class="anatomy-card-header">
+          <div>
+            <p class="figure-number">Figure 01 · Software anatomy</p>
+            <h3 id="lapsim-title">The LapSim distance-domain test bench</h3>
+            <p>One solver cell advances along a rail while course limits, driver requests, component physics, energy state, and scoring instruments act on it.</p>
+          </div>
+          <div class="anatomy-card-actions" aria-label="LapSim illustration controls">
+            <button type="button" data-anatomy-action="run" aria-pressed="true">Pause</button>
+            <button type="button" data-anatomy-action="explode" aria-pressed="false">Explode</button>
+            <button type="button" data-anatomy-action="reset">Reset</button>
+          </div>
+        </header>
+
+        <div class="anatomy-layout">
+          <figure class="anatomy-figure">
+            <div id="lapsim-stage" class="anatomy-stage" data-figure="lapsim" aria-busy="false"></div>
+            <figcaption>
+              <span>Select a physical assembly or use Tab, then Enter.</span>
+              <strong id="lapsim-readout">Schematic replay · Running</strong>
+            </figcaption>
+          </figure>
+
+          <aside class="anatomy-inspector" aria-live="polite" data-inspector="lapsim">
+            <p class="inspector-status" data-detail-status>Implemented coordinator</p>
+            <h4 data-detail-title>Vehicle cell integrator</h4>
+            <p data-detail-summary>The coordinator applies forces and component limits over one distance cell, updates vehicle state, and records aligned telemetry.</p>
+            <dl class="inspector-facts" data-detail-facts></dl>
+            <div class="inspector-links" data-detail-links></div>
+          </aside>
+        </div>
+
+        <div class="figure-notes">
+          <span><i class="note-dot verified"></i>Implemented in the main solver</span>
+          <span><i class="note-dot optional"></i>Optional or separate module</span>
+          <span><i class="note-dot illustrative"></i>Physical form is explanatory</span>
+        </div>
+      </article>
+
+      <article id="car-anatomy" class="anatomy-card anatomy-card-car" data-running="true" data-in-view="true" data-car-mode="power" aria-labelledby="car-title">
+        <header class="anatomy-card-header">
+          <div>
+            <p class="figure-number">Figure 02 · Vehicle anatomy</p>
+            <h3 id="car-title">2026–27 Formula SAE EV · RWD system view</h3>
+            <p>The illustration shows energy, controls, mechanical force, and sensing at the system level. Packaging is intentionally schematic where public source evidence is incomplete.</p>
+          </div>
+          <div class="anatomy-card-actions" aria-label="Vehicle illustration controls">
+            <div class="segmented-control" role="group" aria-label="Vehicle overlay">
+              <button type="button" data-car-mode="power" aria-pressed="true">Power</button>
+              <button type="button" data-car-mode="signal" aria-pressed="false">Signals</button>
+              <button type="button" data-car-mode="structure" aria-pressed="false">Structure</button>
+            </div>
+            <button type="button" data-anatomy-action="explode" aria-pressed="false">Explode</button>
+            <button type="button" data-anatomy-action="reset">Reset</button>
+          </div>
+        </header>
+
+        <div class="truth-banner" role="note">
+          <strong>Evidence boundary.</strong> RWD and the STM32F405 controller are team-confirmed project facts. Exact CAD geometry, pack construction, motor/inverter ratings, reduction ratio, mass, cooling routing, and sensor placement are not asserted by this public illustration.
+        </div>
+
+        <div class="anatomy-layout">
+          <figure class="anatomy-figure">
+            <div id="car-stage" class="anatomy-stage" data-figure="car" aria-busy="false"></div>
+            <figcaption>
+              <span>Switch overlays to follow energy or control information.</span>
+              <strong id="car-readout">2026–27 RWD · Power flow</strong>
+            </figcaption>
+          </figure>
+
+          <aside class="anatomy-inspector" aria-live="polite" data-inspector="car">
+            <p class="inspector-status" data-detail-status>Team-confirmed topology</p>
+            <h4 data-detail-title>Rear-wheel-drive energy path</h4>
+            <p data-detail-summary>Accumulator energy passes through high-voltage switching and the traction drive before mechanical torque reaches the rear axle.</p>
+            <dl class="inspector-facts" data-detail-facts></dl>
+            <div class="inspector-links" data-detail-links></div>
+          </aside>
+        </div>
+
+        <div class="figure-notes">
+          <span><i class="note-dot verified"></i>Team-confirmed or repository-backed</span>
+          <span><i class="note-dot assumed"></i>Schematic placement</span>
+          <span><i class="note-dot private"></i>Exact values remain source-controlled</span>
+        </div>
+      </article>
+    </div>
+
+    <footer class="anatomy-footer">
+      <div>
+        <p class="anatomy-overline">Method</p>
+        <p>Built as framework-free SVG with progressive disclosure, touch and keyboard operation, system appearance support, high-contrast materials, and motion that stops when the figure is offscreen or reduced motion is requested.</p>
+      </div>
+      <div class="anatomy-footer-links">
+        <a href="README.md">Map guide</a>
+        <a href="../architecture.md">Architecture</a>
+        <a href="../source_vehicle_profiles.md">Vehicle-profile evidence</a>
+        <a href="../four_wheel_dynamics.md">Four-wheel lab boundary</a>
+        <a href="https://github.com/wheresryan22/anatomy">Anatomy skill</a>
+        <a href="https://developer.apple.com/design/human-interface-guidelines">Apple HIG</a>
+      </div>
+    </footer>
+  </section>
 
   <noscript>
-    <p class="noscript">This flowchart requires JavaScript. The data remains readable in <code>data.js</code>.</p>
+    <p class="noscript">The interactive map and engineering anatomy require JavaScript. The flowchart data remains readable in <code>data.js</code>, and the repository documentation describes each subsystem.</p>
   </noscript>
 
   <script src="data/core.js"></script>
@@ -106,5 +245,11 @@
   <script src="data/09-verification.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
+  <script src="anatomy-lap-data.js"></script>
+  <script src="anatomy-car-data.js"></script>
+  <script src="anatomy-core.js"></script>
+  <script src="anatomy-lap-figure.js"></script>
+  <script src="anatomy-car-figure.js"></script>
+  <script src="anatomy-app.js"></script>
 </body>
 </html>

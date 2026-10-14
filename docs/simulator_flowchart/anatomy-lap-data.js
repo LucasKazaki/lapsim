@@ -1,0 +1,136 @@
+window.LAP_ANATOMY_CATALOG = {
+    "lap-cell": {
+      status: "Implemented coordinator",
+      title: "Vehicle cell integrator",
+      summary: "The coordinator advances the simulated vehicle through one distance cell, applies component limits and forces, updates state, and emits aligned telemetry.",
+      facts: [
+        ["Domain", "Distance-indexed solver cell"],
+        ["Inputs", "Cell length, curvature, control request, incoming vehicle state"],
+        ["Outputs", "Updated speed, energy state, completion state, component telemetry"],
+        ["Boundary", "The separate four-wheel lab is not silently coupled into this path"],
+      ],
+      links: [["Architecture", "../architecture.md"], ["Event simulation", "../event_simulation.md"], ["Source map", "#map-top"]],
+    },
+    "lap-course": {
+      status: "Implemented input path",
+      title: "Course and curvature reel",
+      summary: "The reel represents a coherent distance-indexed course: station, cell length, curvature, and any source-backed geometry metadata used to construct solver cells.",
+      facts: [
+        ["Physical metaphor", "A surveyed tape feeding the test bench"],
+        ["Model role", "Defines where the car is and how sharply the path turns"],
+        ["Refinement", "Coherent cells can be analytically subdivided without moving source stations"],
+        ["Caution", "A centerline is not proof of measured track boundaries"],
+      ],
+      links: [["Course bundles", "../course_bundle_format.md"], ["Desktop guide", "../simulator_desktop.md"]],
+    },
+    "lap-controls": {
+      status: "Implemented input path",
+      title: "Driver-request console",
+      summary: "Throttle, brake, and steering or path requests enter as bounded commands. The illustration uses levers because controls constrain the machine rather than directly setting its result.",
+      facts: [
+        ["Requests", "Drive, braking, and path-following inputs"],
+        ["Constraint", "Requested force can be clipped by tires, power, voltage, or braking limits"],
+        ["Replay", "Recorded controls can be aligned to the same distance cells"],
+      ],
+      links: [["First-lap validation", "../first_endurance_lap_validation.md"], ["SOC replay", "../first_lap_soc_validation.md"]],
+    },
+    "lap-envelope": {
+      status: "Implemented solver passes",
+      title: "Corner and braking envelope drums",
+      summary: "The paired drums stand for local corner-speed limits and cyclic braking passes. They prepare a feasible speed envelope before the final lap integration.",
+      facts: [
+        ["Corner pass", "Lateral tire capacity limits local speed"],
+        ["Braking pass", "Backward propagation enforces deceleration feasibility"],
+        ["Iteration", "Periodic tracks can require cyclic convergence across the lap seam"],
+      ],
+      links: [["Optimizer", "../endurance_optimizer.md"], ["Engineering handoff", "../engineering_handoff.md"]],
+    },
+    "lap-vehicle": {
+      status: "Implemented composition",
+      title: "Vehicle coordinator cabinet",
+      summary: "The cabinet is the composition boundary for replaceable battery, inverter, motor, drivetrain, aero, chassis, suspension, tire, and brake models.",
+      facts: [
+        ["Coordinator", "vehicle_model/vehicle.py"],
+        ["Design", "Stable interfaces around intentionally replaceable baseline models"],
+        ["State", "Shared vehicle state with component-specific telemetry"],
+      ],
+      links: [["Architecture", "../architecture.md"], ["Extending models", "../extending_models.md"], ["Parameters", "../model_parameters.md"]],
+    },
+    "lap-battery": {
+      status: "Implemented component model",
+      title: "Battery energy stack",
+      summary: "The cell stack represents open-circuit voltage, state of charge, internal resistance and optional one-RC polarization, together with pack voltage limits.",
+      facts: [
+        ["State", "SOC and, when enabled, polarization voltage"],
+        ["Power flow", "Pack current and terminal voltage constrain delivered electrical power"],
+        ["Validation", "Battery-only and dynamic one-RC checks are documented separately"],
+      ],
+      links: [["Battery model", "../battery_model.md"], ["Voltage validation", "../battery_voltage_validation.md"], ["RC validation", "../battery_rc_validation.md"]],
+    },
+    "lap-powertrain": {
+      status: "Implemented component model",
+      title: "Inverter, motor, and reduction dynamometer",
+      summary: "The rotating dynamometer maps electrical input to motor torque and wheel-side force while respecting efficiency, speed, torque, and power limits represented by the active model.",
+      facts: [
+        ["Path", "Battery → inverter → motor → reduction → driven wheel force"],
+        ["Limits", "Electrical and mechanical limits can bind at different operating points"],
+        ["Caution", "A point-mass lock between motor and vehicle speed cannot reproduce every logged wheel-slip transient"],
+      ],
+      links: [["Parameters", "../model_parameters.md"], ["Acceleration validation", "../real_accel_validation_report.md"]],
+    },
+    "lap-tires": {
+      status: "Implemented baseline model",
+      title: "Tire-force drums",
+      summary: "The four drums represent longitudinal and lateral force capacity. The main lap solver uses an aggregate vehicle model; the independent four-wheel lab resolves each wheel separately.",
+      facts: [
+        ["Main solver", "Aggregate tire capacity and path curvature"],
+        ["Local grip", "Optional per-cell multiplier can alter force capacity"],
+        ["Separate lab", "Independent wheel slip and torque allocation remain an experimental model boundary"],
+      ],
+      links: [["Four-wheel dynamics", "../four_wheel_dynamics.md"], ["Desktop guide", "../simulator_desktop.md"]],
+    },
+    "lap-aero": {
+      status: "Implemented baseline model",
+      title: "Aerodynamic load fan",
+      summary: "The fan represents speed-dependent drag and vertical aerodynamic load. Source-aware profiles only apply a complete, unit-compatible aero selection as one atomic set.",
+      facts: [
+        ["Loads", "Drag opposes motion; signed lift coefficient alters normal load"],
+        ["Inputs", "Air density, reference area, drag coefficient, signed lift coefficient"],
+        ["Provenance", "Unselected or incomplete source fields remain inherited defaults"],
+      ],
+      links: [["Vehicle profiles", "../source_vehicle_profiles.md"], ["Parameters", "../model_parameters.md"]],
+    },
+    "lap-telemetry": {
+      status: "Implemented output contract",
+      title: "Aligned telemetry recorder",
+      summary: "The scope records component and vehicle channels on the accepted solver grid so energy, force, state, and timing remain aligned for replay and comparison.",
+      facts: [
+        ["Alignment", "One accepted-cell index across component channels"],
+        ["Uses", "Validation, plotting, saved run records, and replay"],
+        ["Integrity", "A saved v2 record can retain and reapply a per-cell grip schedule"],
+      ],
+      links: [["Event simulation", "../event_simulation.md"], ["Endurance analysis", "../../analysis/endurance/README.md"]],
+    },
+    "lap-scoring": {
+      status: "Implemented result layer",
+      title: "Event timing and scoring register",
+      summary: "The register converts completed simulation results into event timing, energy use, completion status, and the selected Formula SAE points model.",
+      facts: [
+        ["Events", "Endurance, acceleration, and skidpad"],
+        ["Result", "Timing, energy, points, completion status, telemetry"],
+        ["Guardrail", "A numerical score is only as valid as the course, vehicle, and calibration evidence"],
+      ],
+      links: [["Event simulation", "../event_simulation.md"], ["Team demo brief", "../team_demo_brief.md"]],
+    },
+    "lap-optional": {
+      status: "Optional and separate",
+      title: "Path planner and four-wheel laboratory",
+      summary: "The violet auxiliary bench represents optional path search and the separate four-wheel time-domain experiment. They are available for comparison without being implied as production behavior in the main solver.",
+      facts: [
+        ["Path planner", "Bounded optional racing-line search"],
+        ["Four-wheel lab", "Synthetic wheel-by-wheel torque allocation and slip"],
+        ["Boundary", "Neither module silently changes the main distance-domain calculation"],
+      ],
+      links: [["AI racer design", "../ai_racer_design.md"], ["Four-wheel dynamics", "../four_wheel_dynamics.md"]],
+    },
+  };

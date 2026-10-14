@@ -1,0 +1,285 @@
+/* SVG craft and interaction */
+.figure-shadow { fill: rgba(0, 0, 0, 0.12); filter: blur(10px); }
+.iso-top { fill: var(--iso-top); }
+.iso-left { fill: var(--iso-left); }
+.iso-right { fill: var(--iso-right); }
+.iso-edge { fill: none; stroke: var(--iso-edge); stroke-width: 1.35; vector-effect: non-scaling-stroke; }
+.iso-dark { fill: var(--iso-dark); }
+.iso-metal { fill: var(--iso-metal); }
+.iso-metal-light { fill: var(--iso-metal-light); }
+.iso-bench-top { fill: var(--iso-bench); }
+.iso-bench-left { fill: var(--iso-bench-left); }
+.iso-bench-right { fill: var(--iso-bench-right); }
+
+.machine-part {
+  cursor: pointer;
+  outline: none;
+  transition: transform 560ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease, opacity 220ms ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.machine-part:hover,
+.machine-part:focus-visible {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--anatomy-blue) 42%, transparent));
+}
+
+.machine-part.is-selected {
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--anatomy-blue) 60%, transparent));
+}
+
+.machine-part.is-selected .selection-ring {
+  opacity: 1;
+  stroke-dashoffset: 0;
+}
+
+.selection-ring {
+  fill: none;
+  stroke: var(--anatomy-blue);
+  stroke-width: 2.4;
+  stroke-dasharray: 8 5;
+  stroke-dashoffset: 24;
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+  transition: opacity 180ms ease, stroke-dashoffset 340ms ease;
+  pointer-events: none;
+}
+
+.part-hit {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 20;
+  pointer-events: all;
+}
+
+.detail-stroke {
+  fill: none;
+  stroke: var(--iso-edge);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.detail-stroke-fine {
+  fill: none;
+  stroke: color-mix(in srgb, var(--iso-edge) 78%, transparent);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.fastener { fill: var(--iso-dark); stroke: var(--iso-metal-light); stroke-width: 0.55; vector-effect: non-scaling-stroke; }
+.rubber { fill: #24282d; stroke: #69737d; stroke-width: 1.15; vector-effect: non-scaling-stroke; }
+.rim { fill: #c6d0da; stroke: #596674; stroke-width: 1.05; vector-effect: non-scaling-stroke; }
+
+.flow-line {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 12 9;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.95;
+}
+
+.flow-line.power-flow { stroke: var(--anatomy-orange); }
+.flow-line.signal-flow { stroke: var(--anatomy-blue); stroke-width: 3; stroke-dasharray: 4 7; }
+.flow-line.mechanical-flow { stroke: var(--anatomy-red); stroke-width: 3.4; }
+.flow-line.data-flow { stroke: var(--anatomy-cyan); stroke-width: 3; }
+.flow-line.optional-flow { stroke: var(--anatomy-purple); stroke-width: 2.5; opacity: 0.65; }
+
+.flow-node { stroke: var(--anatomy-surface-solid); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.flow-node.power-flow { fill: var(--anatomy-orange); }
+.flow-node.signal-flow { fill: var(--anatomy-blue); }
+.flow-node.mechanical-flow { fill: var(--anatomy-red); }
+.flow-node.data-flow { fill: var(--anatomy-cyan); }
+
+[data-running="true"][data-in-view="true"] .flow-line {
+  animation: anatomy-flow 1.55s linear infinite;
+}
+
+[data-running="true"][data-in-view="true"] .screen-trace {
+  animation: trace-run 3.2s linear infinite;
+}
+
+[data-running="true"][data-in-view="true"] .rotating-part {
+  animation: soft-turn 3.6s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+[data-running="true"][data-in-view="true"] .solver-carriage {
+  animation: cell-travel 6.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+[data-running="false"] .flow-line,
+[data-running="false"] .screen-trace,
+[data-running="false"] .rotating-part,
+[data-running="false"] .solver-carriage,
+:root[data-motion="paused"] .flow-line,
+:root[data-motion="paused"] .screen-trace,
+:root[data-motion="paused"] .rotating-part,
+:root[data-motion="paused"] .solver-carriage,
+[data-in-view="false"] .flow-line,
+[data-in-view="false"] .screen-trace,
+[data-in-view="false"] .rotating-part,
+[data-in-view="false"] .solver-carriage {
+  animation-play-state: paused !important;
+}
+
+.anatomy-card.is-exploded .machine-part[data-explode] {
+  transform: translate(var(--explode-x, 0px), var(--explode-y, 0px));
+}
+
+.car-figure[data-mode="power"] .signal-flow,
+.car-figure[data-mode="power"] .structure-overlay { opacity: 0.12; }
+.car-figure[data-mode="power"] .power-flow,
+.car-figure[data-mode="power"] .mechanical-flow { opacity: 1; }
+
+.car-figure[data-mode="signal"] .power-flow,
+.car-figure[data-mode="signal"] .mechanical-flow,
+.car-figure[data-mode="signal"] .structure-overlay { opacity: 0.11; }
+.car-figure[data-mode="signal"] .signal-flow { opacity: 1; }
+
+.car-figure[data-mode="structure"] .power-flow,
+.car-figure[data-mode="structure"] .mechanical-flow,
+.car-figure[data-mode="structure"] .signal-flow { opacity: 0.08; }
+.car-figure[data-mode="structure"] .structure-overlay { opacity: 1; }
+
+.flow-line,
+.flow-node,
+.structure-overlay { transition: opacity 280ms ease; }
+
+.diagram-label {
+  fill: var(--anatomy-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+}
+
+.diagram-micro {
+  fill: var(--anatomy-tertiary);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+.screen-fill { fill: var(--iso-screen); stroke: var(--iso-edge); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.screen-trace {
+  fill: none;
+  stroke: var(--iso-screen-line);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 10 6;
+  vector-effect: non-scaling-stroke;
+}
+
+@keyframes anatomy-flow { to { stroke-dashoffset: -42; } }
+@keyframes trace-run { to { stroke-dashoffset: -64; } }
+@keyframes soft-turn { to { transform: rotate(360deg); } }
+@keyframes cell-travel {
+  0%, 8% { transform: translate(0, 0); }
+  45%, 55% { transform: translate(305px, -78px); }
+  92%, 100% { transform: translate(0, 0); }
+}
+
+@media (max-width: 1120px) {
+  .anatomy-hero { grid-template-columns: 1fr; align-items: start; }
+  .anatomy-hero-actions { flex-direction: row; min-width: 0; }
+  .anatomy-layout { grid-template-columns: 1fr; }
+  .anatomy-inspector { border-top: 1px solid var(--anatomy-separator); border-left: 0; }
+  .anatomy-stage { min-height: 500px; }
+  .anatomy-svg { min-height: 500px; }
+  .anatomy-footer { grid-template-columns: 1fr; }
+  .anatomy-footer-links { justify-content: flex-start; }
+}
+
+@media (max-width: 820px) {
+  html { scroll-padding-top: 4.7rem; }
+  .map-shell { min-height: 700px; }
+  .anatomy-experience { padding-inline: 0.75rem; }
+  .anatomy-hero { padding-inline: 0.45rem; }
+  .anatomy-hero h2 { font-size: clamp(2.55rem, 14vw, 4.4rem); }
+  .anatomy-nav {
+    top: max(0.45rem, env(safe-area-inset-top));
+    align-items: stretch;
+    border-radius: 24px;
+    padding: 0.45rem;
+  }
+  .anatomy-nav-links { overflow-x: auto; scrollbar-width: none; }
+  .anatomy-nav-links::-webkit-scrollbar { display: none; }
+  .anatomy-nav a { white-space: nowrap; }
+  .anatomy-nav-controls { flex: 0 0 auto; }
+  #appearance-toggle { display: none; }
+  .anatomy-card { border-radius: 25px; }
+  .anatomy-card-header { flex-direction: column; }
+  .anatomy-card-actions { width: 100%; justify-content: flex-start; }
+  .anatomy-card-actions > button { flex: 1 1 auto; }
+  .segmented-control { width: 100%; }
+  .anatomy-stage { min-height: 390px; }
+  .anatomy-svg { min-height: 390px; }
+  .anatomy-figure figcaption { align-items: flex-start; flex-direction: column; }
+  .anatomy-figure figcaption strong { text-align: left; }
+}
+
+@media (max-width: 560px) {
+  .anatomy-experience { padding-top: 4rem; }
+  .anatomy-hero-actions { flex-direction: column; align-items: stretch; }
+  .anatomy-nav { flex-direction: column; border-radius: 22px; }
+  .anatomy-nav-controls { width: 100%; }
+  #motion-toggle { width: 100%; }
+  .anatomy-card-header { padding: 1.25rem 1rem 1rem; }
+  .truth-banner { margin-inline: 1rem; }
+  .anatomy-card-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .segmented-control { grid-column: 1 / -1; }
+  .anatomy-layout { min-height: 0; }
+  .anatomy-stage { min-height: 330px; }
+  .anatomy-svg { min-height: 330px; }
+  .anatomy-inspector { padding: 1.2rem 1rem; }
+  .inspector-facts > div { grid-template-columns: 1fr; gap: 0.3rem; }
+  .figure-notes { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .anatomy-nav,
+  .anatomy-card,
+  .secondary-action { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--anatomy-surface-solid); }
+}
+
+@media (prefers-contrast: more) {
+  :root { --anatomy-separator: currentColor; }
+  .anatomy-card,
+  .anatomy-nav,
+  .truth-banner { border-width: 2px; }
+  .detail-stroke,
+  .iso-edge { stroke-width: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+  .anatomy-card.is-exploded .machine-part[data-explode] { transform: none; }
+}
+
+@media print {
+  .map-shell,
+  .anatomy-nav,
+  .anatomy-card-actions,
+  .anatomy-hero-actions { display: none !important; }
+  .anatomy-experience { padding: 0; background: white; }
+  .anatomy-card { break-inside: avoid; box-shadow: none; }
+  .anatomy-layout { grid-template-columns: 1fr; }
+  .anatomy-inspector { border-left: 0; border-top: 1px solid #999; }
+}

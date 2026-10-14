@@ -1,0 +1,167 @@
+window.CAR_ANATOMY_CATALOG = {
+    "car-rwd": {
+      status: "Team-confirmed topology",
+      title: "Rear-wheel-drive energy path",
+      summary: "Accumulator energy passes through high-voltage switching and the traction drive before mechanical torque reaches the rear axle. The 2027–28 AWD concept is deliberately absent from this current-car view.",
+      facts: [
+        ["Configuration", "2026–27 car · rear-wheel drive"],
+        ["Shown", "System topology, not released packaging or performance"],
+        ["Not asserted", "Exact motor count, reduction ratio, differential hardware, ratings, or mass"],
+      ],
+      links: [["Vehicle evidence boundary", "../source_vehicle_profiles.md"], ["Engineering handoff", "../engineering_handoff.md"]],
+    },
+    "car-accumulator": {
+      status: "System role verified; details private",
+      title: "High-voltage accumulator",
+      summary: "The accumulator stores traction energy and supplies the tractive system through its protection and switching path. The block location and internal module layout are illustrative.",
+      facts: [
+        ["Role", "Energy storage and HV supply"],
+        ["Signals", "Pack voltage, current, temperature, and protection state are relevant channels"],
+        ["Withheld", "Cell count, module topology, limits, mass, and exact enclosure geometry"],
+      ],
+      links: [["Battery model", "../battery_model.md"], ["Vehicle profiles", "../source_vehicle_profiles.md"]],
+    },
+    "car-inverter": {
+      status: "System role verified; packaging illustrative",
+      title: "Traction inverter",
+      summary: "The inverter converts DC pack energy into controlled motor phase current. Its placement, connector layout, and ratings are not claimed by this drawing.",
+      facts: [
+        ["Input", "High-voltage DC and low-voltage control"],
+        ["Output", "Controlled motor electrical power"],
+        ["Control", "Torque command subject to safety and component limits"],
+      ],
+      links: [["Model parameters", "../model_parameters.md"], ["Architecture", "../architecture.md"]],
+    },
+    "car-motor": {
+      status: "RWD traction role verified",
+      title: "Rear traction motor",
+      summary: "The traction motor converts electrical power into mechanical torque for the rear drive. The cylindrical form is an explanatory stand-in, not the as-built motor envelope.",
+      facts: [
+        ["Configuration", "Rear traction drive"],
+        ["Mechanical path", "Motor torque → reduction/drive → rear wheels"],
+        ["Not asserted", "Manufacturer, peak torque, power curve, cooling jacket, or exact mounting"],
+      ],
+      links: [["Acceleration validation", "../real_accel_validation_report.md"], ["Vehicle profiles", "../source_vehicle_profiles.md"]],
+    },
+    "car-rear-drive": {
+      status: "Team-confirmed RWD; mechanism unresolved here",
+      title: "Rear reduction and axle",
+      summary: "This assembly communicates the mechanical transfer from the traction motor to both rear contact patches. It avoids claiming a specific sprocket, gearbox, differential, or dual-motor arrangement without source evidence.",
+      facts: [
+        ["Function", "Reduce speed and transmit wheel torque"],
+        ["Driven axle", "Rear"],
+        ["Evidence needed", "Authorized CAD/BOM and released drivetrain specification"],
+      ],
+      links: [["Engineering handoff", "../engineering_handoff.md"], ["Four-wheel lab", "../four_wheel_dynamics.md"]],
+    },
+    "car-vcu": {
+      status: "Team-confirmed controller platform",
+      title: "Vehicle controller · STM32F405",
+      summary: "The vehicle controller reads driver and vehicle signals, applies interlocks and control logic, and issues bounded commands. The PCB outline and connector positions are schematic.",
+      facts: [
+        ["MCU", "STM32F405"],
+        ["Responsibilities", "State handling, command arbitration, safety interlocks, telemetry"],
+        ["Future work", "Use this interface boundary for torque-control development and controller-in-the-loop tests"],
+      ],
+      links: [["Architecture", "../architecture.md"], ["Four-wheel dynamics", "../four_wheel_dynamics.md"]],
+    },
+    "car-sensors": {
+      status: "Measurement needs documented",
+      title: "Vehicle and driver sensing",
+      summary: "The blue signal overlay shows the information a torque-control and validation workflow needs: driver requests, wheel or motor speed, steering, inertial motion, and pack electrical state. Exact installed channels and positions are not asserted.",
+      facts: [
+        ["Driver", "Accelerator, brake, and steering requests"],
+        ["Dynamics", "Wheel/motor speed, IMU, yaw, and GNSS where available"],
+        ["Electrical", "Pack voltage, current, temperature, and controller state"],
+      ],
+      links: [["Engineering handoff", "../engineering_handoff.md"], ["Acceleration validation", "../real_accel_validation_report.md"]],
+    },
+    "car-chassis": {
+      status: "Illustrative packaging",
+      title: "Chassis and protected volumes",
+      summary: "The frame establishes a recognizable Formula SAE car and separates driver, accumulator, controls, and traction assemblies. Tube routing and dimensions are not derived from authorized CAD.",
+      facts: [
+        ["Shown", "Relative functional zones and load paths"],
+        ["Not shown", "Exact tube sections, weldments, impact structures, or mounting tabs"],
+        ["Verification", "Replace with a team-approved simplified CAD export when available"],
+      ],
+      links: [["Vehicle evidence boundary", "../source_vehicle_profiles.md"]],
+    },
+    "car-suspension": {
+      status: "System role verified; geometry illustrative",
+      title: "Suspension and steering",
+      summary: "The arms and uprights locate each wheel and transmit tire forces into the chassis. The visible geometry explains the mechanism but is not an alignment or kinematics model.",
+      facts: [
+        ["Function", "Control wheel position, steer angle, and load transfer path"],
+        ["Model boundary", "Current main LapSim does not reconstruct exact suspension kinematics"],
+        ["Evidence needed", "Hardpoints, compliance, motion ratios, alignment, and measured tire data"],
+      ],
+      links: [["Engineering handoff", "../engineering_handoff.md"], ["Four-wheel dynamics", "../four_wheel_dynamics.md"]],
+    },
+    "car-brakes": {
+      status: "System role verified; details illustrative",
+      title: "Four-wheel friction brakes",
+      summary: "Brake discs at each wheel represent the independent mechanical stopping path. The drawing does not claim caliper type, hydraulic split, bias, or regenerative-braking policy.",
+      facts: [
+        ["Role", "Dissipate vehicle kinetic energy at all four wheels"],
+        ["Control", "Driver request and system limits determine commanded deceleration"],
+        ["Not asserted", "Rotor size, bias, pedal ratio, line pressure, or regen blending"],
+      ],
+      links: [["Model parameters", "../model_parameters.md"], ["Event simulation", "../event_simulation.md"]],
+    },
+    "car-cooling": {
+      status: "Conceptual subsystem",
+      title: "Thermal-management loop",
+      summary: "The cyan loop indicates that heat from traction electronics and the motor must reach a heat exchanger. Routing and which components share a loop require team source verification.",
+      facts: [
+        ["Potential loads", "Motor, inverter, and other temperature-limited hardware"],
+        ["Shown", "Conceptual circulation and heat rejection"],
+        ["Not asserted", "Pump, radiator, plumbing, coolant, flow rate, or exact thermal architecture"],
+      ],
+      links: [["Engineering handoff", "../engineering_handoff.md"]],
+    },
+    "car-aero": {
+      status: "Presence and geometry require source verification",
+      title: "Aerodynamic devices",
+      summary: "The wings make the force path legible in the illustration. Their exact presence, profiles, balance, reference area, and coefficients must come from the team evidence package before being treated as as-built.",
+      facts: [
+        ["Model role", "Drag and speed-dependent vertical load"],
+        ["Source rule", "Area, drag coefficient, and signed lift coefficient are selected atomically"],
+        ["Caution", "Illustrated geometry is not a CFD or manufacturing surface"],
+      ],
+      links: [["Vehicle profiles", "../source_vehicle_profiles.md"], ["Model parameters", "../model_parameters.md"]],
+    },
+    "car-driver": {
+      status: "Functional context",
+      title: "Driver and primary controls",
+      summary: "The driver closes the loop through accelerator, brake, and steering inputs while receiving vehicle motion and dashboard feedback. The seating envelope is schematic.",
+      facts: [
+        ["Commands", "Accelerator, brake, steering, and driver-selected modes where implemented"],
+        ["Feedback", "Vehicle motion, dashboard state, and fault indication"],
+        ["Safety", "Control software must preserve independent safety paths and bounded outputs"],
+      ],
+      links: [["Team demo brief", "../team_demo_brief.md"], ["Architecture", "../architecture.md"]],
+    },
+    "car-front-wheels": {
+      status: "Steered, non-driven in current topology",
+      title: "Front contact patches",
+      summary: "The front wheels steer and generate lateral and braking force. They are intentionally shown without a traction-power path in the 2026–27 RWD view.",
+      facts: [
+        ["Traction drive", "Not shown on the current front axle"],
+        ["Forces", "Steering, lateral tire force, and friction braking"],
+        ["Future separation", "Any 2027–28 AWD concept belongs in a clearly labeled future configuration"],
+      ],
+      links: [["Four-wheel dynamics", "../four_wheel_dynamics.md"]],
+    },
+    "car-rear-wheels": {
+      status: "Driven axle",
+      title: "Rear contact patches",
+      summary: "The rear tires receive traction torque and also provide lateral and braking force. Their available force depends on normal load, slip, surface, and the tire model used for analysis.",
+      facts: [
+        ["Drive", "Rear-wheel traction"],
+        ["Model need", "Measured tire force/slip data for credible control development"],
+        ["Validation need", "Independent vehicle speed plus wheel/motor speed to distinguish slip"],
+      ],
+      links: [["Four-wheel dynamics", "../four_wheel_dynamics.md"], ["Acceleration validation", "../real_accel_validation_report.md"]],
+    },
+  };
