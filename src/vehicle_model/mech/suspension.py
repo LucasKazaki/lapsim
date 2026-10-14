@@ -58,6 +58,9 @@ class Suspension:
         init=False, default=0.0
     )
 
+    def __post_init__(self) -> None:
+        self.validate()
+
     def validate(self) -> None:
         """Validate roll stiffness and lateral load-transfer distribution."""
 

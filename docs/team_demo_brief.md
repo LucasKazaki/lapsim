@@ -2,7 +2,10 @@
 
 **Purpose:** show what the current desktop simulator calculates, what the optional racing-line mode changes, and which team measurements are still needed before using a result for a car or course decision.
 
-For a fresh Windows clone, run `setup_lapsim.cmd` once before this walkthrough; it creates the virtual environment and checks the desktop display and bundled course.
+For the shared Windows x64 build, extract `LapSim-Windows-x64.zip` and run
+`LapSim.exe`; Python installation is unnecessary. For a fresh source clone,
+run `setup_lapsim.cmd` once, then `launch_lapsim.cmd`. See the
+[team guide](team_guide.md) for startup, units, troubleshooting, and saved evidence.
 
 ## Five-minute walkthrough
 

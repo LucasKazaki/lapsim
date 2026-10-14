@@ -1,6 +1,6 @@
 # LapSim engineering handoff
 
-**Scope:** current source-launched desktop application, its distance-domain lap model and separate time-domain four-wheel experiments, their input data, and the code and checks needed to maintain them.
+**Scope:** current desktop application, its source and portable Windows launch paths, distance-domain lap model and separate time-domain four-wheel experiments, input data, and the code and checks needed to maintain them.
 **Audience:** software lead and vehicle engineers.
 **Status:** implementation description, not vehicle certification or a claim of predictive accuracy.
 **Source basis:** this repository; the supplied *EV Vehicle Simulation and Torque Control* research report (Report I); and the supplied *EV Vehicle Simulation II: Aerodynamics, CFD, Track Conditions, and Secondary Effects* (Report II, 5 October 2026). Report II's proposals are treated as design evidence, not as proof that a feature exists or that its example values describe the team car.
@@ -30,27 +30,40 @@ The older report's 44 reference checks belong to its separate source package. Th
 
 ## 2. Run the code and locate the outputs
 
-The supported desktop launch is from the repository checkout on Windows:
+For recipients, extract `LapSim-Windows-x64.zip` and double-click `LapSim.exe`.
+The single-file Windows x64 build includes the Python runtime and mandatory
+course data. Its header **Simulator map** opens a durable offline map with
+source references. The ZIP also provides documentation, source snapshot, and
+test evidence. Follow [the team guide](team_guide.md) and
+[release instructions](release.md) for distribution details and frozen checks.
+
+The developer launch uses the repository checkout on Windows:
 
 ```powershell
-cd C:\Users\lucas\Documents\Codex\LapTimeSim
+cd C:\path\to\lapsim
 .\setup_lapsim.cmd
 .\launch_lapsim.cmd
 ```
 
-The setup command finds 64-bit Python 3.11+, creates or reuses `.venv`, installs the project, and checks imports, the default course, Tk, and an actual TkAgg plot canvas. The launcher repeats that preflight, then starts a console-free window; an unexpected startup exception opens an error dialog and writes `%LOCALAPPDATA%\LapSim\logs\desktop_startup.log`. The direct `.venv\Scripts\python.exe -m lapsim.ui` route and `.vscode/launch.json` use the same checkout. All launch paths restrict numerical libraries to one worker thread and resolve Tcl/Tk scripts from the base Python installation when available. The application is native Tkinter with embedded Matplotlib; there is no distributable EXE. The default fused course loader expects checkout-relative `analysis/data/track/gnss_imu_endurance_track.csv`; packaging the Python module alone does not package this recording.
+The setup command finds 64-bit Python 3.11+, creates or reuses `.venv`, installs the project, and checks imports, the default course, Tk, and an actual TkAgg plot canvas. The launcher repeats that preflight, then starts a console-free window; an unexpected startup exception opens an error dialog and writes `%LOCALAPPDATA%\LapSim\logs\desktop_startup.log`. The direct `.venv\Scripts\python.exe -m lapsim.ui` route and `.vscode/launch.json` use the same checkout. Launch paths restrict numerical libraries to one worker thread. Source runs resolve Tcl/Tk scripts from the base Python installation when available; frozen runs use the packaged runtime. The application is native Tkinter with embedded Matplotlib. The default fused course is `analysis/data/track/gnss_imu_endurance_track.csv` relative to the resource root. `lapsim.resources.repository_root()` selects the source checkout or frozen `bundle` tree, so portable execution does not depend on a repository folder or current working directory.
 
 Run the repository checks with:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\check_all.ps1
+.venv\Scripts\python.exe scripts\check_all.py
 ```
 
-The checker discovers every `test_*.py` file, runs each file in a fresh process, and sets one numerical-library thread plus the base Python Tcl/Tk paths. This limits memory demand on this computer; those settings are not physics parameters. Setup installs pytest through the `dev` extra. A passing suite establishes the stated software checks, not full vehicle accuracy.
+The Python checker discovers every `test_*.py` file, runs each file in a fresh process, and sets one numerical-library thread plus base Python Tcl/Tk paths. It writes the aggregate `work/test-results.xml`; the verification guide shows how to retain `work/test-suite.log`. The older PowerShell checker remains available. These settings limit memory demand and isolate Tk interpreter state; they are not physics parameters. Setup installs pytest through the `dev` extra. A passing suite establishes the stated software checks, not full vehicle accuracy.
+
+The [verification guide](verification.md) records coverage and release checks.
+Use the final executable's self-test and release evidence for current counts;
+the dated results in Section 16 preserve earlier source-test history.
 
 This Markdown file is the editable report source. With ReportLab installed in a documentation Python environment, `python docs/render_engineering_handoff_pdf.py` regenerates `output/pdf/LapSim_Engineering_Handoff.pdf`; ReportLab is not required by the simulator itself.
 
 Local user profiles are saved in `%LOCALAPPDATA%\LapSim\car_profiles.json`. Completed and interrupted main-lap runs are saved in `%LOCALAPPDATA%\LapSim\runs`; four-wheel A/B runs are saved in `%LOCALAPPDATA%\LapSim\dynamics_runs`. The separately saved synthetic pose traces default to `%LOCALAPPDATA%\LapSim\pose_runs`. These files are outside Git; do not confuse them with the built-in or reviewed-source profiles. The status bar shows a shortened record ID for saved lap and A/B runs; the WIP pose tab shows its own shortened content ID after Save or Load. Record contents are described in Section 14.
+
+<!-- PDF_PAGE_BREAK -->
 
 ## 3. Repository architecture and execution boundaries
 
@@ -1187,6 +1200,56 @@ Keep derivative evaluations pure during RK4 and commit thermal, charge, wear, or
 
 ## 16. Checks performed, interpretation, and known discrepancies
 
+### 16.1 Current release-review evidence - 9 October 2026
+
+The current source runtime self-test passed all ten checks, including the full desktop
+and TkAgg canvas, separate four-wheel lab, shipped 1,978-cell course/provenance,
+offline map and durable cached source/document links, synthetic lap,
+saved record round trip, and recorded-control
+numerical replay. Focused
+packaging/source-profile/record regressions passed **28 tests**. The physics
+audit passed **101 core tests with 355 subtests**, plus **56 event/dynamics/
+path-constraint tests with 610 subtests**. A separate **255-case** operating-point
+sweep covered front/rear/all drive, speeds 0-40 m/s, signed curvature, and
+drive/coast/friction-brake/regen requests; maximum longitudinal force-balance
+residual was **4.55e-13 N** and maximum pack `P - V I` residual **1.46e-11 W**.
+Telemetry was finite, normal loads nonnegative, and no accepted tire force
+exceeded combined capacity.
+
+The current frozen executable also passed all ten runtime checks from an
+unrelated temporary directory with Python/Git absent from `PATH`, isolated
+user data, and no optional source evidence. Its 32-cell synthetic circle lap
+completed in **8.1284262182 s** and its record replay agreed. The consolidated
+**64-module** suite records **749 test functions and 1,010 subtests**, or
+**1,759 JUnit cases**, with no unresolved failure or skip after affected GUI
+reruns. The initial sweep had two intermittent Tcl startup skips. The
+saved-run module then passed 7/7; the course module retry passed four cases but
+hit a Tcl reinitialization failure in its restart case, which passed 1/1 in a
+fresh process. The full course module subsequently passed 5/5 using pytest
+`--capture=sys`; the release checker preserves process file descriptors while
+capturing Python stdout/stderr to avoid stale Tcl file channels. The original
+and rerun logs remain part of the evidence; the initial sweep was not an
+unskipped pass. A first combined run with **730
+passed, 1 skipped, and 674 subtests** is a secondary baseline. Use the packaged
+`work/test-results.xml` and `work/test-suite.log` for release totals and its
+frozen self-test JSON for the executable result. The locked Windows x64 build
+was tested with Python **3.12.2**.
+
+The audit corrected a zero-power/depleted-pack stall-torque loophole and made
+the older lap solver reject an untraversable stopped cell. Battery configuration
+and update inputs now reject NaN/infinity and non-integer pack cell counts.
+Desktop startup drains pending layout/theme idle work; destruction cancels
+all queued Tcl callbacks, including TkAgg. Lifecycle/saved-run regressions
+passed 8/8 without native Tcl stderr after that fix. These checks establish
+implemented behavior, not vehicle calibration. See [verification](verification.md)
+and [release instructions](release.md).
+
+### 16.2 Historical source checks and numerical investigations
+
+The dated checks and scenario values below preserve earlier investigations.
+They are not freshly measured release benchmarks or proof that the final EXE
+passed. Their configurations and stated policy changes govern interpretation.
+
 Coarse prescribed-path skidpad regressions require a radius-5 m circle split into one or four cells to reject acceleration beyond its modeled corner limit, while an ordinary within-limit skidpad still scores. A newer circle regression checks the combined longitudinal/lateral force margin at every accepted exit on both 4-cell and 64-cell grids; an explicit 50 N·m request that passes the pure lateral speed ceiling but lacks about 102 N of exit grip must fail. The legacy unconstrained nominal-2 m AI API regression requires a 0.95-strength continuous scalar-audit pass and a completed **14.617662 s** Prius trial under the current exit-grip physics; new maximum-cell tests check a distinct finer-grid desktop scenario. An earlier fixed-path 1 m probe retained roughly 0.449 s over the old 0.75 fallback under the prior cell-force policy. The Windows preflight also draws a TkAgg canvas and checks the shipped course before launch. On a separate synthetic radius-25 m circle with the repository-baseline car and torque request 0.8, an **earlier pre-exit-grip** sensitivity run changed assumed uniform road grip from 100% to 70%, reduced the path-entry ceiling from **19.827545 to 16.555945 m/s**, and increased the completed lap from **8.073551 to 9.637759 s**. Those lap times are historical; the prepass and lap both respond to the same grip factor, but this is not a calibrated wet-track prediction.
 
 On 6 October 2026, the checked-in `scripts/check_all.ps1` completed all **60 repository test files** in isolated one-module pytest processes with no failures. One pose GUI case was skipped during that sweep when Windows intermittently failed to read an existing Tcl/Tk support file; that exact case then passed in a fresh process (**1/1**). The full desktop AI module passed **18/18**, and the desktop startup check passed. Splitting the files avoided this workstation's Windows commit-memory limit; each process used one OpenBLAS, OMP, and MKL thread and explicit Tcl/Tk library paths. The Driver view checks compare every live accepted-cell value with same-cell telemetry, verify replay's active-cell boundary timing and independent missing-channel handling, and confirm the desktop numbers and unit conversions. New desktop tests also start a new run with an old Analysis trace visible, then fail the new calculation and verify the old plot and result references remain cleared. Failed-run checks cover rejection before a cell update, rejection after the first and a later attempted update, last accepted telemetry alignment, complete-run equality, record serialization and contradictions, and consistent battery-depletion progress. A/B tests use cars with markedly different independent first-cell ceilings, require one common start and one preparation per car, replay both saved records, inspect live/replay/popup behavior, and reject a different vehicle or track when reusing limits. The new cyclic-braking regression reproduces a four-cell closing-straight case: with a loose tolerance, the prior one-pass 43.112 m/s closing-cell ceiling exceeded its 23.254 m/s braking-feasible entry; the corrected solver continues its sweep or raises at the pass bound. It also rejects nonfinite tolerance settings. At the declared minimum **1080 × 720** window, the decision grid requests **620 px** inside a **660 px** panel and the course canvas remains **264 px** high. Course checks include exact catalog-source identity for both synthetic IDs, analytic per-cell endpoint and closed-heading validation, original-station-preserving subarcs, and a valid coarse two-semicircle loop whose polygon chord winding aliases the true turn. They also cover bounded versioned JSON and CSV loading, duplicate/nonfinite/malformed input rejection, source and manifest hashes, local catalog reload and revision conflicts, imported centerline and AI runs, linked trial records, and model replay of those records. These are numerical and software checks, not a track survey or measured-boundary validation.
@@ -1562,17 +1625,17 @@ Important current bounds and gaps:
 | Lab road patch changes grip cap only | No roughness, rolling resistance, puddling, hydroplaning, or surface heat |
 | No thermal states in either current route | Continuous torque, brake temperature, tire fade, and pack derating cannot be predicted |
 | Main event can update a cell before rejecting its path/time/stall result | Failed records distinguish attempted vehicle time/speed/SOC from the last checked prefix; caller vehicle remains attempted, so neither is an eligible lap time |
-| No packaged EXE or full dependency lock | Deployment is from a configured source checkout and venv |
+| Windows x64 one-file EXE and controlled build dependency snapshot | Recipients can run without Python; other platforms and organization signing need separate release work. Final packaged checks are distinct from source tests |
 
 ## 17. Prioritized engineering work and acceptance evidence
 
 1. **Freeze the 2026-27 car evidence.** Collect a versioned, reviewed configuration: mass/CG/inertias, wheelbase/tracks/radii, drive topology and torque limits, pack/thermal data, brake/regen limits, tire map, and aero coordinate convention. Keep source, units, validity range, and uncertainty per field. Promote only verified values into adapters; keep unknowns explicit.
 2. **Establish held-out baseline validation.** Instrument a known dry, flat maneuver and course section. Align times and frames; compare speed, yaw, wheel speeds/torques, pack voltage/current, and brake response with error and uncertainty. Require zero-weather/constant-surface regression before each environmental change.
-3. **Repair and survey the recorded course before ranking real racing lines.** Measure both cone boundaries in one world frame with x/y, station, closure, and uncertainty. Reconcile 989 m station/curvature with roughly 1,012 m x/y using retained raw data and versioned processing. Build a path representation whose x/y, station lengths, curvature arcs, and position seam agree without introducing damaging curvature spikes. V2 can retain source-relative widths, but promotion into the smoothed AI frame needs a checked transformation and boundary uncertainty. The optional synthetic loop now passes the continuous scalar modeled-path gate under an assumed corridor; retain it as a software check, then test the full swept vehicle envelope against surveyed boundaries. The unmerged arc prototypes are research evidence, not a finished repair. Until then, the default fused course's AI times are diagnostics only.
+3. **Repair and survey the course before ranking real racing lines.** Survey both cone boundaries in one world frame with station, closure, and uncertainty. Reconcile 989 m station/curvature with roughly 1,012 m x/y using retained raw data and versioned processing. Require consistent x/y, cell lengths, curvature arcs, and position seam without damaging curvature spikes. Transform V2 source-relative widths into the smoothed AI frame with checked uncertainty. Retain the synthetic loop's assumed-corridor gate as a software check, then verify the full swept vehicle against surveyed boundaries. Arc prototypes remain research evidence; default fused-course AI times remain diagnostic until repair.
 4. **Extend wind and aero only with reviewed maps.** A first lap wind extension needs a world-referenced course and measured/declared wind. A full six-component CFD or wind-tunnel map needs force/moment reference, yaw sign, ride height/roll/pitch axes, interpolation bounds, and crosswind benchmarks. Avoid applying both scalar drag/downforce and the same map forces.
 5. **Add surveyed road geometry and contact states.** Elevation/grade, bank, crest, material, and patch coverage must be sampled at actual wheel contacts. Check analytically that still-flat results recover baseline; constant grade gives longitudinal gravity force `mg sin(theta)`, elevation work `mg delta_h`, and normal component `mg cos(theta)`; symmetric bank changes lateral demand with correct sign; crest unloading cannot produce negative contact loads. Track width and cone feasibility require a path model, not a display outline.
 6. **Add conservative thermal states only with calorimetry and cooling evidence.** Tire/brake/motor/inverter/pack temperatures need explicit heat capacities, generated heat, conductive/convective/radiative flows, ambient or coolant boundaries, and state-dependent limits. Internal heat exchanges must cancel in the whole-system balance. Slip and brake work must be assigned once, without double counting pack discharge. A derivative call must not change temperature or SOC.
 7. **Build complete timed sessions from the bounded pose experiment.** The 80 m synthetic preview now exercises feedback steering, planar pose, assumed-corridor samples, and a separate versioned trace archive with numerical replay. That archive contains only one synthetic maneuver; it does not connect to a versioned Terps vehicle/controller, interactive driver, ghost, or session comparison. Extend the lap cell-curvature gate to a checked integrated pose against one consistent course map and surveyed boundaries before calling an explicit-controls run a driven lap. A ghost is only a time/station comparison until both tracked poses are verified. Define complete-session controls/states/environment and validity capture, channel tolerances, and a comparison manifest linking both run IDs, source hashes, and software versions. Keep full-session controls unavailable until that workflow is testable.
-8. **Harden distribution and replay.** Package course/profile data or document the source-only requirement. Pin dependencies, extend the current one-lap command replay into an automated, version-aware comparison gate, capture dirty patches or require clean code for comparison evidence, and add a standalone car-comparison A/B manifest beyond the current primary AI trial manifest. Document schema migrations and machine-independent tolerances. The four-wheel A/B and new synthetic pose records both rerun their frozen inputs under the installed model; neither is a complete timed-session workflow.
+8. **Maintain reproducible distribution and extend replay.** Preserve artifact hashes, source changes, complete-suite/skip logs, and packaged smoke evidence for every revision of the controlled Windows x64 build; add signing or other platforms when required. Extend one-lap replay into a version-aware comparison gate. Capture dirty patches or require clean source, add a standalone A/B comparison manifest, and document schema migrations and machine-independent tolerances. Four-wheel A/B and synthetic pose records replay frozen inputs under the installed model; complete timed-session replay remains future work.
 
-Report II's examples and reference checks provide **test design**, not acceptance evidence for this checkout. Each stage above should have an equation/units check, limiting-case regression, synthetic sensitivity with monotonic expectations where applicable, and an independently measured holdout before it is described as predictive. Until then, label displayed results as model estimates and keep the exact record with any engineering decision.
+Report II provides **test design**, not acceptance evidence. Each upgrade needs equation/unit checks, limiting-case regressions, controlled synthetic sensitivities with monotonic expectations where applicable, and independent measured holdouts before being described as predictive. Label displayed results as model estimates and retain their exact records with engineering decisions.

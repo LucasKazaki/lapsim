@@ -177,6 +177,9 @@ class Vehicle:
         for name, value in nonnegative_parameters.items():
             if not isfinite(value) or value < 0:
                 raise ValueError(f"{name} must be finite and nonnegative")
+        for name in ("initial_x_m", "initial_y_m", "initial_heading_rad"):
+            if not isfinite(getattr(self, name)):
+                raise ValueError(f"{name} must be finite")
 
     @property
     def components(self) -> tuple[ComponentModel, ...]:

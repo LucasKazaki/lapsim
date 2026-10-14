@@ -110,6 +110,10 @@ STYLES = {
 
 
 def _inline(value: str) -> str:
+    # Keep dash glyphs portable and readable in the print artifact.
+    value = value.translate(str.maketrans({
+        "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-",
+    }))
     text = escape(value, quote=False)
     protected: dict[str, str] = {}
 
@@ -131,6 +135,14 @@ def _inline(value: str) -> str:
         lambda match: keep(f'<font name="Consolas" size="8">{match.group(1)}</font>'),
         text,
     )
+    text = re.sub(
+        r"\[([^\]]+)\]\((?!https?://)([^)]+)\)",
+        lambda match: keep(
+            f'{match.group(1)} '
+            f'<font name="Consolas" size="8">(docs/{match.group(2)})</font>'
+        ),
+        text,
+    )
     text = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text)
     text = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<i>\1</i>", text)
     for marker, markup in protected.items():
@@ -144,7 +156,7 @@ def _footer(canvas, document) -> None:
     canvas.setLineWidth(0.35)
     canvas.line(LEFT, 42, PAGE_WIDTH - RIGHT, 42)
     canvas.setFont("Arial", 7.8)
-    canvas.drawString(LEFT, 29, "LapSim | Engineering handoff | 7 October 2026")
+    canvas.drawString(LEFT, 29, "LapSim | Engineering handoff | 9 October 2026")
     canvas.drawRightString(PAGE_WIDTH - RIGHT, 29, f"Page {document.page}")
     canvas.restoreState()
 

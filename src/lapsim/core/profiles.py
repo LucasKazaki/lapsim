@@ -53,6 +53,27 @@ class PiecewiseLinearControlsProfile:
             if not isfinite(self.period_m) or self.period_m <= self.distance_m[-1]:
                 raise ValueError("period_m must be finite and after the final knot")
 
+        # Independent interpolation cannot cross from positive motor torque to
+        # positive regeneration without requesting both at once. Require an
+        # explicit zero-demand knot rather than deferring failure to the solver.
+        pairs = list(zip(self.controls, self.controls[1:]))
+        if self.period_m is not None:
+            pairs.append((self.controls[-1], self.controls[0]))
+        for lower, upper in pairs:
+            driving = max(lower.motor_torque_request_nm, upper.motor_torque_request_nm) > 0
+            regenerating = any(
+                request > 0
+                for control in (lower, upper)
+                for request in (
+                    control.front_regenerative_brake_force_request_n,
+                    control.rear_regenerative_brake_force_request_n,
+                )
+            )
+            if driving and regenerating:
+                raise ValueError(
+                    "drive/regen transitions require an explicit zero-demand knot"
+                )
+
     @staticmethod
     def _interpolate(lower: Controls, upper: Controls, fraction: float) -> Controls:
         def blend(lower_value: float, upper_value: float) -> float:

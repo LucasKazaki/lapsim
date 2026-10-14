@@ -62,6 +62,14 @@
   function bindFigure(card, catalog, figure, defaultId) {
     const stage = card.querySelector(`.anatomy-stage[data-figure="${figure}"]`);
     stage.innerHTML = figure === "lapsim" ? lapSvg() : carSvg();
+    stage.querySelectorAll("[data-part-id]").forEach((part) => {
+      const visibleLabel = [...part.querySelectorAll("text")]
+        .map((text) => text.textContent.trim()).filter(Boolean).join(" ");
+      if (visibleLabel) {
+        part.setAttribute("aria-description", part.getAttribute("aria-label"));
+        part.setAttribute("aria-label", visibleLabel);
+      }
+    });
     const svg = stage.querySelector("svg");
     if (figure === "car") svg.dataset.mode = card.dataset.carMode || "power";
 
@@ -195,7 +203,16 @@
         motionButton.setAttribute("aria-pressed", String(memory.motionPaused));
         motionButton.textContent = memory.motionPaused ? "Resume motion" : "Pause motion";
       }
-      cards.forEach(({ card, figure }) => updateReadout(card, figure));
+      cards.forEach(({ card, figure }) => {
+        if (systemReduced) card.dataset.running = "false";
+        card.querySelectorAll("[data-anatomy-action='run']").forEach((button) => {
+          button.disabled = systemReduced;
+          const running = card.dataset.running === "true";
+          button.setAttribute("aria-pressed", String(running));
+          button.textContent = running ? "Pause" : "Run";
+        });
+        updateReadout(card, figure);
+      });
     };
 
     motionButton.addEventListener("click", () => {

@@ -77,6 +77,12 @@
 }
 
 :root[data-theme="light"] {
+  --implemented: #247451;
+  --optional: #2366a8;
+  --experimental: #9c5c00;
+  --assumption: #7453a6;
+  --limitation: #b03a3a;
+  --future: #64748b;
   color-scheme: light;
   --page: #f3f6fb;
   --surface: #ffffff;
@@ -115,6 +121,12 @@
 }
 
 :root[data-theme="dark"] {
+  --implemented: #59bb8b;
+  --optional: #65a5e6;
+  --experimental: #e9ac50;
+  --assumption: #b79ade;
+  --limitation: #ef7878;
+  --future: #9aa9bc;
   color-scheme: dark;
   --page: #0c1420;
   --surface: #111d2b;

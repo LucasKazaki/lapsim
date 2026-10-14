@@ -21,7 +21,7 @@ window.ANATOMY_LAP_SVG = (() => {
     }).join("");
 
     return `
-      <svg class="anatomy-svg lap-figure" viewBox="0 0 1200 720" role="img" aria-labelledby="lap-figure-title lap-figure-desc">
+      <svg class="anatomy-svg lap-figure" viewBox="0 0 1200 720" role="group" aria-labelledby="lap-figure-title" aria-describedby="lap-figure-desc">
         <title id="lap-figure-title">Interactive isometric LapSim distance-domain test bench</title>
         <desc id="lap-figure-desc">A physical test bench metaphor for the LapSim course input, controls, speed constraints, component physics, distance-cell integration, telemetry, scoring, and optional experimental modules.</desc>
         <defs>

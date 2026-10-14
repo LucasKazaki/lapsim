@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .coverage
+build/
+dist/
+work/
+*.egg-info/
 
 # Generated simulation artifacts and large raw log files stay local.
 outputs/
