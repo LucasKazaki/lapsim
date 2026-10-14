@@ -1,0 +1,235 @@
+diff --git a/docs/simulator_flowchart/anatomy-figure.css b/docs/simulator_flowchart/anatomy-figure.css
+index 8075437..72a5368 100644
+--- a/docs/simulator_flowchart/anatomy-figure.css
++++ b/docs/simulator_flowchart/anatomy-figure.css
+@@ -216,8 +216,15 @@
+   .anatomy-nav-links { overflow-x: auto; scrollbar-width: none; }
+   .anatomy-nav-links::-webkit-scrollbar { display: none; }
+   .anatomy-nav a { white-space: nowrap; }
+-  .anatomy-nav-controls { flex: 0 0 auto; }
+-  #appearance-toggle { display: none; }
++  .anatomy-nav { flex-direction: column; }
++  .anatomy-nav-controls { flex: 1 1 auto; flex-wrap: wrap; width: 100%; }
++  .anatomy-nav-controls > button {
++    flex: 1 1 10rem;
++    min-width: 0;
++    min-height: 44px;
++    max-width: 100%;
++    white-space: normal;
++  }
+   .anatomy-card { border-radius: 25px; }
+   .anatomy-card-header { flex-direction: column; }
+   .anatomy-card-actions { width: 100%; justify-content: flex-start; }
+diff --git a/docs/simulator_flowchart/anatomy-foundation.css b/docs/simulator_flowchart/anatomy-foundation.css
+index cde2e23..1e0e4b7 100644
+--- a/docs/simulator_flowchart/anatomy-foundation.css
++++ b/docs/simulator_flowchart/anatomy-foundation.css
+@@ -77,6 +77,12 @@
+ }
+ 
+ :root[data-theme="light"] {
++  --implemented: #247451;
++  --optional: #2366a8;
++  --experimental: #9c5c00;
++  --assumption: #7453a6;
++  --limitation: #b03a3a;
++  --future: #64748b;
+   color-scheme: light;
+   --page: #f3f6fb;
+   --surface: #ffffff;
+@@ -115,6 +121,12 @@
+ }
+ 
+ :root[data-theme="dark"] {
++  --implemented: #59bb8b;
++  --optional: #65a5e6;
++  --experimental: #e9ac50;
++  --assumption: #b79ade;
++  --limitation: #ef7878;
++  --future: #9aa9bc;
+   color-scheme: dark;
+   --page: #0c1420;
+   --surface: #111d2b;
+diff --git a/docs/simulator_flowchart/app.js b/docs/simulator_flowchart/app.js
+index 5941cc3..250cb91 100644
+--- a/docs/simulator_flowchart/app.js
++++ b/docs/simulator_flowchart/app.js
+@@ -321,14 +321,8 @@
+       group.appendChild(toggle);
+     }
+ 
+-    // Match the visible text exactly for screen readers and voice control.
+-    // The full, untruncated title remains available as the description.
+-    group.setAttribute("aria-label", [...group.querySelectorAll("text")]
+-      .filter((text) => !text.closest('[aria-hidden="true"]'))
+-      .map((text) => [...text.querySelectorAll("tspan")].length
+-        ? [...text.querySelectorAll("tspan")].map((span) => span.textContent).join(" ")
+-        : text.textContent)
+-      .join(" "));
++    // Tree-item names come from their visible SVG text. Keep the full title
++    // as a description rather than overriding native name-from-content semantics.
+ 
+     group.addEventListener("click", () => {
+       if (!didDragNode) selectNode(node.id, { updateHash: true });
+@@ -710,12 +704,10 @@
+     searchCursor = -1;
+     if (!query) {
+       searchResultsEl.hidden = true;
+-      searchInput.setAttribute("aria-expanded", "false");
+       searchResultsEl.replaceChildren();
+       return;
+     }
+     searchResultsEl.hidden = false;
+-    searchInput.setAttribute("aria-expanded", "true");
+     if (!searchMatches.length) {
+       searchResultsEl.innerHTML = '<div class="search-empty">No matching nodes.</div>';
+       return;
+@@ -754,7 +746,6 @@
+       openNextSearchResult();
+     } else if (event.key === "Escape") {
+       searchResultsEl.hidden = true;
+-      searchInput.setAttribute("aria-expanded", "false");
+     } else if (event.key === "ArrowDown" && !searchResultsEl.hidden) {
+       event.preventDefault();
+       searchResultsEl.querySelector("button")?.focus();
+@@ -764,7 +755,6 @@
+   document.addEventListener("pointerdown", (event) => {
+     if (!event.target.closest(".search-group")) {
+       searchResultsEl.hidden = true;
+-      searchInput.setAttribute("aria-expanded", "false");
+     }
+   });
+   searchResultsEl.addEventListener("keydown", (event) => {
+@@ -775,7 +765,6 @@
+       buttons[Math.max(0, Math.min(buttons.length - 1, index + (event.key === "ArrowDown" ? 1 : -1)))]?.focus();
+     } else if (event.key === "Escape") {
+       searchResultsEl.hidden = true;
+-      searchInput.setAttribute("aria-expanded", "false");
+       searchInput.focus();
+     }
+   });
+diff --git a/docs/simulator_flowchart/index.html b/docs/simulator_flowchart/index.html
+index 4f7e2cc..2e4ed55 100644
+--- a/docs/simulator_flowchart/index.html
++++ b/docs/simulator_flowchart/index.html
+@@ -33,7 +33,7 @@
+     <section class="toolbar" aria-label="Flowchart controls">
+       <div class="toolbar-group search-group">
+         <label class="sr-only" for="search-input">Search the simulator map</label>
+-        <input id="search-input" type="search" autocomplete="off" placeholder="Search variables, equations, files…" aria-controls="search-results" aria-expanded="false">
++        <input id="search-input" type="search" autocomplete="off" placeholder="Search variables, equations, files…" aria-controls="search-results">
+         <button id="search-next" type="button" title="Open the next search result">Next</button>
+         <div id="search-results" class="search-results" aria-label="Matching map nodes" hidden></div>
+       </div>
+diff --git a/quality/run_browser_audit.py b/quality/run_browser_audit.py
+index 5bc871c..b369229 100644
+--- a/quality/run_browser_audit.py
++++ b/quality/run_browser_audit.py
+@@ -5,12 +5,13 @@ from __future__ import annotations
+ from functools import partial
+ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+ import json
++import re
+ from pathlib import Path
+ import subprocess
+ import sys
+ import threading
+ 
+-from playwright.sync_api import sync_playwright
++from playwright.sync_api import expect, sync_playwright
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+ OUT = ROOT / "audit" / "browser"
+@@ -91,6 +92,13 @@ def main() -> int:
+                             ),
+                             "responsive document",
+                         )
++                        check(
++                            page.get_by_role(
++                                "treeitem", name=re.compile("LapSim simulator")
++                            ).count()
++                            == 1,
++                            "graph nodes expose visible accessible names",
++                        )
+                         accessibility("initial")
+                         page.locator("#collapse-all").click()
+                         check(
+@@ -128,6 +136,9 @@ def main() -> int:
+                         )
+                         page.locator("#search-input").fill("battery")
+                         page.locator("#search-next").click()
++                        expect(page.locator("#details")).to_contain_text(
++                            re.compile("battery", re.I)
++                        )
+                         check(
+                             "battery" in page.locator("#details").inner_text().lower(),
+                             "search selects evidence",
+@@ -157,6 +168,7 @@ def main() -> int:
+                             "signal overlay",
+                         )
+                         page.locator("#appearance-toggle").click()
++                        accessibility("manual-light")
+                         page.locator("#appearance-toggle").click()
+                         check(
+                             page.locator("html").get_attribute("data-theme") == "dark",
+@@ -165,6 +177,9 @@ def main() -> int:
+                         accessibility("interactive-dark")
+                         page.screenshot(path=str(OUT / f"{name}.png"), full_page=True)
+                         page.emulate_media(reduced_motion="no-preference")
++                        expect(
++                            card.locator('[data-anatomy-action="run"]')
++                        ).to_be_enabled()
+                         check(
+                             card.locator('[data-anatomy-action="run"]').is_enabled(),
+                             "motion preference updates live",
+diff --git a/src/lapsim/desktop.py b/src/lapsim/desktop.py
+index c91e108..a7853a7 100644
+--- a/src/lapsim/desktop.py
++++ b/src/lapsim/desktop.py
+@@ -63,6 +63,8 @@ def self_test(report_path: Path) -> dict:
+     result = run_one_lap(vehicle, track, torque_request_fraction=0.8)
+     if not result.completed:
+         raise RuntimeError(result.failure_reason)
++    if result.telemetry is None:
++        raise RuntimeError("Completed self-test lap is missing telemetry")
+     checks["synthetic_lap"] = True
+     settings = LapRunSettings.from_track(
+         track, track_id="portable_self_test", solver_step_m=5.0,
+diff --git a/src/lapsim/resources.py b/src/lapsim/resources.py
+index b41d3cd..79f5267 100644
+--- a/src/lapsim/resources.py
++++ b/src/lapsim/resources.py
+@@ -11,7 +11,10 @@ import webbrowser
+ 
+ def repository_root() -> Path:
+     if getattr(sys, "frozen", False):
+-        return Path(sys._MEIPASS) / "bundle"
++        extraction_root = getattr(sys, "_MEIPASS", None)
++        if not isinstance(extraction_root, str):
++            raise RuntimeError("Frozen build is missing its extraction directory")
++        return Path(extraction_root) / "bundle"
+     return Path(__file__).resolve().parents[2]
+ 
+ 
+@@ -28,6 +31,8 @@ def documentation_root() -> Path:
+     if not getattr(sys, "frozen", False):
+         return source
+     identity = build_identity()
++    if identity is None:
++        raise RuntimeError("Frozen build is missing its captured identity")
+     version = identity["source_sha256"]
+     base = Path(os.environ.get("LOCALAPPDATA") or Path.home() / ".lapsim")
+     target = base / "LapSim" / "documentation" / version
+diff --git a/src/lapsim/ui/app.py b/src/lapsim/ui/app.py
+index 449c856..30dd4b3 100644
+--- a/src/lapsim/ui/app.py
++++ b/src/lapsim/ui/app.py
+@@ -3338,6 +3338,8 @@ class LapSimDesktop:
+ 
+     @staticmethod
+     def _wrap_label_to_width(event: tk.Event) -> None:
++        if not isinstance(event.widget, tk.Label):
++            return
+         if event.width > 40:
+             width = event.width - 8
+             if event.widget.winfo_pixels(event.widget.cget("wraplength")) != width:
