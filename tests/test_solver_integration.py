@@ -5,10 +5,18 @@ from unittest import TestCase
 
 from lapsim import LapTimeSolver, SpeedLimitSolver
 from lapsim.courses.track import Curve, Straight, Track
-from vehicle_model import Vehicle
+from vehicle_model import OCVPackBattery, Vehicle
 
 
 class SolverIntegrationTests(TestCase):
+    def test_depleted_pack_cannot_create_a_lap_from_rest(self) -> None:
+        vehicle = Vehicle(battery=OCVPackBattery(initial_state_of_charge=0.0))
+        track = Track.from_segments([Straight(length_m=5.0)])
+        limits = SpeedLimitSolver(vehicle).solve(track)
+
+        with self.assertRaisesRegex(ValueError, "cannot traverse cell"):
+            LapTimeSolver(vehicle).solve(limits, starting_speed_mps=0.0)
+
     def test_corner_exit_respects_current_cell_speed_limit(self) -> None:
         track = Track.from_segments(
             [Curve(radius_m=10.0, span_rad=pi / 2.0), Straight(length_m=50.0)]

@@ -51,7 +51,12 @@ def _reject_json_constant(value: str) -> None:
 
 
 def _code_identity() -> dict[str, str | bool | None]:
-    root = Path(__file__).resolve().parents[3]
+    from lapsim.resources import build_identity, repository_root
+
+    identity = build_identity()
+    if identity is not None:
+        return {key: identity.get(key) for key in ("code_commit", "dirty_worktree")}
+    root = repository_root()
     try:
         commit = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, check=True,

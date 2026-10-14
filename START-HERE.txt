@@ -1,0 +1,21 @@
+LapSim team demonstration - Windows x64
+
+1. Extract the ZIP, then double-click LapSim.exe. Python is bundled.
+2. Choose "Synthetic loop · AI demo" from Course and run a centerline lap.
+3. Click Simulator map to explore the flowchart, physics equations and
+   individual variables. Search and click the child buttons to drill down.
+4. Read docs/team_guide.md for the demo, units, saved records and model limits.
+   The full engineering handoff is output/pdf/LapSim_Engineering_Handoff.pdf.
+5. portable-self-test.json and verification/ contain the release check evidence.
+   checksums.json identifies the executable; build-info.json identifies sources.
+
+The executable also runs by itself. The ZIP keeps the documentation, map,
+source snapshot, dependency notices and verification evidence together.
+
+The fused GNSS/IMU course has a documented geometry mismatch. Use the synthetic
+course for coherent path demonstrations. AI racing line and the separate
+four-wheel pose preview are experimental. Test agreement does not establish
+real-car predictive accuracy.
+
+This is an unsigned internal team build. See docs/release.md for rebuilding,
+the source identity, distribution details and troubleshooting.

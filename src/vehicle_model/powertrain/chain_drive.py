@@ -1,6 +1,7 @@
 """Powertrain-subteam sprocket-and-chain reduction model."""
 
 from dataclasses import dataclass
+from math import isfinite
 
 DEFAULT_RATIO = 3.455
 # Current motor-shaft-to-wheel chain-efficiency baseline.
@@ -22,6 +23,9 @@ class ChainDrive:
         self.validate()
 
     def validate(self) -> None:
+        for name in ("ratio", "efficiency", "input_inertia_kgm2", "output_inertia_kgm2"):
+            if not isfinite(getattr(self, name)):
+                raise ValueError(f"{name} must be finite")
         if self.ratio <= 0:
             raise ValueError("ratio must be positive")
         if not 0 < self.efficiency <= 1:

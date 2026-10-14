@@ -116,7 +116,12 @@ _AERO_ATOMIC_PATHS = frozenset((
 
 
 def _code_identity() -> tuple[str | None, bool | None]:
-    root = Path(__file__).resolve().parents[3]
+    from lapsim.resources import build_identity, repository_root
+
+    identity = build_identity()
+    if identity is not None:
+        return identity.get("code_commit"), identity.get("dirty_worktree")
+    root = repository_root()
     try:
         head = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True,

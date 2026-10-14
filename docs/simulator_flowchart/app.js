@@ -13,7 +13,7 @@
   const DEPTH_GAP = 112;
   const ROW_GAP = 34;
   const VIEW_PADDING = 70;
-  const MIN_SCALE = 0.045;
+  const MIN_SCALE = 0.0002;
   const MAX_SCALE = 4.0;
 
   const svg = document.getElementById("graph");
@@ -35,12 +35,19 @@
   const ancestorsById = new Map();
   const descendantsById = new Map();
   const searchable = [];
+  const variableLookup = new Map();
 
   function flatten(node, parent = null, depth = 0, ancestors = []) {
     if (!node.id || nodesById.has(node.id)) {
       throw new Error(`Duplicate or missing node id: ${node.id || "(missing)"}`);
     }
     nodesById.set(node.id, node);
+    if (node.kind === "variable" && node.sources?.[0]) {
+      const source = node.sources[0];
+      variableLookup.set(`${source.path}:${source.symbol}:${node.title}`, node.id);
+      const fallback = `${source.path}:*:${node.title}`;
+      if (!variableLookup.has(fallback)) variableLookup.set(fallback, node.id);
+    }
     parentById.set(node.id, parent ? parent.id : null);
     depthById.set(node.id, depth);
     ancestorsById.set(node.id, ancestors);
@@ -61,6 +68,9 @@
         ...(node.outputs || []),
         ...(node.equations || []),
         ...(node.assumptions || []),
+        ...(node.dependencies || []),
+        ...(node.expressions || []).map((entry) => entry.text),
+        ...Object.values(node.variable || {}),
         sourceText,
       ].join(" ").toLowerCase(),
     });
@@ -85,6 +95,9 @@
   let searchMatches = [];
   let searchCursor = -1;
   let didDragNode = false;
+  let focusedId = data.root.id;
+  let viewAnimation = 0;
+  let paintFrame = 0;
 
   const view = { x: 0, y: 0, k: 1 };
 
@@ -232,10 +245,14 @@
     const group = createSvg("g", {
       class: `node kind-${node.kind || "data"} status-${node.status || "future"}${selectedId === node.id ? " selected" : ""}`,
       transform: `translate(${position.x} ${position.y})`,
-      tabindex: "0",
+      tabindex: focusedId === node.id ? "0" : "-1",
       role: "treeitem",
       "aria-label": `${node.title}. ${statusLabel(node.status)}. ${(node.children || []).length ? (expanded.has(node.id) ? "Expanded" : "Collapsed") : "Leaf node"}.`,
       "aria-expanded": (node.children || []).length ? String(expanded.has(node.id)) : null,
+      "aria-selected": String(selectedId === node.id),
+      "aria-level": position.depth + 1,
+      "aria-setsize": parentById.get(node.id) ? (nodesById.get(parentById.get(node.id)).children || []).length : 1,
+      "aria-posinset": parentById.get(node.id) ? (nodesById.get(parentById.get(node.id)).children || []).findIndex((child) => child.id === node.id) + 1 : 1,
       "data-node-id": node.id,
     });
 
@@ -320,7 +337,28 @@
       } else if (event.key === " " && children.length) {
         event.preventDefault();
         toggleExpanded(node.id);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        if (children.length && !expanded.has(node.id)) toggleExpanded(node.id);
+        else if (children.length) focusNode(children[0].id);
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (children.length && expanded.has(node.id)) toggleExpanded(node.id);
+        else if (parentById.get(node.id)) focusNode(parentById.get(node.id));
+      } else if (["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) {
+        event.preventDefault();
+        const order = navigationOrder();
+        const index = order.indexOf(node.id);
+        const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? order.length - 1 : Math.max(0, Math.min(order.length - 1, index + (event.key === "ArrowDown" ? 1 : -1)));
+        focusNode(order[nextIndex]);
       }
+    });
+    group.addEventListener("focus", () => {
+      focusedId = node.id;
+      for (const element of nodesEl.querySelectorAll('.node[tabindex="0"]')) {
+        if (element !== group) element.setAttribute("tabindex", "-1");
+      }
+      group.setAttribute("tabindex", "0");
     });
     group.addEventListener("pointerdown", (event) => beginNodeDrag(event, node.id));
     return group;
@@ -328,11 +366,49 @@
 
   function render() {
     currentLayout = computeLayout();
+    if (!currentLayout.byId.has(focusedId)) focusedId = currentLayout.byId.has(selectedId) ? selectedId : data.root.id;
+    paintGraph();
+    visibleCountEl.textContent = `${currentLayout.nodes.length.toLocaleString()} expanded`;
+    applyView();
+  }
+
+  function navigationOrder() {
+    const order = [];
+    function visit(node) {
+      order.push(node.id);
+      if (expanded.has(node.id)) for (const child of node.children || []) visit(child);
+    }
+    visit(data.root);
+    return order;
+  }
+
+  function focusNode(id) {
+    focusedId = id;
+    centerNode(id, {scale: Math.max(view.k, 0.7)});
+    paintGraph();
+    nodesEl.querySelector(`[data-node-id="${CSS.escape(id)}"]`)?.focus({preventScroll: true});
+  }
+
+  function paintGraph() {
+    if (!currentLayout) return;
+    const activeId = document.activeElement?.closest?.(".node")?.dataset.nodeId;
+    const rect = svg.getBoundingClientRect();
+    const margin = 360;
+    const inView = (position) => {
+      const x = position.x * view.k + view.x, y = position.y * view.k + view.y;
+      return x + position.width * view.k >= -margin && x <= rect.width + margin && y + position.height * view.k >= -margin && y <= rect.height + margin;
+    };
     treeEdgesEl.replaceChildren();
     relatedEdgesEl.replaceChildren();
     nodesEl.replaceChildren();
 
-    for (const [sourceId, targetId] of currentLayout.edges) {
+    // At overview scale, draw one quiet mark per screen bucket. Full node cards
+    // return on zoom; the detail panel and search always expose the complete data.
+    const overview = view.k < 0.14;
+    const rendered = currentLayout.nodes.filter((position) => inView(position) || position.id === focusedId || position.id === selectedId || position.id === activeId);
+    const renderedIds = new Set(rendered.map((position) => position.id));
+    for (const [sourceId, targetId] of overview ? [] : currentLayout.edges) {
+      if (!renderedIds.has(sourceId) && !renderedIds.has(targetId)) continue;
       const source = currentLayout.byId.get(sourceId);
       const target = currentLayout.byId.get(targetId);
       treeEdgesEl.appendChild(createSvg("path", { class: "tree-edge", d: edgePath(source, target) }));
@@ -340,11 +416,17 @@
 
     if (showRelatedInput.checked) renderRelatedEdges();
 
-    const orderedNodes = [...currentLayout.nodes].sort((a, b) => a.depth - b.depth || a.y - b.y);
-    for (const position of orderedNodes) nodesEl.appendChild(renderNode(position));
-
-    visibleCountEl.textContent = `${currentLayout.nodes.length} visible`;
-    applyView();
+    const buckets = new Set();
+    const orderedNodes = rendered.sort((a, b) => a.depth - b.depth || a.y - b.y);
+    for (const position of orderedNodes) {
+      if (overview && ![selectedId, focusedId, activeId].includes(position.id)) {
+        const bucket = `${position.depth}:${Math.round((position.y * view.k + view.y) / 5)}`;
+        if (buckets.has(bucket)) continue;
+        buckets.add(bucket);
+        nodesEl.appendChild(createSvg("rect", {class: "overview-mark", x: position.x, y: position.y, width: position.width, height: Math.max(position.height, 2 / view.k), "aria-hidden": "true"}));
+      } else nodesEl.appendChild(renderNode(position));
+    }
+    if (activeId) nodesEl.querySelector(`[data-node-id="${CSS.escape(activeId)}"]`)?.focus({preventScroll: true});
   }
 
   function renderRelatedEdges() {
@@ -366,6 +448,12 @@
 
   function applyView() {
     viewportEl.setAttribute("transform", `translate(${view.x} ${view.y}) scale(${view.k})`);
+    if (!paintFrame) paintFrame = requestAnimationFrame(() => { paintFrame = 0; paintGraph(); });
+  }
+
+  function cancelViewAnimation() {
+    if (viewAnimation) cancelAnimationFrame(viewAnimation);
+    viewAnimation = 0;
   }
 
   function fitView({ animate = false } = {}) {
@@ -385,12 +473,19 @@
     const y = (rect.height - bounds.height * scale) / 2 - bounds.minY * scale;
     if (animate) animateViewTo({ x, y, k: scale });
     else {
+      cancelViewAnimation();
       Object.assign(view, { x, y, k: scale });
       applyView();
     }
   }
 
   function animateViewTo(target) {
+    cancelViewAnimation();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      Object.assign(view, target);
+      applyView();
+      return;
+    }
     const start = { ...view };
     const duration = 220;
     const startTime = performance.now();
@@ -401,12 +496,14 @@
       view.y = start.y + (target.y - start.y) * eased;
       view.k = start.k + (target.k - start.k) * eased;
       applyView();
-      if (t < 1) requestAnimationFrame(frame);
+      if (t < 1) viewAnimation = requestAnimationFrame(frame);
+      else viewAnimation = 0;
     }
-    requestAnimationFrame(frame);
+    viewAnimation = requestAnimationFrame(frame);
   }
 
   function zoomAt(screenX, screenY, factor) {
+    cancelViewAnimation();
     const nextK = Math.max(MIN_SCALE, Math.min(MAX_SCALE, view.k * factor));
     const worldX = (screenX - view.x) / view.k;
     const worldY = (screenY - view.y) / view.k;
@@ -446,7 +543,11 @@
     if (!node) return;
     selectedId = id;
     renderDetails(node);
-    render();
+    for (const element of nodesEl.querySelectorAll(".node")) {
+      const selected = element.dataset.nodeId === id;
+      element.classList.toggle("selected", selected);
+      element.setAttribute("aria-selected", String(selected));
+    }
     if (center) centerNode(id);
     if (updateHash) {
       const nextHash = `#${encodeURIComponent(id)}`;
@@ -483,10 +584,36 @@
       ? `<section><h3>Equations and logic</h3><div class="equation-list">${node.equations.map((equation) => `<pre class="equation"><code>${escapeHtml(equation)}</code></pre>`).join("")}</div></section>`
       : "";
 
+    function dependencyId(name) {
+      const source = node.sources?.[0];
+      if (!source) return null;
+      let scope = String(source.symbol || "");
+      const fieldName = name.replace(/^self\./, "");
+      while (scope) {
+        const match = variableLookup.get(`${source.path}:${scope}:${name}`) || variableLookup.get(`${source.path}:${scope}:${fieldName}`);
+        if (match && match !== node.id) return match;
+        scope = scope.includes(".") ? scope.slice(0, scope.lastIndexOf(".")) : "";
+      }
+      return variableLookup.get(`${source.path}:*:${fieldName}`) || null;
+    }
+
+    const variableHtml = node.variable
+      ? `<section><h3>Individual variable</h3><dl class="variable-definition">${[["Symbol / source name", node.variable.name], ["Meaning", node.variable.meaning], ["Unit", node.variable.unit], ["Unit evidence", node.variable.unitEvidence], ["Declared type", node.variable.type], ["Role", node.variable.role], ["Default expression", node.variable.default]].filter(([, value]) => value !== undefined).map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl></section>`
+      : "";
+    const expressionsHtml = node.expressions?.length
+      ? `<section><h3>Exact source expressions</h3>${node.expressions.map((entry, index) => `<details class="expression-disclosure" ${index === 0 ? "open" : ""}><summary>Definition ${index + 1} · line ${entry.line}</summary><pre class="equation"><code>${escapeHtml(entry.text)}</code></pre></details>`).join("")}</section>`
+      : "";
+    const dependenciesHtml = node.dependencies?.length
+      ? `<section><h3>Referenced variables and calls</h3><p class="small-note">Variable links inspect static definitions. Other names are source dependencies or callables.</p><div class="related-buttons">${node.dependencies.map((name) => {
+          const id = dependencyId(name);
+          return id && id !== node.id ? `<button type="button" data-related-id="${id}">${escapeHtml(name)}</button>` : `<code class="dependency-name">${escapeHtml(name)}</code>`;
+        }).join("")}</div></section>`
+      : "";
+
     const sources = (node.sources || []).length
       ? `<section><h3>Implementation sources</h3><div class="source-list">${node.sources.map((source) => {
           const href = `../../${String(source.path).split("/").map(encodeURIComponent).join("/")}`;
-          return `<a class="source-link" href="${href}" target="_blank" rel="noopener"><span>${escapeHtml(source.path)}</span>${source.symbol ? `<span class="source-symbol">${escapeHtml(source.symbol)}</span>` : ""}</a>`;
+          return `<div class="source-entry"><a class="source-link" href="${href}" target="_blank" rel="noopener"><span>${escapeHtml(source.path)}${source.line ? ` · line ${source.line}` : ""}</span>${source.symbol ? `<span class="source-symbol">${escapeHtml(source.symbol)}</span>` : ""}</a>${source.catalogId ? `<button type="button" data-related-id="${escapeHtml(source.catalogId)}">Inspect source variables</button>` : ""}</div>`;
         }).join("")}</div></section>`
       : "";
 
@@ -496,6 +623,9 @@
       : "";
 
     const children = node.children || [];
+    const childrenHtml = children.length
+      ? `<section><h3>Explore this branch</h3><p class="small-note">Open any child directly, even while the graph is collapsed or zoomed out.</p><div class="child-list">${children.map((child) => `<button type="button" data-related-id="${escapeHtml(child.id)}"><strong>${escapeHtml(child.title)}</strong><small>${escapeHtml(child.kind)}${child.variable?.unit ? ` · ${escapeHtml(child.variable.unit)}` : ""}${child.children?.length ? ` · ${child.children.length} children` : ""}</small></button>`).join("")}</div></section>`
+      : "";
     const actions = children.length
       ? `<div class="detail-actions"><button type="button" data-detail-action="toggle">${expanded.has(node.id) ? "Collapse branch" : "Expand branch"}</button><button type="button" data-detail-action="expand-descendants">Expand all descendants</button><button type="button" data-detail-action="center">Center node</button></div>`
       : `<div class="detail-actions"><button type="button" data-detail-action="center">Center node</button></div>`;
@@ -512,7 +642,12 @@
       ${actions}
       ${section("Inputs", node.inputs)}
       ${section("Outputs", node.outputs)}
+      ${variableHtml}
       ${equations}
+      ${node.declaration ? `<section><h3>Source declaration</h3><pre class="equation"><code>${escapeHtml(node.declaration)}</code></pre></section>` : ""}
+      ${expressionsHtml}
+      ${dependenciesHtml}
+      ${childrenHtml}
       ${section("Assumptions and limits", node.assumptions)}
       ${sources}
       ${relatedHtml}
@@ -567,10 +702,12 @@
     searchCursor = -1;
     if (!query) {
       searchResultsEl.hidden = true;
+      searchInput.setAttribute("aria-expanded", "false");
       searchResultsEl.replaceChildren();
       return;
     }
     searchResultsEl.hidden = false;
+    searchInput.setAttribute("aria-expanded", "true");
     if (!searchMatches.length) {
       searchResultsEl.innerHTML = '<div class="search-empty">No matching nodes.</div>';
       return;
@@ -579,7 +716,7 @@
     searchResultsEl.innerHTML = shown.map((entry) => {
       const parent = parentById.get(entry.id);
       const context = parent ? nodesById.get(parent).title : "Root";
-      return `<button class="search-result" type="button" role="option" data-search-id="${escapeHtml(entry.id)}"><strong>${escapeHtml(entry.node.title)}</strong><small>${escapeHtml(entry.node.kind)} · ${escapeHtml(context)}</small></button>`;
+      return `<button class="search-result" type="button" data-search-id="${escapeHtml(entry.id)}"><strong>${escapeHtml(entry.node.title)}</strong><small>${escapeHtml(entry.node.kind)} · ${escapeHtml(context)}</small></button>`;
     }).join("");
     if (searchMatches.length > shown.length) {
       searchResultsEl.insertAdjacentHTML("beforeend", `<div class="search-empty">${searchMatches.length - shown.length} more matches. Refine the query to narrow the list.</div>`);
@@ -609,12 +746,30 @@
       openNextSearchResult();
     } else if (event.key === "Escape") {
       searchResultsEl.hidden = true;
-      searchInput.blur();
+      searchInput.setAttribute("aria-expanded", "false");
+    } else if (event.key === "ArrowDown" && !searchResultsEl.hidden) {
+      event.preventDefault();
+      searchResultsEl.querySelector("button")?.focus();
     }
   });
   document.getElementById("search-next").addEventListener("click", openNextSearchResult);
   document.addEventListener("pointerdown", (event) => {
-    if (!event.target.closest(".search-group")) searchResultsEl.hidden = true;
+    if (!event.target.closest(".search-group")) {
+      searchResultsEl.hidden = true;
+      searchInput.setAttribute("aria-expanded", "false");
+    }
+  });
+  searchResultsEl.addEventListener("keydown", (event) => {
+    const buttons = [...searchResultsEl.querySelectorAll("button")];
+    const index = buttons.indexOf(document.activeElement);
+    if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+      event.preventDefault();
+      buttons[Math.max(0, Math.min(buttons.length - 1, index + (event.key === "ArrowDown" ? 1 : -1)))]?.focus();
+    } else if (event.key === "Escape") {
+      searchResultsEl.hidden = true;
+      searchInput.setAttribute("aria-expanded", "false");
+      searchInput.focus();
+    }
   });
 
   document.getElementById("collapse-all").addEventListener("click", () => {
@@ -672,6 +827,8 @@
 
   svg.addEventListener("pointerdown", (event) => {
     if (event.target.closest(".node")) return;
+    if (event.button !== 0) return;
+    cancelViewAnimation();
     event.preventDefault();
     svg.setPointerCapture(event.pointerId);
     backgroundPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -749,8 +906,9 @@
   function beginNodeDrag(event, id) {
     if (event.button !== 0 || event.target.closest(".node-toggle")) return;
     event.stopPropagation();
-    const target = event.currentTarget;
-    target.setPointerCapture(event.pointerId);
+    cancelViewAnimation();
+    // Capture on the stable SVG, because node cards are regenerated on drag.
+    const target = window;
     const current = manualOffsets.get(id) || { x: 0, y: 0 };
     nodeDrag = {
       id,
@@ -761,6 +919,7 @@
       offsetY: current.y,
       target,
       moved: false,
+      captured: false,
     };
     target.addEventListener("pointermove", moveNodeDrag);
     target.addEventListener("pointerup", endNodeDrag);
@@ -771,8 +930,12 @@
     if (!nodeDrag || event.pointerId !== nodeDrag.pointerId) return;
     const dx = (event.clientX - nodeDrag.startX) / view.k;
     const dy = (event.clientY - nodeDrag.startY) / view.k;
-    if (Math.hypot(dx, dy) > 3) nodeDrag.moved = true;
+    if (Math.hypot(event.clientX - nodeDrag.startX, event.clientY - nodeDrag.startY) > 5) nodeDrag.moved = true;
     if (!nodeDrag.moved) return;
+    if (!nodeDrag.captured) {
+      svg.setPointerCapture(event.pointerId);
+      nodeDrag.captured = true;
+    }
     didDragNode = true;
     manualOffsets.set(nodeDrag.id, { x: nodeDrag.offsetX + dx, y: nodeDrag.offsetY + dy });
     render();
@@ -781,7 +944,7 @@
   function endNodeDrag(event) {
     if (!nodeDrag || event.pointerId !== nodeDrag.pointerId) return;
     const target = nodeDrag.target;
-    try { target.releasePointerCapture(event.pointerId); } catch (_) { /* already released */ }
+    try { if (nodeDrag.captured) svg.releasePointerCapture(event.pointerId); } catch (_) { /* already released */ }
     target.removeEventListener("pointermove", moveNodeDrag);
     target.removeEventListener("pointerup", endNodeDrag);
     target.removeEventListener("pointercancel", endNodeDrag);
@@ -793,13 +956,9 @@
   }
 
   window.addEventListener("keydown", (event) => {
-    if ((event.ctrlKey || event.metaKey) && (event.key === "+" || event.key === "=")) {
-      event.preventDefault();
-      document.getElementById("zoom-in").click();
-    } else if ((event.ctrlKey || event.metaKey) && event.key === "-") {
-      event.preventDefault();
-      document.getElementById("zoom-out").click();
-    } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f") {
+    // Keep native browser zoom and find shortcuts for accessibility. An ordinary
+    // slash outside editable controls focuses the map's semantic search.
+    if (event.key === "/" && !event.ctrlKey && !event.metaKey && !event.altKey && !event.target.closest?.("input, textarea, [contenteditable]")) {
       event.preventDefault();
       searchInput.focus();
       searchInput.select();
@@ -816,7 +975,16 @@
 
   render();
 
-  const hashId = decodeURIComponent(window.location.hash.replace(/^#/, ""));
+  let hashId = "";
+  try { hashId = decodeURIComponent(window.location.hash.replace(/^#/, "")); }
+  catch (_) { /* Ignore a malformed URL fragment; keep the map usable. */ }
+  window.addEventListener("hashchange", () => {
+    let id = "";
+    try { id = decodeURIComponent(window.location.hash.replace(/^#/, "")); }
+    catch (_) { /* Invalid external fragments return to the root. */ }
+    if (id && nodesById.has(id)) revealNode(id);
+    else selectNode(data.root.id, {center: true});
+  });
   if (hashId && nodesById.has(hashId)) {
     expandAncestors(hashId);
     render();

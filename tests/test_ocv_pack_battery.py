@@ -5,11 +5,85 @@ from unittest import TestCase
 
 from lapsim import Controls
 from vehicle_model import (
+    Battery,
     BatteryModel,
     OCVPackBattery,
     RCTheveninBattery,
     Vehicle,
 )
+
+
+class BatteryInputValidationTests(TestCase):
+    def test_nonfinite_operating_inputs_are_rejected_without_state_changes(self) -> None:
+        for battery_type in (Battery, OCVPackBattery, RCTheveninBattery):
+            for invalid_value in (float("nan"), float("inf"), -float("inf")):
+                for parameter in ("power_w", "timestep_s"):
+                    with self.subTest(
+                        battery=battery_type.__name__,
+                        parameter=parameter,
+                        invalid_value=invalid_value,
+                    ):
+                        battery = battery_type()
+                        before = {}
+                        battery.update_telemetry(before)
+                        arguments = {"power_w": 1000.0, "timestep_s": 0.1}
+                        arguments[parameter] = invalid_value
+                        with self.assertRaisesRegex(ValueError, "finite"):
+                            battery.update_state(**arguments)
+                        after = {}
+                        battery.update_telemetry(after)
+                        self.assertEqual(after, before)
+
+    def test_nonfinite_power_limit_requests_are_rejected(self) -> None:
+        for battery_type in (Battery, OCVPackBattery, RCTheveninBattery):
+            battery = battery_type()
+            for method_name in ("limit_discharge_power_w", "limit_charge_power_w"):
+                for invalid_value in (float("nan"), float("inf"), -float("inf")):
+                    with self.subTest(
+                        battery=battery_type.__name__,
+                        method=method_name,
+                        invalid_value=invalid_value,
+                    ):
+                        with self.assertRaisesRegex(ValueError, "finite"):
+                            getattr(battery, method_name)(invalid_value)
+
+    def test_nonfinite_battery_parameters_are_rejected(self) -> None:
+        shared_parameters = ("max_discharge_power_w", "max_charge_power_w")
+        pack_parameters = (
+            "cell_capacity_ah", "cell_internal_resistance_ohm",
+            "minimum_cell_voltage_v", "maximum_cell_voltage_v",
+        )
+        rc_parameters = (
+            "cell_polarization_resistance_ohm", "cell_polarization_capacitance_f",
+        )
+        for battery_type in (Battery, OCVPackBattery, RCTheveninBattery):
+            parameters = shared_parameters
+            if issubclass(battery_type, OCVPackBattery):
+                parameters += pack_parameters
+            if issubclass(battery_type, RCTheveninBattery):
+                parameters += rc_parameters
+            for parameter in parameters:
+                for invalid_value in (float("nan"), float("inf"), -float("inf")):
+                    with self.subTest(
+                        battery=battery_type.__name__,
+                        parameter=parameter,
+                        invalid_value=invalid_value,
+                    ):
+                        with self.assertRaisesRegex(ValueError, "finite"):
+                            battery_type(**{parameter: invalid_value})
+
+    def test_cell_counts_must_be_positive_integers(self) -> None:
+        for parameter in ("series_cells", "parallel_cells"):
+            for invalid_value in (float("nan"), float("inf"), 1.5, True, 0, -1):
+                with self.subTest(parameter=parameter, invalid_value=invalid_value):
+                    with self.assertRaises(ValueError):
+                        OCVPackBattery(**{parameter: invalid_value})
+
+    def test_nonfinite_ocv_table_voltage_is_rejected(self) -> None:
+        for invalid_value in (float("nan"), float("inf"), -float("inf")):
+            with self.subTest(voltage=invalid_value):
+                with self.assertRaisesRegex(ValueError, "finite"):
+                    OCVPackBattery(cell_ocv_table=((0.0, 3.0), (1.0, invalid_value)))
 
 
 class OCVPackBatteryTests(TestCase):

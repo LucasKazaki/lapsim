@@ -1,6 +1,7 @@
 """Powertrain coordination and wheel-force conversions."""
 
 from dataclasses import dataclass, field
+from math import isfinite
 from typing import Literal
 
 from utils.units import (
@@ -87,13 +88,21 @@ class Drivetrain:
             if not isinstance(component, protocol):
                 raise TypeError(f"{name} does not satisfy {protocol.__name__}")
             component.validate()
-        if self.driven_wheel_inertia_kgm2 < 0:
-            raise ValueError("driven_wheel_inertia_kgm2 cannot be negative")
+        if (
+            not isfinite(self.driven_wheel_inertia_kgm2)
+            or self.driven_wheel_inertia_kgm2 < 0
+        ):
+            raise ValueError("driven_wheel_inertia_kgm2 must be finite and nonnegative")
         if (
             self.configured_speed_limit_mps is not None
-            and self.configured_speed_limit_mps <= 0
+            and (
+                not isfinite(self.configured_speed_limit_mps)
+                or self.configured_speed_limit_mps <= 0
+            )
         ):
-            raise ValueError("configured_speed_limit_mps must be positive or None")
+            raise ValueError(
+                "configured_speed_limit_mps must be finite and positive or None"
+            )
         if self.driven_axle not in {"front", "rear", "all"}:
             raise ValueError("driven_axle must be 'front', 'rear', or 'all'")
 
@@ -265,10 +274,16 @@ class Drivetrain:
         motor_speed_rad_s = revolutions_per_minute_to_radians_per_second(
             motor_speed_rpm
         )
+        mechanical_power_limit_w = self.max_motor_mechanical_power_w(battery)
+        if mechanical_power_limit_w <= 0.0:
+            # Zero shaft speed does not imply that an empty or disabled pack
+            # can produce torque. The stall branch otherwise bypasses the
+            # power ceiling and lets a distance-domain solver launch for free.
+            return 0.0
         if motor_speed_rad_s == 0:
             return torque_limit_nm
         power_limited_torque_nm = (
-            self.max_motor_mechanical_power_w(battery) / motor_speed_rad_s
+            mechanical_power_limit_w / motor_speed_rad_s
         )
         return min(torque_limit_nm, power_limited_torque_nm)
 

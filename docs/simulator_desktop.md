@@ -7,6 +7,14 @@ white, with a dark-mode switch that reverses those colors.
 
 ## Launch
 
+For the shared Windows x64 release, extract `LapSim-Windows-x64.zip` and
+double-click `LapSim.exe`. Python installation is unnecessary for recipients.
+The executable includes the runtime and mandatory course; the ZIP also carries
+offline docs/map, source snapshot, and test evidence. **Simulator map** in the
+header opens a durable local map and source references. See the
+[team guide](team_guide.md) and [release guide](release.md) for a first demo,
+unsigned-binary details, rebuild steps, and `--self-test`.
+
 From a fresh Windows checkout, install **64-bit Python 3.11 or newer** with
 Tkinter, then double-click `setup_lapsim.cmd`. It creates `.venv`, installs
 LapSim in editable mode, and checks Python, Tk, desktop imports, and the default
@@ -23,12 +31,15 @@ startup error occurs, it shows a message and writes details to
 `%LOCALAPPDATA%\LapSim\logs\desktop_startup.log`. In VS Code, run setup first,
 then select **LapSim desktop app** from Run and Debug; the checked-in launch
 configuration uses this checkout's `.venv`. The source checkout must remain
-present because the default course is stored in its `analysis/data` folder.
+present for source launches because the default course is stored in its
+`analysis/data` folder. The portable executable resolves the same read-only
+data from its bundled resource tree.
 The calculation runs in a worker thread so the window remains responsive.
 To repeat the full software checks on Windows, run
-`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\check_all.ps1`
-from this checkout after setup. It runs each test file in a separate process to
-limit peak memory use.
+`.venv\Scripts\python.exe scripts\check_all.py` from this checkout after setup.
+It runs each test module in a separate process and writes `work/test-results.xml`.
+See [verification](verification.md) to save `work/test-suite.log`. The older
+PowerShell checker remains available as well.
 
 ## Inputs and outputs
 
