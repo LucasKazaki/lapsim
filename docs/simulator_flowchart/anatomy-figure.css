@@ -201,6 +201,16 @@
   .anatomy-footer-links { justify-content: flex-start; }
 }
 
+/* Stacked graph/details must participate in page height on narrow screens. */
+@media (max-width: 900px) {
+  .map-shell {
+    height: auto;
+    min-height: 100svh;
+    grid-template-rows: auto auto auto;
+    overflow: visible;
+  }
+}
+
 @media (max-width: 820px) {
   html { scroll-padding-top: 4.7rem; }
   .map-shell { min-height: 700px; }
@@ -229,8 +239,8 @@
   .anatomy-card-header { flex-direction: column; }
   .anatomy-card-actions { width: 100%; justify-content: flex-start; }
   .anatomy-card-actions > button { flex: 1 1 auto; }
-  .segmented-control { width: 100%; }
   .anatomy-stage { min-height: 390px; }
+  .segmented-control { width: 100%; }
   .anatomy-svg { min-height: 390px; }
   .anatomy-figure figcaption { align-items: flex-start; flex-direction: column; }
   .anatomy-figure figcaption strong { text-align: left; }
