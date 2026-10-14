@@ -14,6 +14,13 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 
+EXPECTED_STYLESHEETS = [
+    "styles.css",
+    "anatomy-foundation.css",
+    "anatomy-cards.css",
+    "anatomy-figure.css",
+]
+
 EXPECTED_SCRIPTS = [
     "data/core.js",
     "data/01-entrypoints.js",
@@ -27,6 +34,12 @@ EXPECTED_SCRIPTS = [
     "data/09-verification.js",
     "data.js",
     "app.js",
+    "anatomy-lap-data.js",
+    "anatomy-car-data.js",
+    "anatomy-core.js",
+    "anatomy-lap-figure.js",
+    "anatomy-car-figure.js",
+    "anatomy-app.js",
 ]
 
 
@@ -72,8 +85,11 @@ def validate_html(repo_root: Path, site_root: Path) -> dict[str, int]:
             "Flowchart script order changed. Expected "
             f"{EXPECTED_SCRIPTS!r}, found {parser.scripts!r}."
         )
-    if parser.stylesheets != ["styles.css"]:
-        fail(f"Expected only styles.css, found {parser.stylesheets!r}.")
+    if parser.stylesheets != EXPECTED_STYLESHEETS:
+        fail(
+            "Flowchart stylesheet order changed. Expected "
+            f"{EXPECTED_STYLESHEETS!r}, found {parser.stylesheets!r}."
+        )
 
     for reference in [*parser.scripts, *parser.stylesheets]:
         path = local_path(site_root, reference)
@@ -109,11 +125,8 @@ def validate_required_files(repo_root: Path, site_root: Path) -> None:
         repo_root / "index.html",
         repo_root / ".nojekyll",
         site_root / "index.html",
-        site_root / "styles.css",
-        site_root / "app.js",
-        site_root / "data.js",
         site_root / "README.md",
-        *(site_root / script for script in EXPECTED_SCRIPTS[:-2]),
+        *(site_root / asset for asset in [*EXPECTED_STYLESHEETS, *EXPECTED_SCRIPTS]),
     }
     missing = sorted(str(path.relative_to(repo_root)) for path in required if not path.is_file())
     if missing:
@@ -136,7 +149,7 @@ def main() -> int:
     counts = validate_html(repo_root, site_root)
     print(
         "Flowchart static-site validation passed: "
-        f"{counts['scripts']} scripts, {counts['stylesheets']} stylesheet, "
+        f"{counts['scripts']} scripts, {counts['stylesheets']} stylesheets, "
         f"{counts['links']} document links."
     )
     return 0
