@@ -83,7 +83,7 @@ def test_offline_map_integrity_and_equation_disclosure():
 const fs = require('fs'), vm = require('vm'), assert = require('assert'), path = require('path');
 const directory = process.argv[1], scripts = JSON.parse(process.argv[2]);
 const context = vm.createContext({window: {}});
-for (const script of scripts.filter(p => p !== 'app.js')) vm.runInContext(fs.readFileSync(path.join(directory, script), 'utf8'), context, {filename:script});
+for (const script of scripts.filter(p => p.startsWith('data/') || p === 'data.js')) vm.runInContext(fs.readFileSync(path.join(directory, script), 'utf8'), context, {filename:script});
 const root = context.window.LAPSIM_FLOWCHART_DATA.root, nodes = [];
 function visit(n) {nodes.push(n); for(const child of n.children || []) visit(child);}
 visit(root);

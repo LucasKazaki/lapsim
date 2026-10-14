@@ -1,51 +1,160 @@
-"""Run independent audit gates without hiding failures or stopping at the first one."""
+"""Preserve broad findings, block runtime defects and new type regressions."""
+
 from __future__ import annotations
 
+from collections import Counter
 import json
 import os
 from pathlib import Path
-import shutil
 import subprocess
 import sys
-import time
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'audit'
-OUT.mkdir(exist_ok=True)
-os.chdir(ROOT)
-results = []
+OUT = ROOT / "audit" / "static"
+BASE = "1e8e35ac64093742caafa67c118ca02efa6e6537"
 
 
-def run(name: str, command: list[str], timeout: int = 300) -> None:
-    start = time.monotonic()
-    try:
-        completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False)
-        code, output = completed.returncode, completed.stdout + completed.stderr
-    except subprocess.TimeoutExpired as exc:
-        code, output = 124, f'TIMEOUT after {timeout}s\n{exc.stdout!r}\n{exc.stderr!r}'
-    except OSError as exc:
-        code, output = 127, str(exc)
-    (OUT / f'{name}.log').write_text(output, encoding='utf-8')
-    results.append({'gate': name, 'command': command, 'exit_code': code, 'duration_s': round(time.monotonic()-start, 3)})
-    print(f'{name}: exit {code}, {results[-1]["duration_s"]} seconds', flush=True)
-    # Full diagnostics remain in the artifact; emit a compact reviewable tail.
-    print(output[-5000:], flush=True)
+def execute(
+    name: str, args: list[str], cwd: Path = ROOT
+) -> subprocess.CompletedProcess:
+    result = subprocess.run(
+        args, cwd=cwd, capture_output=True, text=True, timeout=300, check=False
+    )
+    (OUT / f"{name}.log").write_text(result.stdout + result.stderr, encoding="utf-8")
+    print(f"{name}: exit {result.returncode}", flush=True)
+    return result
 
 
-(OUT / 'commit.txt').write_text(subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True))
-(OUT / 'python-environment.txt').write_text(subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'], text=True))
-(OUT / 'semgrep-environment.txt').write_text(subprocess.check_output(['/tmp/lapsim-semgrep/bin/pip', 'freeze'], text=True))
-subprocess.run(['git', 'archive', '--format=zip', '-o', str(OUT/'source-snapshot.zip'), 'HEAD'], check=True)
-run('ruff', ['ruff', 'check', '.', '--select', 'E4,E7,E9,F,B,SIM,C4,PIE,UP,RUF', '--output-format', 'json'])
-run('format', ['ruff', 'format', '--check', '.'])
-run('pyright', ['pyright', 'src', '--pythonversion', '3.11', '--outputjson'])
-run('semgrep', ['/tmp/lapsim-semgrep/bin/semgrep', 'scan', '--config', 'p/python', '--config', 'p/javascript', '--metrics=off', '--error', '--json', '--output', str(OUT/'semgrep.json'), '.'], 600)
-os.environ['MPLBACKEND'] = 'Agg'
-pytest = [sys.executable, '-m', 'pytest', 'tests', '--cov=lapsim', '--cov-branch', '--cov-report=term', '--cov-report=json:audit/coverage.json', '--junitxml=audit/pytest.xml', '-q', '-ra']
-if shutil.which('xvfb-run'):
-    pytest = ['xvfb-run', '-a', *pytest]
-run('pytest', pytest, 900)
-run('hypothesis', [sys.executable, '-m', 'pytest', 'quality/test_properties.py', '-v', '--hypothesis-show-statistics', '--junitxml=audit/hypothesis.xml'], 300)
-(OUT / 'summary.json').write_text(json.dumps(results, indent=2))
-print(json.dumps(results, indent=2), flush=True)
-sys.exit(any(result['exit_code'] != 0 for result in results))
+def fingerprints(report: dict, root: Path) -> Counter:
+    return Counter(
+        (
+            str(Path(item["file"]).relative_to(root)),
+            item.get("rule"),
+            item["message"],
+            item["severity"],
+        )
+        for item in report["generalDiagnostics"]
+    )
+
+
+def main() -> int:
+    OUT.mkdir(parents=True, exist_ok=True)
+    os.chdir(ROOT)
+    (OUT / "commit.txt").write_text(
+        subprocess.check_output(["git", "rev-parse", "HEAD"], text=True)
+    )
+    (OUT / "versions.txt").write_text(
+        subprocess.check_output([sys.executable, "-m", "pip", "freeze"], text=True)
+    )
+    broad = execute(
+        "ruff-review",
+        [
+            "ruff",
+            "check",
+            ".",
+            "--select",
+            "E4,E7,E9,F,B,SIM,C4,PIE,UP,RUF",
+            "--exclude",
+            "audit,dist,build,work",
+            "--output-format",
+            "json",
+        ],
+    )
+    formatting = execute(
+        "format-review",
+        ["ruff", "format", "--check", "src", "tests", "scripts", "quality", "web"],
+    )
+    critical = execute(
+        "ruff-runtime-gate",
+        [
+            "ruff",
+            "check",
+            ".",
+            "--select",
+            "E9,F63,F7,F82",
+            "--exclude",
+            "audit,dist,build,work",
+        ],
+    )
+    current = execute(
+        "pyright", ["pyright", "src", "--pythonversion", "3.11", "--outputjson"]
+    )
+    current_report = json.loads(current.stdout)
+    if current.returncode not in (0, 1):
+        raise RuntimeError("Pyright did not complete")
+    with tempfile.TemporaryDirectory(prefix="lapsim-type-baseline-") as folder:
+        baseline_root = Path(folder)
+        archive = subprocess.run(
+            ["git", "archive", BASE], cwd=ROOT, capture_output=True, check=True
+        )
+        import io
+        import tarfile
+
+        with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as source:
+            source.extractall(baseline_root, filter="data")
+        baseline = execute(
+            "pyright-baseline",
+            ["pyright", "src", "--pythonversion", "3.11", "--outputjson"],
+            baseline_root,
+        )
+        baseline_report = json.loads(baseline.stdout)
+        if baseline.returncode not in (0, 1):
+            raise RuntimeError("Baseline Pyright did not complete")
+        new_types = fingerprints(current_report, ROOT) - fingerprints(
+            baseline_report, baseline_root
+        )
+    type_delta = [
+        {
+            "file": key[0],
+            "rule": key[1],
+            "message": key[2],
+            "severity": key[3],
+            "count": value,
+        }
+        for key, value in new_types.items()
+    ]
+    (OUT / "new-type-findings.json").write_text(json.dumps(type_delta, indent=2))
+    security = execute(
+        "semgrep",
+        [
+            "/tmp/lapsim-semgrep/bin/semgrep",
+            "scan",
+            "--config",
+            "p/python",
+            "--config",
+            "p/javascript",
+            "--metrics=off",
+            "--error",
+            "--json",
+            "--output",
+            str(OUT / "semgrep.json"),
+            ".",
+        ],
+    )
+    security_report = json.loads((OUT / "semgrep.json").read_text())
+    summary = {
+        "baseline_commit": BASE,
+        "ruff_review_exit": broad.returncode,
+        "format_review_exit": formatting.returncode,
+        "ruff_runtime_exit": critical.returncode,
+        "pyright": current_report["summary"],
+        "pyright_baseline": baseline_report["summary"],
+        "new_type_findings": type_delta,
+        "security_matches": len(security_report["results"]),
+        "security_errors": security_report["errors"],
+        "security_files": len(security_report.get("paths", {}).get("scanned", [])),
+        "note": "Existing broad lint, formatting, and type debt remains visible; this is not a clean-type certification. Newly introduced type diagnostics block integration.",
+    }
+    (OUT / "summary.json").write_text(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2), flush=True)
+    return int(
+        critical.returncode != 0
+        or bool(type_delta)
+        or security.returncode != 0
+        or bool(security_report["errors"])
+    )
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

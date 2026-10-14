@@ -247,7 +247,7 @@
       transform: `translate(${position.x} ${position.y})`,
       tabindex: focusedId === node.id ? "0" : "-1",
       role: "treeitem",
-      "aria-label": `${node.title}. ${statusLabel(node.status)}. ${(node.children || []).length ? (expanded.has(node.id) ? "Expanded" : "Collapsed") : "Leaf node"}.`,
+      "aria-description": node.title,
       "aria-expanded": (node.children || []).length ? String(expanded.has(node.id)) : null,
       "aria-selected": String(selectedId === node.id),
       "aria-level": position.depth + 1,
@@ -309,8 +309,7 @@
       const toggle = createSvg("g", {
         class: "node-toggle",
         transform: `translate(${position.width - 17} ${position.height / 2})`,
-        role: "button",
-        "aria-label": expanded.has(node.id) ? `Collapse ${node.title}` : `Expand ${node.title}`,
+        "aria-hidden": "true",
       });
       toggle.appendChild(createSvg("circle", { class: "toggle-circle", r: 12 }));
       toggle.appendChild(createSvg("text", { class: "toggle-symbol", x: 0, y: 0 }, expanded.has(node.id) ? "−" : "+"));
@@ -321,6 +320,15 @@
       });
       group.appendChild(toggle);
     }
+
+    // Match the visible text exactly for screen readers and voice control.
+    // The full, untruncated title remains available as the description.
+    group.setAttribute("aria-label", [...group.querySelectorAll("text")]
+      .filter((text) => !text.closest('[aria-hidden="true"]'))
+      .map((text) => [...text.querySelectorAll("tspan")].length
+        ? [...text.querySelectorAll("tspan")].map((span) => span.textContent).join(" ")
+        : text.textContent)
+      .join(" "));
 
     group.addEventListener("click", () => {
       if (!didDragNode) selectNode(node.id, { updateHash: true });

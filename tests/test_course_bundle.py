@@ -318,3 +318,13 @@ def test_v2_rejects_duplicate_corridor_json_key(tmp_path: Path) -> None:
     source.write_text(text, encoding="utf-8")
     with pytest.raises(ValueError, match="duplicate course-bundle key"):
         CourseBundle.load(source)
+
+
+def test_json_depth_limit_ignores_escaped_string_brackets():
+    from lapsim.courses.course_bundle import MAX_JSON_DEPTH, _check_json_depth
+    import json
+
+    _check_json_depth(json.dumps({"note": '[{\\"' * 1000}))
+    _check_json_depth("[" * MAX_JSON_DEPTH + "0" + "]" * MAX_JSON_DEPTH)
+    with pytest.raises(ValueError, match="JSON nesting exceeds"):
+        _check_json_depth("[" * (MAX_JSON_DEPTH + 1) + "0" + "]" * (MAX_JSON_DEPTH + 1))

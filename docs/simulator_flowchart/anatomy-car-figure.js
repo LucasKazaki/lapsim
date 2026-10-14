@@ -22,7 +22,7 @@ window.ANATOMY_CAR_SVG = (() => {
       `<circle class="flow-node signal-flow" cx="${x}" cy="${y}" r="5"/>`).join("");
 
     return `
-      <svg class="anatomy-svg car-figure" data-mode="power" viewBox="0 0 1200 720" role="img" aria-labelledby="car-figure-title car-figure-desc">
+      <svg class="anatomy-svg car-figure" data-mode="power" viewBox="0 0 1200 720" role="group" aria-labelledby="car-figure-title" aria-describedby="car-figure-desc">
         <title id="car-figure-title">Interactive isometric system anatomy of the 2026–27 rear-wheel-drive Formula SAE electric car</title>
         <desc id="car-figure-desc">A source-aware schematic vehicle showing chassis, driver, accumulator, inverter, traction motor, rear drive, four wheels, brakes, suspension, controller, sensors, cooling, and aerodynamic devices. Exact packaging is intentionally not asserted.</desc>
         <defs>

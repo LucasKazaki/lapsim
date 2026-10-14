@@ -28,6 +28,7 @@ COURSE_BUNDLE_SCHEMA_VERSION = 1
 COURSE_BUNDLE_CORRIDOR_SCHEMA_VERSION = 2
 MAX_BUNDLE_BYTES = 4 * 1024 * 1024
 MAX_BUNDLE_CELLS = 5000
+MAX_JSON_DEPTH = 64
 _ID_PATTERN = re.compile(r"[a-z][a-z0-9_-]{2,63}\Z")
 _REVISION_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}\Z")
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
@@ -77,6 +78,30 @@ def _object_without_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, An
 
 def _reject_nonfinite_json(value: str) -> None:
     raise ValueError(f"nonfinite course-bundle JSON value: {value}")
+
+
+def _check_json_depth(text: str) -> None:
+    """Bound nesting independently of Python's process-wide recursion limit."""
+    depth = 0
+    in_string = False
+    escaped = False
+    for character in text:
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+        elif character == '"':
+            in_string = True
+        elif character in "[{":
+            depth += 1
+            if depth > MAX_JSON_DEPTH:
+                raise ValueError("course bundle JSON nesting exceeds the 64-level limit")
+        elif character in "]}":
+            depth -= 1
+    # The JSON parser remains responsible for syntax and bracket matching.
 
 
 def _exact_keys(value: Any, keys: frozenset[str], name: str) -> dict[str, Any]:
@@ -227,8 +252,10 @@ class CourseBundle:
         if len(data) > MAX_BUNDLE_BYTES:
             raise ValueError("course bundle exceeds the 4 MiB input cap")
         try:
+            text = data.decode("utf-8")
+            _check_json_depth(text)
             payload = json.loads(
-                data.decode("utf-8"),
+                text,
                 object_pairs_hook=_object_without_duplicate_keys,
                 parse_constant=_reject_nonfinite_json,
             )
