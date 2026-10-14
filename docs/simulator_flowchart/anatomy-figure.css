@@ -216,8 +216,15 @@
   .anatomy-nav-links { overflow-x: auto; scrollbar-width: none; }
   .anatomy-nav-links::-webkit-scrollbar { display: none; }
   .anatomy-nav a { white-space: nowrap; }
-  .anatomy-nav-controls { flex: 0 0 auto; }
-  #appearance-toggle { display: none; }
+  .anatomy-nav { flex-direction: column; }
+  .anatomy-nav-controls { flex: 1 1 auto; flex-wrap: wrap; width: 100%; }
+  .anatomy-nav-controls > button {
+    flex: 1 1 10rem;
+    min-width: 0;
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+  }
   .anatomy-card { border-radius: 25px; }
   .anatomy-card-header { flex-direction: column; }
   .anatomy-card-actions { width: 100%; justify-content: flex-start; }

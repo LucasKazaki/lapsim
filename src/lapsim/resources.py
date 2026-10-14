@@ -11,7 +11,10 @@ import webbrowser
 
 def repository_root() -> Path:
     if getattr(sys, "frozen", False):
-        return Path(sys._MEIPASS) / "bundle"
+        extraction_root = getattr(sys, "_MEIPASS", None)
+        if not isinstance(extraction_root, str):
+            raise RuntimeError("Frozen build is missing its extraction directory")
+        return Path(extraction_root) / "bundle"
     return Path(__file__).resolve().parents[2]
 
 
@@ -28,6 +31,8 @@ def documentation_root() -> Path:
     if not getattr(sys, "frozen", False):
         return source
     identity = build_identity()
+    if identity is None:
+        raise RuntimeError("Frozen build is missing its captured identity")
     version = identity["source_sha256"]
     base = Path(os.environ.get("LOCALAPPDATA") or Path.home() / ".lapsim")
     target = base / "LapSim" / "documentation" / version

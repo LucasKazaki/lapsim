@@ -5,12 +5,13 @@ from __future__ import annotations
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
 import threading
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "audit" / "browser"
@@ -91,6 +92,13 @@ def main() -> int:
                             ),
                             "responsive document",
                         )
+                        check(
+                            page.get_by_role(
+                                "treeitem", name=re.compile("LapSim simulator")
+                            ).count()
+                            == 1,
+                            "graph nodes expose visible accessible names",
+                        )
                         accessibility("initial")
                         page.locator("#collapse-all").click()
                         check(
@@ -128,6 +136,9 @@ def main() -> int:
                         )
                         page.locator("#search-input").fill("battery")
                         page.locator("#search-next").click()
+                        expect(page.locator("#details")).to_contain_text(
+                            re.compile("battery", re.I)
+                        )
                         check(
                             "battery" in page.locator("#details").inner_text().lower(),
                             "search selects evidence",
@@ -157,6 +168,7 @@ def main() -> int:
                             "signal overlay",
                         )
                         page.locator("#appearance-toggle").click()
+                        accessibility("manual-light")
                         page.locator("#appearance-toggle").click()
                         check(
                             page.locator("html").get_attribute("data-theme") == "dark",
@@ -165,6 +177,9 @@ def main() -> int:
                         accessibility("interactive-dark")
                         page.screenshot(path=str(OUT / f"{name}.png"), full_page=True)
                         page.emulate_media(reduced_motion="no-preference")
+                        expect(
+                            card.locator('[data-anatomy-action="run"]')
+                        ).to_be_enabled()
                         check(
                             card.locator('[data-anatomy-action="run"]').is_enabled(),
                             "motion preference updates live",

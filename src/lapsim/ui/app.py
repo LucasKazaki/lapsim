@@ -3338,6 +3338,8 @@ class LapSimDesktop:
 
     @staticmethod
     def _wrap_label_to_width(event: tk.Event) -> None:
+        if not isinstance(event.widget, tk.Label):
+            return
         if event.width > 40:
             width = event.width - 8
             if event.widget.winfo_pixels(event.widget.cget("wraplength")) != width:

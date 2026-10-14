@@ -63,6 +63,8 @@ def self_test(report_path: Path) -> dict:
     result = run_one_lap(vehicle, track, torque_request_fraction=0.8)
     if not result.completed:
         raise RuntimeError(result.failure_reason)
+    if result.telemetry is None:
+        raise RuntimeError("Completed self-test lap is missing telemetry")
     checks["synthetic_lap"] = True
     settings = LapRunSettings.from_track(
         track, track_id="portable_self_test", solver_step_m=5.0,

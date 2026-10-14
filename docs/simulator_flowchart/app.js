@@ -321,14 +321,8 @@
       group.appendChild(toggle);
     }
 
-    // Match the visible text exactly for screen readers and voice control.
-    // The full, untruncated title remains available as the description.
-    group.setAttribute("aria-label", [...group.querySelectorAll("text")]
-      .filter((text) => !text.closest('[aria-hidden="true"]'))
-      .map((text) => [...text.querySelectorAll("tspan")].length
-        ? [...text.querySelectorAll("tspan")].map((span) => span.textContent).join(" ")
-        : text.textContent)
-      .join(" "));
+    // Tree-item names come from their visible SVG text. Keep the full title
+    // as a description rather than overriding native name-from-content semantics.
 
     group.addEventListener("click", () => {
       if (!didDragNode) selectNode(node.id, { updateHash: true });
@@ -710,12 +704,10 @@
     searchCursor = -1;
     if (!query) {
       searchResultsEl.hidden = true;
-      searchInput.setAttribute("aria-expanded", "false");
       searchResultsEl.replaceChildren();
       return;
     }
     searchResultsEl.hidden = false;
-    searchInput.setAttribute("aria-expanded", "true");
     if (!searchMatches.length) {
       searchResultsEl.innerHTML = '<div class="search-empty">No matching nodes.</div>';
       return;
@@ -754,7 +746,6 @@
       openNextSearchResult();
     } else if (event.key === "Escape") {
       searchResultsEl.hidden = true;
-      searchInput.setAttribute("aria-expanded", "false");
     } else if (event.key === "ArrowDown" && !searchResultsEl.hidden) {
       event.preventDefault();
       searchResultsEl.querySelector("button")?.focus();
@@ -764,7 +755,6 @@
   document.addEventListener("pointerdown", (event) => {
     if (!event.target.closest(".search-group")) {
       searchResultsEl.hidden = true;
-      searchInput.setAttribute("aria-expanded", "false");
     }
   });
   searchResultsEl.addEventListener("keydown", (event) => {
@@ -775,7 +765,6 @@
       buttons[Math.max(0, Math.min(buttons.length - 1, index + (event.key === "ArrowDown" ? 1 : -1)))]?.focus();
     } else if (event.key === "Escape") {
       searchResultsEl.hidden = true;
-      searchInput.setAttribute("aria-expanded", "false");
       searchInput.focus();
     }
   });
