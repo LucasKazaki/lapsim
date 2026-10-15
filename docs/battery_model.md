@@ -91,3 +91,52 @@ For a different pack, supply the cell OCV table, capacity, series/parallel
 count, resistances, capacitance, and voltage bounds as constructor parameters.
 Do not replace a validated HVC SOC trace with a fitted offset in this
 component.
+
+## Finite charge over a spatial cell
+
+The stateful batteries hold the entry operating-point current for one cell.
+Positive current removes charge, so the supported interval satisfies:
+
+```text
+delta_Q_Ah = I_A * dt_s / 3600
+-(1 - SOC) * capacity_Ah <= delta_Q_Ah <= SOC * capacity_Ah
+```
+
+An interval that exceeds either bound raises `ValueError` before changing
+the battery. The comparison permits eight binary64 ULPs at the larger of
+the requested and available **charge** scales, to accommodate boundary
+roundoff. It does not use a capacity-scale absolute tolerance near an empty
+or full pack. The existing final SOC clamp handles this rounding allowance;
+it cannot silently absorb a materially unsupported interval.
+
+`Vehicle.update_state` computes the actual terminal-power request and duration
+before committing aero, position, battery, or other built-in state, then calls
+the optional, pure `BatteryUpdatePreflight.validate_state_update`. The built-in
+suspension also restores its pending load-query calculations if the trial is
+rejected. A rejected built-in charge-budget cell leaves the complete serialized
+vehicle and telemetry unchanged. Existing custom batteries keep the original
+`BatteryModel` interface; opting into pure preflight and query-staging rollback
+is a separate capability. This is not a transaction guarantee for arbitrary
+custom components that mutate or fail during their commit methods.
+
+This deliberately narrows the supported cell domain. Previously, the
+instantaneous voltage/power check could accept a low-SOC cell whose held
+current exhausted the available charge, then clamp SOC to zero. A caller must
+handle the rejection or explicitly choose a different cell/control policy.
+The simulator does not trim DC power after solving force and energy, subdivide
+the interval automatically, or change the requested controls. Valid intervals
+retain the existing current root, terminal-power conversion, and RC update.
+The ideal `Battery` still has no finite Coulomb capacity.
+
+The accounting follows the current integral in the official
+[MathWorks Coulomb-counting estimator documentation](https://www.mathworks.com/help/simscape-battery/ref/socestimatorcoulombcounting.html),
+with this repository's opposite sign convention for current.
+[Analog Devices' SOC estimation discussion](https://www.analog.com/en/resources/technical-articles/a-closer-look-at-state-of-charge-and-state-health-estimation-tech.html)
+and [Movassagh et al.](https://arxiv.org/abs/2101.05435v2) describe why initial
+SOC, capacity, current, and timing uncertainty matter in real measurements.
+Whole-interval rejection is this simulator's conservative implementation
+choice. The held-current check does not prove continuous voltage feasibility,
+electrochemical accuracy, pack calibration, or real-vehicle safety.
+
+The frozen reproduction and numerical acceptance policy are in
+`analysis/numerical_invariants/charge-budget-protocol-2026-10-15.json`.

@@ -1,12 +1,13 @@
 """Quasi-static longitudinal and lateral tire-load distribution."""
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from math import isfinite, pi
 
 from ..aero import AeroForces
 from ..interfaces import ChassisModel
 from .loads import TireNormalLoads
-
 
 DEFAULT_TOTAL_ROLL_STIFFNESS_NM_PER_DEG = 900.0
 DEFAULT_TOTAL_ROLL_STIFFNESS_NM_PER_RAD = (
@@ -91,6 +92,35 @@ class Suspension:
         self._calculated_front_roll_stiffness_fraction = 0.0
         self._calculated_front_lateral_load_transfer_n = 0.0
         self._calculated_rear_lateral_load_transfer_n = 0.0
+
+    @contextmanager
+    def speculative_state(self) -> Iterator[None]:
+        """Restore pending load/roll calculations when a trial is rejected.
+
+        Load queries stage these values for update_state. They are distinct
+        from committed telemetry, but must not leak out of a failed cell.
+        Successful cells retain the exact existing staging/commit sequence.
+        """
+        pending = (
+            self._calculated_body_roll_angle_rad,
+            self._calculated_total_roll_moment_nm,
+            self._calculated_elastic_roll_moment_nm,
+            self._calculated_front_roll_stiffness_fraction,
+            self._calculated_front_lateral_load_transfer_n,
+            self._calculated_rear_lateral_load_transfer_n,
+        )
+        try:
+            yield
+        except BaseException:
+            (
+                self._calculated_body_roll_angle_rad,
+                self._calculated_total_roll_moment_nm,
+                self._calculated_elastic_roll_moment_nm,
+                self._calculated_front_roll_stiffness_fraction,
+                self._calculated_front_lateral_load_transfer_n,
+                self._calculated_rear_lateral_load_transfer_n,
+            ) = pending
+            raise
 
     def update_telemetry(self, telemetry: dict[str, float]) -> None:
         loads = self.current_tire_normal_loads_n
