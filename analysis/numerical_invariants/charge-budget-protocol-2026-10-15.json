@@ -1,0 +1,43 @@
+{
+  "schema": "lapsim.charge-budget-protocol.v1",
+  "frozen_before_production_edits": true,
+  "base_commit": "41eb82d9513b9dc23256fb9a441f6a6b6bfb8ae2",
+  "classification": "The existing contract enforces entry instantaneous voltage/power but not interval Coulombs. SOC clamping hides charge beyond the stored/free capacity. This increment intentionally tightens the supported held-operating-point interval domain; it does not claim a full within-cell electrochemical integration.",
+  "reproduction": {
+    "script": "analysis/numerical_invariants/check_charge_budget.py",
+    "retained_baseline": "work/charge-budget-baseline/observation.json",
+    "vehicle_case": {"initial_speed_mps": 5.0, "initial_soc": 0.000001, "motor_torque_request_nm": 100.0, "distance_m": 0.5},
+    "observed_dt_s": 0.09884059746607142,
+    "observed_power_w": 2958.3962589648895,
+    "observed_unclamped_soc": -0.00001644161509376886,
+    "observed_stored_soc": 0.0,
+    "valid_control_initial_soc": 0.5,
+    "valid_control_telemetry_sha256": "62ee63a6e3d1545b5bc9f43be7137724a0d04a0e8952193bb7d6881dae023656"
+  },
+  "intended_contract": [
+    "For the repository's positive-discharge convention, held current I over dt requests dQ_ah=I*dt/3600. Bounded stateful batteries require -((1-SOC)*Q) <= dQ_ah <= SOC*Q.",
+    "Reject nonfinite interval charge and current/capacity/SOC domain errors before any battery field is changed.",
+    "Allow only comparison roundoff of eight ULPs at the requested/available charge scale; do not use a physical Ah margin or capacity-scale absolute epsilon. Keep the existing endpoint clamp only for such representational boundary roundoff.",
+    "An interval crossing the charge boundary is unrepresentable by the current held-operating-point cell. Reject it; do not post-hoc clip DC power/current/energy while retaining the solved force and distance.",
+    "Provide a pure optional battery update preflight capability to preserve the existing structural BatteryModel protocol for third-party replacements. All three built-in batteries implement it; stateful update_state also enforces its own interval budget.",
+    "Vehicle computes battery terminal power without committing component/path state, runs supported battery preflight, then commits as before. Built-in rejected cells must leave full serialized state and telemetry unchanged.",
+    "Preserve the original force, motor/inverter conversion, current root, RC zero-order-hold update and all valid interval outputs. Ideal constant-power Battery intentionally has no finite Coulomb state.",
+    "No new adaptive subdivision, duration-aware force envelope, different driving controls, retuned voltage/OCV/RC parameters or raw model calibration is introduced. Callers may refine the cell or change controls after rejection."
+  ],
+  "planned_checks": [
+    "Reproduce and reject both discharge exhaustion and charge overfill for OCVPackBattery and RCTheveninBattery; no partial state mutation.",
+    "At exact and adjacent charge boundaries, distinguish numerical roundoff from real excess; validate invalid dt and nonfinite charge cleanly.",
+    "Battery/vehicle P=VI, Coulomb accounting, throughput, motor/inverter/force consistency and accepted telemetry stay coherent.",
+    "Vehicle coarse-cell exhaustion and high-SOC regeneration overfill reject atomically before aero/path/component state commit.",
+    "Run original frozen2160case grid on baseline and repaired sources with8CPUworkers/native1thread; every newly rejected case is attributable to interval budget and every previously valid remaining output stays exact.",
+    "Retain the legacy battery protocol seam, test a third-party battery without the optional preflight and a pure preflight-capable rejection.",
+    "Independent practical review and appropriate focused/CI checks before a scoped draft stacked on PR15. Preserve all earlier heads/receipts."
+  ],
+  "primary_sources": [
+    {"url": "https://www.mathworks.com/help/simscape-battery/ref/socestimatorcoulombcounting.html", "accessed": "2026-10-15", "use": "SOC as capacity ratio and current integration; its current sign convention differs from this repo's explicitly positive discharge convention."},
+    {"url": "https://www.analog.com/en/resources/technical-articles/a-closer-look-at-state-of-charge-and-state-health-estimation-tech.html", "accessed": "2026-10-15", "use": "Coulomb accounting and remaining capacity; source also warns capacity/initial-state/measurement uncertainty matters in real systems."},
+    {"url": "https://arxiv.org/abs/2101.05435v2", "accessed": "2026-10-15", "use": "Primary research distinguishes current measurement, integration, capacity and timing errors; no claim that this bound repairs those real-world uncertainties."}
+  ],
+  "policy_attribution": "The conservative whole-interval rejection is an implementation choice inferred from the existing held-point model and charge balance, not a rule mandated by the references.",
+  "excluded_claims": ["No real battery capacity or car calibration", "No continuous SOC/voltage feasibility over an accepted coarse cell", "No firmware, hardware, CAN, deployment, target timing or safety certification"]
+}
