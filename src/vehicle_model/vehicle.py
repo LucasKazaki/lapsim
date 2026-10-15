@@ -1,6 +1,9 @@
 """Vehicle parameters and physical limits."""
 
+from collections.abc import Callable
+from contextlib import ExitStack
 from dataclasses import dataclass, field
+from functools import wraps
 from math import cos, isfinite, sin, sqrt, tan
 from typing import cast
 
@@ -16,10 +19,12 @@ from .environment import STANDARD_AIR_DENSITY_KGPM3, STANDARD_GRAVITY_MPS2
 from .interfaces import (
     AeroModel,
     BatteryModel,
+    BatteryUpdatePreflight,
     BrakeModel,
     ChassisModel,
     ComponentModel,
     DrivetrainModel,
+    SpeculativeComponent,
     SuspensionModel,
     TireModel,
 )
@@ -31,6 +36,20 @@ DEFAULT_MASS_KG = pounds_to_kilograms(DEFAULT_MASS_LB)
 DEFAULT_ACTIVE_AERO_MASS_PENALTY_LB = 3.0
 DEFAULT_ROLLING_RESISTANCE_COEFFICIENT = 0.012
 DEFAULT_CORNERING_DRAG_COEFFICIENT = 0.036
+
+
+def _with_speculative_component_state(
+    operation: Callable[["Vehicle", Controls, float], None],
+) -> Callable[["Vehicle", Controls, float], None]:
+    """Roll back opt-in query staging if a cell exits before commit."""
+    @wraps(operation)
+    def checked(vehicle: "Vehicle", controls: Controls, distance_step_m: float) -> None:
+        with ExitStack() as staging:
+            for component in vehicle.components:
+                if isinstance(component, SpeculativeComponent):
+                    staging.enter_context(component.speculative_state())
+            operation(vehicle, controls, distance_step_m)
+    return checked
 
 
 @dataclass(frozen=True, slots=True)
@@ -390,6 +409,7 @@ class Vehicle:
         )
         return min(lateral_margin_n, *longitudinal_margins_n)
 
+    @_with_speculative_component_state
     def update_state(self, controls: Controls, distance_step_m: float) -> None:
         """Advance exactly one positive spatial cell.
 
@@ -760,33 +780,6 @@ class Vehicle:
             tire_states.braking_force_n - regenerative_braking_force_n,
             0.0,
         )
-        self.aero.update_state(
-            initial_speed_mps,
-            self.air_density_kgpm3,
-            timestep_s,
-            aero_forces.body_roll_angle_rad,
-        )
-
-        effective_curvature_per_m = (
-            curvature_sign * lateral_force_n / (self.mass_kg * initial_speed_mps**2)
-            if initial_speed_mps > 0.0
-            else requested_curvature_per_m
-        )
-        initial_heading_rad = self.heading_rad
-        heading_change_rad = effective_curvature_per_m * distance_step_m
-        final_heading_rad = initial_heading_rad + heading_change_rad
-        if abs(effective_curvature_per_m) > 1e-12:
-            self.x_m += (
-                sin(final_heading_rad) - sin(initial_heading_rad)
-            ) / effective_curvature_per_m
-            self.y_m += (
-                -(cos(final_heading_rad) - cos(initial_heading_rad))
-                / effective_curvature_per_m
-            )
-        else:
-            self.x_m += distance_step_m * cos(initial_heading_rad)
-            self.y_m += distance_step_m * sin(initial_heading_rad)
-
         wheel_surface_speed_mps = tire_states.driven_wheel_surface_speed_mps
         actual_motor_torque_nm = self.drivetrain.motor_torque_for_wheel_force_nm(
             drive_force_n
@@ -814,6 +807,39 @@ class Vehicle:
             ),
         )
         net_battery_power_w = propulsion_battery_power_w - regenerative_power_w
+        # Reject an unsupported held-current interval before committing aero,
+        # position, battery or any other built-in component state. This check
+        # never clips power after the force solve. Legacy replacements retain
+        # their interface; pure preflight is an optional capability.
+        if isinstance(self.battery, BatteryUpdatePreflight):
+            self.battery.validate_state_update(net_battery_power_w, timestep_s)
+
+        self.aero.update_state(
+            initial_speed_mps,
+            self.air_density_kgpm3,
+            timestep_s,
+            aero_forces.body_roll_angle_rad,
+        )
+        effective_curvature_per_m = (
+            curvature_sign * lateral_force_n / (self.mass_kg * initial_speed_mps**2)
+            if initial_speed_mps > 0.0
+            else requested_curvature_per_m
+        )
+        initial_heading_rad = self.heading_rad
+        heading_change_rad = effective_curvature_per_m * distance_step_m
+        final_heading_rad = initial_heading_rad + heading_change_rad
+        if abs(effective_curvature_per_m) > 1e-12:
+            self.x_m += (
+                sin(final_heading_rad) - sin(initial_heading_rad)
+            ) / effective_curvature_per_m
+            self.y_m += (
+                -(cos(final_heading_rad) - cos(initial_heading_rad))
+                / effective_curvature_per_m
+            )
+        else:
+            self.x_m += distance_step_m * cos(initial_heading_rad)
+            self.y_m += distance_step_m * sin(initial_heading_rad)
+
         self.battery.update_state(net_battery_power_w, timestep_s)
         self.drivetrain.update_state(
             actual_motor_torque_nm,
