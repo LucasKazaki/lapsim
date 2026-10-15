@@ -38,7 +38,7 @@
     },
     "repeat_agreement": true,
     "run_schema": "enme408-native-bench-run/v1",
-    "run_sha256": "4a6bcdeeba57b3fe1908fdfa2f90282d3a9afdfa51656b039540287aa274bdd2"
+    "run_sha256": "b96b9cc5e6b27e2d2d4e8a345393a1635ca713dda2a1dfaec7025300cca21d5f"
   },
   "numeric_contract_version": 2,
   "provenance": "Compiled C host replay; caller declaration (unverified): Synthetic 18-cycle review fixture. No vehicle, CAN, MCU, or sensor capture. Values are scenario assumptions for the proposed 2027-28 car.",
@@ -1076,7 +1076,7 @@
   "source_sha256": {
     "../research/TC-03H-allocator-case-generator.json": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
     "../research/TC-03H-portable-allocator-protocol.json": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
-    "../research/TC-03I-native-bench-case-generator.json": "b858e004bc2053305f77e2a75679f82c0e22ec6b924b8e06ea9ac9857504d90c",
+    "../research/TC-03I-native-bench-case-generator.json": "3353aa234ac9a8269dc752a2795e78a5e04238a6a352a578ad39d2daef141037",
     "../research/TC-03I-native-bench-replay-protocol.json": "474f0a2928b169e13bd41779b45fa73f4806ab03cc7d88817fc231c1c0f83733",
     "allocation_contract.py": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
     "allocator.py": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
@@ -1104,10 +1104,10 @@
     "native/torque_guard.h": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
     "native/torque_pedal.c": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
     "native/torque_pedal.h": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
-    "native_bench_replay.py": "1f14c1828c6d33c33520b192273a3828dd1e92a5807546691f6b9a1d8638be8f",
+    "native_bench_replay.py": "a58950870eee9b848417c3ed6ed5b818cd3018c73d0d757920bf48a8a2a42fb9",
     "pedal_parity.py": "e044d6f2dcf91211ec6b1fb7f046dcb3a20ef2e967194052246363a436daaa7c",
     "test_allocator_parity.py": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336",
-    "test_native_bench_replay.py": "02f9001f06e358adc18d36621f9a07678272039c0baeaba2a4aaccb4e7cfdecd",
+    "test_native_bench_replay.py": "d2a6b200eff02e73651c24d3d3d177fa1ab5bb23adf9e7a06e9fd2fcd6a9f886",
     "torque_numeric.py": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
   },
   "summary": {
