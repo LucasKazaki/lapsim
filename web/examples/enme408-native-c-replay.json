@@ -1,0 +1,1128 @@
+{
+  "clock_contract_version": 1,
+  "config": {
+    "allocator": {
+      "max_input_age_ms": 50
+    },
+    "fault": {
+      "valid_samples_to_recover": 2
+    },
+    "guard": {
+      "max_rise_nm_per_s": 100.0,
+      "pedal_clear_fraction": 0.2,
+      "pedal_overlap_trip_fraction": 0.6
+    },
+    "period_ms": 50
+  },
+  "label": "Native C replay: Startup, limits and fault recovery",
+  "native_execution": {
+    "build": {
+      "binary_sha256": "9879f46feec0efb943625ebf5c62925fcbe28dcbaefb15d46538113ac02adb53",
+      "compiler": "C:\\msys64\\mingw64\\bin\\gcc.exe",
+      "version": "gcc.exe (Rev2, Built by MSYS2 project) 12.1.0"
+    },
+    "comparison": "actual untouched Python owners; normalized requested binary64",
+    "engine": "compiled C host; five owners",
+    "limits": [
+      "Offline synthetic/normalized host evidence only; no hardware IO, CAN, target or vehicle authority.",
+      "Viewer checks presentation consistency, not authentication or controller reproduction.",
+      "Abstract four-slot mapping; no physical motor calibration or safety certification."
+    ],
+    "owner_versions": {
+      "abi": 1,
+      "allocator": 1,
+      "clock": 1,
+      "guard": 1,
+      "numeric": 2,
+      "pedal": 1
+    },
+    "repeat_agreement": true,
+    "run_schema": "enme408-native-bench-run/v1",
+    "run_sha256": "b96b9cc5e6b27e2d2d4e8a345393a1635ca713dda2a1dfaec7025300cca21d5f"
+  },
+  "numeric_contract_version": 2,
+  "provenance": "Compiled C host replay; caller declaration (unverified): Synthetic 18-cycle review fixture. No vehicle, CAN, MCU, or sensor capture. Values are scenario assumptions for the proposed 2027-28 car.",
+  "records": [
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": false,
+      "command_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "command_reason": "recovery_valid_sample",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 0,
+        "next_state": "recovery_pending",
+        "previous_state": "inhibited",
+        "reason": "recovery_valid_sample",
+        "recovery_streak": 1,
+        "reference_gate_allowed": false,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 0,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 0,
+      "restart_requested": false,
+      "sequence": 0
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": true,
+      "command_nm": [
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "command_reason": "rise_rate_limit",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 0,
+        "next_state": "ready",
+        "previous_state": "recovery_pending",
+        "reason": "recovery_criteria_met",
+        "recovery_streak": 2,
+        "reference_gate_allowed": true,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 1,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 50,
+      "restart_requested": false,
+      "sequence": 1
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": true,
+      "command_nm": [
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "command_reason": "rise_rate_limit",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 0,
+        "next_state": "ready",
+        "previous_state": "ready",
+        "reason": "allocator_ok",
+        "recovery_streak": 0,
+        "reference_gate_allowed": true,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 2,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 100,
+      "restart_requested": false,
+      "sequence": 2
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": true,
+      "command_nm": [
+        15.0,
+        15.0,
+        15.0,
+        15.0
+      ],
+      "command_reason": "rise_rate_limit",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 0,
+        "next_state": "ready",
+        "previous_state": "ready",
+        "reason": "allocator_ok",
+        "recovery_streak": 0,
+        "reference_gate_allowed": true,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 3,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          15.0,
+          15.0,
+          15.0,
+          15.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 150,
+      "restart_requested": false,
+      "sequence": 3
+    },
+    {
+      "allocator": {
+        "delivered_nm": 120.0,
+        "fault": "aggregate_limit",
+        "requested_nm": 200.0,
+        "status": "saturated",
+        "wheel_torque_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": true,
+      "command_nm": [
+        20.0,
+        20.0,
+        20.0,
+        20.0
+      ],
+      "command_reason": "aggregate_and_rise_rate_limit",
+      "fault": {
+        "allocator_fault": "aggregate_limit",
+        "allocator_status": "saturated",
+        "delivered_nm": 120.0,
+        "generation": 0,
+        "next_state": "limited",
+        "previous_state": "ready",
+        "reason": "aggregate_limit",
+        "recovery_streak": 0,
+        "reference_gate_allowed": true,
+        "requested_nm": 200.0,
+        "restart_requested": false,
+        "sequence": 4,
+        "wheel_torque_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "aggregate_and_rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 200,
+      "restart_requested": false,
+      "sequence": 4
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": true,
+      "command_nm": [
+        20.0,
+        20.0,
+        20.0,
+        20.0
+      ],
+      "command_reason": null,
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 0,
+        "next_state": "ready",
+        "previous_state": "limited",
+        "reason": "allocator_ok",
+        "recovery_streak": 0,
+        "reference_gate_allowed": true,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 5,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": null,
+        "status": "ok"
+      },
+      "now_ms": 250,
+      "restart_requested": false,
+      "sequence": 5
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": false,
+      "command_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "command_reason": "brake_accelerator_overlap",
+      "fault": {
+        "allocator_fault": "brake_accelerator_overlap",
+        "allocator_status": "fault",
+        "delivered_nm": 0.0,
+        "generation": 0,
+        "next_state": "inhibited",
+        "previous_state": "ready",
+        "reason": "brake_accelerator_overlap",
+        "recovery_streak": 0,
+        "reference_gate_allowed": false,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 6,
+        "wheel_torque_nm": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "pedal_overlap_latched": true,
+        "reason": "brake_accelerator_overlap",
+        "status": "inhibited"
+      },
+      "now_ms": 300,
+      "restart_requested": false,
+      "sequence": 6
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": false,
+      "command_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "command_reason": "critical_communication_loss",
+      "fault": {
+        "allocator_fault": "critical_communication_loss",
+        "allocator_status": "fault",
+        "delivered_nm": 0.0,
+        "generation": 0,
+        "next_state": "inhibited",
+        "previous_state": "inhibited",
+        "reason": "critical_communication_loss",
+        "recovery_streak": 0,
+        "reference_gate_allowed": false,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 7,
+        "wheel_torque_nm": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "pedal_overlap_latched": true,
+        "reason": "critical_communication_loss",
+        "status": "inhibited"
+      },
+      "now_ms": 350,
+      "restart_requested": false,
+      "sequence": 7
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": false,
+      "command_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "command_reason": "recovery_valid_sample",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 0,
+        "next_state": "recovery_pending",
+        "previous_state": "inhibited",
+        "reason": "recovery_valid_sample",
+        "recovery_streak": 1,
+        "reference_gate_allowed": false,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 8,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 400,
+      "restart_requested": false,
+      "sequence": 8
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": true,
+      "command_nm": [
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "command_reason": "rise_rate_limit",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 0,
+        "next_state": "ready",
+        "previous_state": "recovery_pending",
+        "reason": "recovery_criteria_met",
+        "recovery_streak": 2,
+        "reference_gate_allowed": true,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 9,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 450,
+      "restart_requested": false,
+      "sequence": 9
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": true,
+      "command_nm": [
+        10.0,
+        10.0,
+        10.0,
+        10.0
+      ],
+      "command_reason": "rise_rate_limit",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 0,
+        "next_state": "ready",
+        "previous_state": "ready",
+        "reason": "allocator_ok",
+        "recovery_streak": 0,
+        "reference_gate_allowed": true,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 10,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 500,
+      "restart_requested": false,
+      "sequence": 10
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": false,
+      "command_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "command_reason": "recovery_valid_sample",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 1,
+        "next_state": "recovery_pending",
+        "previous_state": "ready",
+        "reason": "recovery_valid_sample",
+        "recovery_streak": 1,
+        "reference_gate_allowed": false,
+        "requested_nm": 80.0,
+        "restart_requested": true,
+        "sequence": 11,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 550,
+      "restart_requested": true,
+      "sequence": 11
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": true,
+      "command_nm": [
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "command_reason": "rise_rate_limit",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 1,
+        "next_state": "ready",
+        "previous_state": "recovery_pending",
+        "reason": "recovery_criteria_met",
+        "recovery_streak": 2,
+        "reference_gate_allowed": true,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 12,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 600,
+      "restart_requested": false,
+      "sequence": 12
+    },
+    {
+      "allocator": {
+        "delivered_nm": 0.0,
+        "fault": "stale_input",
+        "requested_nm": 80.0,
+        "status": "fault",
+        "wheel_torque_nm": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": false,
+      "command_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "command_reason": "stale_input",
+      "fault": {
+        "allocator_fault": "stale_input",
+        "allocator_status": "fault",
+        "delivered_nm": 0.0,
+        "generation": 1,
+        "next_state": "inhibited",
+        "previous_state": "ready",
+        "reason": "stale_input",
+        "recovery_streak": 0,
+        "reference_gate_allowed": false,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 13,
+        "wheel_torque_nm": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "allocator_fault",
+        "status": "inhibited"
+      },
+      "now_ms": 650,
+      "restart_requested": false,
+      "sequence": 13
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": false,
+      "command_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "command_reason": "recovery_valid_sample",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 1,
+        "next_state": "recovery_pending",
+        "previous_state": "inhibited",
+        "reason": "recovery_valid_sample",
+        "recovery_streak": 1,
+        "reference_gate_allowed": false,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 14,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 700,
+      "restart_requested": false,
+      "sequence": 14
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": true,
+      "command_nm": [
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "command_reason": "rise_rate_limit",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 1,
+        "next_state": "ready",
+        "previous_state": "recovery_pending",
+        "reason": "recovery_criteria_met",
+        "recovery_streak": 2,
+        "reference_gate_allowed": true,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 15,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 750,
+      "restart_requested": false,
+      "sequence": 15
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": false,
+      "command_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "command_reason": "external_interlock_open",
+      "fault": {
+        "allocator_fault": "external_interlock_open",
+        "allocator_status": "fault",
+        "delivered_nm": 0.0,
+        "generation": 1,
+        "next_state": "inhibited",
+        "previous_state": "ready",
+        "reason": "external_interlock_open",
+        "recovery_streak": 0,
+        "reference_gate_allowed": false,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 16,
+        "wheel_torque_nm": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "external_interlock_open",
+        "status": "inhibited"
+      },
+      "now_ms": 800,
+      "restart_requested": false,
+      "sequence": 16
+    },
+    {
+      "allocator": {
+        "delivered_nm": 80.0,
+        "fault": null,
+        "requested_nm": 80.0,
+        "status": "ok",
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "clock_fault": null,
+      "command_allowed": false,
+      "command_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "command_reason": "recovery_valid_sample",
+      "fault": {
+        "allocator_fault": null,
+        "allocator_status": "ok",
+        "delivered_nm": 80.0,
+        "generation": 1,
+        "next_state": "recovery_pending",
+        "previous_state": "inhibited",
+        "reason": "recovery_valid_sample",
+        "recovery_streak": 1,
+        "reference_gate_allowed": false,
+        "requested_nm": 80.0,
+        "restart_requested": false,
+        "sequence": 17,
+        "wheel_torque_nm": [
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ]
+      },
+      "guard": {
+        "output_nm": [
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "pedal_overlap_latched": false,
+        "reason": "rise_rate_limit",
+        "status": "limited"
+      },
+      "now_ms": 850,
+      "restart_requested": false,
+      "sequence": 17
+    }
+  ],
+  "scenario_sha256": "5af0071216b03e781ee1e9cd89d74b870dc0e2f090fd75a5ff15800fcb686bcc",
+  "schema": "enme408-bench-replay/v1",
+  "scope": "Offline synthetic/normalized host evidence only; no hardware IO, CAN, target or vehicle authority.",
+  "source_sha256": {
+    "../research/TC-03H-allocator-case-generator.json": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
+    "../research/TC-03H-portable-allocator-protocol.json": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+    "../research/TC-03I-native-bench-case-generator.json": "3353aa234ac9a8269dc752a2795e78a5e04238a6a352a578ad39d2daef141037",
+    "../research/TC-03I-native-bench-replay-protocol.json": "474f0a2928b169e13bd41779b45fa73f4806ab03cc7d88817fc231c1c0f83733",
+    "allocation_contract.py": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
+    "allocator.py": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
+    "allocator_parity.py": "7e13e91fb097795ddddd595f05b09299428a4caf62a3869d0f4621be013c4fea",
+    "bench-scenario.example.json": "5af0071216b03e781ee1e9cd89d74b870dc0e2f090fd75a5ff15800fcb686bcc",
+    "bench_replay.py": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc",
+    "c_parity.py": "eca7539e503dfb96b5106d3ec2af6feffb8955f83b4de036dd4d47d78e70a04a",
+    "clock_parity.py": "0a8e161de374a181adf98f344f2b34f10233d3fb53e929b9d334de4aa36fbfaf",
+    "command_guard.py": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+    "control_pipeline.py": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531",
+    "cycle_clock.py": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5",
+    "fault_state.py": "1abe78b642ca381257f1b7e26eb8ac5b125e98d33a91c97f9808ab9a5690d9d3",
+    "guard_overlap_observation.py": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+    "guard_parity.py": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854",
+    "guard_request_contract.py": "e2e900515d76aa19a2226b5d4f5a4620708043c91b1180dd386be5c1d536837b",
+    "guard_trusted_clear.py": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+    "native/allocator_sanitizer_probe.c": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495",
+    "native/torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+    "native/torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+    "native/torque_clock.c": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+    "native/torque_clock.h": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+    "native/torque_contract.c": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+    "native/torque_contract.h": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+    "native/torque_guard.c": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+    "native/torque_guard.h": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+    "native/torque_pedal.c": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
+    "native/torque_pedal.h": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
+    "native_bench_replay.py": "a58950870eee9b848417c3ed6ed5b818cd3018c73d0d757920bf48a8a2a42fb9",
+    "pedal_parity.py": "e044d6f2dcf91211ec6b1fb7f046dcb3a20ef2e967194052246363a436daaa7c",
+    "test_allocator_parity.py": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336",
+    "test_native_bench_replay.py": "d2a6b200eff02e73651c24d3d3d177fa1ab5bb23adf9e7a06e9fd2fcd6a9f886",
+    "torque_numeric.py": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
+  },
+  "summary": {
+    "allowed_cycles": 9,
+    "cycles": 18,
+    "inhibited_cycles": 4,
+    "recovery_pending_cycles": 5,
+    "zero_command_cycles": 9
+  },
+  "torque_unit": "N*m",
+  "wheel_order": [
+    "slot_0",
+    "slot_1",
+    "slot_2",
+    "slot_3"
+  ],
+  "wheel_order_note": "Abstract slots; physical wheel mapping requires team evidence."
+}

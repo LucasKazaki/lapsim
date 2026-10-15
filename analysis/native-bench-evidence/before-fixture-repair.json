@@ -1,0 +1,10 @@
+{
+  "schema": "lapsim-native-export-test-fixture-repair/v1",
+  "frozen_before_patch": true,
+  "base_head": "2dd4615e651cf74b2720b0db7432e9232ec07c8e",
+  "source_sha256": "df90b27a3c449af89e67447881c78859c53b21bbddcaafb961f8af2ad82eaef7",
+  "actual_failed_workflow": 38715215671,
+  "actual_failed_job": 116356189867,
+  "actual_failure_log_sha256": "14e39901876b93a7172abd6fcd9024c83512a5c355a6607a515c5457a69d4e3f",
+  "repair": "Only change the valid deeply nested JSON fixture to genuinely malformed JSON with one missing closing bracket; no production policy change."
+}

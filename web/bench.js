@@ -143,7 +143,7 @@
     try{
       const embedded=document.getElementById('embedded-replay');
       if(embedded){
-        accept(embedded.textContent,'Synthetic example · 18 cycles');
+        accept(embedded.textContent,'Embedded replay');
         return;
       }
       const response=await fetch('./examples/enme408-synthetic-replay.json');
@@ -152,5 +152,6 @@
     }catch(cause){if(token===loadGeneration)error(location.protocol==='file:'?'Use Choose replay file, or serve this folder locally to load the example.':cause.message);}
     finally{$('demo-button').disabled=false;}
   });
+  if(document.getElementById('embedded-replay'))$('demo-button').textContent='Load embedded replay';
   $('print-button').addEventListener('click',()=>window.print());
 })();
