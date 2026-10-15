@@ -98,6 +98,7 @@ def main():
         "src/vehicle_model/vehicle.py",
         "src/vehicle_model/interfaces.py",
         "src/vehicle_model/mech/suspension.py",
+        "src/vehicle_model/aero/model.py",
         "tests/test_battery_charge_budget.py",
         "analysis/numerical_invariants/charge-budget-protocol-2026-10-15.json",
         "analysis/numerical_invariants/check_charge_budget.py",

@@ -60,5 +60,10 @@
     }
   ],
   "acceptance_authority": "Frozen source contract, deterministic regression/sweep checks and independent practical review. Model suggestions confer no acceptance.",
-  "scope": "Actual local GPU hypothesis generation; neither proposal establishes a valid regression. No GPU speedup or correctness improvement is claimed."
+  "scope": "Actual local GPU hypothesis generation; neither proposal establishes a valid regression. No GPU speedup or correctness improvement is claimed.",
+  "post_review_delta": {
+    "file": "src/vehicle_model/aero/model.py",
+    "sha256": "4dcbfc22b2e29e86d473d6e6b26fc8ca6f7e9c5d6c1c2c5986cd7c42b05cc1ff",
+    "change": "Independent deterministic review found two mutable ActiveAero query fields outside the local-model prompt. They now opt into rollback;24new regressions were added. The model did not review this addition and is not credited with finding it."
+  }
 }

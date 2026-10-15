@@ -14,6 +14,7 @@ from vehicle_model import (
     RCTheveninBattery,
     Vehicle,
 )
+from vehicle_model.aero import ActiveAero
 
 PACKS = (OCVPackBattery, RCTheveninBattery)
 
@@ -232,3 +233,28 @@ def test_rejection_restores_prior_nonzero_suspension_trial_cache(battery_type):
             Controls(motor_torque_request_nm=100.0, steering_angle_rad=0.1), 0.5
         )
     assert snapshot(vehicle) == before
+
+
+@pytest.mark.parametrize("battery_type", PACKS)
+@pytest.mark.parametrize("mode", ("automatic", "low_drag", "high_downforce"))
+@pytest.mark.parametrize("steering", (0.0, 0.1))
+@pytest.mark.parametrize("primed", (False, True))
+def test_charge_rejection_restores_active_aero_query_state(
+    battery_type, mode, steering, primed
+):
+    vehicle = Vehicle(
+        initial_speed_mps=5.0,
+        aero=ActiveAero(deployment_mode=mode),
+        battery=battery_type(initial_state_of_charge=0.5),
+    )
+    if primed:
+        vehicle.update_state(Controls(steering_angle_rad=0.08), 0.01)
+    vehicle.battery.state_of_charge = 1e-6
+    before, telemetry = snapshot(vehicle), vehicle.telemetry_snapshot()
+    with pytest.raises(ValueError, match="charge|capacity"):
+        vehicle.update_state(
+            Controls(motor_torque_request_nm=100.0, steering_angle_rad=steering),
+            0.5,
+        )
+    assert snapshot(vehicle) == before
+    assert vehicle.telemetry_snapshot() == telemetry

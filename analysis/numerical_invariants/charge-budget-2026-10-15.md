@@ -11,7 +11,7 @@ and advances 0.5 m. PR15 accepts 0.09884059746607142 s at
 2958.3962589648895 W and 9.78305641192093 A. The resulting unclamped SOC is
 -0.00001644161509376886, but stored SOC is zero. The new source rejects this
 interval before committing vehicle state. The initial serialized vehicle is
-unchanged, including the suspension's pending load-query fields.
+unchanged, including pending suspension and active-aero query fields.
 
 For the repository's positive-discharge convention, the policy is
 `delta_Q_Ah = I_A * dt_s / 3600`. Discharge cannot exceed `SOC * capacity_Ah`;
@@ -25,7 +25,10 @@ force solve. No cell subdivision or control retuning is introduced.
 The frozen protocol was committed as `cd99a6b` before production edits. The
 initial regression run on unchanged source recorded 14 failures and 9 passes;
 the first repair exposed suspension query staging in complete-state snapshots.
-The final bounded suite has 116 tests and 722 subtests passing, including 30
+Independent review then found that `ActiveAero.select_configuration` also
+mutated mode/curvature during the trial. The retained regression run failed
+22 of 24 cases before adding rollback for exactly those two query fields.
+The expanded suite has 151 tests and 722 subtests passing, including 54
 new regression cases. The existing generated numerical contracts add 14 passing
 property tests. Source inventory/static-site checks and the critical Ruff gate
 pass. Relative to the exact PR15 baseline, Pyright introduces no diagnostic
@@ -45,9 +48,9 @@ The 104 newly rejected IDs are exactly the 104 old overrun IDs. All 1,344
 retained accepted result rows are identical, and all 712 original rejection
 rows are identical. The named healthy control also retains identical complete
 telemetry. These are separate evidence scopes: complete telemetry equality is
-not asserted for every grid cell. The repaired sweep used 2.929 s wall time
-and 12.297 worker CPU seconds across eight processes; maximum observed worker
-peak working set was 71,872,512 bytes. This small run demonstrates actual CPU
+not asserted for every grid cell. The final repaired sweep used 3.098 s wall time
+and 12.859 worker CPU seconds across eight processes; maximum observed worker
+peak working set was 71,757,824 bytes. This small run demonstrates actual CPU
 parallelism, without claiming a throughput benchmark.
 
 An actual local Qwen GPU review proposed two adversarial cases. Both were
@@ -55,8 +58,9 @@ rejected because they reversed available-charge reasoning and equated power
 with current without voltage. The raw response, reviewed source hashes, and
 explicit dispositions are retained. Model suggestions do not set acceptance.
 
-See `results/charge-budget-2026-10-15.json` for source/evidence hashes, exact
-case IDs, observations, and the comparison. The source-bound local-model
+See `results/charge-budget-reviewed-2026-10-15.json` for final source/evidence
+hashes, exact case IDs, observations, and the comparison. The earlier local
+receipt remains in `results/charge-budget-2026-10-15.json`. The source-bound local-model
 assessment is `results/charge-budget-local-model-review-2026-10-15.json`.
 The frozen physical/domain policy and primary references are in
 `charge-budget-protocol-2026-10-15.json`; the public contract is documented in

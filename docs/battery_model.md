@@ -112,8 +112,9 @@ it cannot silently absorb a materially unsupported interval.
 `Vehicle.update_state` computes the actual terminal-power request and duration
 before committing aero, position, battery, or other built-in state, then calls
 the optional, pure `BatteryUpdatePreflight.validate_state_update`. The built-in
-suspension also restores its pending load-query calculations if the trial is
-rejected. A rejected built-in charge-budget cell leaves the complete serialized
+suspension restores its pending load-query calculations, and `ActiveAero`
+restores its speculative mode/curvature selection if the trial is rejected.
+A rejected built-in charge-budget cell leaves the complete serialized
 vehicle and telemetry unchanged. Existing custom batteries keep the original
 `BatteryModel` interface; opting into pure preflight and query-staging rollback
 is a separate capability. This is not a transaction guarantee for arbitrary
