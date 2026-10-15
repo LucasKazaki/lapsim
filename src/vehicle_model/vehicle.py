@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass, field
 from math import cos, isfinite, sin, sqrt, tan
+from typing import cast
 
+from numpy import float64
 from scipy.optimize import brentq
 
 from lapsim.core.controls import Controls
@@ -638,23 +640,15 @@ class Vehicle:
             )
             return forces_at_acceleration(acceleration_mps2)
 
-        timestep_s = (
-            distance_step_m / initial_speed_mps
-            if initial_speed_mps > 1e-6
-            else sqrt(2.0 * distance_step_m)
-        )
-        converged = False
-        for _ in range(50):
-            operating_values = operating_point(timestep_s)
-            longitudinal_acceleration_mps2 = operating_values.acceleration_mps2
-            if initial_speed_mps == 0.0 and longitudinal_acceleration_mps2 <= 0.0:
+        def traversal_time(acceleration_mps2: float) -> tuple[float, float]:
+            if initial_speed_mps == 0.0 and acceleration_mps2 <= 0.0:
                 raise ValueError(
                     "cannot traverse distance_step_m from rest without positive "
                     "longitudinal acceleration"
                 )
             final_speed_squared_mps2 = (
                 initial_speed_mps**2
-                + 2.0 * longitudinal_acceleration_mps2 * distance_step_m
+                + 2.0 * acceleration_mps2 * distance_step_m
             )
             if final_speed_squared_mps2 < -1e-9:
                 raise ValueError(
@@ -662,8 +656,23 @@ class Vehicle:
                     "end of the cell"
                 )
             final_speed_mps = sqrt(max(0.0, final_speed_squared_mps2))
-            next_timestep_s = (
-                2.0 * distance_step_m / (initial_speed_mps + final_speed_mps)
+            return final_speed_mps, 2.0 * distance_step_m / (
+                initial_speed_mps + final_speed_mps
+            )
+
+        timestep_s = (
+            distance_step_m / initial_speed_mps
+            if initial_speed_mps > 1e-6
+            else sqrt(2.0 * distance_step_m)
+        )
+        converged = False
+        previous_timestep_s = timestep_s
+        for _ in range(50):
+            previous_timestep_s = timestep_s
+            operating_values = operating_point(timestep_s)
+            longitudinal_acceleration_mps2 = operating_values.acceleration_mps2
+            final_speed_mps, next_timestep_s = traversal_time(
+                longitudinal_acceleration_mps2
             )
             if abs(next_timestep_s - timestep_s) <= 1e-10 * max(1.0, next_timestep_s):
                 timestep_s = next_timestep_s
@@ -671,9 +680,48 @@ class Vehicle:
                 break
             timestep_s = next_timestep_s
         if not converged:
-            raise RuntimeError(
-                "distance-domain vehicle update did not converge on an internal "
-                "timestep"
+            # Near the motor-speed cutoff a traversable cell can enter a
+            # stable two-cycle. Solve the same physical consistency equation
+            # inside that observed bracket; never accept its discontinuity
+            # merely because the root finder narrowed the interval.
+            def timestep_residual(candidate_s: float) -> float:
+                _, traversal_s = traversal_time(
+                    operating_point(candidate_s).acceleration_mps2
+                )
+                return candidate_s - traversal_s
+
+            try:
+                # SciPy's unannotated implementation exposes both return
+                # forms to type checkers; full_output=False returns a scalar.
+                timestep_s = cast(
+                    float,
+                    brentq(
+                        timestep_residual,
+                        min(previous_timestep_s, timestep_s),
+                        max(previous_timestep_s, timestep_s),
+                        xtol=1e-12,
+                        rtol=float64(1e-12),
+                        full_output=False,
+                    ),
+                )
+            except ValueError as error:
+                raise RuntimeError(
+                    "distance-domain vehicle update did not converge on an "
+                    "internal timestep"
+                ) from error
+            residual_s = timestep_residual(timestep_s)
+            if (
+                not isfinite(timestep_s)
+                or timestep_s <= 0.0
+                or not isfinite(residual_s)
+                or abs(residual_s) > 1e-10 * max(1.0, timestep_s)
+            ):
+                raise RuntimeError(
+                    "distance-domain vehicle update did not converge on an "
+                    "internal timestep"
+                )
+            final_speed_mps, _ = traversal_time(
+                operating_point(timestep_s).acceleration_mps2
             )
 
         # Evaluate once more at the converged dt, then commit all component

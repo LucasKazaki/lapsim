@@ -1,0 +1,378 @@
+{
+  "schema": "lapsim.numerical-cell-repair-summary.v1",
+  "base_commit": "24698ed5e590f2d2e0d6bfa51a78c5446e436928",
+  "boundaries": [
+    "Synthetic software/equation checks; not real-car calibration.",
+    "The 50 m cell is an intentional coarse numerical boundary, not recommended integration resolution.",
+    "The fallback is accepted only after original timestep-residual validation; no global uniqueness claim."
+  ],
+  "runs": {
+    "baseline": {
+      "requested_cases": 2160,
+      "completed_cases": 2160,
+      "outcomes": {
+        "rejected": 716,
+        "passed": 1444
+      },
+      "failed_checks": {},
+      "rejected_state_mutations": 0,
+      "rejection_reasons": {
+        "cannot traverse distance_step_m from rest without positive longitudinal acceleration": 252,
+        "cannot traverse distance_step_m: vehicle stops before the end of the cell": 460,
+        "distance-domain vehicle update did not converge on an internal timestep": 4
+      },
+      "interval_soc_outside_bounds": 104,
+      "elapsed_seconds": 2.9246791999976267,
+      "protocol_sha256": "e6e2bf4982fbb5837b4c88d7e6f7271b9285f5479708ff16930612e259bb0806",
+      "report_sha256": "a7bb86d3e196353087519bff578b5cef4e3ebc9fad73a851227e3d9d684773fc",
+      "source_hashes": {
+        "analysis\\numerical_invariants\\sweep_cells.py": "a70f2205472910b56187a455999d6662bb6a0ed4846826490418bf6490b70867",
+        "src\\vehicle_model\\vehicle.py": "48ff116cde24e37695a93863fb3f7c0feb6ac4124f518f6c63c7070c52e73d53",
+        "src\\vehicle_model\\mech\\tire.py": "6fe3e33b56994d6fd2199a0800aa6f555b9bc46723648ac8bcb28dbbd3b020a1",
+        "src\\vehicle_model\\powertrain\\drivetrain.py": "0ad595cc1efa7751da5ec6c061632bdb9efdb7c476243d71d677d41cbaad3ad2",
+        "src\\vehicle_model\\electrical\\battery.py": "c73b9ddde4d8d6cb4dbd1c2a015b0fbbcf5cc356e7072672d7c360ba522a568b"
+      },
+      "workers_observed": 8,
+      "worker_cpu_seconds": 12.390625,
+      "max_worker_peak_working_set_bytes": null,
+      "case_dimensions": {
+        "speed": [
+          0.0,
+          1e-06,
+          0.1,
+          5.0,
+          20.0,
+          42.5
+        ],
+        "distance": [
+          0.0001,
+          0.01,
+          0.5,
+          5.0,
+          50.0
+        ],
+        "control": [
+          "brake",
+          "coast",
+          "drive",
+          "hard_drive",
+          "regen",
+          "small_drive"
+        ],
+        "steering": [
+          0.0,
+          0.1,
+          1.55
+        ],
+        "configuration": [
+          "default",
+          "low_grip",
+          "low_soc",
+          "relaxation"
+        ]
+      }
+    },
+    "repaired": {
+      "requested_cases": 2160,
+      "completed_cases": 2160,
+      "outcomes": {
+        "rejected": 712,
+        "passed": 1448
+      },
+      "failed_checks": {},
+      "rejected_state_mutations": 0,
+      "rejection_reasons": {
+        "cannot traverse distance_step_m from rest without positive longitudinal acceleration": 252,
+        "cannot traverse distance_step_m: vehicle stops before the end of the cell": 460
+      },
+      "interval_soc_outside_bounds": 104,
+      "elapsed_seconds": 2.8959695999947144,
+      "protocol_sha256": "66c575ddf067a0d8d0f97ee933d50d6f9a9e0946dae4b60e0887092832e94208",
+      "report_sha256": "bd7d88713527ad22bf0649787d62d20853fd01493719baaa7cbbecc49858c675",
+      "source_hashes": {
+        "analysis\\numerical_invariants\\sweep_cells.py": "a3ca70a922ce5a6a56d2bd4e00fa7d991540d32d971e3cb606b76a54ec7d7571",
+        "src\\vehicle_model\\vehicle.py": "6b1f759d8930f40510a8cd78e7706149f95f699594fcac6bf7ef59deaa216653",
+        "src\\vehicle_model\\mech\\tire.py": "6fe3e33b56994d6fd2199a0800aa6f555b9bc46723648ac8bcb28dbbd3b020a1",
+        "src\\vehicle_model\\powertrain\\drivetrain.py": "0ad595cc1efa7751da5ec6c061632bdb9efdb7c476243d71d677d41cbaad3ad2",
+        "src\\vehicle_model\\electrical\\battery.py": "c73b9ddde4d8d6cb4dbd1c2a015b0fbbcf5cc356e7072672d7c360ba522a568b"
+      },
+      "workers_observed": 8,
+      "worker_cpu_seconds": 11.984375,
+      "max_worker_peak_working_set_bytes": 71786496,
+      "case_dimensions": {
+        "speed": [
+          0.0,
+          1e-06,
+          0.1,
+          5.0,
+          20.0,
+          42.5
+        ],
+        "distance": [
+          0.0001,
+          0.01,
+          0.5,
+          5.0,
+          50.0
+        ],
+        "control": [
+          "brake",
+          "coast",
+          "drive",
+          "hard_drive",
+          "regen",
+          "small_drive"
+        ],
+        "steering": [
+          0.0,
+          0.1,
+          1.55
+        ],
+        "configuration": [
+          "default",
+          "low_grip",
+          "low_soc",
+          "relaxation"
+        ]
+      }
+    },
+    "rpm_neighborhood": {
+      "requested_cases": 160,
+      "completed_cases": 160,
+      "outcomes": {
+        "passed": 160
+      },
+      "failed_checks": {},
+      "rejected_state_mutations": 0,
+      "rejection_reasons": {},
+      "interval_soc_outside_bounds": 0,
+      "elapsed_seconds": 3.782257299993944,
+      "protocol_sha256": "c1f1ca41cfcb0148686c52ea25af038aecec1b27821f5b782bd91aef18e7c0ad",
+      "report_sha256": "1d16f27841297c76e5f75a909b0a4df052e593ec2943327c6f62e5c35d02a667",
+      "source_hashes": {
+        "analysis\\numerical_invariants\\sweep_cells.py": "355dc7eed55d504762bb87bdadc45e64cbd2c1c8a00abe52d7bf7b49a9cbd8b9",
+        "src\\vehicle_model\\vehicle.py": "6b1f759d8930f40510a8cd78e7706149f95f699594fcac6bf7ef59deaa216653",
+        "src\\vehicle_model\\mech\\tire.py": "6fe3e33b56994d6fd2199a0800aa6f555b9bc46723648ac8bcb28dbbd3b020a1",
+        "src\\vehicle_model\\powertrain\\drivetrain.py": "0ad595cc1efa7751da5ec6c061632bdb9efdb7c476243d71d677d41cbaad3ad2",
+        "src\\vehicle_model\\electrical\\battery.py": "c73b9ddde4d8d6cb4dbd1c2a015b0fbbcf5cc356e7072672d7c360ba522a568b"
+      },
+      "workers_observed": 7,
+      "worker_cpu_seconds": 7.4375,
+      "max_worker_peak_working_set_bytes": 72650752,
+      "case_dimensions": {
+        "speed": [
+          35.0,
+          40.0,
+          42.5,
+          44.0
+        ],
+        "distance": [
+          5.0,
+          10.0,
+          25.0,
+          50.0,
+          75.0
+        ],
+        "control": [
+          "drive",
+          "hard_drive"
+        ],
+        "steering": [
+          0.0,
+          0.02
+        ],
+        "configuration": [
+          "default",
+          "relaxation"
+        ]
+      }
+    }
+  },
+  "repaired_cases": [
+    {
+      "case": {
+        "speed": 42.5,
+        "distance": 50.0,
+        "control": "drive",
+        "steering": 0.0,
+        "configuration": "default",
+        "id": 2112
+      },
+      "baseline_reason": "distance-domain vehicle update did not converge on an internal timestep",
+      "repaired": {
+        "case": {
+          "speed": 42.5,
+          "distance": 50.0,
+          "control": "drive",
+          "steering": 0.0,
+          "configuration": "default",
+          "id": 2112
+        },
+        "status": "passed",
+        "failures": [],
+        "force_residual_n": 0.0,
+        "terminal_power_residual_w": 0.0,
+        "conversion_residual_w": -1.4551915228366852e-11,
+        "interval_soc_unclamped": 0.996036487424982,
+        "final_speed_mps": 40.74187145250636,
+        "timestep_s": 1.201318498191593,
+        "battery_power_w": 78549.74746634834
+      }
+    },
+    {
+      "case": {
+        "speed": 42.5,
+        "distance": 50.0,
+        "control": "drive",
+        "steering": 0.0,
+        "configuration": "relaxation",
+        "id": 2115
+      },
+      "baseline_reason": "distance-domain vehicle update did not converge on an internal timestep",
+      "repaired": {
+        "case": {
+          "speed": 42.5,
+          "distance": 50.0,
+          "control": "drive",
+          "steering": 0.0,
+          "configuration": "relaxation",
+          "id": 2115
+        },
+        "status": "passed",
+        "failures": [],
+        "force_residual_n": 0.0,
+        "terminal_power_residual_w": 0.0,
+        "conversion_residual_w": -1.4551915228366852e-11,
+        "interval_soc_unclamped": 0.996036487424982,
+        "final_speed_mps": 40.74187145250636,
+        "timestep_s": 1.201318498191593,
+        "battery_power_w": 78549.74746634834
+      }
+    },
+    {
+      "case": {
+        "speed": 42.5,
+        "distance": 50.0,
+        "control": "hard_drive",
+        "steering": 0.0,
+        "configuration": "default",
+        "id": 2124
+      },
+      "baseline_reason": "distance-domain vehicle update did not converge on an internal timestep",
+      "repaired": {
+        "case": {
+          "speed": 42.5,
+          "distance": 50.0,
+          "control": "hard_drive",
+          "steering": 0.0,
+          "configuration": "default",
+          "id": 2124
+        },
+        "status": "passed",
+        "failures": [],
+        "force_residual_n": 0.0,
+        "terminal_power_residual_w": -1.4551915228366852e-11,
+        "conversion_residual_w": -2.9103830456733704e-11,
+        "interval_soc_unclamped": 0.9960364874256625,
+        "final_speed_mps": 40.74187145166982,
+        "timestep_s": 1.2013184982040348,
+        "battery_power_w": 78549.74745278618
+      }
+    },
+    {
+      "case": {
+        "speed": 42.5,
+        "distance": 50.0,
+        "control": "hard_drive",
+        "steering": 0.0,
+        "configuration": "relaxation",
+        "id": 2127
+      },
+      "baseline_reason": "distance-domain vehicle update did not converge on an internal timestep",
+      "repaired": {
+        "case": {
+          "speed": 42.5,
+          "distance": 50.0,
+          "control": "hard_drive",
+          "steering": 0.0,
+          "configuration": "relaxation",
+          "id": 2127
+        },
+        "status": "passed",
+        "failures": [],
+        "force_residual_n": 0.0,
+        "terminal_power_residual_w": 0.0,
+        "conversion_residual_w": -1.4551915228366852e-11,
+        "interval_soc_unclamped": 0.9960364874256625,
+        "final_speed_mps": 40.741871451669816,
+        "timestep_s": 1.2013184982040348,
+        "battery_power_w": 78549.74745278612
+      }
+    }
+  ],
+  "unchanged_previously_traversable": 1444,
+  "maximum_previously_traversable_speed_change_mps": 0.0,
+  "tests": {
+    "baseline_new_regressions": {
+      "failed": 4,
+      "source": "unchanged PR13 branch"
+    },
+    "repaired_focused_properties_and_map": {
+      "passed": 74,
+      "subtests_passed": 105
+    },
+    "ruff_runtime_gate": "passed",
+    "new_files_broad_ruff": "passed",
+    "junit_sha256": "61257a86c3ec2163c9924106f27c3f8fab567514d44375ac0e15c72c6e5c2745",
+    "baseline_junit_sha256": "c859d191201cc375bc040d9d00de000402095c886338f1e380310adc360e68f5"
+  },
+  "local_model_review": {
+    "model": "qwen3.8-27b-local-q2k:latest",
+    "valid_receipt_sha256": "f6a7af65ea14c8b138c421f8a772e61f8458a97d9deb48556bd6c0323c0e7020",
+    "status": "unverified hypotheses checked against code and deterministic experiments",
+    "rejected_hypotheses": [
+      "No clipped-DC/unpowered-motor mismatch was reproduced in 2160 declared scenarios; this is bounded negative evidence.",
+      "Negative wheel-force/regen concern does not match the nonnegative propulsion caller contract.",
+      "The model conflated the unchanged acceleration bracket with the new timestep bracket."
+    ],
+    "retained_check": "Validate the original timestep residual and reject bracket convergence on a discontinuity; implemented and tested."
+  },
+  "remaining_frontier": {
+    "interval_soc_exhaustion": 104,
+    "note": "104 low-SOC traversable cells would overrun available Coulomb charge within their timestep before SOC is clamped; deliberately diagnostic-only in this receipt and not repaired here.",
+    "next_experiment": "Separately define duration-aware available charge and atomic cell-rejection/subdivision semantics before claiming energy-capacity conservation."
+  },
+  "ci_static_followup": {
+    "failed_source_commit": "30e02a7de1d2fee516d4d407902fb083331ee883",
+    "failed_run_id": 38688037376,
+    "cause": "SciPy unannotated brentq scalar-or-tuple return and NumPy rtol inference introduced 14 Pyright diagnostics; security scan had no findings.",
+    "change": "Explicit full_output=False and cast to documented float result; float64 representation of the unchanged 1e-12 relative tolerance.",
+    "vehicle_source_sha256": "50525d1aaa20159d6c18066f5b9640a8933a85cdb8659539747129f974ba600e",
+    "type_gate": {
+      "baseline_commit": "1e8e35ac64093742caafa67c118ca02efa6e6537",
+      "pyright_version": "1.1.414",
+      "python_analysis_target": "3.11",
+      "current": {
+        "filesAnalyzed": 79,
+        "errorCount": 241,
+        "warningCount": 48,
+        "informationCount": 0,
+        "timeInSec": 4.986
+      },
+      "baseline": {
+        "filesAnalyzed": 77,
+        "errorCount": 241,
+        "warningCount": 48,
+        "informationCount": 0,
+        "timeInSec": 5.041
+      },
+      "new_diagnostic_count": 0,
+      "new_findings": []
+    },
+    "focused_regression_and_map_tests_passed": 9,
+    "junit_sha256": "264f52cc8149757a86d6d1f904452fb68907d74813d6229cc4d57d35cac3c5c2",
+    "ruff_runtime_gate": "passed",
+    "source_inventory_freshness": "passed",
+    "original_sweep_receipts": "Unchanged historical source snapshots and measurements; no repeated whole sweep for this type-interface follow-up."
+  }
+}
