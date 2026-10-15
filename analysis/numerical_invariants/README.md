@@ -49,6 +49,15 @@ generated numerical properties, and source-map freshness. Ruff's runtime gate
 and broad checks on new Python files passed. Updated source-map descriptions
 and function references were inspected in the browser.
 
+The first CI static gate exposed SciPy return-type inference in the fallback:
+its unannotated implementation appeared to return either a scalar or a tuple.
+The call now explicitly requests scalar output, narrows that documented return,
+and represents the unchanged relative tolerance as a NumPy scalar. The same
+Pyright 1.1.414 fingerprint comparison reports zero new diagnostics against the
+repository baseline. All nine timestep-regression/source-map checks passed
+again. This follow-up is recorded separately from the original frozen sweeps;
+their source hashes and measurements remain unchanged.
+
 ## Local-model review and unresolved capacity boundary
 
 The local Qwen review supplied hypotheses, not an acceptance verdict. No alleged

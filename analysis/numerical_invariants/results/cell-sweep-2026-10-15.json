@@ -341,5 +341,38 @@
     "interval_soc_exhaustion": 104,
     "note": "104 low-SOC traversable cells would overrun available Coulomb charge within their timestep before SOC is clamped; deliberately diagnostic-only in this receipt and not repaired here.",
     "next_experiment": "Separately define duration-aware available charge and atomic cell-rejection/subdivision semantics before claiming energy-capacity conservation."
+  },
+  "ci_static_followup": {
+    "failed_source_commit": "30e02a7de1d2fee516d4d407902fb083331ee883",
+    "failed_run_id": 38688037376,
+    "cause": "SciPy unannotated brentq scalar-or-tuple return and NumPy rtol inference introduced 14 Pyright diagnostics; security scan had no findings.",
+    "change": "Explicit full_output=False and cast to documented float result; float64 representation of the unchanged 1e-12 relative tolerance.",
+    "vehicle_source_sha256": "50525d1aaa20159d6c18066f5b9640a8933a85cdb8659539747129f974ba600e",
+    "type_gate": {
+      "baseline_commit": "1e8e35ac64093742caafa67c118ca02efa6e6537",
+      "pyright_version": "1.1.414",
+      "python_analysis_target": "3.11",
+      "current": {
+        "filesAnalyzed": 79,
+        "errorCount": 241,
+        "warningCount": 48,
+        "informationCount": 0,
+        "timeInSec": 4.986
+      },
+      "baseline": {
+        "filesAnalyzed": 77,
+        "errorCount": 241,
+        "warningCount": 48,
+        "informationCount": 0,
+        "timeInSec": 5.041
+      },
+      "new_diagnostic_count": 0,
+      "new_findings": []
+    },
+    "focused_regression_and_map_tests_passed": 9,
+    "junit_sha256": "264f52cc8149757a86d6d1f904452fb68907d74813d6229cc4d57d35cac3c5c2",
+    "ruff_runtime_gate": "passed",
+    "source_inventory_freshness": "passed",
+    "original_sweep_receipts": "Unchanged historical source snapshots and measurements; no repeated whole sweep for this type-interface follow-up."
   }
 }

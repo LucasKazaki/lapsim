@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass, field
 from math import cos, isfinite, sin, sqrt, tan
+from typing import cast
 
+from numpy import float64
 from scipy.optimize import brentq
 
 from lapsim.core.controls import Controls
@@ -689,12 +691,18 @@ class Vehicle:
                 return candidate_s - traversal_s
 
             try:
-                timestep_s = brentq(
-                    timestep_residual,
-                    min(previous_timestep_s, timestep_s),
-                    max(previous_timestep_s, timestep_s),
-                    xtol=1e-12,
-                    rtol=1e-12,
+                # SciPy's unannotated implementation exposes both return
+                # forms to type checkers; full_output=False returns a scalar.
+                timestep_s = cast(
+                    float,
+                    brentq(
+                        timestep_residual,
+                        min(previous_timestep_s, timestep_s),
+                        max(previous_timestep_s, timestep_s),
+                        xtol=1e-12,
+                        rtol=float64(1e-12),
+                        full_output=False,
+                    ),
                 )
             except ValueError as error:
                 raise RuntimeError(
