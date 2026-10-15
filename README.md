@@ -27,6 +27,12 @@ run inputs/results on the visitor's device. Completed runs can be compared and
 downloaded as replayable JSON. See the [browser guide](docs/web_simulator.md) for
 supported inputs, limitations, build steps, and verification evidence.
 
+**Torque review** opens a separate ENME408 bench-replay viewer: load a local
+receipt, inspect proposed wheel-slot commands and fault/recovery transitions,
+and trace the recorded source hashes. A standalone HTML export embeds the
+synthetic demo for sharing. See [the review instructions](docs/web_simulator.md#enme408-torque-review).
+This view displays host-reference evidence; it has no live command transport.
+
 ## Run or share the Windows app
 
 The portable team release is **`LapSim-Windows-x64.zip`**. Extract it and

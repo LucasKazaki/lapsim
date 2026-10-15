@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Review ENME408 proposed torque commands, fault transitions, and replay provenance locally.">
+  <title>LapSim Team Lab · Torque bench review</title>
+  <link rel="stylesheet" href="bench.css">
+  <script src="bench-data.js" defer></script>
+  <script src="bench.js?v=20261015.3" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#review">Skip to replay</a>
+  <header><a class="brand" href="index.html">LapSim <span>Team Lab</span></a><nav aria-label="Main navigation"><a href="index.html">Simulator</a><a href="bench.html" aria-current="page">Torque review</a><a href="map/index.html">Physics map</a></nav></header>
+  <main id="review">
+    <section class="intro"><p class="eyebrow">ENME 408 · Proposed 2027–28 EV</p><h1>Follow the torque.</h1><p class="lede">See when a request becomes a proposed command,<br class="wide-only"> and why a fault holds it at zero.</p></section>
+    <section class="load-panel" aria-labelledby="load-title"><div><h2 id="load-title">Open a bench replay</h2><p>A local JSON receipt from the ENME408 replay tool. Files stay on this device.</p></div><div class="load-actions"><label class="primary" for="receipt-file">Choose replay file<input id="receipt-file" type="file" accept=".json,application/json"></label><button id="demo-button" type="button">Load synthetic example</button></div></section>
+    <p class="boundary">Host reference only. No live connection, hardware commands, measured vehicle results, or physical wheel mapping.</p>
+    <p id="load-error" role="alert" hidden></p><p id="load-status" class="sr-only" role="status" aria-live="polite">Choose a replay file or load the synthetic example.</p>
+    <div id="replay" hidden>
+      <section class="overview" aria-labelledby="receipt-title"><div><p class="eyebrow">Replay evidence</p><h2 id="receipt-title"></h2><p id="provenance"></p></div><span id="file-name" class="file-tag"></span></section>
+      <dl class="metrics"><div><dt>Cycles</dt><dd id="cycles">—</dd></div><div><dt>Command allowed</dt><dd id="allowed">—</dd></div><div><dt>Held at zero</dt><dd id="held">—</dd></div><div><dt>Recovery pending</dt><dd id="recovering">—</dd></div></dl>
+      <section class="panel trace-panel" aria-labelledby="trace-title"><div class="panel-heading"><div><h2 id="trace-title">Request → proposed command</h2><p>Aggregate torque across four abstract wheel slots.</p></div><span class="unit">N·m</span></div>
+        <svg id="trace" viewBox="0 0 1000 280" role="img" aria-labelledby="trace-title trace-description"><desc id="trace-description">Use the cycle slider and table below to inspect exact values.</desc></svg>
+        <div class="legend"><span><i class="requested"></i>Driver request</span><span><i class="command"></i>Proposed total</span><span><i class="held"></i>Command held</span></div>
+      </section>
+      <section class="panel cycle-panel" aria-labelledby="cycle-title"><div class="panel-heading"><h2 id="cycle-title">Inspect a cycle</h2><output id="cycle-label" for="cycle-slider"></output></div><label class="sr-only" for="cycle-slider">Replay cycle</label><input id="cycle-slider" type="range" min="0" max="0" value="0" step="1" aria-describedby="cycle-help"><p id="cycle-help" class="muted">Use the arrow keys to move one cycle at a time.</p>
+        <div class="cycle-layout"><div><div class="status-line"><span id="state" class="state"></span><span id="command-permission"></span></div><p id="reason" class="reason"></p><dl class="observations"><div><dt>Driver request</dt><dd id="request-value"></dd></div><div><dt>Allocator delivery</dt><dd id="delivery-value"></dd></div><div><dt>Allocator</dt><dd id="allocator-state"></dd></div><div><dt>Guard</dt><dd id="guard-state"></dd></div><div><dt>Pedal latch</dt><dd id="pedal-latch"></dd></div><div><dt>Restart generation</dt><dd id="generation"></dd></div></dl></div>
+          <div class="wheel-slots"><h3>Proposed wheel-slot commands</h3><dl><div><dt>Slot 0</dt><dd id="wheel-0"></dd></div><div><dt>Slot 1</dt><dd id="wheel-1"></dd></div><div><dt>Slot 2</dt><dd id="wheel-2"></dd></div><div><dt>Slot 3</dt><dd id="wheel-3"></dd></div></dl><p class="muted">Slots are abstract. Motor count, orientation, scaling, and physical order need team confirmation.</p></div></div>
+      </section>
+      <section class="panel events-panel" aria-labelledby="events-title"><div class="panel-heading"><div><h2 id="events-title">Fault and recovery events</h2><p>Select an event to inspect its exact cycle.</p></div></div><div class="table-scroll" tabindex="0" role="region" aria-label="Fault and recovery event table"><table><thead><tr><th scope="col">Cycle / time</th><th scope="col">Recovery state</th><th scope="col">Command</th><th scope="col">Reason</th></tr></thead><tbody id="events"></tbody></table></div></section>
+      <details class="panel provenance-panel"><summary>Source identity and reproduction</summary><p>This viewer checks structure and command-gate consistency. It does not authenticate files or rerun the controller. Reproduce the scenario with the matching source to verify these recorded hashes.</p><dl><div><dt>Scenario SHA-256</dt><dd id="scenario-hash" class="hash"></dd></div><div><dt>Fixed replay period</dt><dd id="period"></dd></div><div><dt>Recovery qualification</dt><dd id="qualification"></dd></div></dl><div class="table-scroll" tabindex="0" role="region" aria-label="Recorded source hashes"><table><thead><tr><th scope="col">Source file</th><th scope="col">SHA-256</th></tr></thead><tbody id="sources"></tbody></table></div></details>
+      <div class="review-note"><p><strong>Next team review:</strong> confirm the signal contract, approved fault/reset policy, and a sanitized capture before any target implementation or bench actuation.</p><button id="print-button" type="button">Print review</button></div>
+    </div>
+    <section id="empty" class="empty"><div class="chain" aria-hidden="true"><span>Request</span><b>→</b><span>Allocator</span><b>→</b><span>Guard</span><b>→</b><span>Recovery</span><b>→</b><strong>Command</strong></div><h2>One command path. Every decision visible.</h2><p>The synthetic example includes startup, saturation, pedal overlap, communication loss, a restart, stale input, and an open interlock.</p></section>
+  </main>
+  <footer><span>ENME408 torque-control reference · review candidate</span><a href="https://github.com/LucasKazaki/lucas-agent-studio/pull/68">Reference implementation · draft PR 68</a></footer>
+  <noscript><p>Enable JavaScript to inspect the replay. The JSON and CSV remain readable with ordinary file tools.</p></noscript>
+</body>
+</html>
