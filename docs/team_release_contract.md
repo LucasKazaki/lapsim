@@ -8,21 +8,28 @@
 2. **Developer:** clone this repository, run one documented bootstrap entrypoint, then use the same physics/controller code and scenarios. State prerequisite Python/Tk and platform requirements before the command. First-time dependency installation may require network access.
 3. **Embedded developer:** opt into compiler/emulator/board tooling. The ordinary application remains usable when those optional dependencies or hardware are absent. Programming a board is a separate explicit action.
 
-Existing source startup is `setup_lapsim.cmd` followed by `launch_lapsim.cmd` on Windows; setup currently creates a virtual environment, installs dependencies and checks Tk/resources. Existing portable build and frozen self-test instructions are in [release.md](release.md). These are starting mechanisms, not evidence that a release ZIP is already published. The October 16 review found no published GitHub Release. Refresh before changing that statement.
+Implemented source startup is `python scripts/bootstrap.py --launch`; Windows
+`setup_lapsim.cmd` and `launch_lapsim.cmd` delegate to that entrypoint. It creates
+or checks a project-local environment and validates imports, resources, synthetic
+replays and Tk. Actual wheel/sdist/portable checks are described in
+[release.md](release.md). The owner deferred public release on 16 October;
+source/build verification does not establish a published asset.
 
 Do not confuse the browser simulator with a fully offline package: its scientific runtime currently loads on first use. An offline desktop release is the first offline deliverable. An offline browser edition requires its own runtime licensing, vendoring, caching and acceptance work.
 
-## 2. One-command bootstrap target
+## 2. Implemented one-command bootstrap
 
-Proposed command interface, **not available merely because documented here**:
+Implemented and exercised from a source snapshot with spaces and Unicode paths:
 
 ```text
 python scripts/bootstrap.py --launch
 python scripts/bootstrap.py --check
-python scripts/bootstrap.py --extras controller-dev
+python scripts/bootstrap.py --dev
 ```
 
-The implementer may select another concise interface if it preserves these behaviors and updates all docs/tests. Use the script's own location to find the checkout, not the caller's working directory.
+The script uses its own location to find the checkout, independently of the
+caller's working directory. `--dev` adds development tests, while native compilers,
+emulators and physical hardware remain separate opt-in dependencies.
 
 Requirements:
 

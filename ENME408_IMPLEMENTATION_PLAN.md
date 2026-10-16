@@ -2,7 +2,14 @@
 
 Updated: **16 October 2026**. Tracking: [issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
 
-**Status: implementation handoff, not a completed feature release.** This document records what the implementation agent should build and how completion must be demonstrated. Its addition does not merge the functional PRs, create an executable release, implement a bicycle model, or establish STM32 execution.
+**Status, 16 October implementation:** the consolidated main baseline includes
+the controller source closure, source/resource repairs and the real dynamic
+bicycle. The constrained control/virtual STM32 and installed-package tranche is
+tracked in PR #51 with reviewed follow-ups #54/#55. E15 adds the standalone
+component study described in [its guide](docs/component_study.md). Check the live
+PR/issue state before treating a candidate as merged. Public release and site
+deployment are deferred by the owner; physical PIL remains unavailable. The
+contracts below retain the acceptance work and staged future scope.
 
 ## Overnight implementation window (16 October 2026)
 

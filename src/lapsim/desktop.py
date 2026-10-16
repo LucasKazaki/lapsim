@@ -21,6 +21,7 @@ def self_test(report_path: Path) -> dict:
     from .ui.basic_dynamics import BasicDynamicsLab
     from .experiments.basic_dynamics import decode_json, replay_bicycle_record
     from .experiments.control_study import replay_control_comparison
+    from .experiments.component_study import replay_component_comparison
     from .ui.simulation import load_team_endurance_track, run_one_lap
     from .courses.spatial_track import SpatialTrack
     from .courses.track import Curve, Track
@@ -81,6 +82,39 @@ def self_test(report_path: Path) -> dict:
             and all(len(axis.lines) == 2 for axis in control.axes.flat)
         )
         control.close()
+        lab.component_study_button.invoke()
+        component = lab.latest_component_study
+        component.run_button.invoke()
+        root.update_idletasks()
+        if component.record is None:
+            raise RuntimeError("Component study failed: " + component.status.get())
+        component_record = component.record
+        checks["component_study_ui_run"] = (
+            component_record["geometry_policy"] == "fixed_geometry"
+            and all(len(axis.lines) == 2 for axis in component.axes)
+            and replay_component_comparison(component_record)["runs_replayed"] == 2
+        )
+        with TemporaryDirectory(prefix="lapsim-component-") as component_directory:
+            component_path = Path(component_directory) / "comparison.json"
+            component.save_to(component_path)
+            component.load_from(component_path)
+            checks["component_study_saved_replay"] = (
+                component.record == component_record and component.imported
+                and component.run_button.instate(["disabled"])
+            )
+            component.new()
+            component.inputs["outside_b"].set(".03")
+            component.run_button.invoke()
+            checks["component_geometry_recomputes_mass_inertia"] = (
+                component.record is not None
+                and component.record["geometry_policy"] == "manual_geometry_change"
+                and component.record["runs"]["B"]["result"]["nominal"]["mass_kg"]
+                > component_record["runs"]["B"]["result"]["nominal"]["mass_kg"]
+            )
+            component.inputs["force"].set("nan")
+            component.run_button.invoke()
+            checks["component_invalid_input_clears_result"] = component.record is None
+        component.close()
         lab.close()
         # Child widgets are destroyed by root, allowing their lifecycle hooks to run.
     finally:
@@ -143,6 +177,8 @@ def self_test(report_path: Path) -> dict:
                           "plant_ticks": bicycle_record["result"]["plant_ticks"]},
         "control_study": {"run_id": control_record["run_id"],
                           "runs_replayed": 2, "backend_id": "python_reference"},
+        "component_study": {"run_id": component_record["run_id"],
+                            "runs_replayed": 2, "backend_id": "analytic_python"},
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

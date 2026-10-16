@@ -23,6 +23,7 @@ def check_runtime(*, desktop: bool = False) -> dict:
         "controller/import-manifest.json",
         "src/lapsim/dynamics/bicycle.py",
         "src/lapsim/dynamics/powered_planar.py",
+        "src/lapsim/experiments/component_study.py",
         "firmware/bench/main.c",
     )
     for name in required:
@@ -40,6 +41,10 @@ def check_runtime(*, desktop: bool = False) -> dict:
         BicycleScenario,
         replay_bicycle_record,
         run_bicycle_scenario,
+    )
+    from .experiments.component_study import (
+        replay_component_comparison,
+        run_component_comparison,
     )
     from .experiments.control_study import (
         DEFAULT_REQUEST,
@@ -60,6 +65,9 @@ def check_runtime(*, desktop: bool = False) -> dict:
         != 2
     ):
         raise RuntimeError("Controller startup replay disagrees")
+    component = run_component_comparison()
+    if replay_component_comparison(component)["runs_replayed"] != 2:
+        raise RuntimeError("Component startup replay disagrees")
     if desktop:
         from .ui._tk_runtime import configure_tk_libraries
 
@@ -108,6 +116,8 @@ def check_runtime(*, desktop: bool = False) -> dict:
         "bicycle_run_id": bicycle["run_id"],
         "comparison_run_id": comparison["run_id"],
         "comparison_runs_replayed": 2,
+        "component_comparison_run_id": component["run_id"],
+        "component_runs_replayed": 2,
         "optional_backends": "Ordinary startup does not require native compiler/emulator/hardware",
     }
 
