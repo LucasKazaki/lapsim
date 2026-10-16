@@ -25,9 +25,14 @@ jobs:
           persist-credentials: false
       - name: Fetch the proposed head commit without checking it out
         env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: git fetch --no-tags origin "$HEAD_SHA"
-      - name: Run the validator from the trusted base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "refs/pull/${PR_NUMBER}/head"
+          test "$(git rev-parse FETCH_HEAD)" = "$HEAD_SHA"
+      - name: Run the validator from the trusted base checkout
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -38,5 +43,4 @@ jobs:
             echo "DCO policy marker is absent from the trusted base; bootstrap PR exempt."
             exit 0
           fi
-          git show "$BASE_SHA:scripts/check_dco.py" > "$RUNNER_TEMP/check_dco.py"
-          python "$RUNNER_TEMP/check_dco.py" --base "$BASE_SHA" --head "$HEAD_SHA"
+          python scripts/check_dco.py --base "$BASE_SHA" --head "$HEAD_SHA"
