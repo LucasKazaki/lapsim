@@ -186,7 +186,7 @@
       if (!finite(settings[key]) || settings[key] < min || settings[key] > max) throw new Error(`${key} must be between ${min} and ${max}.`);
     }
     const length = selectedCourse(settings.courseId)?.lengthM;
-    if (finite(length) && Math.ceil(length/settings.maxCellLengthM) > 1200) throw new Error('This grid exceeds the browser limit of 1,200 cells. Choose a larger maximum cell length.');
+    if (finite(length) && Math.ceil(length/settings.maxCellLengthM) > 5000) throw new Error('This grid exceeds the browser limit of 5,000 cells. Choose a larger maximum cell length.');
     return settings;
   }
   async function run(event) {
