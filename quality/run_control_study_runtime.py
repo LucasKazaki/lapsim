@@ -19,9 +19,12 @@ OUT = ROOT / "audit/control-study"
 def wait_result(page, count):
     page.wait_for_function(
         "n=>window.__controlResults.length>=n || !document.getElementById('control-error').hidden",
-        arg=count, timeout=180000,
+        arg=count,
+        timeout=180000,
     )
-    assert page.locator("#control-error").is_hidden(), page.locator("#control-error").inner_text()
+    assert page.locator("#control-error").is_hidden(), page.locator(
+        "#control-error"
+    ).inner_text()
 
 
 def main():
@@ -82,6 +85,12 @@ def main():
                         and run["result"]["plant_ticks"] == 200
                     )
                 records.append(record)
+                assert (
+                    page.get_by_role(
+                        "rowheader", name="Rejected regeneration (N·m·s)", exact=True
+                    ).count()
+                    == 1
+                )
             assert (
                 records[0]["runs"]["A"]["result"] == records[0]["runs"]["B"]["result"]
             )
@@ -151,7 +160,7 @@ def main():
             stopped = decode_json(stop_path.read_bytes(), maximum_bytes=40_000_000)
             assert replay_control_comparison(stopped)["model_agreement"]
             for run in stopped["runs"].values():
-                assert run["schema"] == "lapsim.closed-loop.record.v2"
+                assert run["schema"] == "lapsim.closed-loop.record.v3"
                 assert run["result"]["final_state"]["wheel_stop_events"] >= 4
                 assert run["result"]["pack_draw_j"] == 0
                 assert all(
@@ -186,6 +195,7 @@ def main():
                 "actual_worker_comparisons": 4,
                 "host_replayed_runs": 8,
                 "near_stop_braking_checked": True,
+                "separate_rejected_regeneration_metric_visible": True,
                 "browser_replayed_imported_runs": 2,
                 "import_preserves_exact_record": True,
                 "invalid_import_rejected": True,

@@ -14,12 +14,89 @@ from typing import Any
 
 from lapsim.resources import repository_root
 
+from .basic_dynamics import decode_json
 from .controller_backend import (
     ZERO,
     PythonController,
     controller_module,
     controller_source_identity,
 )
+
+NATIVE_SOURCES = (
+    "torque_contract.c",
+    "torque_clock.c",
+    "torque_pedal.c",
+    "torque_guard.c",
+    "torque_allocator.c",
+)
+NUMERIC_CONTRACT = (
+    "binary64, ordinary nearest rounding, retained subnormals; frozen host flags"
+)
+
+
+def validate_native_build(binary: Path) -> dict:
+    """Bind a real binary to its declared current source and compiler recipe."""
+    try:
+        with (binary.parent / "build.json").open("rb") as stream:
+            receipt = decode_json(stream.read(1_000_001), maximum_bytes=1_000_000)
+        required = {
+            "schema",
+            "compiler_invoked",
+            "compiler_version",
+            "argv",
+            "binary",
+            "binary_sha256",
+            "source_files_sha256",
+            "numeric_contract",
+        }
+        if (
+            not isinstance(receipt, dict)
+            or set(receipt) != required
+            or receipt["schema"] != "lapsim.native-controller-build.v1"
+        ):
+            raise ValueError("invalid native build receipt schema")
+        for name in ("compiler_invoked", "compiler_version", "binary"):
+            if (
+                not isinstance(receipt[name], str)
+                or not 1 <= len(receipt[name]) <= 16384
+            ):
+                raise ValueError("invalid native compiler/build identity")
+        root = repository_root() / "controller/reference/native"
+        expected = {
+            path.name: sha256(path.read_bytes()).hexdigest()
+            for path in sorted(root.glob("torque_*.[ch]"))
+        }
+        if receipt["source_files_sha256"] != expected:
+            raise ValueError("native source drift; rebuild the library")
+        recipe = controller_module("allocator_parity").frozen_protocol()[
+            "planned_verification"
+        ]
+        flags = [
+            *recipe["host_common_flags"],
+            *recipe["host_platform_flags"][
+                "Windows" if sys.platform == "win32" else "other_supported_hosts"
+            ],
+        ]
+        command = [
+            receipt["compiler_invoked"],
+            *flags,
+            *NATIVE_SOURCES,
+            "-o",
+            receipt["binary"],
+            "-lm",
+        ]
+        if (
+            receipt["argv"] != command
+            or receipt["numeric_contract"] != NUMERIC_CONTRACT
+        ):
+            raise ValueError("native build recipe mismatch; rebuild the library")
+        if receipt["binary_sha256"] != sha256(binary.read_bytes()).hexdigest():
+            raise ValueError("native binary hash mismatch; rebuild the library")
+        return receipt
+    except OSError as exc:
+        raise ValueError(
+            "native library requires its adjacent builder build.json; rebuild with the project builder"
+        ) from exc
 
 
 def find_runtime_compiler(explicit: str | None = None) -> str:
@@ -54,13 +131,7 @@ def build_native_controller(output: Path, compiler: str | None = None) -> dict:
     binary = output / (
         "lapsim_controller.dll" if sys.platform == "win32" else "lapsim_controller.so"
     )
-    sources = [
-        "torque_contract.c",
-        "torque_clock.c",
-        "torque_pedal.c",
-        "torque_guard.c",
-        "torque_allocator.c",
-    ]
+    sources = NATIVE_SOURCES
     command = [compiler, *flags, *sources, "-o", str(binary), "-lm"]
     environment = dict(os.environ)
     environment["PATH"] = (
@@ -98,7 +169,7 @@ def build_native_controller(output: Path, compiler: str | None = None) -> dict:
             p.name: sha256(p.read_bytes()).hexdigest()
             for p in sorted(root.glob("torque_*.[ch]"))
         },
-        "numeric_contract": "binary64, ordinary nearest rounding, retained subnormals; frozen host flags",
+        "numeric_contract": NUMERIC_CONTRACT,
     }
     (output / "build.json").write_text(
         json.dumps(receipt, indent=2) + "\n", encoding="utf-8"
@@ -112,6 +183,7 @@ class NativeController(PythonController):
     backend_id = "native_c"
 
     def __init__(self, binary: Path, period_ms: int = 10, maximum_age_ms: int = 50):
+        receipt = validate_native_build(binary)
         super().__init__(period_ms, maximum_age_ms)
         self.native = controller_module("allocator_parity")
         self.guard_api = controller_module("guard_parity")
@@ -125,6 +197,18 @@ class NativeController(PythonController):
             **controller_source_identity(),
             "backend": "native_c",
             "binary_sha256": sha256(binary.read_bytes()).hexdigest(),
+            "native_build": {
+                key: receipt[key]
+                for key in (
+                    "schema",
+                    "compiler_invoked",
+                    "compiler_version",
+                    "argv",
+                    "source_files_sha256",
+                    "numeric_contract",
+                    "binary_sha256",
+                )
+            },
             "execution": "actual host shared library; no Python output fallback",
         }
 
