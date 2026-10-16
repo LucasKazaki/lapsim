@@ -605,6 +605,10 @@ class LapSimDesktop:
             padx=8,
         ).pack(side="right")
         tk.Button(
+            header, text="Basic dynamics · bicycle", command=self._open_basic_dynamics,
+            font=FONT, padx=8, pady=4,
+        ).pack(side="right", padx=(0, 9))
+        tk.Button(
             header, text="Four-wheel lab", command=self._open_dynamics_lab,
             relief="raised", bd=1, font=FONT,
         ).pack(side="right", padx=(0, 9))
@@ -3353,6 +3357,11 @@ class LapSimDesktop:
                 raise OSError("No browser could open the simulator map. Open docs/simulator_flowchart/index.html from the team ZIP.")
         except (OSError, ValueError) as error:
             messagebox.showerror("Could not open simulator map", str(error), parent=self.root)
+
+    def _open_basic_dynamics(self) -> None:
+        from .basic_dynamics import BasicDynamicsLab
+
+        BasicDynamicsLab(self.root)
 
     def _open_dynamics_lab(self) -> None:
         from .dynamics_lab import DynamicsLab

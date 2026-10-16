@@ -52,10 +52,13 @@ sys.frozen = True
 sys._MEIPASS = '/lapsim'
 sys.path[:0] = ['/lapsim/bundle/vendor', '/lapsim/bundle/src', '/lapsim/bundle/web']
 from bridge import capabilities, run_simulation_json
+from dataclasses import asdict
+from lapsim.experiments.basic_dynamics import BicycleScenario, run_basic_json
 def _web_progress(update):
     _emit_progress_json(json.dumps(update, allow_nan=False))
 `);
   const metadata = JSON.parse(runtime.runPython("json.dumps(capabilities(), allow_nan=False)"));
+  metadata.basicDynamicsDefaults = JSON.parse(runtime.runPython("json.dumps(asdict(BicycleScenario()), allow_nan=False)"));
   self.postMessage({ type: "ready", capabilities: metadata });
   return runtime;
 }
@@ -97,8 +100,9 @@ self.onmessage = async event => {
     lastProgressAt = 0;
     const py = await ready();
     py.globals.set("_request_json", JSON.stringify(message.settings));
-    const encoded = await py.runPythonAsync("run_simulation_json(_request_json, _web_progress)");
-    self.postMessage({ type: "result", requestId, result: JSON.parse(encoded) });
+    if (message.mode !== undefined && message.mode !== "basic_dynamics") throw new Error("Unsupported experiment mode.");
+    const encoded = await py.runPythonAsync(message.mode === "basic_dynamics" ? "run_basic_json(_request_json)" : "run_simulation_json(_request_json, _web_progress)");
+    self.postMessage({ type: "result", requestId, result: JSON.parse(encoded), resultJson: encoded });
   } catch (error) {
     self.postMessage({ type: "error", requestId, error: { kind: error.name ?? "Error", message: String(error.message ?? error) } });
   } finally {
