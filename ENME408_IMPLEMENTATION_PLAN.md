@@ -74,6 +74,32 @@ Refresh these against live GitHub before making changes. A dated SHA is an audit
 | [Studio #77](https://github.com/LucasKazaki/lucas-agent-studio/pull/77) | `17715fc698a4bc7b3a7807d0d6f869045fdab5a4` | Five-component compiled C host replay |
 | [Studio #78](https://github.com/LucasKazaki/lucas-agent-studio/pull/78) | `73cc2e2bbbf3fdae4a4fed1cc6e7b3df8bbb110e` | Successor with additional unlinked Cortex-M4 allocator evidence; open draft at refresh |
 
+### Implementation inventory refreshed 16 October 2026, 02:48 Eastern
+
+The table above preserves the starting lineage. The following are the current
+integration audit anchors. Always refresh live refs; none is permission to reset
+a checkout. At this refresh, live main remains
+`466f612f88bcaf9fe88f61e1e1ccfafed540245d`. The combined candidate is
+`33b8dcceb1c8ea33f50dc5802df346b7cbfac7e6` in
+[PR #21](https://github.com/LucasKazaki/lapsim/pull/21), awaiting its final
+combined review/checks and main merge.
+
+| Package | Tested source / integrated PR | Current scope and evidence |
+|---|---|---|
+| E01 intended ancestry and handoff | #13 -> #15 -> #17 -> #18, plus #20 at `0c2444ab4f0cd82a68bf1bb566aad8b8b104355c` | Preserved by merge ancestry in #21; superseded #14/#16 excluded; original numerical counterexamples retained |
+| E01 browser staging | #30 at `6bca36f05dfc44b1ee79f21b4fd50b05d92407db` | Immutable complete replay allowlist, actual PowerShell boundary tests; merged to integration |
+| E02 self-contained controller | #46 at `bee9c929bee0456e07ba1405cae0305f59be4bea` | 419 original blobs verified; two separately hashed relocation patches retain originals and historical receipts; 538 tests and actual five-owner C replay pass in a fresh direct-temp clone; merged to integration |
+| E04 dynamic bicycle | #36 at `de684edfd101ab2fa45421385a0597a826ee5a93` | Six-state synthetic plant, desktop/browser sessions, JSON replay and CSV; real browser and Windows frozen self-test pass; merged to integration |
+| E05 effective grids and historical reports | #24 at `c8dcce0fb7821e58b4c4354646b732c080925dfc` | Real desktop/browser grid parity and legacy embedded-geometry replay; stale validation commands corrected; merged to integration |
+
+The Studio source identity remains `73cc2e2...`; its #78 object evidence is
+historical and unlinked. Fresh LapSim host evidence is distinct. E03 sensor
+contracts, E06/E07 constrained control, E10 target execution and E15+ subsystem
+studies are follow-on packages outside this integration snapshot. Installed
+wheel/resource and full recipient-route acceptance remain E05/E09 work.
+Public release is deferred by the user; no release asset or deployment follows
+from these source merges. Keep issues #12/#19 open for the remaining gates.
+
 LapSim already contains a modular distance-domain/event solver, desktop UI, browser Python runtime, source-aware profiles, saved/replayable results, a separate ten-state planar four-wheel lab, map/anatomy views, build scripts and quality gates. Preserve them. The lap plant, transient plant and receipt viewer are not yet one closed-loop controller experiment.
 
 The overnight numerical work should not be discarded. PR15 records a fallback for a four-case motor-cutoff timestep oscillation; PR17 records rejection of 104 interval-charge overruns in a 2,160-case synthetic sweep. Preserve their failure cases, original accepted results and rollback checks. They establish bounded numerical behavior, not real-car validation. PR17 does not yet implement adaptive subdivision, torque retuning or a complete event-level battery-exhaustion policy.
