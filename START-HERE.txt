@@ -1,21 +1,39 @@
-LapSim team demonstration - Windows x64
+LapSim / ENME408 - start here
 
-1. Extract the ZIP, then double-click LapSim.exe. Python is bundled.
-2. Choose "Synthetic loop · AI demo" from Course and run a centerline lap.
-3. Click Simulator map to explore the flowchart, physics equations and
-   individual variables. Search and click the child buttons to drill down.
-4. Read docs/team_guide.md for the demo, units, saved records and model limits.
-   The full engineering handoff is output/pdf/LapSim_Engineering_Handoff.pdf.
-5. portable-self-test.json and verification/ contain the release check evidence.
-   checksums.json identifies the executable; build-info.json identifies sources.
+TEAM MEMBERS
+Read docs/team_guide.md for the existing synthetic demo, units and model limits.
+Read docs/team_review_and_data_request.md for the review agenda and data request.
+The current architecture is documented in docs/engineering_handoff.md.
 
-The executable also runs by itself. The ZIP keeps the documentation, map,
-source snapshot, dependency notices and verification evidence together.
+SOURCE CHECKOUT - existing Windows route
+Install a supported 64-bit Python with Tk as described in the README, then run:
+  setup_lapsim.cmd
+  launch_lapsim.cmd
+Setup may need internet access to install dependencies. The public synthetic
+example must not require private team data, an AI account or hardware.
 
-The fused GNSS/IMU course has a documented geometry mismatch. Use the synthetic
-course for coherent path demonstrations. AI racing line and the separate
-four-wheel pose preview are experimental. Test agreement does not establish
-real-car predictive accuracy.
+PORTABLE PACKAGE - when supplied as an actual reviewed release ZIP
+Extract LapSim-Windows-x64.zip and double-click LapSim.exe; Python is bundled.
+Select "Synthetic loop · AI demo" from Course and run a centerline lap.
+Click Simulator map to inspect the flowchart, equations and source references.
+Keep the docs, source snapshot, checksums.json, build-info.json,
+portable-self-test.json and verification/ evidence with the package.
+See docs/release.md for the existing build/self-test and unsigned-binary notes.
+A source clone is not an EXE download. No GitHub Release was present at the
+16 October 2026 handoff snapshot; check actual Releases before advertising one.
 
-This is an unsigned internal team build. See docs/release.md for rebuilding,
-the source identity, distribution details and troubleshooting.
+IMPLEMENTATION AGENTS / DEVELOPERS
+Start with ENME408_IMPLEMENTATION_PLAN.md and AGENTS.md.
+Tracking: https://github.com/LucasKazaki/lapsim/issues/19
+Detailed contracts: docs/team_release_contract.md,
+docs/controller_testing_contract.md, docs/stm32_development_path.md.
+These describe remaining work, including PR integration, a true bicycle
+baseline, one-command bootstrap, same-repo controller source and STM32 testing.
+They do not mean those features were implemented by this documentation update.
+
+The fused course has a documented geometry mismatch; use synthetic geometry
+for coherent demonstrations. The lap model, four-wheel experiment and torque
+receipt viewer have different scopes. Synthetic results and software tests do
+not establish real-car accuracy or validated torque-control gains.
+No new team data are available. Normal simulator startup must not connect to
+or flash a board, transmit CAN commands or operate vehicle hardware.
