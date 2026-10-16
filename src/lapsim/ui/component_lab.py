@@ -42,8 +42,41 @@ class ComponentLab:
             text="Compare two synthetic isotropic materials under the same tip force and torque.",
             wraplength=1050,
         ).grid(row=1, column=0, columnspan=2, sticky="w", pady=(4, 18))
-        controls = ttk.Frame(body)
-        controls.grid(row=2, column=0, sticky="n", padx=(0, 24))
+        shell = ttk.Frame(body)
+        shell.grid(row=2, column=0, sticky="nsew", padx=(0, 24))
+        self.controls_canvas = tk.Canvas(
+            shell, width=270, highlightthickness=0, takefocus=1
+        )
+        scrollbar = ttk.Scrollbar(shell, command=self.controls_canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+        self.controls_canvas.configure(yscrollcommand=scrollbar.set)
+        self.controls_canvas.pack(side="left", fill="both", expand=True)
+        controls = ttk.Frame(self.controls_canvas)
+        panel = self.controls_canvas.create_window((0, 0), window=controls, anchor="nw")
+        controls.bind(
+            "<Configure>",
+            lambda _event: self.controls_canvas.configure(
+                scrollregion=self.controls_canvas.bbox("all")
+            ),
+        )
+        self.controls_canvas.bind(
+            "<Configure>",
+            lambda event: self.controls_canvas.itemconfigure(panel, width=event.width),
+        )
+        for key, direction in (("<Up>", -1), ("<Down>", 1)):
+            self.controls_canvas.bind(
+                key,
+                lambda _event, d=direction: self.controls_canvas.yview_scroll(
+                    d, "units"
+                ),
+            )
+        for key, direction in (("<Prior>", -1), ("<Next>", 1)):
+            self.controls_canvas.bind(
+                key,
+                lambda _event, d=direction: self.controls_canvas.yview_scroll(
+                    d, "pages"
+                ),
+            )
         ttk.Label(
             controls,
             text="Clamped circular cantilever\nA · light reference, E = 70 GPa\nB · dense reference, E = 200 GPa",
@@ -107,20 +140,54 @@ class ComponentLab:
         self.metrics = tk.StringVar(
             value="Calculate to see component stiffness, stress, mass and inertia."
         )
-        ttk.Label(
+        metrics_label = ttk.Label(
             results, textvariable=self.metrics, justify="left", wraplength=710
-        ).pack(anchor="w", pady=(10, 4))
+        )
+        metrics_label.pack(anchor="w", pady=(10, 4))
+        results.bind(
+            "<Configure>",
+            lambda event: metrics_label.configure(wraplength=max(200, event.width - 8)),
+        )
         self.status = tk.StringVar(
             value="Synthetic component benchmark · analytic Python · no chassis or vehicle coupling"
         )
-        ttk.Label(body, textvariable=self.status, wraplength=1060).grid(
-            row=3, column=0, columnspan=2, sticky="w", pady=(16, 5)
-        )
-        ttk.Label(
+        status_label = ttk.Label(body, textvariable=self.status, wraplength=860)
+        status_label.grid(row=3, column=0, columnspan=2, sticky="w", pady=(16, 5))
+        note_label = ttk.Label(
             body,
             text="Independent sensitivity envelopes are not confidence intervals. Illustrative yield values are not certified allowables. Geometry changes are manual; no optimization is performed.",
-            wraplength=1060,
-        ).grid(row=4, column=0, columnspan=2, sticky="w")
+            wraplength=860,
+        )
+        note_label.grid(row=4, column=0, columnspan=2, sticky="w")
+        body.bind(
+            "<Configure>",
+            lambda event: [
+                label.configure(wraplength=max(300, event.width - 40))
+                for label in (status_label, note_label)
+            ],
+        )
+
+        def reveal(event):
+            top = event.widget.winfo_rooty() - controls.winfo_rooty()
+            bottom = top + event.widget.winfo_height()
+            start = self.controls_canvas.canvasy(0)
+            height = self.controls_canvas.winfo_height()
+            total = max(1, controls.winfo_reqheight())
+            if top < start:
+                self.controls_canvas.yview_moveto(max(0, top) / total)
+            elif bottom > start + height:
+                self.controls_canvas.yview_moveto(max(0, bottom - height) / total)
+
+        for item in [
+            *self.entries,
+            self.bounds_check,
+            *[
+                child
+                for child in controls.winfo_children()
+                if isinstance(child, ttk.Button)
+            ],
+        ]:
+            item.bind("<FocusIn>", reveal)
         self.window.protocol("WM_DELETE_WINDOW", self.close)
         self.window.bind("<Destroy>", self._destroy)
         self.render()
