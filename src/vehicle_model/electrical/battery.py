@@ -2,7 +2,7 @@
 
 from bisect import bisect_left
 from dataclasses import dataclass, field
-from math import exp, isfinite
+from math import exp, isfinite, ulp
 from numbers import Integral
 
 from .battery_ocv import CELL_OCV_TABLE
@@ -314,20 +314,45 @@ class OCVPackBattery:
         # precision for ordinary low-current operating points.
         return 2.0 * power_w / (open_circuit_voltage_v + discriminant**0.5)
 
-    def update_state(self, power_w: float, timestep_s: float) -> None:
-        """Apply terminal power and Coulomb-count SOC for one positive timestep."""
-
+    def _checked_current_and_charge(self, power_w: float, timestep_s: float) -> tuple[float, float]:
+        """Validate a held-current interval without changing operating state."""
         if not isfinite(timestep_s) or timestep_s <= 0:
             raise ValueError("timestep_s must be finite and positive")
-        operating_open_circuit_voltage_v = self.open_circuit_voltage_v
+        if not isfinite(self.state_of_charge) or not 0.0 <= self.state_of_charge <= 1.0:
+            raise ValueError("state_of_charge must be finite and between 0 and 1")
+        capacity_ah = self.pack_capacity_ah
+        if not isfinite(capacity_ah) or capacity_ah <= 0.0:
+            raise ValueError("pack_capacity_ah must be finite and positive")
         current_a = self.current_for_terminal_power_a(power_w)
+        charge_delta_ah = current_a * timestep_s / 3600.0
+        if not isfinite(current_a) or not isfinite(charge_delta_ah):
+            raise ValueError("battery interval charge must be finite")
+        available_ah = (
+            self.state_of_charge if charge_delta_ah >= 0.0 else 1.0-self.state_of_charge
+        ) * capacity_ah
+        # Only binary64 boundary roundoff is tolerated, at the charge scale.
+        # A capacity-scale epsilon could manufacture charge near an empty pack.
+        roundoff_ah = 8.0 * max(ulp(abs(charge_delta_ah)), ulp(available_ah))
+        if abs(charge_delta_ah) - available_ah > roundoff_ah:
+            boundary = "stored discharge charge" if charge_delta_ah >= 0.0 else "remaining charge capacity"
+            raise ValueError(f"battery interval exceeds {boundary}")
+        return current_a, charge_delta_ah
+
+    def validate_state_update(self, power_w: float, timestep_s: float) -> None:
+        """Pure preflight for instantaneous limits and finite interval charge."""
+        self._checked_current_and_charge(power_w, timestep_s)
+
+    def update_state(self, power_w: float, timestep_s: float) -> None:
+        """Apply one held-current interval that fits the available Coulombs."""
+
+        current_a, charge_delta_ah = self._checked_current_and_charge(power_w, timestep_s)
+        operating_open_circuit_voltage_v = self.open_circuit_voltage_v
         self.current_power_w = power_w
         self.current_a = current_a
         self.operating_open_circuit_voltage_v = operating_open_circuit_voltage_v
         self.terminal_voltage_v = (
             operating_open_circuit_voltage_v - current_a * self.internal_resistance_ohm
         )
-        charge_delta_ah = current_a * timestep_s / 3600.0
         self.net_charge_removed_ah += charge_delta_ah
         self.coulomb_throughput_ah += abs(charge_delta_ah)
         self.state_of_charge = min(
@@ -498,12 +523,9 @@ class RCTheveninBattery(OCVPackBattery):
     def update_state(self, power_w: float, timestep_s: float) -> None:
         """Apply terminal power, then advance SOC and polarization state."""
 
-        if not isfinite(timestep_s) or timestep_s <= 0:
-            raise ValueError("timestep_s must be finite and positive")
-
+        current_a, charge_delta_ah = self._checked_current_and_charge(power_w, timestep_s)
         operating_open_circuit_voltage_v = self.open_circuit_voltage_v
         operating_polarization_voltage_v = self.polarization_voltage_v
-        current_a = self.current_for_terminal_power_a(power_w)
         self.current_power_w = power_w
         self.current_a = current_a
         self.operating_open_circuit_voltage_v = operating_open_circuit_voltage_v
@@ -514,7 +536,6 @@ class RCTheveninBattery(OCVPackBattery):
             - current_a * self.internal_resistance_ohm
         )
 
-        charge_delta_ah = current_a * timestep_s / 3600.0
         self.net_charge_removed_ah += charge_delta_ah
         self.coulomb_throughput_ah += abs(charge_delta_ah)
         self.state_of_charge = min(
@@ -579,9 +600,8 @@ class Battery:
 
         return self.max_charge_power_w
 
-    def update_state(self, power_w: float, timestep_s: float) -> None:
-        """Retain terminal power; positive discharges and negative charges."""
-
+    def validate_state_update(self, power_w: float, timestep_s: float) -> None:
+        """Pure power/duration check; this ideal model has no Coulomb bound."""
         if not isfinite(timestep_s) or timestep_s <= 0:
             raise ValueError("timestep_s must be finite and positive")
         if not isfinite(power_w):
@@ -590,6 +610,11 @@ class Battery:
             raise ValueError("power_w exceeds max_discharge_power_w")
         if -power_w > self.max_charge_power_w:
             raise ValueError("charging power exceeds max_charge_power_w")
+
+    def update_state(self, power_w: float, timestep_s: float) -> None:
+        """Retain terminal power; positive discharges and negative charges."""
+
+        self.validate_state_update(power_w, timestep_s)
         self.current_power_w = power_w
 
     def limit_discharge_power_w(self, requested_power_w: float) -> float:

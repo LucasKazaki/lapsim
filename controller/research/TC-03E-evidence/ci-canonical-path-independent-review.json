@@ -1,0 +1,57 @@
+{
+  "schema": "enme408.cortex-m4-canonical-path-independent-review.v1",
+  "verdict": "No actionable finding in the one-line canonical-root repair",
+  "preserved_original_review_sha256": "f16dd19baadeddccf43452398e7a13f69abc7c1ac5840d0c680e97a9b99f1d5d",
+  "source_sha256": {
+    "cortex_m4_objects.py": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090",
+    "cortex_m4_reaccount.py": "6a962b4560d5a59f12bb829944e03dbf8d6a39dcdb016f33ae2891b7d459a53c",
+    "test_cortex_m4_objects.py": "b02d58eb7d909552ebe80a388833a319cfce9292320ed9e42137dd2aefd542f7"
+  },
+  "reviewed_runtime_delta": "Canonicalize snapshot and toolchain once at dependency_facts entry, so containment and relative paths use identical owner objects",
+  "finite_cases": [
+    {
+      "native_canonical": true,
+      "toolchain_canonical": true,
+      "previous": "accepted",
+      "repaired": "accepted",
+      "hashes": [
+        "bef32d2c315a289576f2a6828d27edb16bb316a4d85c271f2d794045f3ea668d",
+        "1e0584a25d9f43bf5cbd0aec01eb1af2220ed085b4e7f1837b0d89958cae353a"
+      ]
+    },
+    {
+      "native_canonical": true,
+      "toolchain_canonical": false,
+      "previous": "rejected",
+      "repaired": "accepted",
+      "hashes": [
+        "bef32d2c315a289576f2a6828d27edb16bb316a4d85c271f2d794045f3ea668d",
+        "1e0584a25d9f43bf5cbd0aec01eb1af2220ed085b4e7f1837b0d89958cae353a"
+      ]
+    },
+    {
+      "native_canonical": false,
+      "toolchain_canonical": true,
+      "previous": "rejected",
+      "repaired": "accepted",
+      "hashes": [
+        "bef32d2c315a289576f2a6828d27edb16bb316a4d85c271f2d794045f3ea668d",
+        "1e0584a25d9f43bf5cbd0aec01eb1af2220ed085b4e7f1837b0d89958cae353a"
+      ]
+    },
+    {
+      "native_canonical": false,
+      "toolchain_canonical": false,
+      "previous": "rejected",
+      "repaired": "accepted",
+      "hashes": [
+        "bef32d2c315a289576f2a6828d27edb16bb316a4d85c271f2d794045f3ea668d",
+        "1e0584a25d9f43bf5cbd0aec01eb1af2220ed085b4e7f1837b0d89958cae353a"
+      ]
+    }
+  ],
+  "outside_root_cases_rejected": 4,
+  "compiler_or_inspection_tool_calls": 0,
+  "target_calls": 0,
+  "scope": "Read source diff and new alias regression; own fixtures with spaces and '..' reproduced three prior failures and four repaired accepts without touching original attempts. Outside-root rejection preserved. This supplements, and does not rewrite, the original artifact/cohort review."
+}

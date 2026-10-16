@@ -5,13 +5,13 @@ from __future__ import annotations
 from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass, replace
-from math import ceil, isfinite
+from math import isfinite
 from numbers import Real
 from pathlib import Path
 
-import numpy as np
 
 from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.courses.solver_grid import resample_track  # public compatibility import
 from lapsim.events.endurance import (
     EnduranceRunConfig,
     EnduranceRunResult,
@@ -131,57 +131,6 @@ def apply_uniform_road_grip(
         raise TypeError("uniform road grip requires a Vehicle with the Tire model")
     vehicle.tire.road_grip_multiplier = float(road_grip_multiplier)
     vehicle.validate()
-
-
-def resample_track(track: SpatialTrack, maximum_cell_length_m: float = 1.0) -> SpatialTrack:
-    """Build a solver grid while preserving each cell's integrated curvature.
-
-    The measured centerline remains in the course view. Each solver cell gets
-    the distance-weighted mean curvature of the source cells it overlaps, so
-    the signed curvature integral is preserved over the full lap. Coordinates
-    are interpolated to the solver-cell boundaries.
-    """
-
-    if (
-        isinstance(maximum_cell_length_m, bool)
-        or not isinstance(maximum_cell_length_m, Real)
-        or not isfinite(maximum_cell_length_m)
-        or maximum_cell_length_m <= 0.0
-    ):
-        raise ValueError("maximum_cell_length_m must be finite and positive")
-    requested_cells = track.length_m / maximum_cell_length_m
-    if not isfinite(requested_cells) or requested_cells > 5000:
-        raise ValueError("requested solver grid exceeds the 5000-cell compute cap")
-    cell_count = ceil(requested_cells)
-    distances = [
-        min(index * maximum_cell_length_m, track.length_m)
-        for index in range(cell_count + 1)
-    ]
-    source_distance = np.asarray(track.distance_m, dtype=float)
-    source_curvature = np.asarray(track.curvature_per_m, dtype=float)
-    averaged_curvature: list[float] = []
-    for lower_m, upper_m in zip(distances, distances[1:]):
-        source_index = max(
-            0,
-            int(np.searchsorted(source_distance, lower_m, side="right") - 1),
-        )
-        weighted_curvature = 0.0
-        while source_index < track.cell_count and source_distance[source_index] < upper_m:
-            overlap_m = max(
-                0.0,
-                min(upper_m, source_distance[source_index + 1])
-                - max(lower_m, source_distance[source_index]),
-            )
-            weighted_curvature += source_curvature[source_index] * overlap_m
-            source_index += 1
-        averaged_curvature.append(weighted_curvature / (upper_m - lower_m))
-    return SpatialTrack(
-        distance_m=tuple(distances),
-        x_m=tuple(np.interp(distances, source_distance, track.x_m)),
-        y_m=tuple(np.interp(distances, source_distance, track.y_m)),
-        curvature_per_m=tuple(averaged_curvature),
-        closed=track.closed,
-    )
 
 
 def prepare_one_lap_constraints(

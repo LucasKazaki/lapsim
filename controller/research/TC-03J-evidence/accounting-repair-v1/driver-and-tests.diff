@@ -1,0 +1,382 @@
+diff --git a/projects/enme408-torque-control/reference/allocator_cortex_m4_objects.py b/projects/enme408-torque-control/reference/allocator_cortex_m4_objects.py
+index 7cb71e5..df21e56 100644
+--- a/projects/enme408-torque-control/reference/allocator_cortex_m4_objects.py
++++ b/projects/enme408-torque-control/reference/allocator_cortex_m4_objects.py
+@@ -139,7 +139,7 @@ def schedule(plan, toolchain, output):
+     def append(argv, label):
+         if argv[0] not in TOOLS:
+             raise ValueError("unexpected executable")
+-        commands.append({"slot": len(commands), "label": label, "status": "not_run",
++        commands.append({"slot": len(commands), "label": label, "status": "not_run", "launch_state": "not_attempted",
+             "argv": [str(toolchain / "bin" / argv[0]), *argv[1:]],
+             "cwd": str((output / "native").resolve())})
+ 
+@@ -260,6 +260,45 @@ def verify_dependencies(dependencies, manifest, snapshot, toolchain):
+             raise ValueError("dependency differs from fresh verified manifest")
+ 
+ 
++def verify_frozen_copies(plan, receipt, sources, baseline, native, snapshot, output):
++    """Check after slow verification, before a first executable, and again at end."""
++    if sources != source_facts(native, plan) or sources != source_facts(snapshot, plan):
++        raise ValueError("allocator source changed during attempt")
++    if (digest(PROTOCOL) != receipt["protocol_sha256"] or digest(Path(__file__)) != receipt["driver_sha256"]
++            or digest(REFERENCE / "cortex_m4_objects.py") != receipt["helper_sha256"]):
++        raise ValueError("allocator protocol/driver/helper changed during attempt")
++    for name, key in (("protocol.json", "protocol_sha256"),
++                      ("executed-allocator_cortex_m4_objects.py", "driver_sha256"),
++                      ("executed-shared-helper.py", "helper_sha256"),
++                      ("historical-baseline.json", "baseline_sha256")):
++        if digest(output / name) != receipt[key]:
++            raise ValueError("retained executed source/protocol/baseline changed")
++    if load_baseline(plan) != baseline:
++        raise ValueError("historical baseline changed during attempt")
++
++
++def command_counts(receipt):
++    """An intent is not a call. Incomplete durable pre-call records are uncertain."""
++    receipt["prepared_commands"] = len(receipt["commands"])
++    receipt["actual_commands"] = sum(entry.get("launch_state") in ("confirmed_return", "confirmed_error")
++                                     for entry in receipt["command_slots"])
++    receipt["uncertain_command_slots"] = [entry["slot"] for entry in receipt["command_slots"]
++                                           if entry.get("launch_state") == "unconfirmed"]
++    receipt["not_run_command_slots"] = [entry["slot"] for entry in receipt["command_slots"]
++                                         if entry.get("launch_state", "not_attempted") == "not_attempted"]
++    receipt["actual_commands_is_confirmed_lower_bound"] = bool(receipt["uncertain_command_slots"])
++    receipt["command_count_scope"] = "Confirmed subprocess API requests, not spawned children. Prepared/unconfirmed intent is separate; interruption can leave launch uncertainty."
++
++
++def artifact_failure(receipt, stage, path, error, entry=None):
++    failure = {"stage": stage, "file": str(path), "error_type": type(error).__name__, "error": str(error)}
++    if entry is not None:
++        entry.setdefault("artifact_errors", []).append(failure)
++        entry["artifact_status"] = "failed_retained"
++        failure = {"command_slot": entry["slot"], **failure}
++    receipt.setdefault("artifact_errors", []).append(failure)
++
++
+ class Recorder:
+     def __init__(self, output, receipt, shared, environment):
+         self.output, self.receipt, self.shared, self.environment = output, receipt, shared, environment
+@@ -268,31 +307,73 @@ class Recorder:
+         entry = self.receipt["command_slots"][slot]
+         if entry["status"] != "not_run":
+             raise ValueError("command slot already used")
+-        entry["status"] = "starting"
++        # This durable intent cannot prove whether a launch subsequently occurred.
++        entry.update({"status": "prepared", "launch_state": "unconfirmed", "artifact_status": "preparing"})
+         self.receipt["commands"].append(entry)
+-        self.shared.save(self.output / "receipt.json", self.receipt)
++        command_counts(self.receipt)
++        try:
++            self.persist(entry, "before_launch_receipt")
++        except OSError:
++            # We know run() has not been requested in this process.
++            entry.update({"status": "not_launched_artifact_error", "launch_state": "not_attempted"})
++            command_counts(self.receipt)
++            raise
+         before = time.monotonic()
+         try:
+             result = subprocess.run(entry["argv"], cwd=Path(entry["cwd"]), env=self.environment,
+                                     capture_output=True, timeout=60, check=False)
+         except (OSError, subprocess.TimeoutExpired) as error:
+             entry.update({"status": "launch_or_timeout_error", "error_type": type(error).__name__,
+-                          "error": str(error), "seconds": time.monotonic() - before})
++                          "error": str(error), "seconds": time.monotonic() - before,
++                          "launch_state": "confirmed_error"})
++            command_counts(self.receipt)
+             for channel in ("stdout", "stderr"):
+                 self.log(entry, channel, getattr(error, channel, None) or b"")
+-            self.shared.save(self.output / "receipt.json", self.receipt)
++            entry["artifact_status"] = "written"
++            self.persist(entry, "after_error_receipt")
+             raise
++        except BaseException as error:
++            # It may have reached the subprocess API. Never invent an exact count.
++            entry.update({"status": "interrupted_unconfirmed", "launch_state": "unconfirmed",
++                          "interruption_type": type(error).__name__, "seconds": time.monotonic() - before})
++            command_counts(self.receipt)
++            try:
++                self.persist(entry, "interrupted_receipt")
++            except OSError:
++                pass  # Preserve the original interruption and the durable uncertain intent.
++            raise
++        # A known return is recorded before any fallible artifact operation.
++        entry.update({"status": "completed", "exit_code": result.returncode, "seconds": time.monotonic() - before,
++                      "launch_state": "confirmed_return"})
++        command_counts(self.receipt)
++        for channel in ("stdout", "stderr"):
++            raw = getattr(result, channel)
++            entry[channel + "_observed_bytes"] = len(raw)
++            entry[channel + "_observed_sha256"] = hashlib.sha256(raw).hexdigest()
+         for channel in ("stdout", "stderr"):
+             self.log(entry, channel, getattr(result, channel))
+-        entry.update({"status": "completed", "exit_code": result.returncode, "seconds": time.monotonic() - before})
+-        self.shared.save(self.output / "receipt.json", self.receipt)
++        entry["artifact_status"] = "written"
++        self.persist(entry, "after_return_receipt")
+         return result.returncode, result.stdout.decode("utf-8")
+ 
++    def persist(self, entry, stage):
++        path = self.output / "receipt.json"
++        try:
++            self.shared.save(path, self.receipt)
++        except OSError as error:
++            artifact_failure(self.receipt, stage, path, error, entry)
++            raise
++
+     def log(self, entry, channel, raw):
+         path = self.output / "logs" / (entry["label"] + "." + channel + ".txt")
+-        path.write_bytes(raw)
++        try:
++            path.write_bytes(raw)
++            actual = digest(path)
++        except OSError as error:
++            artifact_failure(self.receipt, channel + "_artifact", path, error, entry)
++            raise
+         entry[channel] = path.relative_to(self.output).as_posix()
+-        entry[channel + "_sha256"] = digest(path)
++        entry[channel + "_sha256"] = actual
+ 
+ 
+ def build(toolchain, archive, destination):
+@@ -332,6 +413,10 @@ def build(toolchain, archive, destination):
+         manifest = output / "verified-toolchain-files.jsonl"
+         receipt["toolchain"] = shared.verify_toolchain(archive, toolchain, plan["toolchain"], manifest)
+         receipt["verified_five_tools"] = verify_five_tools(archive, toolchain, plan, receipt["toolchain"], manifest)
++        verify_frozen_copies(plan, receipt, sources, baseline, native, snapshot, output)
++        if digest(manifest) != receipt["toolchain"]["manifest_sha256"]:
++            raise ValueError("fresh verification manifest changed before first executable")
++        receipt["pre_call_frozen_copy_check"] = "passed"
+         environment = shared.clean_environment(toolchain / "bin")
+         environment.pop("DEBUGINFOD_URLS", None)
+         recorder = Recorder(output, receipt, shared, environment)
+@@ -382,19 +467,7 @@ def build(toolchain, archive, destination):
+             row["status"] == "completed" and row["exit_code"] == 0 for row in slots) else "failed_retained"
+         receipt["metadata_status"] = "passed" if all(row["status"] == "inspected" for row in rows) else "failed_retained"
+         receipt["repeat_status"] = "passed" if all(pair["equal_object_sha256"] for pair in receipt["repeat_comparisons"]) else "failed_retained"
+-        if sources != source_facts(native, plan) or sources != source_facts(snapshot, plan):
+-            raise ValueError("allocator source changed during attempt")
+-        if (digest(PROTOCOL) != receipt["protocol_sha256"] or digest(Path(__file__)) != receipt["driver_sha256"]
+-                or digest(REFERENCE / "cortex_m4_objects.py") != receipt["helper_sha256"]):
+-            raise ValueError("allocator protocol/driver/helper changed during attempt")
+-        for name, key in (("protocol.json", "protocol_sha256"),
+-                          ("executed-allocator_cortex_m4_objects.py", "driver_sha256"),
+-                          ("executed-shared-helper.py", "helper_sha256"),
+-                          ("historical-baseline.json", "baseline_sha256")):
+-            if digest(output / name) != receipt[key]:
+-                raise ValueError("retained executed source/protocol/baseline changed")
+-        if load_baseline(plan) != baseline:
+-            raise ValueError("historical baseline changed during attempt")
++        verify_frozen_copies(plan, receipt, sources, baseline, native, snapshot, output)
+         if digest(manifest) != receipt["toolchain"]["manifest_sha256"]:
+             raise ValueError("fresh verification manifest changed")
+         for tool, pin in receipt["verified_five_tools"].items():
+@@ -415,23 +488,30 @@ def build(toolchain, archive, destination):
+         receipt["integrity_status"] = "passed"
+         receipt["status"] = "passed" if all(receipt[key] == "passed" for key in (
+             "tool_status", "metadata_status", "repeat_status", "integrity_status")) else "failed_retained"
+-    except Exception as error:
++    except (Exception, KeyboardInterrupt) as error:
+         for row in rows:
+             if row["status"] == "compile_started":
+-                row["status"] = "compile_launch_or_timeout_error"
++                row["status"] = "compile_incomplete_check_command_and_artifact_status"
+             elif row["status"] == "compiled":
+-                row["status"] = "inspection_launch_or_metadata_error"
++                row["status"] = "inspection_incomplete_check_command_and_artifact_status"
+         receipt.update({"status": "failed_retained", "error_type": type(error).__name__, "error": str(error)})
+-        if receipt["tool_status"] == "not_run" and receipt["commands"]:
++        command_counts(receipt)
++        if receipt["tool_status"] == "not_run" and (receipt["actual_commands"] or receipt["uncertain_command_slots"]):
+             receipt["tool_status"] = "failed_or_not_completed"
+         if receipt["metadata_status"] == "not_run" and any(row["status"] != "not_run" for row in rows):
+             receipt["metadata_status"] = "failed_or_not_completed"
+         if receipt["integrity_status"] != "passed":
+             receipt["integrity_status"] = "failed_or_not_completed"
+-    receipt["actual_commands"] = len(receipt["commands"])
+-    receipt["not_run_command_slots"] = [slot["slot"] for slot in slots if slot["status"] == "not_run"]
++    command_counts(receipt)
+     receipt["elapsed_seconds"] = time.monotonic() - started
+-    shared.save(output / "receipt.json", receipt)
++    receipt["final_receipt_persisted"] = True
++    try:
++        shared.save(output / "receipt.json", receipt)
++    except OSError as error:
++        receipt.update({"status": "failed_retained", "final_receipt_persisted": False})
++        artifact_failure(receipt, "final_receipt", output / "receipt.json", error)
++        # Keep known command results observable if storage remains unavailable.
++        print(json.dumps({"event": "allocator_annex_receipt_write_failed", "receipt": receipt}), file=sys.stderr)
+     return receipt
+ 
+ 
+diff --git a/projects/enme408-torque-control/reference/test_allocator_cortex_m4_objects.py b/projects/enme408-torque-control/reference/test_allocator_cortex_m4_objects.py
+index fc08ea8..584193c 100644
+--- a/projects/enme408-torque-control/reference/test_allocator_cortex_m4_objects.py
++++ b/projects/enme408-torque-control/reference/test_allocator_cortex_m4_objects.py
+@@ -1,6 +1,7 @@
+ """Software-only annex checks. Real subprocess/toolchain execution is forbidden."""
+ from contextlib import contextmanager
+ import hashlib
++import io
+ import json
+ from pathlib import Path
+ import shutil
+@@ -240,13 +241,18 @@ class AllocatorObjectTests(unittest.TestCase):
+         recorder, receipt = self.recorder()
+         def fake(argv, **options):
+             stored = json.loads((recorder.output / "receipt.json").read_text())
+-            self.assertEqual(stored["command_slots"][0]["status"], "starting")
++            self.assertEqual(stored["command_slots"][0]["status"], "prepared")
++            self.assertEqual(stored["actual_commands"], 0)
++            self.assertEqual(stored["uncertain_command_slots"], [0])
+             self.assertEqual(options["timeout"], 60)
+             return SimpleNamespace(returncode=17, stdout=b"partial\x00output", stderr=b"failed")
+         with mock.patch.object(annex.subprocess, "run", side_effect=fake) as call:
+             self.assertEqual(recorder.run(0), (17, "partial\x00output"))
+         self.assertEqual(call.call_count, 1)
+         self.assertEqual(receipt["commands"][0]["exit_code"], 17)
++        self.assertEqual(receipt["actual_commands"], 1)
++        self.assertEqual(receipt["prepared_commands"], 1)
++        self.assertEqual(receipt["uncertain_command_slots"], [])
+         self.assertEqual((recorder.output / receipt["commands"][0]["stdout"]).read_bytes(), b"partial\x00output")
+         with self.assertRaisesRegex(ValueError, "already used"):
+             recorder.run(0)
+@@ -260,11 +266,52 @@ class AllocatorObjectTests(unittest.TestCase):
+         self.assertEqual(receipt["commands"][0]["status"], "launch_or_timeout_error")
+         self.assertEqual((recorder.output / receipt["commands"][0]["stdout"]).read_bytes(), b"partial")
+ 
++    def test_pre_call_persistence_failure_is_prepared_but_never_an_actual_request(self):
++        recorder, receipt = self.recorder()
++        with mock.patch.object(recorder.shared, "save", side_effect=PermissionError("before call")):
++            with self.assertRaises(PermissionError):
++                recorder.run(0)
++        self.assertEqual(len(receipt["commands"]), 1)
++        self.assertEqual(receipt["prepared_commands"], 1)
++        self.assertEqual(receipt["actual_commands"], 0)
++        self.assertEqual(receipt["uncertain_command_slots"], [])
++        self.assertEqual(receipt["not_run_command_slots"], [0])
++        self.assertEqual(receipt["commands"][0]["status"], "not_launched_artifact_error")
++        self.assertEqual(receipt["artifact_errors"][0]["stage"], "before_launch_receipt")
++
++    def test_known_return_survives_output_write_failure_without_claiming_output_file(self):
++        recorder, receipt = self.recorder()
++        returned = SimpleNamespace(returncode=17, stdout=b"known stdout", stderr=b"known stderr")
++        with mock.patch.object(annex.subprocess, "run", return_value=returned), \
++             mock.patch.object(Path, "write_bytes", side_effect=PermissionError("stdout storage blocked")):
++            with self.assertRaises(PermissionError):
++                recorder.run(0)
++        entry = receipt["commands"][0]
++        self.assertEqual((entry["status"], entry["exit_code"], entry["launch_state"]), ("completed", 17, "confirmed_return"))
++        self.assertEqual(receipt["actual_commands"], 1)
++        self.assertEqual(entry["stdout_observed_sha256"], hashlib.sha256(b"known stdout").hexdigest())
++        self.assertEqual(entry["stderr_observed_sha256"], hashlib.sha256(b"known stderr").hexdigest())
++        self.assertNotIn("stdout", entry)
++        self.assertEqual(entry["artifact_status"], "failed_retained")
++        self.assertEqual(entry["artifact_errors"][0]["stage"], "stdout_artifact")
++
++    def test_interruption_retains_uncertainty_instead_of_claiming_a_known_launch_count(self):
++        recorder, receipt = self.recorder()
++        with mock.patch.object(annex.subprocess, "run", side_effect=KeyboardInterrupt):
++            with self.assertRaises(KeyboardInterrupt):
++                recorder.run(0)
++        entry = receipt["commands"][0]
++        self.assertEqual(entry["status"], "interrupted_unconfirmed")
++        self.assertEqual(receipt["actual_commands"], 0)
++        self.assertEqual(receipt["uncertain_command_slots"], [0])
++        self.assertTrue(receipt["actual_commands_is_confirmed_lower_bound"])
++        self.assertEqual(json.loads((recorder.output / "receipt.json").read_text())["uncertain_command_slots"], [0])
++
+     @contextmanager
+-    def fake_build(self, fail=None):
++    def fake_build(self, fail=None, mutate=None):
+         """Synthetic files/returns only; does not validate a real ARM object or toolchain."""
+         tools = self.root / "fake-tools"
+-        (tools / "bin").mkdir(parents=True)
++        (tools / "bin").mkdir(parents=True, exist_ok=True)
+         identities = {}
+         for tool in annex.TOOLS:
+             path = tools / "bin" / tool
+@@ -280,6 +327,8 @@ class AllocatorObjectTests(unittest.TestCase):
+             events.append("five-identities-FAKE")
+             if fail == "fifth":
+                 raise ValueError("unverified fifth tool")
++            if mutate is not None:
++                mutate(args[-1].parent)
+             return identities
+         def fake_run(argv, **kwargs):
+             self.assertEqual(events[:2], ["full-verification-FAKE", "five-identities-FAKE"])
+@@ -339,6 +388,74 @@ class AllocatorObjectTests(unittest.TestCase):
+         self.assertEqual(receipt["not_run_command_slots"], list(range(31)))
+         self.assertTrue(all(row["status"] == "not_run" for row in receipt["objects"]))
+ 
++    def test_snapshot_or_retained_copy_drift_during_verification_rejects_before_any_call(self):
++        names = ("native/torque_allocator.c", "native/torque_allocator.h", "native/torque_contract.h", "protocol.json",
++                 "executed-allocator_cortex_m4_objects.py", "executed-shared-helper.py", "historical-baseline.json")
++        for index, name in enumerate(names):
++            def mutate(output):
++                (output / name).write_bytes((output / name).read_bytes() + b"changed during verification")
++            with self.subTest(name=name), self.fake_build(mutate=mutate) as (tools, calls, _):
++                receipt = annex.build(tools, self.root / "FAKE-archive", self.root / ("drift-attempt-" + str(index)))
++            self.assertEqual(calls.call_count, 0)
++            self.assertEqual(receipt["status"], "failed_retained")
++            self.assertEqual(receipt["actual_commands"], 0)
++            self.assertEqual(receipt["not_run_command_slots"], list(range(31)))
++
++    def test_build_pre_call_save_failure_retains_zero_actual_requests_and_all_not_run(self):
++        with self.fake_build() as (tools, calls, _):
++            shared = annex.load_shared(annex.load_protocol())
++            save = shared.save
++            def fail_pre_call(path, value):
++                if value["commands"] and value["commands"][0]["status"] == "prepared":
++                    raise PermissionError("pre-call receipt unavailable")
++                save(path, value)
++            with mock.patch.object(shared, "save", side_effect=fail_pre_call):
++                receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
++        self.assertEqual(calls.call_count, 0)
++        self.assertEqual(receipt["actual_commands"], 0)
++        self.assertEqual(receipt["prepared_commands"], 1)
++        self.assertEqual(receipt["tool_status"], "not_run")
++        self.assertEqual(receipt["not_run_command_slots"], list(range(31)))
++        disk = json.loads((self.root / "attempt/receipt.json").read_text())
++        self.assertEqual(disk["actual_commands"], 0)
++
++    def test_known_return_and_log_failure_are_persisted_separately_by_build(self):
++        with self.fake_build("preflight") as (tools, calls, _):
++            write = Path.write_bytes
++            def fail_logs(path, raw):
++                if path.parent.name == "logs":
++                    raise PermissionError("known return but log unavailable")
++                return write(path, raw)
++            with mock.patch.object(Path, "write_bytes", autospec=True, side_effect=fail_logs):
++                receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
++        self.assertEqual(calls.call_count, 1)
++        self.assertEqual(receipt["actual_commands"], 1)
++        self.assertEqual(receipt["commands"][0]["exit_code"], 17)
++        self.assertEqual(receipt["commands"][0]["status"], "completed")
++        self.assertEqual(receipt["artifact_errors"][0]["stage"], "stdout_artifact")
++        disk = json.loads((self.root / "attempt/receipt.json").read_text())
++        self.assertEqual(disk["commands"][0]["exit_code"], 17)
++
++    def test_known_return_survives_persistent_receipt_failure_in_structured_stderr(self):
++        stderr = io.StringIO()
++        with self.fake_build("preflight") as (tools, calls, _):
++            shared = annex.load_shared(annex.load_protocol())
++            save = shared.save
++            def fail_after_return(path, value):
++                if value["commands"] and "exit_code" in value["commands"][0]:
++                    raise PermissionError("all post-return receipts unavailable")
++                save(path, value)
++            with mock.patch.object(shared, "save", side_effect=fail_after_return), mock.patch.object(annex.sys, "stderr", stderr):
++                receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
++        self.assertEqual(calls.call_count, 1)
++        self.assertFalse(receipt["final_receipt_persisted"])
++        self.assertEqual(receipt["status"], "failed_retained")
++        fallback = json.loads(stderr.getvalue())
++        self.assertEqual(fallback["event"], "allocator_annex_receipt_write_failed")
++        self.assertEqual(fallback["receipt"]["commands"][0]["exit_code"], 17)
++        self.assertEqual(fallback["receipt"]["actual_commands"], 1)
++        self.assertEqual([x["stage"] for x in receipt["artifact_errors"]], ["after_return_receipt", "final_receipt"])
++
+     def test_preflight_failure_does_not_claim_unrun_rows_or_hide_denominator(self):
+         with self.fake_build("preflight") as (tools, calls, _):
+             receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")

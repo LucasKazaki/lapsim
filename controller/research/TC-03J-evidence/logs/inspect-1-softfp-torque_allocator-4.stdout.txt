@@ -1,0 +1,1027 @@
+
+C:\Users\lucas\Documents\Codex\2026-10-15\go\work\enme408-allocator-cortex-m4-v1\repeat-1\softfp\torque_allocator.o:	file format elf32-littlearm
+
+Disassembly of section .text.tc_allocator_version:
+
+00000000 <tc_allocator_version>:
+       0: 2001         	movs	r0, #0x1
+       2: 4770         	bx	lr
+
+Disassembly of section .text.tc_allocator_abi_sizeof:
+
+00000000 <tc_allocator_abi_sizeof>:
+       0: 2100         	movs	r1, #0x0
+       2: 2802         	cmp	r0, #0x2
+       4: bf08         	it	eq
+       6: 21b8         	moveq	r1, #0xb8
+       8: 2801         	cmp	r0, #0x1
+       a: bf08         	it	eq
+       c: 2110         	moveq	r1, #0x10
+       e: 4608         	mov	r0, r1
+      10: 4770         	bx	lr
+
+Disassembly of section .text.tc_allocate_propulsive_torque:
+
+00000000 <tc_allocate_propulsive_torque>:
+       0: e92d 4ff0    	push.w	{r4, r5, r6, r7, r8, r9, r10, r11, lr}
+       4: b081         	sub	sp, #0x4
+       6: ed2d 8b08    	vpush	{d8, d9, d10, d11}
+       a: b08e         	sub	sp, #0x38
+       c: 2a00         	cmp	r2, #0x0
+       e: f04f 0501    	mov.w	r5, #0x1
+      12: d04a         	beq	0xaa <tc_allocate_propulsive_torque+0xaa> @ imm = #0x94
+      14: 4614         	mov	r4, r2
+      16: 468b         	mov	r11, r1
+      18: 4682         	mov	r10, r0
+      1a: 4610         	mov	r0, r2
+      1c: 2100         	movs	r1, #0x0
+      1e: 22b0         	movs	r2, #0xb0
+      20: f7ff fffe    	bl	0x20 <tc_allocate_propulsive_torque+0x20> @ imm = #-0x4
+			00000020:  R_ARM_THM_CALL	memset
+      24: f240 3001    	movw	r0, #0x301
+      28: f104 0869    	add.w	r8, r4, #0x69
+      2c: 8020         	strh	r0, [r4]
+      2e: 4640         	mov	r0, r8
+      30: 2100         	movs	r1, #0x0
+      32: 2240         	movs	r2, #0x40
+      34: 70a5         	strb	r5, [r4, #0x2]
+      36: f884 5050    	strb.w	r5, [r4, #0x50]
+      3a: f884 5060    	strb.w	r5, [r4, #0x60]
+      3e: 7425         	strb	r5, [r4, #0x10]
+      40: f884 5020    	strb.w	r5, [r4, #0x20]
+      44: f884 5030    	strb.w	r5, [r4, #0x30]
+      48: f884 5040    	strb.w	r5, [r4, #0x40]
+      4c: f884 5068    	strb.w	r5, [r4, #0x68]
+      50: f7ff fffe    	bl	0x50 <tc_allocate_propulsive_torque+0x50> @ imm = #-0x4
+			00000050:  R_ARM_THM_CALL	memset
+      54: f646 106d    	movw	r0, #0x696d
+      58: f2c7 3073    	movt	r0, #0x7373
+      5c: f8c4 0069    	str.w	r0, [r4, #0x69]
+      60: f646 6069    	movw	r0, #0x6e69
+      64: f6c5 7067    	movt	r0, #0x5f67
+      68: f8c4 006d    	str.w	r0, [r4, #0x6d]
+      6c: f646 4961    	movw	r9, #0x6c61
+      70: f246 1763    	movw	r7, #0x6163
+      74: f645 7672    	movw	r6, #0x5f72
+      78: f247 5070    	movw	r0, #0x7570
+      7c: f6c6 796c    	movt	r9, #0x6f6c
+      80: f6c6 7774    	movt	r7, #0x6f74
+      84: f6c6 6669    	movt	r6, #0x6e69
+      88: f8a4 007d    	strh.w	r0, [r4, #0x7d]
+      8c: 2074         	movs	r0, #0x74
+      8e: f1ba 0f00    	cmp.w	r10, #0x0
+      92: f8c4 9071    	str.w	r9, [r4, #0x71]
+      96: f8c4 7075    	str.w	r7, [r4, #0x75]
+      9a: f8c4 6079    	str.w	r6, [r4, #0x79]
+      9e: f884 007f    	strb.w	r0, [r4, #0x7f]
+      a2: bf18         	it	ne
+      a4: f1bb 0f00    	cmpne.w	r11, #0x0
+      a8: d106         	bne	0xb8 <tc_allocate_propulsive_torque+0xb8> @ imm = #0xc
+      aa: 4628         	mov	r0, r5
+      ac: b00e         	add	sp, #0x38
+      ae: ecbd 8b08    	vpop	{d8, d9, d10, d11}
+      b2: b001         	add	sp, #0x4
+      b4: e8bd 8ff0    	pop.w	{r4, r5, r6, r7, r8, r9, r10, r11, pc}
+      b8: f89b 0000    	ldrb.w	r0, [r11]
+      bc: 2801         	cmp	r0, #0x1
+      be: d127         	bne	0x110 <tc_allocate_propulsive_torque+0x110> @ imm = #0x4e
+      c0: f89a 0000    	ldrb.w	r0, [r10]
+      c4: 2801         	cmp	r0, #0x1
+      c6: d154         	bne	0x172 <tc_allocate_propulsive_torque+0x172> @ imm = #0xa8
+      c8: f89b 0001    	ldrb.w	r0, [r11, #0x1]
+      cc: 2801         	cmp	r0, #0x1
+      ce: d17a         	bne	0x1c6 <tc_allocate_propulsive_torque+0x1c6> @ imm = #0xf4
+      d0: f89a 0075    	ldrb.w	r0, [r10, #0x75]
+      d4: 2801         	cmp	r0, #0x1
+      d6: d111         	bne	0xfc <tc_allocate_propulsive_torque+0xfc> @ imm = #0x22
+      d8: f10a 0576    	add.w	r5, r10, #0x76
+      dc: 4628         	mov	r0, r5
+      de: 2100         	movs	r1, #0x0
+      e0: 2240         	movs	r2, #0x40
+      e2: f7ff fffe    	bl	0xe2 <tc_allocate_propulsive_torque+0xe2> @ imm = #-0x4
+			000000e2:  R_ARM_THM_CALL	memchr
+      e6: b148         	cbz	r0, 0xfc <tc_allocate_propulsive_torque+0xfc> @ imm = #0x12
+      e8: f240 0100    	movw	r1, #0x0
+			000000e8:  R_ARM_THM_MOVW_ABS_NC	.L.str.18
+      ec: f2c0 0100    	movt	r1, #0x0
+			000000ec:  R_ARM_THM_MOVT_ABS	.L.str.18
+      f0: 4628         	mov	r0, r5
+      f2: f7ff fffe    	bl	0xf2 <tc_allocate_propulsive_torque+0xf2> @ imm = #-0x4
+			000000f2:  R_ARM_THM_CALL	strcmp
+      f6: 2800         	cmp	r0, #0x0
+      f8: f000 80a2    	beq.w	0x240 <tc_allocate_propulsive_torque+0x240> @ imm = #0x144
+      fc: f240 0200    	movw	r2, #0x0
+			000000fc:  R_ARM_THM_MOVW_ABS_NC	.L.str.3
+     100: f2c0 0200    	movt	r2, #0x0
+			00000100:  R_ARM_THM_MOVT_ABS	.L.str.3
+     104: 4620         	mov	r0, r4
+     106: 4651         	mov	r1, r10
+     108: f7ff fffe    	bl	0x108 <tc_allocate_propulsive_torque+0x108> @ imm = #-0x4
+			00000108:  R_ARM_THM_CALL	fault
+     10c: 2500         	movs	r5, #0x0
+     10e: e7cc         	b	0xaa <tc_allocate_propulsive_torque+0xaa> @ imm = #-0x68
+     110: 2003         	movs	r0, #0x3
+     112: 7060         	strb	r0, [r4, #0x1]
+     114: 2001         	movs	r0, #0x1
+     116: f884 0068    	strb.w	r0, [r4, #0x68]
+     11a: 4640         	mov	r0, r8
+     11c: 2100         	movs	r1, #0x0
+     11e: 2240         	movs	r2, #0x40
+     120: 2500         	movs	r5, #0x0
+     122: f7ff fffe    	bl	0x122 <tc_allocate_propulsive_torque+0x122> @ imm = #-0x4
+			00000122:  R_ARM_THM_CALL	memset
+     126: f646 6069    	movw	r0, #0x6e69
+     12a: f2c6 1076    	movt	r0, #0x6176
+     12e: f8c4 0069    	str.w	r0, [r4, #0x69]
+     132: f646 106c    	movw	r0, #0x696c
+     136: f6c5 7064    	movt	r0, #0x5f64
+     13a: f8c4 006d    	str.w	r0, [r4, #0x6d]
+     13e: f645 7072    	movw	r0, #0x5f72
+     142: f6c6 7063    	movt	r0, #0x6f63
+     146: f8c4 0079    	str.w	r0, [r4, #0x79]
+     14a: f246 606e    	movw	r0, #0x666e
+     14e: f2c6 7069    	movt	r0, #0x6769
+     152: f8c4 007d    	str.w	r0, [r4, #0x7d]
+     156: f247 405f    	movw	r0, #0x745f
+     15a: f2c7 0079    	movt	r0, #0x7079
+     15e: f8c4 0081    	str.w	r0, [r4, #0x81]
+     162: 2065         	movs	r0, #0x65
+     164: f8c4 9071    	str.w	r9, [r4, #0x71]
+     168: f8c4 7075    	str.w	r7, [r4, #0x75]
+     16c: f884 0085    	strb.w	r0, [r4, #0x85]
+     170: e79b         	b	0xaa <tc_allocate_propulsive_torque+0xaa> @ imm = #-0xca
+     172: 2003         	movs	r0, #0x3
+     174: 7060         	strb	r0, [r4, #0x1]
+     176: 2001         	movs	r0, #0x1
+     178: f884 0068    	strb.w	r0, [r4, #0x68]
+     17c: 4640         	mov	r0, r8
+     17e: 2100         	movs	r1, #0x0
+     180: 2240         	movs	r2, #0x40
+     182: 2500         	movs	r5, #0x0
+     184: f7ff fffe    	bl	0x184 <tc_allocate_propulsive_torque+0x184> @ imm = #-0x4
+			00000184:  R_ARM_THM_CALL	memset
+     188: f646 6069    	movw	r0, #0x6e69
+     18c: f2c6 1076    	movt	r0, #0x6176
+     190: f8c4 0069    	str.w	r0, [r4, #0x69]
+     194: f646 106c    	movw	r0, #0x696c
+     198: f6c5 7064    	movt	r0, #0x5f64
+     19c: f8c4 006d    	str.w	r0, [r4, #0x6d]
+     1a0: f247 5070    	movw	r0, #0x7570
+     1a4: f6c5 7074    	movt	r0, #0x5f74
+     1a8: f8c4 007d    	str.w	r0, [r4, #0x7d]
+     1ac: f647 1074    	movw	r0, #0x7974
+     1b0: f2c6 5070    	movt	r0, #0x6570
+     1b4: f8c4 9071    	str.w	r9, [r4, #0x71]
+     1b8: f8c4 7075    	str.w	r7, [r4, #0x75]
+     1bc: f8c4 6079    	str.w	r6, [r4, #0x79]
+     1c0: f8c4 0081    	str.w	r0, [r4, #0x81]
+     1c4: e771         	b	0xaa <tc_allocate_propulsive_torque+0xaa> @ imm = #-0x11e
+     1c6: f89a 0020    	ldrb.w	r0, [r10, #0x20]
+     1ca: 2801         	cmp	r0, #0x1
+     1cc: d10b         	bne	0x1e6 <tc_allocate_propulsive_torque+0x1e6> @ imm = #0x16
+     1ce: ed9a 0b06    	vldr	d0, [r10, #24]
+     1d2: ec51 0b10    	vmov	r0, r1, d0
+     1d6: f7ff fffe    	bl	0x1d6 <tc_allocate_propulsive_torque+0x1d6> @ imm = #-0x4
+			000001d6:  R_ARM_THM_CALL	__finite
+     1da: 2800         	cmp	r0, #0x0
+     1dc: bf1c         	itt	ne
+     1de: ed9a 0b06    	vldrne	d0, [r10, #24]
+     1e2: ed84 0b12    	vstrne	d0, [r4, #72]
+     1e6: 2003         	movs	r0, #0x3
+     1e8: 7060         	strb	r0, [r4, #0x1]
+     1ea: 2001         	movs	r0, #0x1
+     1ec: f884 0068    	strb.w	r0, [r4, #0x68]
+     1f0: 4640         	mov	r0, r8
+     1f2: 2100         	movs	r1, #0x0
+     1f4: 2240         	movs	r2, #0x40
+     1f6: 2500         	movs	r5, #0x0
+     1f8: f7ff fffe    	bl	0x1f8 <tc_allocate_propulsive_torque+0x1f8> @ imm = #-0x4
+			000001f8:  R_ARM_THM_CALL	memset
+     1fc: f646 6069    	movw	r0, #0x6e69
+     200: f2c6 1076    	movt	r0, #0x6176
+     204: f8c4 0069    	str.w	r0, [r4, #0x69]
+     208: f646 106c    	movw	r0, #0x696c
+     20c: f6c5 7064    	movt	r0, #0x5f64
+     210: f8c4 006d    	str.w	r0, [r4, #0x6d]
+     214: f246 106d    	movw	r0, #0x616d
+     218: f6c5 7078    	movt	r0, #0x5f78
+     21c: f8c4 0071    	str.w	r0, [r4, #0x71]
+     220: f646 6069    	movw	r0, #0x6e69
+     224: f2c7 5070    	movt	r0, #0x7570
+     228: f8c4 0075    	str.w	r0, [r4, #0x75]
+     22c: f645 7074    	movw	r0, #0x5f74
+     230: f2c6 7061    	movt	r0, #0x6761
+     234: f8c4 0079    	str.w	r0, [r4, #0x79]
+     238: 2065         	movs	r0, #0x65
+     23a: f884 007d    	strb.w	r0, [r4, #0x7d]
+     23e: e734         	b	0xaa <tc_allocate_propulsive_torque+0xaa> @ imm = #-0x198
+     240: f89a 0020    	ldrb.w	r0, [r10, #0x20]
+     244: 2801         	cmp	r0, #0x1
+     246: d118         	bne	0x27a <tc_allocate_propulsive_torque+0x27a> @ imm = #0x30
+     248: ed9a 0b06    	vldr	d0, [r10, #24]
+     24c: ec51 0b10    	vmov	r0, r1, d0
+     250: f7ff fffe    	bl	0x250 <tc_allocate_propulsive_torque+0x250> @ imm = #-0x4
+			00000250:  R_ARM_THM_CALL	__finite
+     254: b1b0         	cbz	r0, 0x284 <tc_allocate_propulsive_torque+0x284> @ imm = #0x2c
+     256: ed9f 8bca    	vldr	d8, [pc, #808]          @ 0x580 <tc_allocate_propulsive_torque+0x580>
+     25a: ed9a 0b06    	vldr	d0, [r10, #24]
+     25e: ec56 9b18    	vmov	r9, r6, d8
+     262: ec51 0b10    	vmov	r0, r1, d0
+     266: 464a         	mov	r2, r9
+     268: 4633         	mov	r3, r6
+     26a: f7ff fffe    	bl	0x26a <tc_allocate_propulsive_torque+0x26a> @ imm = #-0x4
+			0000026a:  R_ARM_THM_CALL	__aeabi_dcmplt
+     26e: b170         	cbz	r0, 0x28e <tc_allocate_propulsive_torque+0x28e> @ imm = #0x1c
+     270: f240 0200    	movw	r2, #0x0
+			00000270:  R_ARM_THM_MOVW_ABS_NC	.L.str.6
+     274: f2c0 0200    	movt	r2, #0x0
+			00000274:  R_ARM_THM_MOVT_ABS	.L.str.6
+     278: e744         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x178
+     27a: f240 0200    	movw	r2, #0x0
+			0000027a:  R_ARM_THM_MOVW_ABS_NC	.L.str.4
+     27e: f2c0 0200    	movt	r2, #0x0
+			0000027e:  R_ARM_THM_MOVT_ABS	.L.str.4
+     282: e73f         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x182
+     284: f240 0200    	movw	r2, #0x0
+			00000284:  R_ARM_THM_MOVW_ABS_NC	.L.str.5
+     288: f2c0 0200    	movt	r2, #0x0
+			00000288:  R_ARM_THM_MOVT_ABS	.L.str.5
+     28c: e73a         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x18c
+     28e: f89a 0028    	ldrb.w	r0, [r10, #0x28]
+     292: 2801         	cmp	r0, #0x1
+     294: d118         	bne	0x2c8 <tc_allocate_propulsive_torque+0x2c8> @ imm = #0x30
+     296: f89a 0029    	ldrb.w	r0, [r10, #0x29]
+     29a: 2801         	cmp	r0, #0x1
+     29c: d114         	bne	0x2c8 <tc_allocate_propulsive_torque+0x2c8> @ imm = #0x28
+     29e: f89a 0070    	ldrb.w	r0, [r10, #0x70]
+     2a2: 2801         	cmp	r0, #0x1
+     2a4: d80b         	bhi	0x2be <tc_allocate_propulsive_torque+0x2be> @ imm = #0x16
+     2a6: f89a 0071    	ldrb.w	r0, [r10, #0x71]
+     2aa: 2801         	cmp	r0, #0x1
+     2ac: d807         	bhi	0x2be <tc_allocate_propulsive_torque+0x2be> @ imm = #0xe
+     2ae: f89a 0072    	ldrb.w	r0, [r10, #0x72]
+     2b2: 2801         	cmp	r0, #0x1
+     2b4: d803         	bhi	0x2be <tc_allocate_propulsive_torque+0x2be> @ imm = #0x6
+     2b6: f89a 0073    	ldrb.w	r0, [r10, #0x73]
+     2ba: 2801         	cmp	r0, #0x1
+     2bc: d909         	bls	0x2d2 <tc_allocate_propulsive_torque+0x2d2> @ imm = #0x12
+     2be: f240 0200    	movw	r2, #0x0
+			000002be:  R_ARM_THM_MOVW_ABS_NC	.L.str.8
+     2c2: f2c0 0200    	movt	r2, #0x0
+			000002c2:  R_ARM_THM_MOVT_ABS	.L.str.8
+     2c6: e71d         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x1c6
+     2c8: f240 0200    	movw	r2, #0x0
+			000002c8:  R_ARM_THM_MOVW_ABS_NC	.L.str.7
+     2cc: f2c0 0200    	movt	r2, #0x0
+			000002cc:  R_ARM_THM_MOVT_ABS	.L.str.7
+     2d0: e718         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x1d0
+     2d2: f89a 0074    	ldrb.w	r0, [r10, #0x74]
+     2d6: 2801         	cmp	r0, #0x1
+     2d8: d904         	bls	0x2e4 <tc_allocate_propulsive_torque+0x2e4> @ imm = #0x8
+     2da: f240 0200    	movw	r2, #0x0
+			000002da:  R_ARM_THM_MOVW_ABS_NC	.L.str.9
+     2de: f2c0 0200    	movt	r2, #0x0
+			000002de:  R_ARM_THM_MOVT_ABS	.L.str.9
+     2e2: e70f         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x1e2
+     2e4: f89a 0038    	ldrb.w	r0, [r10, #0x38]
+     2e8: 2801         	cmp	r0, #0x1
+     2ea: d14c         	bne	0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x98
+     2ec: ed9a 0b0c    	vldr	d0, [r10, #48]
+     2f0: ec51 0b10    	vmov	r0, r1, d0
+     2f4: f7ff fffe    	bl	0x2f4 <tc_allocate_propulsive_torque+0x2f4> @ imm = #-0x4
+			000002f4:  R_ARM_THM_CALL	__finite
+     2f8: 2800         	cmp	r0, #0x0
+     2fa: d044         	beq	0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x88
+     2fc: ed9a 0b0c    	vldr	d0, [r10, #48]
+     300: 464a         	mov	r2, r9
+     302: ec51 0b10    	vmov	r0, r1, d0
+     306: 4633         	mov	r3, r6
+     308: f7ff fffe    	bl	0x308 <tc_allocate_propulsive_torque+0x308> @ imm = #-0x4
+			00000308:  R_ARM_THM_CALL	__aeabi_dcmplt
+     30c: bbd8         	cbnz	r0, 0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x76
+     30e: f89a 0048    	ldrb.w	r0, [r10, #0x48]
+     312: 2801         	cmp	r0, #0x1
+     314: d137         	bne	0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x6e
+     316: ed9a 0b10    	vldr	d0, [r10, #64]
+     31a: ec51 0b10    	vmov	r0, r1, d0
+     31e: f7ff fffe    	bl	0x31e <tc_allocate_propulsive_torque+0x31e> @ imm = #-0x4
+			0000031e:  R_ARM_THM_CALL	__finite
+     322: b380         	cbz	r0, 0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x60
+     324: ed9a 0b10    	vldr	d0, [r10, #64]
+     328: 464a         	mov	r2, r9
+     32a: ec51 0b10    	vmov	r0, r1, d0
+     32e: 4633         	mov	r3, r6
+     330: f7ff fffe    	bl	0x330 <tc_allocate_propulsive_torque+0x330> @ imm = #-0x4
+			00000330:  R_ARM_THM_CALL	__aeabi_dcmplt
+     334: bb38         	cbnz	r0, 0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x4e
+     336: f89a 0058    	ldrb.w	r0, [r10, #0x58]
+     33a: 2801         	cmp	r0, #0x1
+     33c: d123         	bne	0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x46
+     33e: ed9a 0b14    	vldr	d0, [r10, #80]
+     342: ec51 0b10    	vmov	r0, r1, d0
+     346: f7ff fffe    	bl	0x346 <tc_allocate_propulsive_torque+0x346> @ imm = #-0x4
+			00000346:  R_ARM_THM_CALL	__finite
+     34a: b1e0         	cbz	r0, 0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x38
+     34c: ed9a 0b14    	vldr	d0, [r10, #80]
+     350: 464a         	mov	r2, r9
+     352: ec51 0b10    	vmov	r0, r1, d0
+     356: 4633         	mov	r3, r6
+     358: f7ff fffe    	bl	0x358 <tc_allocate_propulsive_torque+0x358> @ imm = #-0x4
+			00000358:  R_ARM_THM_CALL	__aeabi_dcmplt
+     35c: b998         	cbnz	r0, 0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x26
+     35e: f89a 0068    	ldrb.w	r0, [r10, #0x68]
+     362: 2801         	cmp	r0, #0x1
+     364: d10f         	bne	0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x1e
+     366: ed9a 0b18    	vldr	d0, [r10, #96]
+     36a: ec51 0b10    	vmov	r0, r1, d0
+     36e: f7ff fffe    	bl	0x36e <tc_allocate_propulsive_torque+0x36e> @ imm = #-0x4
+			0000036e:  R_ARM_THM_CALL	__finite
+     372: b140         	cbz	r0, 0x386 <tc_allocate_propulsive_torque+0x386> @ imm = #0x10
+     374: ed9a 0b18    	vldr	d0, [r10, #96]
+     378: 464a         	mov	r2, r9
+     37a: ec51 0b10    	vmov	r0, r1, d0
+     37e: 4633         	mov	r3, r6
+     380: f7ff fffe    	bl	0x380 <tc_allocate_propulsive_torque+0x380> @ imm = #-0x4
+			00000380:  R_ARM_THM_CALL	__aeabi_dcmplt
+     384: b120         	cbz	r0, 0x390 <tc_allocate_propulsive_torque+0x390> @ imm = #0x8
+     386: f240 0200    	movw	r2, #0x0
+			00000386:  R_ARM_THM_MOVW_ABS_NC	.L.str.10
+     38a: f2c0 0200    	movt	r2, #0x0
+			0000038a:  R_ARM_THM_MOVT_ABS	.L.str.10
+     38e: e6b9         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x28e
+     390: f89a 0074    	ldrb.w	r0, [r10, #0x74]
+     394: b1c8         	cbz	r0, 0x3ca <tc_allocate_propulsive_torque+0x3ca> @ imm = #0x32
+     396: f89a 0001    	ldrb.w	r0, [r10, #0x1]
+     39a: 2801         	cmp	r0, #0x1
+     39c: d110         	bne	0x3c0 <tc_allocate_propulsive_torque+0x3c0> @ imm = #0x20
+     39e: f89a 0002    	ldrb.w	r0, [r10, #0x2]
+     3a2: 2801         	cmp	r0, #0x1
+     3a4: d10c         	bne	0x3c0 <tc_allocate_propulsive_torque+0x3c0> @ imm = #0x18
+     3a6: e9da 2002    	ldrd	r2, r0, [r10, #8]
+     3aa: e9da 3104    	ldrd	r3, r1, [r10, #16]
+     3ae: 1ad7         	subs	r7, r2, r3
+     3b0: eb70 0701    	sbcs.w	r7, r0, r1
+     3b4: d20e         	bhs	0x3d4 <tc_allocate_propulsive_torque+0x3d4> @ imm = #0x1c
+     3b6: f240 0200    	movw	r2, #0x0
+			000003b6:  R_ARM_THM_MOVW_ABS_NC	.L.str.13
+     3ba: f2c0 0200    	movt	r2, #0x0
+			000003ba:  R_ARM_THM_MOVT_ABS	.L.str.13
+     3be: e6a1         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x2be
+     3c0: f240 0200    	movw	r2, #0x0
+			000003c0:  R_ARM_THM_MOVW_ABS_NC	.L.str.12
+     3c4: f2c0 0200    	movt	r2, #0x0
+			000003c4:  R_ARM_THM_MOVT_ABS	.L.str.12
+     3c8: e69c         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x2c8
+     3ca: f240 0200    	movw	r2, #0x0
+			000003ca:  R_ARM_THM_MOVW_ABS_NC	.L.str.11
+     3ce: f2c0 0200    	movt	r2, #0x0
+			000003ce:  R_ARM_THM_MOVT_ABS	.L.str.11
+     3d2: e697         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x2d2
+     3d4: 1ad2         	subs	r2, r2, r3
+     3d6: e9db 3702    	ldrd	r3, r7, [r11, #8]
+     3da: 4188         	sbcs	r0, r1
+     3dc: 1a99         	subs	r1, r3, r2
+     3de: eb77 0000    	sbcs.w	r0, r7, r0
+     3e2: d204         	bhs	0x3ee <tc_allocate_propulsive_torque+0x3ee> @ imm = #0x8
+     3e4: f240 0200    	movw	r2, #0x0
+			000003e4:  R_ARM_THM_MOVW_ABS_NC	.L.str.14
+     3e8: f2c0 0200    	movt	r2, #0x0
+			000003e8:  R_ARM_THM_MOVT_ABS	.L.str.14
+     3ec: e68a         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x2ec
+     3ee: 2001         	movs	r0, #0x1
+     3f0: 7060         	strb	r0, [r4, #0x1]
+     3f2: 2500         	movs	r5, #0x0
+     3f4: 4640         	mov	r0, r8
+     3f6: 2100         	movs	r1, #0x0
+     3f8: 2240         	movs	r2, #0x40
+     3fa: f884 5068    	strb.w	r5, [r4, #0x68]
+     3fe: f7ff fffe    	bl	0x3fe <tc_allocate_propulsive_torque+0x3fe> @ imm = #-0x4
+			000003fe:  R_ARM_THM_CALL	memset
+     402: ed9a 9b06    	vldr	d9, [r10, #24]
+     406: 464a         	mov	r2, r9
+     408: ec58 7b19    	vmov	r7, r8, d9
+     40c: 4638         	mov	r0, r7
+     40e: 4641         	mov	r1, r8
+     410: 4633         	mov	r3, r6
+     412: f7ff fffe    	bl	0x412 <tc_allocate_propulsive_torque+0x412> @ imm = #-0x4
+			00000412:  R_ARM_THM_CALL	__aeabi_dcmpeq
+     416: 2800         	cmp	r0, #0x0
+     418: f47f ae47    	bne.w	0xaa <tc_allocate_propulsive_torque+0xaa> @ imm = #-0x372
+     41c: f89a 0070    	ldrb.w	r0, [r10, #0x70]
+     420: b150         	cbz	r0, 0x438 <tc_allocate_propulsive_torque+0x438> @ imm = #0x14
+     422: ed9a 0b0c    	vldr	d0, [r10, #48]
+     426: 464a         	mov	r2, r9
+     428: ec51 0b10    	vmov	r0, r1, d0
+     42c: 4633         	mov	r3, r6
+     42e: f7ff fffe    	bl	0x42e <tc_allocate_propulsive_torque+0x42e> @ imm = #-0x4
+			0000042e:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     432: b108         	cbz	r0, 0x438 <tc_allocate_propulsive_torque+0x438> @ imm = #0x2
+     434: 2001         	movs	r0, #0x1
+     436: e000         	b	0x43a <tc_allocate_propulsive_torque+0x43a> @ imm = #0x0
+     438: 2000         	movs	r0, #0x0
+     43a: 9007         	str	r0, [sp, #0x1c]
+     43c: 900d         	str	r0, [sp, #0x34]
+     43e: f89a 0071    	ldrb.w	r0, [r10, #0x71]
+     442: b168         	cbz	r0, 0x460 <tc_allocate_propulsive_torque+0x460> @ imm = #0x1a
+     444: ed9a 0b10    	vldr	d0, [r10, #64]
+     448: 464a         	mov	r2, r9
+     44a: ec51 0b10    	vmov	r0, r1, d0
+     44e: 4633         	mov	r3, r6
+     450: f7ff fffe    	bl	0x450 <tc_allocate_propulsive_torque+0x450> @ imm = #-0x4
+			00000450:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     454: b120         	cbz	r0, 0x460 <tc_allocate_propulsive_torque+0x460> @ imm = #0x8
+     456: 980d         	ldr	r0, [sp, #0x34]
+     458: 3001         	adds	r0, #0x1
+     45a: 900d         	str	r0, [sp, #0x34]
+     45c: 2001         	movs	r0, #0x1
+     45e: e000         	b	0x462 <tc_allocate_propulsive_torque+0x462> @ imm = #0x0
+     460: 2000         	movs	r0, #0x0
+     462: 9006         	str	r0, [sp, #0x18]
+     464: f89a 0072    	ldrb.w	r0, [r10, #0x72]
+     468: b168         	cbz	r0, 0x486 <tc_allocate_propulsive_torque+0x486> @ imm = #0x1a
+     46a: ed9a 0b14    	vldr	d0, [r10, #80]
+     46e: 464a         	mov	r2, r9
+     470: ec51 0b10    	vmov	r0, r1, d0
+     474: 4633         	mov	r3, r6
+     476: f7ff fffe    	bl	0x476 <tc_allocate_propulsive_torque+0x476> @ imm = #-0x4
+			00000476:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     47a: b120         	cbz	r0, 0x486 <tc_allocate_propulsive_torque+0x486> @ imm = #0x8
+     47c: 980d         	ldr	r0, [sp, #0x34]
+     47e: 3001         	adds	r0, #0x1
+     480: 900d         	str	r0, [sp, #0x34]
+     482: 2001         	movs	r0, #0x1
+     484: e000         	b	0x488 <tc_allocate_propulsive_torque+0x488> @ imm = #0x0
+     486: 2000         	movs	r0, #0x0
+     488: 9005         	str	r0, [sp, #0x14]
+     48a: f89a 0073    	ldrb.w	r0, [r10, #0x73]
+     48e: b168         	cbz	r0, 0x4ac <tc_allocate_propulsive_torque+0x4ac> @ imm = #0x1a
+     490: ed9a 0b18    	vldr	d0, [r10, #96]
+     494: 464a         	mov	r2, r9
+     496: ec51 0b10    	vmov	r0, r1, d0
+     49a: 4633         	mov	r3, r6
+     49c: f7ff fffe    	bl	0x49c <tc_allocate_propulsive_torque+0x49c> @ imm = #-0x4
+			0000049c:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     4a0: b120         	cbz	r0, 0x4ac <tc_allocate_propulsive_torque+0x4ac> @ imm = #0x8
+     4a2: 980d         	ldr	r0, [sp, #0x34]
+     4a4: 3001         	adds	r0, #0x1
+     4a6: 900d         	str	r0, [sp, #0x34]
+     4a8: 2001         	movs	r0, #0x1
+     4aa: e004         	b	0x4b6 <tc_allocate_propulsive_torque+0x4b6> @ imm = #0x8
+     4ac: 980d         	ldr	r0, [sp, #0x34]
+     4ae: 2800         	cmp	r0, #0x0
+     4b0: f000 814c    	beq.w	0x74c <tc_allocate_propulsive_torque+0x74c> @ imm = #0x298
+     4b4: 2000         	movs	r0, #0x0
+     4b6: ed9f 0be2    	vldr	d0, [pc, #904]          @ 0x840 <tc_allocate_propulsive_torque+0x840>
+     4ba: 9004         	str	r0, [sp, #0x10]
+     4bc: ec53 2b10    	vmov	r2, r3, d0
+     4c0: 4638         	mov	r0, r7
+     4c2: 4641         	mov	r1, r8
+     4c4: e9cd 320b    	strd	r3, r2, [sp, #44]
+     4c8: f7ff fffe    	bl	0x4c8 <tc_allocate_propulsive_torque+0x4c8> @ imm = #-0x4
+			000004c8:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     4cc: 2800         	cmp	r0, #0x0
+     4ce: f000 817e    	beq.w	0x7ce <tc_allocate_propulsive_torque+0x7ce> @ imm = #0x2fc
+     4d2: 980d         	ldr	r0, [sp, #0x34]
+     4d4: f7ff fffe    	bl	0x4d4 <tc_allocate_propulsive_torque+0x4d4> @ imm = #-0x4
+			000004d4:  R_ARM_THM_CALL	__aeabi_ui2d
+     4d8: 4602         	mov	r2, r0
+     4da: 460b         	mov	r3, r1
+     4dc: ec51 0b19    	vmov	r0, r1, d9
+     4e0: e9cd 0102    	strd	r0, r1, [sp, #8]
+     4e4: f7ff fffe    	bl	0x4e4 <tc_allocate_propulsive_torque+0x4e4> @ imm = #-0x4
+			000004e4:  R_ARM_THM_CALL	__aeabi_ddiv
+     4e8: e9dd 320b    	ldrd	r3, r2, [sp, #44]
+     4ec: 9008         	str	r0, [sp, #0x20]
+     4ee: 9101         	str	r1, [sp, #0x4]
+     4f0: f7ff fffe    	bl	0x4f0 <tc_allocate_propulsive_torque+0x4f0> @ imm = #-0x4
+			000004f0:  R_ARM_THM_CALL	__aeabi_dadd
+     4f4: 4605         	mov	r5, r0
+     4f6: 9807         	ldr	r0, [sp, #0x1c]
+     4f8: 460f         	mov	r7, r1
+     4fa: b170         	cbz	r0, 0x51a <tc_allocate_propulsive_torque+0x51a> @ imm = #0x1c
+     4fc: ed9a 0b0c    	vldr	d0, [r10, #48]
+     500: ed94 1b02    	vldr	d1, [r4, #8]
+     504: ec51 0b10    	vmov	r0, r1, d0
+     508: ec53 2b11    	vmov	r2, r3, d1
+     50c: f7ff fffe    	bl	0x50c <tc_allocate_propulsive_torque+0x50c> @ imm = #-0x4
+			0000050c:  R_ARM_THM_CALL	__aeabi_dsub
+     510: 462a         	mov	r2, r5
+     512: 463b         	mov	r3, r7
+     514: f7ff fffe    	bl	0x514 <tc_allocate_propulsive_torque+0x514> @ imm = #-0x4
+			00000514:  R_ARM_THM_CALL	__aeabi_dcmple
+     518: b920         	cbnz	r0, 0x524 <tc_allocate_propulsive_torque+0x524> @ imm = #0x8
+     51a: f04f 0b00    	mov.w	r11, #0x0
+     51e: f04f 0801    	mov.w	r8, #0x1
+     522: e003         	b	0x52c <tc_allocate_propulsive_torque+0x52c> @ imm = #0x6
+     524: f04f 0b01    	mov.w	r11, #0x1
+     528: f04f 0800    	mov.w	r8, #0x0
+     52c: 9806         	ldr	r0, [sp, #0x18]
+     52e: b170         	cbz	r0, 0x54e <tc_allocate_propulsive_torque+0x54e> @ imm = #0x1c
+     530: ed9a 0b10    	vldr	d0, [r10, #64]
+     534: ed94 1b06    	vldr	d1, [r4, #24]
+     538: ec51 0b10    	vmov	r0, r1, d0
+     53c: ec53 2b11    	vmov	r2, r3, d1
+     540: f7ff fffe    	bl	0x540 <tc_allocate_propulsive_torque+0x540> @ imm = #-0x4
+			00000540:  R_ARM_THM_CALL	__aeabi_dsub
+     544: 462a         	mov	r2, r5
+     546: 463b         	mov	r3, r7
+     548: f7ff fffe    	bl	0x548 <tc_allocate_propulsive_torque+0x548> @ imm = #-0x4
+			00000548:  R_ARM_THM_CALL	__aeabi_dcmple
+     54c: b908         	cbnz	r0, 0x552 <tc_allocate_propulsive_torque+0x552> @ imm = #0x2
+     54e: 2001         	movs	r0, #0x1
+     550: e002         	b	0x558 <tc_allocate_propulsive_torque+0x558> @ imm = #0x4
+     552: f10b 0b01    	add.w	r11, r11, #0x1
+     556: 2000         	movs	r0, #0x0
+     558: 9009         	str	r0, [sp, #0x24]
+     55a: 9805         	ldr	r0, [sp, #0x14]
+     55c: b170         	cbz	r0, 0x57c <tc_allocate_propulsive_torque+0x57c> @ imm = #0x1c
+     55e: ed9a 0b14    	vldr	d0, [r10, #80]
+     562: ed94 1b0a    	vldr	d1, [r4, #40]
+     566: ec51 0b10    	vmov	r0, r1, d0
+     56a: ec53 2b11    	vmov	r2, r3, d1
+     56e: f7ff fffe    	bl	0x56e <tc_allocate_propulsive_torque+0x56e> @ imm = #-0x4
+			0000056e:  R_ARM_THM_CALL	__aeabi_dsub
+     572: 462a         	mov	r2, r5
+     574: 463b         	mov	r3, r7
+     576: f7ff fffe    	bl	0x576 <tc_allocate_propulsive_torque+0x576> @ imm = #-0x4
+			00000576:  R_ARM_THM_CALL	__aeabi_dcmple
+     57a: b928         	cbnz	r0, 0x588 <tc_allocate_propulsive_torque+0x588> @ imm = #0xa
+     57c: 2001         	movs	r0, #0x1
+     57e: e006         	b	0x58e <tc_allocate_propulsive_torque+0x58e> @ imm = #0xc
+		...
+     588: f04f 0b01    	mov.w	r11, #0x1
+     58c: 2000         	movs	r0, #0x0
+     58e: 900a         	str	r0, [sp, #0x28]
+     590: 9804         	ldr	r0, [sp, #0x10]
+     592: b170         	cbz	r0, 0x5b2 <tc_allocate_propulsive_torque+0x5b2> @ imm = #0x1c
+     594: ed9a 0b18    	vldr	d0, [r10, #96]
+     598: ed94 1b0e    	vldr	d1, [r4, #56]
+     59c: ec51 0b10    	vmov	r0, r1, d0
+     5a0: ec53 2b11    	vmov	r2, r3, d1
+     5a4: f7ff fffe    	bl	0x5a4 <tc_allocate_propulsive_torque+0x5a4> @ imm = #-0x4
+			000005a4:  R_ARM_THM_CALL	__aeabi_dsub
+     5a8: 462a         	mov	r2, r5
+     5aa: 463b         	mov	r3, r7
+     5ac: f7ff fffe    	bl	0x5ac <tc_allocate_propulsive_torque+0x5ac> @ imm = #-0x4
+			000005ac:  R_ARM_THM_CALL	__aeabi_dcmple
+     5b0: b928         	cbnz	r0, 0x5be <tc_allocate_propulsive_torque+0x5be> @ imm = #0xa
+     5b2: f1bb 0f00    	cmp.w	r11, #0x0
+     5b6: f000 80ce    	beq.w	0x756 <tc_allocate_propulsive_torque+0x756> @ imm = #0x19c
+     5ba: 2001         	movs	r0, #0x1
+     5bc: e000         	b	0x5c0 <tc_allocate_propulsive_torque+0x5c0> @ imm = #0x0
+     5be: 2000         	movs	r0, #0x0
+     5c0: f1b8 0f00    	cmp.w	r8, #0x0
+     5c4: 9008         	str	r0, [sp, #0x20]
+     5c6: d12c         	bne	0x622 <tc_allocate_propulsive_torque+0x622> @ imm = #0x58
+     5c8: ed94 1b02    	vldr	d1, [r4, #8]
+     5cc: ed9a 0b0c    	vldr	d0, [r10, #48]
+     5d0: ec58 bb11    	vmov	r11, r8, d1
+     5d4: ec51 0b10    	vmov	r0, r1, d0
+     5d8: 465a         	mov	r2, r11
+     5da: 4643         	mov	r3, r8
+     5dc: f7ff fffe    	bl	0x5dc <tc_allocate_propulsive_torque+0x5dc> @ imm = #-0x4
+			000005dc:  R_ARM_THM_CALL	__aeabi_dsub
+     5e0: 464a         	mov	r2, r9
+     5e2: 4633         	mov	r3, r6
+     5e4: 4607         	mov	r7, r0
+     5e6: 460d         	mov	r5, r1
+     5e8: f7ff fffe    	bl	0x5e8 <tc_allocate_propulsive_torque+0x5e8> @ imm = #-0x4
+			000005e8:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     5ec: 2800         	cmp	r0, #0x0
+     5ee: bf04         	itt	eq
+     5f0: 4635         	moveq	r5, r6
+     5f2: 464f         	moveq	r7, r9
+     5f4: 4658         	mov	r0, r11
+     5f6: 4641         	mov	r1, r8
+     5f8: 463a         	mov	r2, r7
+     5fa: 462b         	mov	r3, r5
+     5fc: f7ff fffe    	bl	0x5fc <tc_allocate_propulsive_torque+0x5fc> @ imm = #-0x4
+			000005fc:  R_ARM_THM_CALL	__aeabi_dadd
+     600: ec41 0b10    	vmov	d0, r0, r1
+     604: e9dd 0102    	ldrd	r0, r1, [sp, #8]
+     608: 463a         	mov	r2, r7
+     60a: 462b         	mov	r3, r5
+     60c: ed84 0b02    	vstr	d0, [r4, #8]
+     610: f7ff fffe    	bl	0x610 <tc_allocate_propulsive_torque+0x610> @ imm = #-0x4
+			00000610:  R_ARM_THM_CALL	__aeabi_dsub
+     614: ec41 0b19    	vmov	d9, r0, r1
+     618: 980d         	ldr	r0, [sp, #0x34]
+     61a: 3801         	subs	r0, #0x1
+     61c: 900d         	str	r0, [sp, #0x34]
+     61e: 2000         	movs	r0, #0x0
+     620: 9007         	str	r0, [sp, #0x1c]
+     622: 9809         	ldr	r0, [sp, #0x24]
+     624: bb60         	cbnz	r0, 0x680 <tc_allocate_propulsive_torque+0x680> @ imm = #0x58
+     626: ed94 1b06    	vldr	d1, [r4, #24]
+     62a: ed9a 0b10    	vldr	d0, [r10, #64]
+     62e: ec58 bb11    	vmov	r11, r8, d1
+     632: ec51 0b10    	vmov	r0, r1, d0
+     636: 465a         	mov	r2, r11
+     638: 4643         	mov	r3, r8
+     63a: f7ff fffe    	bl	0x63a <tc_allocate_propulsive_torque+0x63a> @ imm = #-0x4
+			0000063a:  R_ARM_THM_CALL	__aeabi_dsub
+     63e: 464a         	mov	r2, r9
+     640: 4633         	mov	r3, r6
+     642: 4607         	mov	r7, r0
+     644: 460d         	mov	r5, r1
+     646: f7ff fffe    	bl	0x646 <tc_allocate_propulsive_torque+0x646> @ imm = #-0x4
+			00000646:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     64a: 2800         	cmp	r0, #0x0
+     64c: bf04         	itt	eq
+     64e: 4635         	moveq	r5, r6
+     650: 464f         	moveq	r7, r9
+     652: 4658         	mov	r0, r11
+     654: 4641         	mov	r1, r8
+     656: 463a         	mov	r2, r7
+     658: 462b         	mov	r3, r5
+     65a: f7ff fffe    	bl	0x65a <tc_allocate_propulsive_torque+0x65a> @ imm = #-0x4
+			0000065a:  R_ARM_THM_CALL	__aeabi_dadd
+     65e: ec41 0b10    	vmov	d0, r0, r1
+     662: ec51 0b19    	vmov	r0, r1, d9
+     666: 463a         	mov	r2, r7
+     668: 462b         	mov	r3, r5
+     66a: ed84 0b06    	vstr	d0, [r4, #24]
+     66e: f7ff fffe    	bl	0x66e <tc_allocate_propulsive_torque+0x66e> @ imm = #-0x4
+			0000066e:  R_ARM_THM_CALL	__aeabi_dsub
+     672: ec41 0b19    	vmov	d9, r0, r1
+     676: 980d         	ldr	r0, [sp, #0x34]
+     678: 3801         	subs	r0, #0x1
+     67a: 900d         	str	r0, [sp, #0x34]
+     67c: 2000         	movs	r0, #0x0
+     67e: 9006         	str	r0, [sp, #0x18]
+     680: 980a         	ldr	r0, [sp, #0x28]
+     682: bb60         	cbnz	r0, 0x6de <tc_allocate_propulsive_torque+0x6de> @ imm = #0x58
+     684: ed94 1b0a    	vldr	d1, [r4, #40]
+     688: ed9a 0b14    	vldr	d0, [r10, #80]
+     68c: ec58 bb11    	vmov	r11, r8, d1
+     690: ec51 0b10    	vmov	r0, r1, d0
+     694: 465a         	mov	r2, r11
+     696: 4643         	mov	r3, r8
+     698: f7ff fffe    	bl	0x698 <tc_allocate_propulsive_torque+0x698> @ imm = #-0x4
+			00000698:  R_ARM_THM_CALL	__aeabi_dsub
+     69c: 464a         	mov	r2, r9
+     69e: 4633         	mov	r3, r6
+     6a0: 4607         	mov	r7, r0
+     6a2: 460d         	mov	r5, r1
+     6a4: f7ff fffe    	bl	0x6a4 <tc_allocate_propulsive_torque+0x6a4> @ imm = #-0x4
+			000006a4:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     6a8: 2800         	cmp	r0, #0x0
+     6aa: bf04         	itt	eq
+     6ac: 4635         	moveq	r5, r6
+     6ae: 464f         	moveq	r7, r9
+     6b0: 4658         	mov	r0, r11
+     6b2: 4641         	mov	r1, r8
+     6b4: 463a         	mov	r2, r7
+     6b6: 462b         	mov	r3, r5
+     6b8: f7ff fffe    	bl	0x6b8 <tc_allocate_propulsive_torque+0x6b8> @ imm = #-0x4
+			000006b8:  R_ARM_THM_CALL	__aeabi_dadd
+     6bc: ec41 0b10    	vmov	d0, r0, r1
+     6c0: ec51 0b19    	vmov	r0, r1, d9
+     6c4: 463a         	mov	r2, r7
+     6c6: 462b         	mov	r3, r5
+     6c8: ed84 0b0a    	vstr	d0, [r4, #40]
+     6cc: f7ff fffe    	bl	0x6cc <tc_allocate_propulsive_torque+0x6cc> @ imm = #-0x4
+			000006cc:  R_ARM_THM_CALL	__aeabi_dsub
+     6d0: ec41 0b19    	vmov	d9, r0, r1
+     6d4: 980d         	ldr	r0, [sp, #0x34]
+     6d6: 3801         	subs	r0, #0x1
+     6d8: 900d         	str	r0, [sp, #0x34]
+     6da: 2000         	movs	r0, #0x0
+     6dc: 9005         	str	r0, [sp, #0x14]
+     6de: 9808         	ldr	r0, [sp, #0x20]
+     6e0: bb60         	cbnz	r0, 0x73c <tc_allocate_propulsive_torque+0x73c> @ imm = #0x58
+     6e2: ed94 1b0e    	vldr	d1, [r4, #56]
+     6e6: ed9a 0b18    	vldr	d0, [r10, #96]
+     6ea: ec58 bb11    	vmov	r11, r8, d1
+     6ee: ec51 0b10    	vmov	r0, r1, d0
+     6f2: 465a         	mov	r2, r11
+     6f4: 4643         	mov	r3, r8
+     6f6: f7ff fffe    	bl	0x6f6 <tc_allocate_propulsive_torque+0x6f6> @ imm = #-0x4
+			000006f6:  R_ARM_THM_CALL	__aeabi_dsub
+     6fa: 464a         	mov	r2, r9
+     6fc: 4633         	mov	r3, r6
+     6fe: 4607         	mov	r7, r0
+     700: 460d         	mov	r5, r1
+     702: f7ff fffe    	bl	0x702 <tc_allocate_propulsive_torque+0x702> @ imm = #-0x4
+			00000702:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     706: 2800         	cmp	r0, #0x0
+     708: bf04         	itt	eq
+     70a: 4635         	moveq	r5, r6
+     70c: 464f         	moveq	r7, r9
+     70e: 4658         	mov	r0, r11
+     710: 4641         	mov	r1, r8
+     712: 463a         	mov	r2, r7
+     714: 462b         	mov	r3, r5
+     716: f7ff fffe    	bl	0x716 <tc_allocate_propulsive_torque+0x716> @ imm = #-0x4
+			00000716:  R_ARM_THM_CALL	__aeabi_dadd
+     71a: ec41 0b10    	vmov	d0, r0, r1
+     71e: ec51 0b19    	vmov	r0, r1, d9
+     722: 463a         	mov	r2, r7
+     724: 462b         	mov	r3, r5
+     726: ed84 0b0e    	vstr	d0, [r4, #56]
+     72a: f7ff fffe    	bl	0x72a <tc_allocate_propulsive_torque+0x72a> @ imm = #-0x4
+			0000072a:  R_ARM_THM_CALL	__aeabi_dsub
+     72e: ec41 0b19    	vmov	d9, r0, r1
+     732: 980d         	ldr	r0, [sp, #0x34]
+     734: 3801         	subs	r0, #0x1
+     736: 900d         	str	r0, [sp, #0x34]
+     738: 2000         	movs	r0, #0x0
+     73a: 9004         	str	r0, [sp, #0x10]
+     73c: 980d         	ldr	r0, [sp, #0x34]
+     73e: 2800         	cmp	r0, #0x0
+     740: d045         	beq	0x7ce <tc_allocate_propulsive_torque+0x7ce> @ imm = #0x8a
+     742: e9dd 320b    	ldrd	r3, r2, [sp, #44]
+     746: ec51 0b19    	vmov	r0, r1, d9
+     74a: e6bd         	b	0x4c8 <tc_allocate_propulsive_torque+0x4c8> @ imm = #-0x286
+     74c: f240 0200    	movw	r2, #0x0
+			0000074c:  R_ARM_THM_MOVW_ABS_NC	.L.str.15
+     750: f2c0 0200    	movt	r2, #0x0
+			00000750:  R_ARM_THM_MOVT_ABS	.L.str.15
+     754: e4d6         	b	0x104 <tc_allocate_propulsive_torque+0x104> @ imm = #-0x654
+     756: 9807         	ldr	r0, [sp, #0x1c]
+     758: b158         	cbz	r0, 0x772 <tc_allocate_propulsive_torque+0x772> @ imm = #0x16
+     75a: ed94 0b02    	vldr	d0, [r4, #8]
+     75e: 9808         	ldr	r0, [sp, #0x20]
+     760: 9901         	ldr	r1, [sp, #0x4]
+     762: ec53 2b10    	vmov	r2, r3, d0
+     766: f7ff fffe    	bl	0x766 <tc_allocate_propulsive_torque+0x766> @ imm = #-0x4
+			00000766:  R_ARM_THM_CALL	__aeabi_dadd
+     76a: ec41 0b10    	vmov	d0, r0, r1
+     76e: ed84 0b02    	vstr	d0, [r4, #8]
+     772: 9806         	ldr	r0, [sp, #0x18]
+     774: b158         	cbz	r0, 0x78e <tc_allocate_propulsive_torque+0x78e> @ imm = #0x16
+     776: ed94 0b06    	vldr	d0, [r4, #24]
+     77a: 9808         	ldr	r0, [sp, #0x20]
+     77c: 9901         	ldr	r1, [sp, #0x4]
+     77e: ec53 2b10    	vmov	r2, r3, d0
+     782: f7ff fffe    	bl	0x782 <tc_allocate_propulsive_torque+0x782> @ imm = #-0x4
+			00000782:  R_ARM_THM_CALL	__aeabi_dadd
+     786: ec41 0b10    	vmov	d0, r0, r1
+     78a: ed84 0b06    	vstr	d0, [r4, #24]
+     78e: 9805         	ldr	r0, [sp, #0x14]
+     790: b158         	cbz	r0, 0x7aa <tc_allocate_propulsive_torque+0x7aa> @ imm = #0x16
+     792: ed94 0b0a    	vldr	d0, [r4, #40]
+     796: 9808         	ldr	r0, [sp, #0x20]
+     798: 9901         	ldr	r1, [sp, #0x4]
+     79a: ec53 2b10    	vmov	r2, r3, d0
+     79e: f7ff fffe    	bl	0x79e <tc_allocate_propulsive_torque+0x79e> @ imm = #-0x4
+			0000079e:  R_ARM_THM_CALL	__aeabi_dadd
+     7a2: ec41 0b10    	vmov	d0, r0, r1
+     7a6: ed84 0b0a    	vstr	d0, [r4, #40]
+     7aa: 9804         	ldr	r0, [sp, #0x10]
+     7ac: b158         	cbz	r0, 0x7c6 <tc_allocate_propulsive_torque+0x7c6> @ imm = #0x16
+     7ae: ed94 0b0e    	vldr	d0, [r4, #56]
+     7b2: 9808         	ldr	r0, [sp, #0x20]
+     7b4: 9901         	ldr	r1, [sp, #0x4]
+     7b6: ec53 2b10    	vmov	r2, r3, d0
+     7ba: f7ff fffe    	bl	0x7ba <tc_allocate_propulsive_torque+0x7ba> @ imm = #-0x4
+			000007ba:  R_ARM_THM_CALL	__aeabi_dadd
+     7be: ec41 0b10    	vmov	d0, r0, r1
+     7c2: ed84 0b0e    	vstr	d0, [r4, #56]
+     7c6: eeb0 9a48    	vmov.f32	s18, s16
+     7ca: eef0 9a68    	vmov.f32	s19, s17
+     7ce: ed94 0b02    	vldr	d0, [r4, #8]
+     7d2: ed94 ab06    	vldr	d10, [r4, #24]
+     7d6: ed94 bb0a    	vldr	d11, [r4, #40]
+     7da: ed94 8b0e    	vldr	d8, [r4, #56]
+     7de: ec51 0b10    	vmov	r0, r1, d0
+     7e2: 464a         	mov	r2, r9
+     7e4: 4633         	mov	r3, r6
+     7e6: f7ff fffe    	bl	0x7e6 <tc_allocate_propulsive_torque+0x7e6> @ imm = #-0x4
+			000007e6:  R_ARM_THM_CALL	__aeabi_dadd
+     7ea: ec53 2b1a    	vmov	r2, r3, d10
+     7ee: f7ff fffe    	bl	0x7ee <tc_allocate_propulsive_torque+0x7ee> @ imm = #-0x4
+			000007ee:  R_ARM_THM_CALL	__aeabi_dadd
+     7f2: ec53 2b1b    	vmov	r2, r3, d11
+     7f6: f7ff fffe    	bl	0x7f6 <tc_allocate_propulsive_torque+0x7f6> @ imm = #-0x4
+			000007f6:  R_ARM_THM_CALL	__aeabi_dadd
+     7fa: ec53 2b18    	vmov	r2, r3, d8
+     7fe: f7ff fffe    	bl	0x7fe <tc_allocate_propulsive_torque+0x7fe> @ imm = #-0x4
+			000007fe:  R_ARM_THM_CALL	__aeabi_dadd
+     802: ed9a 0b06    	vldr	d0, [r10, #24]
+     806: ec41 0b11    	vmov	d1, r0, r1
+     80a: ed84 0b12    	vstr	d0, [r4, #72]
+     80e: ed9f 0b0e    	vldr	d0, [pc, #56]           @ 0x848 <tc_allocate_propulsive_torque+0x848>
+     812: ec51 0b19    	vmov	r0, r1, d9
+     816: ec53 2b10    	vmov	r2, r3, d0
+     81a: ed84 1b16    	vstr	d1, [r4, #88]
+     81e: f7ff fffe    	bl	0x81e <tc_allocate_propulsive_torque+0x81e> @ imm = #-0x4
+			0000081e:  R_ARM_THM_CALL	__aeabi_dcmpgt
+     822: 2800         	cmp	r0, #0x0
+     824: f43f ac72    	beq.w	0x10c <tc_allocate_propulsive_torque+0x10c> @ imm = #-0x71c
+     828: f240 0100    	movw	r1, #0x0
+			00000828:  R_ARM_THM_MOVW_ABS_NC	.L.str.16
+     82c: f2c0 0100    	movt	r1, #0x0
+			0000082c:  R_ARM_THM_MOVT_ABS	.L.str.16
+     830: 4620         	mov	r0, r4
+     832: f7ff fffe    	bl	0x832 <tc_allocate_propulsive_torque+0x832> @ imm = #-0x4
+			00000832:  R_ARM_THM_CALL	set_fault
+     836: 2002         	movs	r0, #0x2
+     838: 7060         	strb	r0, [r4, #0x1]
+     83a: f7ff bc67    	b.w	0x10c <tc_allocate_propulsive_torque+0x10c> @ imm = #-0x732
+     83e: bf00         	nop
+     840: 11 ea 2d 81  	.word	0x812dea11
+     844: 99 97 71 3d  	.word	0x3d719799
+     848: 95 d6 26 e8  	.word	0xe826d695
+     84c: 0b 2e 11 3e  	.word	0x3e112e0b
+
+Disassembly of section .text.set_fault:
+
+00000000 <set_fault>:
+       0: b570         	push	{r4, r5, r6, lr}
+       2: 4605         	mov	r5, r0
+       4: 2003         	movs	r0, #0x3
+       6: 7068         	strb	r0, [r5, #0x1]
+       8: 2001         	movs	r0, #0x1
+       a: 460c         	mov	r4, r1
+       c: f885 0068    	strb.w	r0, [r5, #0x68]
+      10: f105 0069    	add.w	r0, r5, #0x69
+      14: 2100         	movs	r1, #0x0
+      16: 2240         	movs	r2, #0x40
+      18: 2600         	movs	r6, #0x0
+      1a: f7ff fffe    	bl	0x1a <set_fault+0x1a>   @ imm = #-0x4
+			0000001a:  R_ARM_THM_CALL	memset
+      1e: e00a         	b	0x36 <set_fault+0x36>   @ imm = #0x14
+      20: f880 207c    	strb.w	r2, [r0, #0x7c]
+      24: 7d09         	ldrb	r1, [r1, #0x14]
+      26: 2900         	cmp	r1, #0x0
+      28: bf08         	it	eq
+      2a: bd70         	popeq	{r4, r5, r6, pc}
+      2c: 3615         	adds	r6, #0x15
+      2e: 2e3f         	cmp	r6, #0x3f
+      30: f880 107d    	strb.w	r1, [r0, #0x7d]
+      34: d055         	beq	0xe2 <set_fault+0xe2>   @ imm = #0xaa
+      36: 5da1         	ldrb	r1, [r4, r6]
+      38: 2900         	cmp	r1, #0x0
+      3a: d052         	beq	0xe2 <set_fault+0xe2>   @ imm = #0xa4
+      3c: 19a8         	adds	r0, r5, r6
+      3e: f880 1069    	strb.w	r1, [r0, #0x69]
+      42: 19a1         	adds	r1, r4, r6
+      44: 784a         	ldrb	r2, [r1, #0x1]
+      46: 2a00         	cmp	r2, #0x0
+      48: d04b         	beq	0xe2 <set_fault+0xe2>   @ imm = #0x96
+      4a: f880 206a    	strb.w	r2, [r0, #0x6a]
+      4e: 788a         	ldrb	r2, [r1, #0x2]
+      50: 2a00         	cmp	r2, #0x0
+      52: d046         	beq	0xe2 <set_fault+0xe2>   @ imm = #0x8c
+      54: f880 206b    	strb.w	r2, [r0, #0x6b]
+      58: 78ca         	ldrb	r2, [r1, #0x3]
+      5a: 2a00         	cmp	r2, #0x0
+      5c: d041         	beq	0xe2 <set_fault+0xe2>   @ imm = #0x82
+      5e: f880 206c    	strb.w	r2, [r0, #0x6c]
+      62: 790a         	ldrb	r2, [r1, #0x4]
+      64: b3ea         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x7a
+      66: f880 206d    	strb.w	r2, [r0, #0x6d]
+      6a: 794a         	ldrb	r2, [r1, #0x5]
+      6c: b3ca         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x72
+      6e: f880 206e    	strb.w	r2, [r0, #0x6e]
+      72: 798a         	ldrb	r2, [r1, #0x6]
+      74: b3aa         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x6a
+      76: f880 206f    	strb.w	r2, [r0, #0x6f]
+      7a: 79ca         	ldrb	r2, [r1, #0x7]
+      7c: b38a         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x62
+      7e: f880 2070    	strb.w	r2, [r0, #0x70]
+      82: 7a0a         	ldrb	r2, [r1, #0x8]
+      84: b36a         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x5a
+      86: f880 2071    	strb.w	r2, [r0, #0x71]
+      8a: 7a4a         	ldrb	r2, [r1, #0x9]
+      8c: b34a         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x52
+      8e: f880 2072    	strb.w	r2, [r0, #0x72]
+      92: 7a8a         	ldrb	r2, [r1, #0xa]
+      94: b32a         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x4a
+      96: f880 2073    	strb.w	r2, [r0, #0x73]
+      9a: 7aca         	ldrb	r2, [r1, #0xb]
+      9c: b30a         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x42
+      9e: f880 2074    	strb.w	r2, [r0, #0x74]
+      a2: 7b0a         	ldrb	r2, [r1, #0xc]
+      a4: b1ea         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x3a
+      a6: f880 2075    	strb.w	r2, [r0, #0x75]
+      aa: 7b4a         	ldrb	r2, [r1, #0xd]
+      ac: b1ca         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x32
+      ae: f880 2076    	strb.w	r2, [r0, #0x76]
+      b2: 7b8a         	ldrb	r2, [r1, #0xe]
+      b4: b1aa         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x2a
+      b6: f880 2077    	strb.w	r2, [r0, #0x77]
+      ba: 7bca         	ldrb	r2, [r1, #0xf]
+      bc: b18a         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x22
+      be: f880 2078    	strb.w	r2, [r0, #0x78]
+      c2: 7c0a         	ldrb	r2, [r1, #0x10]
+      c4: b16a         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x1a
+      c6: f880 2079    	strb.w	r2, [r0, #0x79]
+      ca: 7c4a         	ldrb	r2, [r1, #0x11]
+      cc: b14a         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0x12
+      ce: f880 207a    	strb.w	r2, [r0, #0x7a]
+      d2: 7c8a         	ldrb	r2, [r1, #0x12]
+      d4: b12a         	cbz	r2, 0xe2 <set_fault+0xe2> @ imm = #0xa
+      d6: f880 207b    	strb.w	r2, [r0, #0x7b]
+      da: 7cca         	ldrb	r2, [r1, #0x13]
+      dc: 2a00         	cmp	r2, #0x0
+      de: f47f af9f    	bne.w	0x20 <set_fault+0x20>   @ imm = #-0xc2
+      e2: bd70         	pop	{r4, r5, r6, pc}
+
+Disassembly of section .text.fault:
+
+00000000 <fault>:
+       0: b570         	push	{r4, r5, r6, lr}
+       2: 460e         	mov	r6, r1
+       4: f891 1020    	ldrb.w	r1, [r1, #0x20]
+       8: 4614         	mov	r4, r2
+       a: 2901         	cmp	r1, #0x1
+       c: 4605         	mov	r5, r0
+       e: d10b         	bne	0x28 <fault+0x28>       @ imm = #0x16
+      10: ed96 0b06    	vldr	d0, [r6, #24]
+      14: ec51 0b10    	vmov	r0, r1, d0
+      18: f7ff fffe    	bl	0x18 <fault+0x18>       @ imm = #-0x4
+			00000018:  R_ARM_THM_CALL	__finite
+      1c: 2800         	cmp	r0, #0x0
+      1e: bf1c         	itt	ne
+      20: ed96 0b06    	vldrne	d0, [r6, #24]
+      24: ed85 0b12    	vstrne	d0, [r5, #72]
+      28: 2003         	movs	r0, #0x3
+      2a: 7068         	strb	r0, [r5, #0x1]
+      2c: 2001         	movs	r0, #0x1
+      2e: f885 0068    	strb.w	r0, [r5, #0x68]
+      32: f105 0069    	add.w	r0, r5, #0x69
+      36: 2100         	movs	r1, #0x0
+      38: 2240         	movs	r2, #0x40
+      3a: 2600         	movs	r6, #0x0
+      3c: f7ff fffe    	bl	0x3c <fault+0x3c>       @ imm = #-0x4
+			0000003c:  R_ARM_THM_CALL	memset
+      40: e00b         	b	0x5a <fault+0x5a>       @ imm = #0x16
+      42: bf00         	nop
+      44: f880 207c    	strb.w	r2, [r0, #0x7c]
+      48: 7d09         	ldrb	r1, [r1, #0x14]
+      4a: 2900         	cmp	r1, #0x0
+      4c: bf08         	it	eq
+      4e: bd70         	popeq	{r4, r5, r6, pc}
+      50: 3615         	adds	r6, #0x15
+      52: 2e3f         	cmp	r6, #0x3f
+      54: f880 107d    	strb.w	r1, [r0, #0x7d]
+      58: d055         	beq	0x106 <fault+0x106>     @ imm = #0xaa
+      5a: 5da1         	ldrb	r1, [r4, r6]
+      5c: 2900         	cmp	r1, #0x0
+      5e: d052         	beq	0x106 <fault+0x106>     @ imm = #0xa4
+      60: 19a8         	adds	r0, r5, r6
+      62: f880 1069    	strb.w	r1, [r0, #0x69]
+      66: 19a1         	adds	r1, r4, r6
+      68: 784a         	ldrb	r2, [r1, #0x1]
+      6a: 2a00         	cmp	r2, #0x0
+      6c: d04b         	beq	0x106 <fault+0x106>     @ imm = #0x96
+      6e: f880 206a    	strb.w	r2, [r0, #0x6a]
+      72: 788a         	ldrb	r2, [r1, #0x2]
+      74: 2a00         	cmp	r2, #0x0
+      76: d046         	beq	0x106 <fault+0x106>     @ imm = #0x8c
+      78: f880 206b    	strb.w	r2, [r0, #0x6b]
+      7c: 78ca         	ldrb	r2, [r1, #0x3]
+      7e: 2a00         	cmp	r2, #0x0
+      80: d041         	beq	0x106 <fault+0x106>     @ imm = #0x82
+      82: f880 206c    	strb.w	r2, [r0, #0x6c]
+      86: 790a         	ldrb	r2, [r1, #0x4]
+      88: b3ea         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x7a
+      8a: f880 206d    	strb.w	r2, [r0, #0x6d]
+      8e: 794a         	ldrb	r2, [r1, #0x5]
+      90: b3ca         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x72
+      92: f880 206e    	strb.w	r2, [r0, #0x6e]
+      96: 798a         	ldrb	r2, [r1, #0x6]
+      98: b3aa         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x6a
+      9a: f880 206f    	strb.w	r2, [r0, #0x6f]
+      9e: 79ca         	ldrb	r2, [r1, #0x7]
+      a0: b38a         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x62
+      a2: f880 2070    	strb.w	r2, [r0, #0x70]
+      a6: 7a0a         	ldrb	r2, [r1, #0x8]
+      a8: b36a         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x5a
+      aa: f880 2071    	strb.w	r2, [r0, #0x71]
+      ae: 7a4a         	ldrb	r2, [r1, #0x9]
+      b0: b34a         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x52
+      b2: f880 2072    	strb.w	r2, [r0, #0x72]
+      b6: 7a8a         	ldrb	r2, [r1, #0xa]
+      b8: b32a         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x4a
+      ba: f880 2073    	strb.w	r2, [r0, #0x73]
+      be: 7aca         	ldrb	r2, [r1, #0xb]
+      c0: b30a         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x42
+      c2: f880 2074    	strb.w	r2, [r0, #0x74]
+      c6: 7b0a         	ldrb	r2, [r1, #0xc]
+      c8: b1ea         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x3a
+      ca: f880 2075    	strb.w	r2, [r0, #0x75]
+      ce: 7b4a         	ldrb	r2, [r1, #0xd]
+      d0: b1ca         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x32
+      d2: f880 2076    	strb.w	r2, [r0, #0x76]
+      d6: 7b8a         	ldrb	r2, [r1, #0xe]
+      d8: b1aa         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x2a
+      da: f880 2077    	strb.w	r2, [r0, #0x77]
+      de: 7bca         	ldrb	r2, [r1, #0xf]
+      e0: b18a         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x22
+      e2: f880 2078    	strb.w	r2, [r0, #0x78]
+      e6: 7c0a         	ldrb	r2, [r1, #0x10]
+      e8: b16a         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x1a
+      ea: f880 2079    	strb.w	r2, [r0, #0x79]
+      ee: 7c4a         	ldrb	r2, [r1, #0x11]
+      f0: b14a         	cbz	r2, 0x106 <fault+0x106> @ imm = #0x12
+      f2: f880 207a    	strb.w	r2, [r0, #0x7a]
+      f6: 7c8a         	ldrb	r2, [r1, #0x12]
+      f8: b12a         	cbz	r2, 0x106 <fault+0x106> @ imm = #0xa
+      fa: f880 207b    	strb.w	r2, [r0, #0x7b]
+      fe: 7cca         	ldrb	r2, [r1, #0x13]
+     100: 2a00         	cmp	r2, #0x0
+     102: f47f af9f    	bne.w	0x44 <fault+0x44>       @ imm = #-0xc2
+     106: bd70         	pop	{r4, r5, r6, pc}

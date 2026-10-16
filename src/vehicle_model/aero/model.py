@@ -1,5 +1,7 @@
 """Aero-subteam parameters and force calculations."""
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from math import degrees, isfinite, radians
 from typing import Literal
@@ -233,6 +235,16 @@ class ActiveAero(Aero):
     deployment_mode: ActiveAeroMode = "automatic"
     current_path_curvature_per_m: float = field(init=False, default=0.0)
     low_drag_mode_active: bool = field(init=False, default=False)
+
+    @contextmanager
+    def speculative_state(self) -> Iterator[None]:
+        """Restore mode-selection query state when a vehicle trial fails."""
+        pending = self.current_path_curvature_per_m, self.low_drag_mode_active
+        try:
+            yield
+        except BaseException:
+            self.current_path_curvature_per_m, self.low_drag_mode_active = pending
+            raise
 
     def validate(self) -> None:
         super(ActiveAero, self).validate()

@@ -78,6 +78,7 @@ numbers in historical validation documents describe their stated configurations.
 
 | Route | What it calculates | How to interpret it |
 |---|---|---|
+| Basic dynamics · bicycle (desktop/browser) | Six-state synthetic single-track longitudinal/lateral/yaw response | Prescribed rear contact-force study; no torque controller or wheel angular dynamics |
 | Desktop centerline | One distance-domain, rolling-start prescribed-path lap | Initial-condition model estimate; entry and exit speed may differ |
 | Desktop two-car comparison | Two cars on the same selected course and one common feasible starting speed | A modeled comparison under matched run settings |
 | Desktop AI racing line | Bounded offline geometry proposals, then laps with closed seam speed | Rank only complete, audited, eligible paths; corridor is an assumption |

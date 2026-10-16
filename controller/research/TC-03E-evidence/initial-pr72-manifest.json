@@ -1,0 +1,72 @@
+{
+  "schema": "enme408-cortex-m4-curated-evidence-manifest/v1",
+  "bound_files": 12,
+  "files": [
+    {
+      "path": "projects/enme408-torque-control/reference/cortex_m4_objects.py",
+      "bytes": 21216,
+      "sha256": "d2815f25604f99596ef0cc0cfad5d3f11bc4dd5067299b24757856a854bbfcf9"
+    },
+    {
+      "path": "projects/enme408-torque-control/reference/cortex_m4_reaccount.py",
+      "bytes": 7339,
+      "sha256": "6a962b4560d5a59f12bb829944e03dbf8d6a39dcdb016f33ae2891b7d459a53c"
+    },
+    {
+      "path": "projects/enme408-torque-control/reference/test_cortex_m4_objects.py",
+      "bytes": 9590,
+      "sha256": "04d3b650ce0a4ca21e474caf366805dc26c8de026087fbb491c477d9bad054c5"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-cortex-m4-object-protocol.json",
+      "bytes": 10392,
+      "sha256": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/executed-cortex_m4_objects.py.txt",
+      "bytes": 20544,
+      "sha256": "40c299716d1a0a497c0ee0ec74e78faf113dd235237892994e19f93017c22dc8"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/file-only-reaccount.json",
+      "bytes": 206405,
+      "sha256": "c6356c430dcb089f1d1023daac40759285c5386fc0077b8660c9bf6220443fb7"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/independent-file-review.json",
+      "bytes": 11328,
+      "sha256": "f16dd19baadeddccf43452398e7a13f69abc7c1ac5840d0c680e97a9b99f1d5d"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/original-receipt.json",
+      "bytes": 186931,
+      "sha256": "509498f3879202fcb786be715edda00831ad629bd03de18ad9de8b441c17142f"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/README.md",
+      "bytes": 1817,
+      "sha256": "c51b52b02854ee12898001ec8a81f0a2356907375488d87d4c621da9b1201d50"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/software-checks.json",
+      "bytes": 565,
+      "sha256": "ce8b192a7a9f64aacbaee9658b23e15453687c39a78b606774cc56729afee2c4"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/summary.json",
+      "bytes": 21535,
+      "sha256": "122e9375823ea50a5b27f7066f7618425c890aff3f96bc73125185be748615cb"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/toolchain-provenance.json",
+      "bytes": 3250,
+      "sha256": "b01e46524b653553d483dac2bce75800b36470d4a050493438b80ab2faf0f3d2"
+    }
+  ],
+  "excluded": [
+    "Toolchain archive/tree and large verified-tree manifest",
+    "All twelve generated object binaries",
+    "Hardware/firmware files"
+  ],
+  "original_attempt_and_protocol_preserved": true
+}

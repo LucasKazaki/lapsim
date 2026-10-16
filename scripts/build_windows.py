@@ -16,6 +16,17 @@ from tempfile import TemporaryDirectory
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
+WEB_SOURCE_FILES = (
+    "index.html", "app.js", "styles.css", "worker.js", "bridge.py",
+    "bench.html", "bench.css", "bench.js", "bench-data.js",
+    "basic.html", "basic.css", "basic.js",
+)
+# Independently pinned like the site staging script; a mutable recipient
+# manifest cannot authorize new replay data in a source package.
+REVIEWED_WEB_REPLAYS = {
+    "enme408-synthetic-replay.json": "3c77722726b4ef7e43e172df4adee75d312ed89a8c5a648b79f314d485996bec",
+    "enme408-native-c-replay.json": "dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8",
+}
 
 
 def run(*args: str, **kwargs) -> None:
@@ -40,7 +51,8 @@ def stage_assets() -> Path:
         for pattern in patterns:
             paths.extend((ROOT / folder).rglob(pattern))
     paths.extend(ROOT / name for name in (
-        "README.md", "START-HERE.txt", "pyproject.toml", "requirements-build.lock", "build_lapsim.cmd",
+        "README.md", "START-HERE.txt", "AGENTS.md", "ENME408_IMPLEMENTATION_PLAN.md",
+        "pyproject.toml", "requirements-build.lock", "build_lapsim.cmd",
         "setup_lapsim.cmd", "setup_lapsim.ps1", "launch_lapsim.cmd", "packaging/LapSim.spec",
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",
@@ -56,15 +68,33 @@ def stage_assets() -> Path:
         identity = json.loads(previous.read_text(encoding="utf-8")) if previous.is_file() else {}
         source_commit = identity.get("code_commit")
         source_dirty = True  # This snapshot has no live clean-worktree guarantee.
-        for folder in ("src", "scripts", "tests", "docs", "data", "analysis", "output", "packaging", ".vscode"):
+        for folder in ("src", "controller", "web", "scripts", "tests", "docs", "data", "analysis", "output", "packaging", ".vscode"):
             paths.extend(path for path in (ROOT / folder).rglob("*") if path.is_file())
         paths.extend(path for path in ROOT.glob("LICENSE*") if path.is_file())
         paths.extend(ROOT / name for name in (".gitignore", ".gitattributes") if (ROOT / name).is_file())
     checksums = {}
+    allowed_web = {"web/" + name for name in WEB_SOURCE_FILES}
+    allowed_web.update("web/examples/" + name for name in REVIEWED_WEB_REPLAYS)
+    for name in allowed_web:
+        source = ROOT / name
+        if not source.is_file():
+            raise ValueError("missing required browser source: " + name)
+        if source.is_symlink() or source.resolve() != ROOT.resolve() / name or source.stat().st_nlink != 1:
+            raise ValueError("refusing aliased browser source")
+    for name, expected in REVIEWED_WEB_REPLAYS.items():
+        source = ROOT / "web/examples" / name
+        if (source.stat().st_size > 20_000_000
+                or sha256(source.read_bytes().replace(b"\r\n", b"\n")).hexdigest() != expected):
+            raise ValueError("unreviewed source-package replay: " + name)
     for source in sorted(set(paths)):
         if any(part in {"__pycache__", ".venv", "build", "work"} for part in source.relative_to(ROOT).parts):
             continue
         relative = source.relative_to(ROOT)
+        if relative.parts[0] == "web":
+            if relative.as_posix() not in allowed_web:
+                continue
+            if source.is_symlink() or source.resolve() != ROOT.resolve() / relative or source.stat().st_nlink != 1:
+                raise ValueError("refusing aliased browser source")
         destination = assets / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)

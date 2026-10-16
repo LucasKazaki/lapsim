@@ -1,0 +1,69 @@
+{
+  "schema": "lapsim.charge-budget-local-model-assessment.v1",
+  "raw_receipt_sha256": "83dd6c866fb433247ef517d3bec5e0ab56343b625d6b08f286bca12704d4d8f2",
+  "raw_receipt_workspace_path": "work\\local-model-reviews\\lapsim-charge-budget.json",
+  "model": "qwen3.8-27b-local-q2k:latest",
+  "model_details": {
+    "parent_model": "",
+    "format": "gguf",
+    "family": "qwen35",
+    "families": [
+      "qwen35"
+    ],
+    "parameter_size": "27.3B",
+    "quantization_level": "Q2_K"
+  },
+  "elapsed_seconds": 14.257933200002299,
+  "structured_output_valid": true,
+  "sources": [
+    {
+      "file": "src/vehicle_model/electrical/battery.py",
+      "reviewed_sha256": "17afd8308fca2d66dbc94692e29e58440c1280412e71dad6363763c7db6373ae",
+      "packaged_sha256": "17afd8308fca2d66dbc94692e29e58440c1280412e71dad6363763c7db6373ae",
+      "unchanged": true
+    },
+    {
+      "file": "src/vehicle_model/vehicle.py",
+      "reviewed_sha256": "c0b8d72882b573c58e30c2f20f4c1b9769f5a1cb03f7c54bbc478b164bcdcaf1",
+      "packaged_sha256": "c0b8d72882b573c58e30c2f20f4c1b9769f5a1cb03f7c54bbc478b164bcdcaf1",
+      "unchanged": true
+    },
+    {
+      "file": "src/vehicle_model/mech/suspension.py",
+      "reviewed_sha256": "dee98ab0f8f16f1012c34f023c43aba153e1b9de296f8c05577d3b90e54f6e8f",
+      "packaged_sha256": "dee98ab0f8f16f1012c34f023c43aba153e1b9de296f8c05577d3b90e54f6e8f",
+      "unchanged": true
+    },
+    {
+      "file": "src/vehicle_model/vehicle.py",
+      "reviewed_sha256": "c0b8d72882b573c58e30c2f20f4c1b9769f5a1cb03f7c54bbc478b164bcdcaf1",
+      "packaged_sha256": "c0b8d72882b573c58e30c2f20f4c1b9769f5a1cb03f7c54bbc478b164bcdcaf1",
+      "unchanged": true
+    }
+  ],
+  "proposals": [
+    {
+      "raw": {
+        "inputs": "power_w=1000000.0, timestep_s=1.0, SOC=0.99999999999999999999, capacity_ah=1000.0",
+        "expected": "reject ValueError; dQ_Ah=0.27777777777777777777, available_ah=0.00000000000000000001, roundoff_ah=0.00000000000000000000"
+      },
+      "disposition": "rejected",
+      "reason": "Positive power is discharge; at SOC rounded to exactly1.0, available charge is the full1000Ah, not nearzero. Current cannot be inferred as equal to power without voltage. A1MW request can fail the independent instantaneous operating-point limit, so the proposed interval expectation is not established."
+    },
+    {
+      "raw": {
+        "inputs": "power_w=-1000000.0, timestep_s=1.0, SOC=0.00000000000000000001, capacity_ah=1000.0",
+        "expected": "reject ValueError; dQ_Ah=-0.27777777777777777777, available_ah=0.99999999999999999999, roundoff_ah=0.00000000000000000000"
+      },
+      "disposition": "rejected",
+      "reason": "Negative power is charge; at SOC1e-20 and capacity1000Ah, available charge rounds to1000Ah, not1Ah. The asserted dQ also equates watts to amperes without terminal voltage. A1MW request does not isolate the finite-interval predicate."
+    }
+  ],
+  "acceptance_authority": "Frozen source contract, deterministic regression/sweep checks and independent practical review. Model suggestions confer no acceptance.",
+  "scope": "Actual local GPU hypothesis generation; neither proposal establishes a valid regression. No GPU speedup or correctness improvement is claimed.",
+  "post_review_delta": {
+    "file": "src/vehicle_model/aero/model.py",
+    "sha256": "4dcbfc22b2e29e86d473d6e6b26fc8ca6f7e9c5d6c1c2c5986cd7c42b05cc1ff",
+    "change": "Independent deterministic review found two mutable ActiveAero query fields outside the local-model prompt. They now opt into rollback;24new regressions were added. The model did not review this addition and is not credited with finding it."
+  }
+}

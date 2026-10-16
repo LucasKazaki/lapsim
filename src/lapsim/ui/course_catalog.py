@@ -9,16 +9,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from hashlib import sha256
-from math import ceil, isfinite, pi
-from numbers import Real
+from math import pi
 import os
 from pathlib import Path
 
 from lapsim.courses.course_bundle import CourseBundle, course_geometry_sha256
 from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.courses.solver_grid import resolve_solver_grid, solver_grid_cell_count
 from lapsim.courses.track import Curve, Straight, Track
 
-from .simulation import ENDURANCE_TRACK_PATH, load_team_endurance_track, resample_track
+from .simulation import ENDURANCE_TRACK_PATH, load_team_endurance_track
 
 
 @dataclass(frozen=True, slots=True)
@@ -312,74 +312,34 @@ def course_source_metadata(
     raise ValueError(f"Unknown course ID: {spec.course_id!r}")
 
 
-def solver_cell_count_for_course(
-    course_id: str, source_track: SpatialTrack, maximum_cell_length_m: float,
-) -> int:
-    """Count the cells a requested maximum step would actually produce."""
-
-    if (
-        isinstance(maximum_cell_length_m, bool)
-        or not isinstance(maximum_cell_length_m, Real)
-        or not isfinite(maximum_cell_length_m)
-        or maximum_cell_length_m <= 0.0
-    ):
-        raise ValueError("maximum_cell_length_m must be finite and positive")
-    if source_track.length_m / maximum_cell_length_m > 5000:
-        raise ValueError("requested solver grid exceeds the 5000-cell compute cap")
+def _uses_coherent_arcs(course_id: str, source_track: SpatialTrack) -> bool:
     if course_id in (SYNTHETIC_DEMO_COURSE_ID, SYNTHETIC_FSAE_COURSE_ID):
         if source_track != load_course(course_id):
             raise ValueError("Synthetic course source does not match the catalog")
-        if maximum_cell_length_m >= max(source_track.cell_length_m) - 1e-10:
-            return source_track.cell_count
-        # Refinement keeps the source's analytic straight/arc boundaries.
-        # Count their subdivisions, rather than rebuilding larger segments
-        # with a different rounding of their cell boundaries.
-        return sum(
-            ceil(length_m / maximum_cell_length_m)
-            for length_m in source_track.cell_length_m
-        )
+        return True
     if course_id == DEFAULT_COURSE_ID:
         if source_track != load_team_endurance_track():
             raise ValueError("Fused course source does not match the catalog")
-        return ceil(source_track.length_m / maximum_cell_length_m)
+        return False
     if course_id.startswith(IMPORTED_COURSE_PREFIX) and len(course_id) > len(IMPORTED_COURSE_PREFIX):
-        source_track.validate_coherent_arcs()
-        # As with the synthetic course, preserve the imported source's exact
-        # arc boundaries instead of averaging adjacent curvatures.
-        return sum(
-            ceil(length_m / maximum_cell_length_m)
-            for length_m in source_track.cell_length_m
-        )
+        return True
     raise ValueError(f"Unknown course ID: {course_id!r}")
+
+
+def solver_cell_count_for_course(
+    course_id: str, source_track: SpatialTrack, maximum_cell_length_m: float,
+) -> int:
+    """Count the shared effective grid after validating its course identity."""
+    return solver_grid_cell_count(source_track, maximum_cell_length_m,
+                                  coherent_arcs=_uses_coherent_arcs(course_id, source_track))
 
 
 def solver_track_for_course(
     course_id: str, source_track: SpatialTrack, maximum_cell_length_m: float,
 ) -> SpatialTrack:
-    """Retain exact coherent arcs; resample only the fused recorded course.
-
-    A user step is a maximum, so a coherent source may stay finer.
-    A finer requested step subdivides the verified analytic source arcs,
-    preserving their stations and curvature instead of averaging across them.
-    """
-
-    if solver_cell_count_for_course(
-        course_id, source_track, maximum_cell_length_m,
-    ) > 5000:
-        raise ValueError("requested solver grid exceeds the 5000-cell compute cap")
-    if course_id in (SYNTHETIC_DEMO_COURSE_ID, SYNTHETIC_FSAE_COURSE_ID):
-        source_track.validate_coherent_arcs()
-        if maximum_cell_length_m >= max(source_track.cell_length_m) - 1e-10:
-            return source_track
-        return source_track.refine_arcs(maximum_cell_length_m)
-    if course_id == DEFAULT_COURSE_ID:
-        return resample_track(source_track, maximum_cell_length_m)
-    if course_id.startswith(IMPORTED_COURSE_PREFIX) and len(course_id) > len(IMPORTED_COURSE_PREFIX):
-        source_track.validate_coherent_arcs()
-        if maximum_cell_length_m >= max(source_track.cell_length_m) - 1e-10:
-            return source_track
-        return source_track.refine_arcs(maximum_cell_length_m)
-    raise ValueError(f"Unknown course ID: {course_id!r}")
+    """Resolve the same coherent/fused grid used by every execution adapter."""
+    return resolve_solver_grid(source_track, maximum_cell_length_m,
+                               coherent_arcs=_uses_coherent_arcs(course_id, source_track))
 
 
 __all__ = [

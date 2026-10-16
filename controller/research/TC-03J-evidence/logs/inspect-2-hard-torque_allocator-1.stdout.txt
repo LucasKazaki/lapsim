@@ -1,0 +1,2 @@
+   text	   data	    bss	    dec	    hex	filename
+   2965	      0	      0	   2965	    b95	C:\Users\lucas\Documents\Codex\2026-10-15\go\work\enme408-allocator-cortex-m4-v1\repeat-2\hard\torque_allocator.o

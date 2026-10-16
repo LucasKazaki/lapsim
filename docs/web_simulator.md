@@ -8,6 +8,42 @@ it does not substitute an approximate physics engine.
 
 ## Use and share
 
+### ENME408 torque review
+
+The **Torque review** navigation item opens `bench.html`, a separate receipt
+viewer for the ENME408 host reference. It plots the total request and final
+proposed command as discrete steps, shows inhibited intervals, and exposes each
+cycle's wheel-slot vector, guard reason, pedal latch, and recovery state. Select
+an event or use the keyboard cycle slider to inspect exact values. Source hashes
+and synthetic policy settings are available on demand. The receipt renderer does
+not run the lap solver or send commands.
+
+Use **Load synthetic example** for the 18-cycle demo (9 command-allowed cycles,
+9 held cycles, 5 recovery-pending cycles), or **Choose replay file** to open a
+local `enme408-bench-replay/v1` JSON receipt from
+[the reference implementation, draft PR 68](https://github.com/LucasKazaki/lucas-agent-studio/pull/68).
+The viewer checks structure, nonnegative finite vectors, and agreement between
+the recorded final command and inhibit/recovery gate. It recomputes the counts
+from the events. These checks do not authenticate source hashes or reproduce
+the controller; rerun the matching Python scenario for that evidence.
+
+For an easily shared offline review, export one HTML file with the exact
+frontend and demo embedded:
+
+```powershell
+python scripts/export_bench_viewer.py --output enme408-bench-review.html
+```
+
+Double-click the exported file, load the embedded example, or choose another
+receipt. No server, Python installation, CDN, or model runtime is required by
+that exported viewer. Its simulator/map links point to the existing hosted lab.
+The ordinary multi-file viewer also supports file selection under `file:`;
+its example fetch needs an HTTP server. No part of this viewer proves vehicle
+behavior, safety-system independence, firmware timing, or HIL readiness. The
+four abstract slots are not asserted to be physical wheels on the current car.
+
+### Lap simulator
+
 Open the hosted simulator in a current Chrome, Edge, Firefox, or Safari browser.
 The first launch downloads a pinned Python scientific runtime and may take
 longer than later visits. A Python installation is unnecessary. The page needs
@@ -54,7 +90,7 @@ See [simulator research](simulator_research.md) for model/control context.
 | Torque fraction | 0-1 | Requested fraction of available drive torque; controller can reduce it |
 | Brake ceiling | 10-500 psi | Maximum line pressure used by path limits and controller |
 | Regen permission | Boolean | Permit regeneration below SOC 1 only where hardware/pack allow it |
-| Maximum cell length | 0.5-10 m | Exact same desktop resampler; requested grid must have at most 1,200 cells |
+| Maximum cell length | 0.5-10 m | Shared desktop/browser grid policy; effective grid must have at most 5,000 cells |
 | Starting speed | Automatic (`null`) or 0-40 m/s | Selected run initial condition; excessive path-entry speed can fail |
 
 Every numeric input must be finite and numeric. Unknown fields, Boolean
@@ -185,3 +221,20 @@ This measured development snapshot had uncommitted source changes; the final
 shared runtime manifest records the release identity. Worker initialization
 was measured after earlier CDN access, so its timing is not a cold-network
 download benchmark.
+
+## Effective-grid repair (E05, 16 October 2026)
+
+The real desktop worker and browser adapter now resolve through
+`lapsim.courses.solver_grid`. Coherent synthetic/imported arcs retain source
+boundaries and subdivide only for finer requested steps. The fused recorded
+course retains its legacy distance-weighted curvature resampling exception.
+A maximum cell length need not coarsen an already finer source. The browser
+uses the same 5,000-cell ceiling as the shared resolver; limits apply to the
+actual effective cells before physics executes.
+
+The Python browser adapter also accepts an explicit validated `CourseBundle`
+for headless import/parity checks. The browser UI has no course import picker;
+this is not an advertised interactive import capability. Existing saved laps
+continue replaying embedded geometry without resolving new grids. Old browser
+runs may therefore differ from newly calculated runs at the same displayed
+maximum step; their recorded geometry remains authoritative.

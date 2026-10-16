@@ -1,0 +1,294 @@
+{
+  "schema": "enme408.native-bench-replay-protocol.v1",
+  "status": "frozen_before_implementation_after_root_source_review",
+  "purpose": "Let a supervisor open a small native-backed synthetic demonstration in the existing bench viewer and inspect arbitrary finite normalized custom scenarios through the actual five C owners, with source-bound execution evidence.",
+  "bases": {
+    "studio": {
+      "repo": "LucasKazaki/lucas-agent-studio",
+      "head": "01bc4eee1839f448afcd5fdfe83b8fbbc0bf68d7",
+      "draft_pr": 76,
+      "proposed_branch": "enme408/native-bench-replay-20261015"
+    },
+    "lapsim": {
+      "repo": "LucasKazaki/lapsim",
+      "head": "30ae5f0de261b82f61fe405b470038761de96ca5",
+      "draft_pr": 17,
+      "viewer_ancestor": "24698ed5e590f2d2e0d6bfa51a78c5446e436928",
+      "proposed_branch": "enme408/native-bench-viewer-export-20261015"
+    }
+  },
+  "scope": {
+    "studio_additions": [
+      "reference/native_bench_replay.py",
+      "reference/test_native_bench_replay.py",
+      "research/TC-03I-native-bench-replay-protocol.json",
+      "research/TC-03I-native-bench-replay.md",
+      "small synthetic demonstration receipts/evidence"
+    ],
+    "studio_unchanged": "Every existing Python/C owner, ABI/numeric policy, H case generator, prior parity builder and ARM cohort/receipt stays unchanged. No refactor of allocator_parity.py to make this consumer possible.",
+    "lapsim_bounded_changes": [
+      "scripts/export_bench_viewer.py: optional --receipt path / optional function argument, retaining default old example",
+      "web/bench.js: generic embedded-replay labeling instead of hardcoded 18-cycle text when an embedded receipt is used",
+      "tests/test_bench_viewer.py: actual shipped JS validator accepts the actual native-generated example; custom export/source-preservation/escaping checks",
+      "web/examples/enme408-native-c-replay.json: exact actual successful synthetic C demonstration receipt",
+      "small reproduction/review note"
+    ],
+    "viewer_policy_unchanged": "Do not change web/bench-data.js validation, old Python fixture bytes, fault gate, chart arithmetic, styling, keyboard behavior or physics. No browser controller, WASM backend, transport, target or hardware work.",
+    "design": "Reuse the existing Apple-informed layout, typography, discrete step plot and accessible file/slider/event controls. Native engine identity is explicit in the loaded label/provenance. Only generic embedded-file wording changes; no animation, new design system or visual rewrite."
+  },
+  "actual_viewer_contract": {
+    "schema": "enme408-bench-replay/v1; keep core structure and accept no fake alternate success schema",
+    "rows": "1..4096, sequential sequence indices; now_ms is null or a nonnegative JavaScript-safe integer",
+    "text_and_hashes": "Rendered label/provenance must be nonempty and at most 4000 UTF-16 code units each. source_sha256 is a nonempty object with at most 50 valid 64-hex hashes; fixed source names are ordinary short text. Preserve the whole required source set rather than dropping entries to fit.",
+    "numbers": "Finite requested/delivered values, nonnegative finite four-slot allocator/guard/command vectors; the raw allocator four-slot total and final command total must also be finite under ordered addition.",
+    "gate": "Recorded fault.reference_gate_allowed, ready/limited state, noninhibited guard and absent clock fault must agree exactly with command_allowed. Held commands are zero; allowed commands equal guard output and cannot exceed raw allocated slot values.",
+    "size": "Viewer JSON must encode to at most 20000000 UTF-8 bytes, matching the actual loader. A numerical execution can succeed without a representable viewer receipt.",
+    "authority": "The viewer recomputes presentation metrics and checks structure/gate consistency. It neither authenticates source/provenance nor reruns the controller. It must never be described as independent numerical verification."
+  },
+  "reuse_and_new_code": {
+    "parser": "Reuse bench_replay.load_scenario unchanged: exact existing input schema, duplicate-key and nonfinite/exponent-overflow rejection, dataclass construction, 2000000-byte cap and 1..4096 samples. Catch clean parse/Unicode/OSError/RecursionError failures at the new CLI.",
+    "C_build": "Reuse allocator_parity.build_allocator_library unchanged, including frozen H policy/case checks and exact five-unit strict host flags. One build per replay attempt; no tool acquisition. Reuse AllocatorCore and existing allocator/guard/pedal/clock scalar, Boolean, text, record and policy encoders; do not create a second C field decoder or change embedded-NUL semantics.",
+    "orchestration": "New bounded run_native_samples function consumes those existing APIs in the reviewed H order. It independently records C results and implements the already-reviewed final-gate interface projection. This is new offline orchestration/receipt code, not a new numerical owner.",
+    "expected_path": "Always compare against the actual untouched Python replay owners in a separate expected path. No Python allocator/guard output may be substituted into native execution or viewer output. Compare full state/reasons and binary64 bits, not only zero commands.",
+    "CSV": "Reuse bench_replay.write_csv only after a complete compatible finite viewer receipt exists. Do not emit a success CSV on a representation/parity failure.",
+    "exporter": "Reuse existing LapSim HTML/CSS/JS embedding. Optional supplied receipt replaces only the embedded data; strict finite JSON reading and source/input collision checks are new packaging guards, not a copied controller/presentation validator. Preserve escaping of '<' and ASCII JSON output. Actual BenchData.validateReceipt remains the presentation authority exercised in tests. Generalize the docstring to reproduction with matching recorded controller source, so supplied C evidence is not mislabeled Python-only.",
+    "dependency_boundaries": "Studio CLI does not require LapSim, Node, a browser or network to execute. Local cross-repo demonstration validation runs the actual pinned BenchData module with Node. LapSim commits the actual C-generated synthetic fixture and tests it with its existing Node-based validator check, avoiding a vendored duplicate validation policy.",
+    "C_build_accounting": "A new bounded command-recorder proxy temporarily replaces only allocator_parity.subprocess module binding during its unchanged builder call, restoring it in finally. Delegate each actual run to the original subprocess module. Record argv/cwd/return code or actual exception and stdout/stderr logs; no global subprocess mutation or fabricated outputs. One compiler-version invocation plus one compile invocation on a successful build; failures record the actual smaller invocation count. No concurrent builds within an attempt."
+  },
+  "CLI_and_outputs": {
+    "arguments": "native_bench_replay.py accepts exactly one of --example or --scenario PATH, required --output-dir NEW_DIRECTORY, and optional --cc supported_host_compiler. --example selects the unchanged repository bench-scenario.example.json.",
+    "attempt_directory": "Reject any existing path/symlink or a descendant of retained attempts; resolve paths and reject source-tree collisions before creation. Never overwrite source or a previous attempt. Reserve one new directory, copy exact original scenario bytes, bind source bytes before/after execution, and retain run.json on attempted input/build/verification failures. Record actual stages/call counts; no fabricated command outputs.",
+    "success": "Seal run.json once after numerical/parity and representation/encoding preflight. It contains no downstream file hashes or assertion that an export write succeeded. Then viewer-receipt.json binds the exact sealed run SHA; trace.csv is written from that compatible receipt. A separate export-status.json records actual success/failure and hashes only existing completed files. An external bundle manifest may additionally bind HTML without introducing a cycle. Library/logs stay local; no executable binaries are committed.",
+    "representation_failure": "run.json is retained with completed native/parity statuses, viewer_status=unrepresentable, exact failing field/index/reason and native bit trace. viewer-receipt.json and trace.csv are absent. Exit2; do not clip, replace nonfinite values with zero/null inside a fake v1 receipt, relabel allocator status or silently fall back to Python output.",
+    "other_failure": "Malformed/out-of-domain inputs produce an explicit failed-input diagnostic with zero C/tool execution when rejected in preflight. Compiler/execution/parity failures retain failed_retained status and actual logs/first mismatch; no viewer/CSV success outputs. Nonzero exit; no reuse/overwrite of that attempt.",
+    "standalone_demo": "From LapSim, export_bench_viewer.py --receipt PATH_TO_VIEWER_RECEIPT --output NEW_REVIEW_HTML embeds the native receipt. Default export still embeds the original Python fixture. The standalone viewer stays a local presentation artifact, not an executable C controller.",
+    "export_IO_failure": "Retain the sealed run.json byte-for-byte; retain separate export-status.json with actual failed stage/error and completed-file hashes only, never claim absent/partial files succeeded. Never revise native results to conceal export failure. Exit2. Preflight representation and JSON encoding before sealing a representable run or writing any viewer/CSV output."
+  },
+  "finite_custom_input_domain": {
+    "JSON": "Existing ordinary JSON-style schema only. Every numeric int/float anywhere must convert to finite binary64; bool is separate and never coerced. This presentation consumer deliberately rejects unrepresentable numeric integers as input-domain errors before compilation; the wider H producer's invalid-integer tests remain unchanged.",
+    "time": "Ordinary integer now_ms, input_timestamp_ms and max_input_age_ms must lie within the signed JavaScript-safe range in magnitude. Semantically valid ones are nonnegative. Noninteger/negative timestamp or invalid age fields that the existing bridge represents as invalid tags may still exercise source fault paths; values beyond the safe integer subset are rejected as consumer-domain errors, never wrapped or rounded. This is narrower than the full H uint64 owner domain.",
+    "policy": "Use the existing PipelineConfig validation for period 1..60000. Recovery count must additionally fit uint32 and be >= 1; no truncation. restart_requested must be an ordinary bool. Existing allocator/guard semantic checks remain their owners' responsibility for representable malformed fields.",
+    "strings": "Visible label/provenance must be valid Unicode scalar text; compute the post-prefix length in UTF-16 code units, including non-BMP characters. Apply the actual 4000-unit limit after adding fixed native-engine wording. Source unit strings with embedded NUL remain invalid bridge tags, never truncated to N*m.",
+    "preservation": "Execute the original parsed typed records, without changing their types or values. A viewer config projection may normalize ordinary numeric guard scalars to their represented binary64 values; Boolean/non-numeric metadata stays distinct. Preserve exact original scenario bytes/hash and original declarations in run.json so normalized output is not confused with arbitrary integer/object identity.",
+    "no_physical_cap": "Do not invent a torque/current/vehicle limit to make serialization convenient. All finite normalized magnitudes are eligible for execution. If actual raw totals overflow or other viewer requirements fail, retain the diagnostic rather than altering the numerical policy."
+  },
+  "native_state_and_record_projection": {
+    "initial": "Native gate inhibited/streak0/generation0; native clock absent; previous proposed vector positive zero and latch false. Each restart zeroes proposed history while preserving latch and clock, as H/source owners require.",
+    "cycle_order": [
+      "C allocator raw candidate from original decoded source input",
+      "C base guard with actual previous proposed vector",
+      "C clock step, retaining full anchor",
+      "C pedal trust/clock latch reconciliation from decoded C candidate/base guard",
+      "C final gate with existing H input projection",
+      "Update history to actual native proposed command and retained latch"
+    ],
+    "gate_projection": "After an inhibited guard, supply a zero/fault candidate whose reason is clock fault first, then raw allocator fault if raw status fault, else guard reason. On clock-only faults retain the valid raw candidate/guard pair and let the existing explicit C clock-fault field inhibit it. Preserve raw/base/effective records independently. No old C gate policy changes.",
+    "fault_event_fields": "For v1 FaultEvent fields, separately project the source observer's effective candidate: zero/fault on either clock or guard inhibition, otherwise raw candidate. This differs from the C gate's valid raw pair on clock-only faults but must reproduce the source event fields exactly. previous_state is the pre-cycle snapshot state; next_state/streak/generation/reference_gate_allowed/reason come from actual C decision. requested/delivered/wheels/allocator_status/fault come from the source-equivalent effective candidate derived solely from C data.",
+    "guard_fields": "Record native effective status/reason/output before recovery; pedal_overlap_latched is the retained latch after clock reconciliation. Do not replace guard output with the final zero command when recovery is held.",
+    "command_fields": "command_nm and command_allowed are actual C final outputs. command_reason is effective guard reason when allowed, otherwise native gate reason, exactly matching control_pipeline.py. Native gate reason also remains separately recorded in fault.reason.",
+    "comparison": "Compare every raw allocation scalar bit/status/fault, base/effective guard, full native clock anchor/fault/now, retained latch, actual-output history, snapshot generation/streak/state, gate reason/allowance and final vector bits to actual Python owners. Compare normalized requested-value projection explicitly. Construct no native-path decision from an expected-path output. Fault-only custom inputs may legitimately have no positive command; positive accepted-path coverage is required in the built-in/healthy acceptance fixtures.",
+    "nonfinite_evidence": "The strict run schema stores floating values as exact binary64 bit strings where needed, including nonfinite raw totals. Representation failure never discards a correctly inhibited native cycle or its subsequent recovery trace."
+  },
+  "evidence_schema": {
+    "run": "enme408-native-bench-run/v1, with separate input/build/execution/parity/viewer statuses, source/input/protocol/case hashes, actual compiler/version/argv/logs/library hash, C ABI/owner versions, full bit/state trace and first mismatch or representation failure. No full environment or credentials are captured.",
+    "viewer": "Existing enme408-bench-replay/v1 plus optional native_execution metadata identifying compiled C host engine, version/source/build/run identity and actual verification. Core rows are native-derived. label starts 'Native C replay'; provenance visibly identifies compiled C host replay and quotes the original caller declaration as a declaration, not authenticated sensor evidence.",
+    "source_identity": "Bind all actual C/H, decoder/build/oracle/orchestrator dependencies and relevant frozen protocols/case manifests. Keep unique source entry count<=50; if exceeded, stop representation export instead of dropping identities. Exact list freezes before implementation and is retained in protocol/receipts. Keep input and source hashes before/after execution; snapshots and source checks are bounded evidence, not authentication against arbitrary concurrent tampering.",
+    "determinism": "Run the native replay twice on the same actual library and compare full trace/row digests. Record build/path/runtime metadata honestly; do not promise byte-identical receipts across hosts or different library names. No random scenario generation or extra benchmark sweep.",
+    "privacy_and_scope": "Commit only the generated synthetic example, source code and small review receipts. Custom normalized files remain local. Labels/provenance are caller claims; no capture authenticity or real hardware measurement is implied.",
+    "acyclic_binding_order": [
+      "Preflight numerical row representation and complete viewer JSON encoding using a fixed-size placeholder run hash; encode strict native bit trace.",
+      "Seal immutable run.json with input/build/execution/parity/representation-preflight statuses, without downstream file hashes.",
+      "Hash sealed run.json; emit viewer metadata referencing that hash and write the compatible CSV.",
+      "Write separate actual export-status.json and optional external bundle manifest binding only completed files; standalone HTML belongs to this downstream manifest."
+    ]
+  },
+  "minimal_presentation_work": {
+    "engine_visibility": "Use the existing visible loaded title/provenance for explicit compiled-C identity, preserving the original source declaration separately. Do not let the older Python example be labeled as a native C run.",
+    "embedded_label": "Use generic 'Embedded replay' / 'Load embedded replay' wording when embedded data exists, so a custom one-cycle or non-18-cycle receipt is never labeled '18 cycles'. The served site's original synthetic-example path and default original fixture stay intact.",
+    "export_preservation": "Optional receipt path joins the exporter protected inputs; resolved-path and samefile checks prevent output overwriting the supplied receipt, source assets or hard-linked aliases. All validation/encoding precedes output write. Unsupported/malformed JSON yields a clean failure, not a partial success artifact.",
+    "HTML_safety": "Reuse the actual source assets; JSON embed uses ensure_ascii and escapes '<'. Test a hostile-looking provenance string as data and retain textContent rendering. No untrusted script/eval or browser/native controller bridge.",
+    "no_authentication_claim": "Keep the existing visible statement that structure/gate checks do not authenticate files or reproduce control. Source identity and actual native verification are in the paired run evidence."
+  },
+  "bounded_acceptance_checks": [
+    "Actual unchanged 18-cycle built-in scenario: independent C-derived record construction matches actual Python records (normalized scalar projection), all stage state/clock comparisons pass, and shipped BenchData.validateReceipt accepts the emitted v1 receipt. Existing 18-row metrics 9 allowed/9 held/5 recovering are a reference expectation, confirmed by actual execution before claiming the result.",
+    "Small explicit custom cases: 3-cycle startup with expected proposed 0/5/10 per slot; stale/interlock/saturation; restart/latch recovery; clock-only dt/gap/duplicate faults with positive pre-gate guard; epsilon over-request source diagnosis. Include a later healthy cycle to prove recovery history, not just zero outputs.",
+    "A finite DBL_MAX/three-cap raw delivered overflow: full native and Python paths match and hold zero; strict bit run evidence is retained, viewer/CSV files are absent, status is explicit representation failure. No clipping, status relabeling or Python fallback.",
+    "JavaScript-safe timestamp maximum and maximum+1, uint32 recovery boundary/out-of-domain, zero/4097 sample counts, duplicate keys, exponent overflow, nested malformed input, wrong restart type, post-prefix UTF-16 length/non-BMP boundary, and source-unit embedded NUL. Preflight-rejected inputs make no compiler/executable calls.",
+    "Existing/hard-linked/symlinked output/source/receipt paths preserve original bytes; new attempt/failure outputs never overwrite old evidence. Exact source bytes remain unchanged after input/build/run/export failures.",
+    "Run the actual Node BenchData module on the actual generated C example and bounded gate-corruption cases; do not copy its validation decisions into a second JS policy. Keep all old Python-example/viewer regressions passing.",
+    "Custom/default standalone exports embed the exact supplied/default receipt and exact viewer scripts, include no external script/CSS requirement, escape hostile-looking label data and show generic accurate embedded wording. Use a non-18-cycle supplied receipt in tests.",
+    "Actual desktop/mobile browser inspection of the native synthetic demo, including keyboard slider/event selection, visible compiled-C provenance and held-command behavior. Record actual screenshot/HTML/source/receipt hashes and loopback URL. If direct file navigation is blocked by the browser tool, report the tested loopback route rather than claiming a direct-file UI test.",
+    "Appropriate Studio full reference checks and actual C CLI run, plus focused LapSim exporter/actual-JS/staging checks and relevant existing CI. No new numerical C source or sanitizer-policy change; existing five-probe checks remain active. Independent review of orchestration, strict diagnostics/representation boundary and exported evidence before scoped draft publication."
+  ],
+  "primary_references": [
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc8259#section-6",
+      "use": "JSON excludes Infinity/NaN numeric literals and discusses binary64 and safe-integer interoperability. Raw nonfinite C evidence therefore needs bit strings and a distinct diagnostic schema."
+    },
+    {
+      "url": "https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-number.max_safe_integer",
+      "use": "The ECMAScript safe-integer range underlies the viewer's Number.isSafeInteger timestamp check. The exact renderer caps and gate checks are owned by the read source, not inferred from the standard."
+    }
+  ],
+  "limits": [
+    "Useful supervisor demonstration of actual compiled host owners and evidence only; no MCU, transport, CAN, live signal ownership, physical wheel mapping or actuation.",
+    "No change to allocator/guard/clock/recovery policy or historical source/results to make a receipt look finite or acceptable.",
+    "No random extra benchmark, model/GPU job, ARM object build, firmware linking/execution, WCET/resource-fit/HIL or safety-certification claim.",
+    "The native consumer's finite/safe-integer presentation domain is narrower than the H owner API; out-of-domain custom files are diagnosed explicitly.",
+    "Implementation authorized after this protocol-first commit; independent practical review and actual CI required before draft publication. No merge, deployment or hardware action."
+  ],
+  "source_bindings": {
+    "studio/reference/allocator.py": {
+      "raw_sha256": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
+      "lf_normalized_sha256": "9534c4cd52d792c670911d02565573daac38613b959fe53325e4c828dcc641aa"
+    },
+    "studio/reference/torque_numeric.py": {
+      "raw_sha256": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26",
+      "lf_normalized_sha256": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
+    },
+    "studio/reference/allocation_contract.py": {
+      "raw_sha256": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
+      "lf_normalized_sha256": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415"
+    },
+    "studio/reference/command_guard.py": {
+      "raw_sha256": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+      "lf_normalized_sha256": "6eb22f6b7c90e2cbfb5131a7678074c799b85a3f648fb2d553b34b9d458b36a6"
+    },
+    "studio/reference/control_pipeline.py": {
+      "raw_sha256": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531",
+      "lf_normalized_sha256": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531"
+    },
+    "studio/reference/bench_replay.py": {
+      "raw_sha256": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc",
+      "lf_normalized_sha256": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc"
+    },
+    "studio/reference/guard_request_contract.py": {
+      "raw_sha256": "e2e900515d76aa19a2226b5d4f5a4620708043c91b1180dd386be5c1d536837b",
+      "lf_normalized_sha256": "e9c908ab5bf6bbfb90ba0694c70e57c6e10f3a78b95a801d8b67e2c67b29bcfe"
+    },
+    "studio/reference/guard_overlap_observation.py": {
+      "raw_sha256": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+      "lf_normalized_sha256": "f60bd194a60b23c546185a3be8878d5864bd9d62dbd78562f3c6c84a334e22e2"
+    },
+    "studio/reference/guard_trusted_clear.py": {
+      "raw_sha256": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+      "lf_normalized_sha256": "2b612e1e9924e5625840a6ad768219622a133b23caeb4b8528d40b7644f48ee1"
+    },
+    "studio/reference/cycle_clock.py": {
+      "raw_sha256": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5",
+      "lf_normalized_sha256": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5"
+    },
+    "studio/reference/fault_state.py": {
+      "raw_sha256": "1abe78b642ca381257f1b7e26eb8ac5b125e98d33a91c97f9808ab9a5690d9d3",
+      "lf_normalized_sha256": "829535501773f0d02fb685382117dc8cb837da5fd1d61ccb17b29db16083b84f"
+    },
+    "studio/reference/guard_parity.py": {
+      "raw_sha256": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854",
+      "lf_normalized_sha256": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854"
+    },
+    "studio/reference/native/torque_contract.c": {
+      "raw_sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+      "lf_normalized_sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c"
+    },
+    "studio/reference/native/torque_contract.h": {
+      "raw_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "lf_normalized_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+    },
+    "studio/reference/native/torque_guard.c": {
+      "raw_sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+      "lf_normalized_sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+    },
+    "studio/reference/native/torque_guard.h": {
+      "raw_sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+      "lf_normalized_sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+    },
+    "studio/reference/native/torque_pedal.c": {
+      "raw_sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
+      "lf_normalized_sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15"
+    },
+    "studio/reference/native/torque_pedal.h": {
+      "raw_sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
+      "lf_normalized_sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128"
+    },
+    "studio/reference/native/torque_clock.c": {
+      "raw_sha256": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+      "lf_normalized_sha256": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5"
+    },
+    "studio/reference/native/torque_clock.h": {
+      "raw_sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+      "lf_normalized_sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088"
+    },
+    "studio/reference/allocator_parity.py": {
+      "raw_sha256": "7e13e91fb097795ddddd595f05b09299428a4caf62a3869d0f4621be013c4fea",
+      "lf_normalized_sha256": "7e13e91fb097795ddddd595f05b09299428a4caf62a3869d0f4621be013c4fea"
+    },
+    "studio/reference/test_allocator_parity.py": {
+      "raw_sha256": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336",
+      "lf_normalized_sha256": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336"
+    },
+    "studio/reference/native/torque_allocator.c": {
+      "raw_sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+      "lf_normalized_sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4"
+    },
+    "studio/reference/native/torque_allocator.h": {
+      "raw_sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+      "lf_normalized_sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee"
+    },
+    "studio/reference/native/allocator_sanitizer_probe.c": {
+      "raw_sha256": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495",
+      "lf_normalized_sha256": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495"
+    },
+    "studio/reference/c_parity.py": {
+      "raw_sha256": "eca7539e503dfb96b5106d3ec2af6feffb8955f83b4de036dd4d47d78e70a04a",
+      "lf_normalized_sha256": "eca7539e503dfb96b5106d3ec2af6feffb8955f83b4de036dd4d47d78e70a04a"
+    },
+    "studio/reference/clock_parity.py": {
+      "raw_sha256": "0a8e161de374a181adf98f344f2b34f10233d3fb53e929b9d334de4aa36fbfaf",
+      "lf_normalized_sha256": "0a8e161de374a181adf98f344f2b34f10233d3fb53e929b9d334de4aa36fbfaf"
+    },
+    "studio/reference/pedal_parity.py": {
+      "raw_sha256": "e044d6f2dcf91211ec6b1fb7f046dcb3a20ef2e967194052246363a436daaa7c",
+      "lf_normalized_sha256": "e044d6f2dcf91211ec6b1fb7f046dcb3a20ef2e967194052246363a436daaa7c"
+    },
+    "studio/reference/bench-scenario.example.json": {
+      "raw_sha256": "5af0071216b03e781ee1e9cd89d74b870dc0e2f090fd75a5ff15800fcb686bcc",
+      "lf_normalized_sha256": "41eb73383d3abdeb9f606fa6ffba76c0564e113d5505d8ed6775853dcb6278da"
+    },
+    "studio/research/TC-03H-portable-allocator-protocol.json": {
+      "raw_sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+      "lf_normalized_sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3"
+    },
+    "studio/research/TC-03H-allocator-case-generator.json": {
+      "raw_sha256": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
+      "lf_normalized_sha256": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6"
+    },
+    "lapsim/web/bench-data.js": {
+      "raw_sha256": "408768a0f7e398782a8cb1063d8a9caa8c207bc817a498b5b950ead100a66cd8",
+      "lf_normalized_sha256": "0277bb06992e106bf6ad6bb54809912d2809e4f706c3fd876760fe6d09929158"
+    },
+    "lapsim/web/bench.js": {
+      "raw_sha256": "c07a9ee6e765f7490de39b846357fdb12ac9c8ea33619bfe6e9be96119c09950",
+      "lf_normalized_sha256": "072ed4877a77e0a74ceeae0a8cddc0d57d2975d35c11b540cad20427a70223ef"
+    },
+    "lapsim/web/bench.html": {
+      "raw_sha256": "ee8b3371dc39bcdfdaf6bebe346b5e1038f38bd5720cf5d5032ade1ec1dccc6d",
+      "lf_normalized_sha256": "d059976940c6d5a3141437a0b223526df29611ffe376976d307dd5c0f6b60f63"
+    },
+    "lapsim/web/bench.css": {
+      "raw_sha256": "79ab994945b85973349824b4f7ec2e6e54721a5fdc364e5b38ea5631ef2c6049",
+      "lf_normalized_sha256": "2df4fedda3993576780b191a04a6c6b0d2ce8e103dc5529f2efdb03647d84d39"
+    },
+    "lapsim/scripts/export_bench_viewer.py": {
+      "raw_sha256": "ed799c267c0be5206a8f265e11e57d3ff3be5b7a5bf320d26494b9ee36fb66b4",
+      "lf_normalized_sha256": "447c41715371bba71055b6a8fda3a4354528a485eba4f8c5e8423b593bdeea4a"
+    },
+    "lapsim/tests/test_bench_viewer.py": {
+      "raw_sha256": "b29d042ed9ecbc6e1ab0f4d0dd5902965cf29defb7605a51a67038443764cf40",
+      "lf_normalized_sha256": "2c82a1c6ee8425c3985b95f40539a7586aa550970d5b1712a1a01741e37b16e1"
+    },
+    "lapsim/web/examples/enme408-synthetic-replay.json": {
+      "raw_sha256": "5da6df1a9466615f783b6a81995e687386f484b8dae4566d69e6a92b4934c226",
+      "lf_normalized_sha256": "3c77722726b4ef7e43e172df4adee75d312ed89a8c5a648b79f314d485996bec"
+    }
+  }
+}

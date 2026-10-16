@@ -1,0 +1,66 @@
+{
+  "source_commit": "dbee08b676d41e151ddc61f4c5a05b2bd96c808c",
+  "original_files": 419,
+  "source_checkout": "fresh LapSim clone only; no Studio directory or site packages on Python import path",
+  "environment": {
+    "python": "3.13.15",
+    "platform": "win32"
+  },
+  "commands": [
+    {
+      "label": "clone",
+      "exit_code": 0
+    },
+    {
+      "label": "import-identity",
+      "exit_code": 0
+    },
+    {
+      "label": "reference-tests",
+      "exit_code": 0
+    },
+    {
+      "label": "native-execution",
+      "exit_code": 0
+    }
+  ],
+  "native_summary": {
+    "allowed_cycles": 9,
+    "cycles": 18,
+    "inhibited_cycles": 4,
+    "recovery_pending_cycles": 5,
+    "zero_command_cycles": 9
+  },
+  "actual_status": "native_verified",
+  "scope": "Actual host C execution/reference comparison; no linked firmware/emulator/hardware claim",
+  "build": {
+    "version": "gcc.exe (Rev2, Built by MSYS2 project) 12.1.0",
+    "flags": [
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-fno-fast-math",
+      "-fno-finite-math-only",
+      "-ffp-contract=off",
+      "-fexcess-precision=standard",
+      "-shared",
+      "-static-libgcc",
+      "-Wl,--no-insert-timestamp",
+      "-Wl,--image-base,0x180000000"
+    ],
+    "binary_sha256": "9879f46feec0efb943625ebf5c62925fcbe28dcbaefb15d46538113ac02adb53",
+    "build_diagnostics": ""
+  },
+  "parity_status": "passed",
+  "repeat_agreement": true,
+  "raw_run_sha256": "07c25f275a1e7e72bf26a57b34683948c55b06224e00a1eb01b0f1c2e82f5688",
+  "raw_evidence_scope": "Original fresh-run receipts remain local under work/clean-checkout-evidence; this compact summary is new evidence, not a rewrite of historical receipts. CI retains its own fresh logs.",
+  "initial_fresh_clone_counterexample": {
+    "source_commit": "fd98e55b4160e438c162977c97d0ccce241b5297",
+    "result": "import verification failed because inherited logs/ ignore omitted 62 required historical log files",
+    "repair": "force-stage only those manifest-listed original blobs, then repeat a new isolated clone"
+  }
+}

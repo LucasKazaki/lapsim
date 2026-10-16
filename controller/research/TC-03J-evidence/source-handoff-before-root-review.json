@@ -1,0 +1,187 @@
+{
+  "schema": "enme408.allocator-arm-driver-software-review-handoff.v1",
+  "status": "software_checks_passed_actual_ARM_experiment_not_run",
+  "protocol_first_commit": "4a4234caedfab971fbac1b33f9424b1318d4aeff",
+  "base_commit": "17715fc698a4bc7b3a7807d0d6f869045fdab5a4",
+  "source_files": [
+    {
+      "path": "reference/allocator_cortex_m4_objects.py",
+      "bytes": 24201,
+      "sha256": "8e2c7f604fbd224f02396bdd3a90646107091b45498769c5194e79b5b179d252"
+    },
+    {
+      "path": "reference/test_allocator_cortex_m4_objects.py",
+      "bytes": 21746,
+      "sha256": "064c8919ccde1ebf148b7822f5880200ebc36093690ffa9755a50f953f2e62f6"
+    },
+    {
+      "path": "research/TC-03J-allocator-object-protocol.json",
+      "bytes": 27343,
+      "sha256": "6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912"
+    },
+    {
+      "path": "research/TC-03J-allocator-arm-research-baseline.json",
+      "bytes": 63395,
+      "sha256": "beb053e98a5410381bd0b02a8c96d59e39f4ff9c9419f1b7622de79d60806e21"
+    },
+    {
+      "path": "research/TC-03J-allocator-object-annex.md",
+      "bytes": 5575,
+      "sha256": "4de8f695564025746b145abc096bf8bba0e664f3e7e30a86d4c7cdf44b31647f"
+    }
+  ],
+  "software_tests": [
+    {
+      "path": "test-log.txt",
+      "bytes": 4448,
+      "sha256": "e370fde52aafa81a0c9956c948d90c199a93974e9c370b54573ed7ab79083910",
+      "tests": 22,
+      "seconds": 1.051,
+      "actual_process_exit": 0
+    },
+    {
+      "path": "shared-tests.txt",
+      "bytes": 3286,
+      "sha256": "c0bdfe6175e929801795d2891f47ee0dca9adb523e67a349a183fa0dac1137c4",
+      "tests": 18,
+      "seconds": 0.085,
+      "actual_process_exit": 0
+    },
+    {
+      "path": "old-guard-tests.txt",
+      "bytes": 1502,
+      "sha256": "4fe978b2f0b8d908b0474cc5f839c7d4c67c7b16c05be187113a3a2fc7728b03",
+      "tests": 9,
+      "seconds": 0.08,
+      "actual_process_exit": 0
+    }
+  ],
+  "tests_total": 49,
+  "test_scope": "All real subprocess calls forbidden in new tests; standalone tiny fake ZIP/tool files and synthetic fake subprocess returns/objects are software fixtures only. Original shared/guard suites likewise do not build ARM objects.",
+  "historical_byte_checks": {
+    "anchors": [
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\cortex_m4_objects.py",
+        "bytes": 21282,
+        "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\cortex_m4_reaccount.py",
+        "bytes": 7339,
+        "sha256": "6a962b4560d5a59f12bb829944e03dbf8d6a39dcdb016f33ae2891b7d459a53c"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\guard_cortex_m4_objects.py",
+        "bytes": 11997,
+        "sha256": "64f51787e0c8bfcff20bf423316480414d941df51f603235df1636053c4781b4"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03E-cortex-m4-object-protocol.json",
+        "bytes": 10392,
+        "sha256": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-base-guard-object-protocol.json",
+        "bytes": 12220,
+        "sha256": "6fd1aa2c1aab66d5fef12ccb46d727e233ecc1d4a531eb21e7148e55ad9b8d20"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03H-portable-allocator-protocol.json",
+        "bytes": 25905,
+        "sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-reaccount-v1.json",
+        "bytes": 206405,
+        "sha256": "c6356c430dcb089f1d1023daac40759285c5386fc0077b8660c9bf6220443fb7"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03E-evidence\\summary.json",
+        "bytes": 21535,
+        "sha256": "122e9375823ea50a5b27f7066f7618425c890aff3f96bc73125185be748615cb"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03E-evidence\\manifest.json",
+        "bytes": 4093,
+        "sha256": "cee8f35dd5a65f256e82fe923e0fefe96a16be253d5eeef63583fa4d191c783f"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\summary.json",
+        "bytes": 19799,
+        "sha256": "22c1ff4d4140a320511709c270bcc59e93dc1c02ef03ca92de44609e68402a33"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\manifest.json",
+        "bytes": 1407,
+        "sha256": "757616858b43527d8a3ecbabf200e169500664322ddbd894402306ee84d032f6"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\retained-artifact-manifest.json",
+        "bytes": 12499,
+        "sha256": "b4c6d9377c665de82e9e43cf51dc5a70170c0adf263af319d19c0b5044600749"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\independent-artifact-review.json",
+        "bytes": 11659,
+        "sha256": "97a80a90464ac841cd5916b5a603a5319021fc6c7fe38e0e562c00007c6fe0bc"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_contract.c",
+        "bytes": 10424,
+        "sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_contract.h",
+        "bytes": 3938,
+        "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_clock.c",
+        "bytes": 4077,
+        "sha256": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_clock.h",
+        "bytes": 2287,
+        "sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_pedal.c",
+        "bytes": 4566,
+        "sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_pedal.h",
+        "bytes": 2010,
+        "sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_guard.c",
+        "bytes": 6920,
+        "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_guard.h",
+        "bytes": 1972,
+        "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+      }
+    ],
+    "attempts": [
+      {
+        "root": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1",
+        "file_count": 178,
+        "sorted_file_records_sha256": "2aa7c761279969188acadcf2036ca30512ed099cefe8d35468e645744fa18d48"
+      },
+      {
+        "root": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1",
+        "file_count": 72,
+        "sorted_file_records_sha256": "1a5dad691611162b6dd46c20d727aca980ff66c1c49c2f9e30e62be44a38f9f1"
+      }
+    ]
+  },
+  "actual_ARM_toolchain_executable_calls": 0,
+  "actual_new_ARM_objects": 0,
+  "new_full_archive_tree_verification": false,
+  "source_review": "pending_root_full_driver_tests_review",
+  "execution_authorization": "Separate explicit root GO required after source review; no toolchain version/compiler/inspection calls authorized yet."
+}

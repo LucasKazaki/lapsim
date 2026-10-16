@@ -27,6 +27,37 @@ run inputs/results on the visitor's device. Completed runs can be compared and
 downloaded as replayable JSON. See the [browser guide](docs/web_simulator.md) for
 supported inputs, limitations, build steps, and verification evidence.
 
+**Torque review** opens a separate ENME408 bench-replay viewer: load a local
+receipt, inspect proposed wheel-slot commands and fault/recovery transitions,
+and trace the recorded source hashes. A standalone HTML export embeds the
+synthetic demo for sharing. See [the review instructions](docs/web_simulator.md#enme408-torque-review).
+This view displays host-reference evidence; it has no live command transport.
+
+## Basic dynamics: synthetic bicycle
+
+Choose **Basic dynamics · bicycle** in the desktop header, or **Basic dynamics**
+in the browser navigation. New basic sessions select `dynamic_bicycle_v1` with
+the separate `synthetic_bicycle_v1` parameter profile. Longitudinal/lateral
+velocity and yaw evolve with tire forces; the lap solver and existing saved
+runs keep their original physics. This first mode uses a prescribed rear-axle
+contact-force input (`none_prescribed_force`), with no torque controller,
+wheel angular dynamics or battery model. Independent wheel allocation belongs
+to the separate four-wheel plant.
+
+From an installed source checkout:
+
+```powershell
+python -m lapsim.ui.basic_dynamics
+python -m lapsim.experiments.basic_dynamics --output bicycle-run.json
+python -m lapsim.experiments.basic_dynamics --replay bicycle-run.json
+```
+
+Desktop JSON save/load verifies numerical replay before displaying an imported
+result. Browser JSON and CSV exports contain actual calculated samples; the
+JSON replays through the command above. Model parameters, SI units, solver,
+source revision, clock periods and validity assumptions are inspectable in
+each record. See the [equations and acceptance contract](docs/dynamic_bicycle_contract.md).
+
 ## Run or share the Windows app
 
 The portable team release is **`LapSim-Windows-x64.zip`**. Extract it and
@@ -598,19 +629,20 @@ the replay and recorder do not require a central schema change.
 
 ## First endurance-lap validation
 
-Extract the first completed lap from the competition MF4, then replay its
-distance-indexed controls through the current vehicle model:
+The active distance-domain recorded-control workflow lives under
+`analysis/endurance/`. Inspect its input options with:
 
 ```powershell
-python scripts/extract_first_endurance_lap.py
-$env:PYTHONPATH='src'
-python scripts/validate_first_endurance_lap.py
+python analysis/endurance/analyze_endurance.py --help
 ```
 
-The validation performs no parameter fitting and does not alter vehicle
-defaults. It writes plots, telemetry, and metrics under
-`outputs/endurance_validation/first_lap_soc_open_loop/`. The replay assumptions
-are documented in `docs/first_lap_soc_validation.md`.
+With authorized lap, high-rate controls, corrected IMU and track inputs,
+run `python analysis/endurance/analyze_endurance.py`. See
+[the workflow guide](analysis/endurance/README.md) for the explicit scenario
+assumptions and outputs under `analysis/endurance/output/`. This is a replay
+and comparison workflow; it is not held-out vehicle validation. The older
+[brake-free SOC report](docs/first_lap_soc_validation.md) is historical and its
+producer is absent from this revision.
 
 ## Endurance torque optimization
 
@@ -640,3 +672,11 @@ segments and export its complete telemetry, metrics, and dashboard with:
 
 Use `--distance-m`, `--segment-length-m`, and `--output-dir` to change the
 experiment without editing the script.
+
+## Portable controller source
+
+The scoped ENME408 Python/C controller now lives under `controller/`, with
+original Git-blob hashes and immutable historical receipts. Follow
+[the one-repository controller commands](docs/controller_source.md) to verify
+the source import, run reference tests and execute the five-owner native C
+replay. This host replay is separate from a closed-loop plant or STM32 target.

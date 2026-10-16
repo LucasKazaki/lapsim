@@ -1,0 +1,194 @@
+{
+  "schema": "enme408-allocator-owner-review-summary/v1",
+  "runtime_head": "e93124c82634eaf6f907a20ac329780c6a8bc463",
+  "protocol_sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+  "case_freeze_sha256": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
+  "actual_passed_receipt_sha256": "9a9ccd559dcffa27d359ff07dc2b1087bc5c88a25b2d4c79d47ec4618d2b2aa5",
+  "all_three_native_binary_sha256": "9879f46feec0efb943625ebf5c62925fcbe28dcbaefb15d46538113ac02adb53",
+  "native_allocator_changed_between_attempts": false,
+  "retained_failed_attempts": 2,
+  "results": {
+    "allowed_cycles": 1790,
+    "allowed_limited_cycles": 193,
+    "clock_fault_cycles": 384,
+    "composed_cycles": 5120,
+    "composed_reasons": {
+      "allocator_ok": 1661,
+      "brake_accelerator_overlap": 128,
+      "candidate_exceeds_request": 128,
+      "critical_communication_loss": 256,
+      "cycle_period_mismatch": 128,
+      "external_interlock_open": 256,
+      "guard_period_mismatch": 128,
+      "input_timestamp_in_future": 128,
+      "invalid_candidate_delivered": 128,
+      "invalid_request_numeric": 128,
+      "invalid_wheel_enabled": 128,
+      "invalid_wheel_limit": 128,
+      "negative_request_unsupported": 128,
+      "no_available_wheels": 128,
+      "nonmonotonic_cycle_timestamp": 128,
+      "recovery_criteria_met": 129,
+      "recovery_valid_sample": 642,
+      "recovery_waiting_for_unsaturated_valid_sample": 128,
+      "sensor_disagreement": 256,
+      "stale_input": 128,
+      "unsupported_torque_unit": 128
+    },
+    "composed_results_sha256": "b350f11086d91c28e3caeeed5f59e249bd66abdcf0ffef3dfa65e32bb5ffb5aa",
+    "config_cases": 8,
+    "contracts": {
+      "OK": 13180,
+      "candidate_exceeds_request": 85,
+      "invalid_candidate_delivered": 8
+    },
+    "direct_cases": 13273,
+    "direct_results_sha256": "62303d8cdfdd951b5fe8ee60f918903529ff3e0340b002899d0963d4b9c79711",
+    "grid_cases": 4608,
+    "healthy_cycles": 1024,
+    "held_cycles": 3330,
+    "latch_clearances": 256,
+    "mixed_fault_cases": 196,
+    "named": {
+      "3d3c25c268497682/4034000000000000": {
+        "contract": null,
+        "result": {
+          "delivered_bits": "0000000000000000",
+          "fault": null,
+          "requested_bits": "3d3c25c268497682",
+          "status": "ok",
+          "wheel_bits": [
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        }
+      },
+      "3d719799812dea11/4034000000000000": {
+        "contract": null,
+        "result": {
+          "delivered_bits": "0000000000000000",
+          "fault": null,
+          "requested_bits": "3d719799812dea11",
+          "status": "ok",
+          "wheel_bits": [
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        }
+      },
+      "3ff0000000000000/3fefffffffbb47d0": {
+        "contract": null,
+        "result": {
+          "delivered_bits": "3fefffffffbb47d0",
+          "fault": null,
+          "requested_bits": "3ff0000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "3fefffffffbb47d0",
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        }
+      },
+      "3ff0000000000000/3ff0000000001198": {
+        "contract": "candidate_exceeds_request",
+        "result": {
+          "delivered_bits": "3ff0000000001198",
+          "fault": null,
+          "requested_bits": "3ff0000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "3ff0000000001198",
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        }
+      },
+      "7fefffffffffffff/7fefffffffffffff": {
+        "contract": null,
+        "result": {
+          "delivered_bits": "7fefffffffffffff",
+          "fault": null,
+          "requested_bits": "7fefffffffffffff",
+          "status": "ok",
+          "wheel_bits": [
+            "7fefffffffffffff",
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        }
+      },
+      "8000000000000000/0000000000000000": {
+        "contract": null,
+        "result": {
+          "delivered_bits": "0000000000000000",
+          "fault": null,
+          "requested_bits": "0000000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        }
+      }
+    },
+    "named_cases": 6,
+    "positive_allowed_cycles": 1534,
+    "random_cases": 8192,
+    "reasons": {
+      "NONE": 5523,
+      "aggregate_limit": 1771,
+      "external_interlock_open": 8,
+      "input_timestamp_in_future": 1028,
+      "invalid_external_interlock": 10,
+      "invalid_input_timestamp": 13,
+      "invalid_max_input_age": 33,
+      "invalid_request_numeric": 44,
+      "invalid_wheel_enabled": 14,
+      "invalid_wheel_limit": 14,
+      "invalid_wheel_vector": 24,
+      "negative_request_unsupported": 20,
+      "no_available_wheels": 1139,
+      "nonfinite_request": 22,
+      "stale_input": 3580,
+      "unsupported_torque_unit": 30
+    },
+    "recovery_cycles": 4096,
+    "restarts": 128,
+    "schema_cases": 43,
+    "threshold_cases": 216,
+    "time_cases": 4
+  },
+  "boundaries": {
+    "checks": 9229,
+    "sha256": "791182a09789c014c53366f2dd384b90d22dbe18e7c4e99b38f22947667ea89f"
+  },
+  "full_local_suite": {
+    "passed": 500,
+    "seconds": 22.531
+  },
+  "plain_local_probe": {
+    "build_exit": 0,
+    "run_exit": 0,
+    "is_sanitizer_execution": false
+  },
+  "independent_review": "clear_bounded_source_and_compiled_adversarial_review",
+  "actual_sanitizer_ci": "required_on_exact_pushed_head_before_draft; not inferred from local plain probe",
+  "limitations": [
+    "A faithful port preserves existing producer quirks; it is not a redesign or proof that every raw candidate is physically meaningful.",
+    "Equal allocation has no vehicle dynamics, traction/slip/yaw objective, weights, regeneration, calibration or physical motor mapping.",
+    "The orchestration remains offline Python and all data provenance remains caller-owned; normalized source fields are not verified sensor ownership.",
+    "No MCU runtime parity, firmware fit, complete-link/library behavior, real-time deadline/WCET, HIL, CAN, independent shutdown authority, vehicle actuation, course acceptance or safety certification.",
+    "No ARM compiler/object/link, GPU or hardware actions in this increment; implementation proceeds only from this separately frozen protocol."
+  ],
+  "independent_review_sha256": "29b685981d7c9713ce89d685ffaf72e7ce781aa17bd6530692b0e2c50f750c6a"
+}

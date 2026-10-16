@@ -1,0 +1,2695 @@
+{
+  "schema": "enme408.allocator-arm-owner-file-audit.v1",
+  "status": "passed",
+  "receipt_sha256": "ec187f77bbc2dd45303f78edcf859d1207e91e8469e83627166ec6d9e8a571bd",
+  "protocol_sha256": "6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912",
+  "checks": [
+    {
+      "check": "attempt completed passed",
+      "passed": true
+    },
+    {
+      "check": "31 confirmed requests, zero uncertainty",
+      "passed": true
+    },
+    {
+      "check": "known final receipt saved",
+      "passed": true
+    },
+    {
+      "check": "pre-call source check",
+      "passed": true
+    },
+    {
+      "check": "fresh manifest SHA",
+      "passed": true
+    },
+    {
+      "check": "48211 unique verified entries",
+      "passed": true
+    },
+    {
+      "check": "verified fifth-inclusive tool clang.exe",
+      "passed": true
+    },
+    {
+      "check": "verified fifth-inclusive tool llvm-readobj.exe",
+      "passed": true
+    },
+    {
+      "check": "verified fifth-inclusive tool llvm-size.exe",
+      "passed": true
+    },
+    {
+      "check": "verified fifth-inclusive tool llvm-nm.exe",
+      "passed": true
+    },
+    {
+      "check": "verified fifth-inclusive tool llvm-objdump.exe",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 0",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-clang/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-clang/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 1",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-llvm-readobj/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-llvm-readobj/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 2",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-llvm-size/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-llvm-size/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 3",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-llvm-nm/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-llvm-nm/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 4",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-llvm-objdump/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA version-llvm-objdump/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 5",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA multilib-hard/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA multilib-hard/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 6",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA multilib-softfp/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA multilib-softfp/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 7",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA compile-1-hard-torque_allocator/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA compile-1-hard-torque_allocator/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 8",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-0/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-0/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 9",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-1/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-1/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 10",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-2/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-2/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 11",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-3/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-3/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 12",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-4/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-hard-torque_allocator-4/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 13",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA compile-1-softfp-torque_allocator/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA compile-1-softfp-torque_allocator/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 14",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-0/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-0/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 15",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-1/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-1/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 16",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-2/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-2/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 17",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-3/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-3/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 18",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-4/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-1-softfp-torque_allocator-4/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 19",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA compile-2-hard-torque_allocator/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA compile-2-hard-torque_allocator/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 20",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-0/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-0/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 21",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-1/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-1/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 22",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-2/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-2/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 23",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-3/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-3/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 24",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-4/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-hard-torque_allocator-4/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 25",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA compile-2-softfp-torque_allocator/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA compile-2-softfp-torque_allocator/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 26",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-0/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-0/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 27",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-1/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-1/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 28",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-2/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-2/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 29",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-3/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-3/stderr",
+      "passed": true
+    },
+    {
+      "check": "known successful command slot 30",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-4/stdout",
+      "passed": true
+    },
+    {
+      "check": "raw log SHA inspect-2-softfp-torque_allocator-4/stderr",
+      "passed": true
+    },
+    {
+      "check": "versions tools order",
+      "passed": true
+    },
+    {
+      "check": "object byte identity repeat-1/hard/torque_allocator.o",
+      "passed": true
+    },
+    {
+      "check": "torque_allocator.o raw ELF32 little ARM relocatable",
+      "passed": true
+    },
+    {
+      "check": "bounded section table",
+      "passed": true
+    },
+    {
+      "check": "section bounds ",
+      "passed": true
+    },
+    {
+      "check": "section bounds .strtab",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rodata.str1.1",
+      "passed": true
+    },
+    {
+      "check": "section bounds .comment",
+      "passed": true
+    },
+    {
+      "check": "section bounds .note.GNU-stack",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.attributes",
+      "passed": true
+    },
+    {
+      "check": "section bounds .llvm_addrsig",
+      "passed": true
+    },
+    {
+      "check": "section bounds .symtab",
+      "passed": true
+    },
+    {
+      "check": "symbol table shape",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "three allocator exports",
+      "passed": true
+    },
+    {
+      "check": "raw ELF metadata equals recorded sections",
+      "passed": true
+    },
+    {
+      "check": "raw undefined symbol set equals nm",
+      "passed": true
+    },
+    {
+      "check": "recorded ABI tag hard",
+      "passed": true
+    },
+    {
+      "check": "dependency bytes",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_allocator.c",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_allocator.h",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_contract.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/stddef.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_header_macro.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_ptrdiff_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_size_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_wchar_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_null.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_max_align_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_offsetof.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/stdint.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/float.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__float_header_macro.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__float_float.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/math.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/string.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/strings.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_wint_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+      "passed": true
+    },
+    {
+      "check": "local frame raw hash",
+      "passed": true
+    },
+    {
+      "check": "disassembly labels and no unknown",
+      "passed": true
+    },
+    {
+      "check": "object byte identity repeat-1/softfp/torque_allocator.o",
+      "passed": true
+    },
+    {
+      "check": "torque_allocator.o raw ELF32 little ARM relocatable",
+      "passed": true
+    },
+    {
+      "check": "bounded section table",
+      "passed": true
+    },
+    {
+      "check": "section bounds ",
+      "passed": true
+    },
+    {
+      "check": "section bounds .strtab",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rodata.str1.1",
+      "passed": true
+    },
+    {
+      "check": "section bounds .comment",
+      "passed": true
+    },
+    {
+      "check": "section bounds .note.GNU-stack",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.attributes",
+      "passed": true
+    },
+    {
+      "check": "section bounds .llvm_addrsig",
+      "passed": true
+    },
+    {
+      "check": "section bounds .symtab",
+      "passed": true
+    },
+    {
+      "check": "symbol table shape",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "three allocator exports",
+      "passed": true
+    },
+    {
+      "check": "raw ELF metadata equals recorded sections",
+      "passed": true
+    },
+    {
+      "check": "raw undefined symbol set equals nm",
+      "passed": true
+    },
+    {
+      "check": "recorded ABI tag softfp",
+      "passed": true
+    },
+    {
+      "check": "dependency bytes",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_allocator.c",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_allocator.h",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_contract.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/stddef.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_header_macro.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_ptrdiff_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_size_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_wchar_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_null.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_max_align_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_offsetof.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/stdint.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/float.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__float_header_macro.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__float_float.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/math.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/string.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/strings.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_wint_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+      "passed": true
+    },
+    {
+      "check": "local frame raw hash",
+      "passed": true
+    },
+    {
+      "check": "disassembly labels and no unknown",
+      "passed": true
+    },
+    {
+      "check": "object byte identity repeat-2/hard/torque_allocator.o",
+      "passed": true
+    },
+    {
+      "check": "torque_allocator.o raw ELF32 little ARM relocatable",
+      "passed": true
+    },
+    {
+      "check": "bounded section table",
+      "passed": true
+    },
+    {
+      "check": "section bounds ",
+      "passed": true
+    },
+    {
+      "check": "section bounds .strtab",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rodata.str1.1",
+      "passed": true
+    },
+    {
+      "check": "section bounds .comment",
+      "passed": true
+    },
+    {
+      "check": "section bounds .note.GNU-stack",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.attributes",
+      "passed": true
+    },
+    {
+      "check": "section bounds .llvm_addrsig",
+      "passed": true
+    },
+    {
+      "check": "section bounds .symtab",
+      "passed": true
+    },
+    {
+      "check": "symbol table shape",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "three allocator exports",
+      "passed": true
+    },
+    {
+      "check": "raw ELF metadata equals recorded sections",
+      "passed": true
+    },
+    {
+      "check": "raw undefined symbol set equals nm",
+      "passed": true
+    },
+    {
+      "check": "recorded ABI tag hard",
+      "passed": true
+    },
+    {
+      "check": "dependency bytes",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_allocator.c",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_allocator.h",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_contract.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/stddef.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_header_macro.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_ptrdiff_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_size_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_wchar_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_null.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_max_align_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_offsetof.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/stdint.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/float.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__float_header_macro.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__float_float.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/math.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/string.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/strings.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_wint_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+      "passed": true
+    },
+    {
+      "check": "local frame raw hash",
+      "passed": true
+    },
+    {
+      "check": "disassembly labels and no unknown",
+      "passed": true
+    },
+    {
+      "check": "object byte identity repeat-2/softfp/torque_allocator.o",
+      "passed": true
+    },
+    {
+      "check": "torque_allocator.o raw ELF32 little ARM relocatable",
+      "passed": true
+    },
+    {
+      "check": "bounded section table",
+      "passed": true
+    },
+    {
+      "check": "section bounds ",
+      "passed": true
+    },
+    {
+      "check": "section bounds .strtab",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.set_fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.exidx.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rel.ARM.exidx.text.fault",
+      "passed": true
+    },
+    {
+      "check": "section bounds .rodata.str1.1",
+      "passed": true
+    },
+    {
+      "check": "section bounds .comment",
+      "passed": true
+    },
+    {
+      "check": "section bounds .note.GNU-stack",
+      "passed": true
+    },
+    {
+      "check": "section bounds .ARM.attributes",
+      "passed": true
+    },
+    {
+      "check": "section bounds .llvm_addrsig",
+      "passed": true
+    },
+    {
+      "check": "section bounds .symtab",
+      "passed": true
+    },
+    {
+      "check": "symbol table shape",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocator_version",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocator_abi_sizeof",
+      "passed": true
+    },
+    {
+      "check": "raw defined global Thumb function tc_allocate_propulsive_torque",
+      "passed": true
+    },
+    {
+      "check": "three allocator exports",
+      "passed": true
+    },
+    {
+      "check": "raw ELF metadata equals recorded sections",
+      "passed": true
+    },
+    {
+      "check": "raw undefined symbol set equals nm",
+      "passed": true
+    },
+    {
+      "check": "recorded ABI tag softfp",
+      "passed": true
+    },
+    {
+      "check": "dependency bytes",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_allocator.c",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_allocator.h",
+      "passed": true
+    },
+    {
+      "check": "source snapshot dependency torque_contract.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/stddef.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_header_macro.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_ptrdiff_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_size_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_wchar_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_null.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_max_align_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_offsetof.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/stdint.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/float.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__float_header_macro.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__float_float.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/math.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/string.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/strings.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang/22/include/__stddef_wint_t.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+      "passed": true
+    },
+    {
+      "check": "dependency bound to verified manifest lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+      "passed": true
+    },
+    {
+      "check": "local frame raw hash",
+      "passed": true
+    },
+    {
+      "check": "disassembly labels and no unknown",
+      "passed": true
+    },
+    {
+      "check": "same-condition repeat hard",
+      "passed": true
+    },
+    {
+      "check": "same-condition repeat softfp",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "old source/protocol/receipt anchor",
+      "passed": true
+    },
+    {
+      "check": "complete old cohort preserved TC-03E original three-unit attempt",
+      "passed": true
+    },
+    {
+      "check": "complete old cohort preserved TC-03G guard-only annex",
+      "passed": true
+    }
+  ],
+  "check_count": 418,
+  "objects": [
+    {
+      "path": "repeat-1/hard/torque_allocator.o",
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "bytes": 6432,
+      "abi": "hard",
+      "repeat": 1,
+      "size": {
+        "text": 2965,
+        "data": 0,
+        "bss": 0,
+        "total": 2965
+      },
+      "raw_elf": {
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 670
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_allocator_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocator_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocate_propulsive_torque",
+            "type": 1,
+            "flags": 6,
+            "bytes": 2104
+          },
+          {
+            "name": ".rel.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 744
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 260
+          },
+          {
+            "name": ".rel.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 311
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 752
+          }
+        ],
+        "public_functions": [
+          {
+            "name": "tc_allocator_version",
+            "bytes": 4,
+            "value": 1,
+            "section_index": 3
+          },
+          {
+            "name": "tc_allocator_abi_sizeof",
+            "bytes": 18,
+            "value": 1,
+            "section_index": 6
+          },
+          {
+            "name": "tc_allocate_propulsive_torque",
+            "bytes": 2104,
+            "value": 1,
+            "section_index": 9
+          }
+        ],
+        "undefined_symbols": [
+          "__aeabi_dadd",
+          "__aeabi_dcmpeq",
+          "__aeabi_dcmpgt",
+          "__aeabi_dcmple",
+          "__aeabi_dcmplt",
+          "__aeabi_ddiv",
+          "__aeabi_dsub",
+          "__aeabi_ui2d",
+          "__finite",
+          "memchr",
+          "memset",
+          "strcmp"
+        ]
+      },
+      "local_stack": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      }
+    },
+    {
+      "path": "repeat-1/softfp/torque_allocator.o",
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "bytes": 6456,
+      "abi": "softfp",
+      "repeat": 1,
+      "size": {
+        "text": 2993,
+        "data": 0,
+        "bss": 0,
+        "total": 2993
+      },
+      "raw_elf": {
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 670
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_allocator_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocator_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocate_propulsive_torque",
+            "type": 1,
+            "flags": 6,
+            "bytes": 2128
+          },
+          {
+            "name": ".rel.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 744
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 264
+          },
+          {
+            "name": ".rel.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 311
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 752
+          }
+        ],
+        "public_functions": [
+          {
+            "name": "tc_allocator_version",
+            "bytes": 4,
+            "value": 1,
+            "section_index": 3
+          },
+          {
+            "name": "tc_allocator_abi_sizeof",
+            "bytes": 18,
+            "value": 1,
+            "section_index": 6
+          },
+          {
+            "name": "tc_allocate_propulsive_torque",
+            "bytes": 2128,
+            "value": 1,
+            "section_index": 9
+          }
+        ],
+        "undefined_symbols": [
+          "__aeabi_dadd",
+          "__aeabi_dcmpeq",
+          "__aeabi_dcmpgt",
+          "__aeabi_dcmple",
+          "__aeabi_dcmplt",
+          "__aeabi_ddiv",
+          "__aeabi_dsub",
+          "__aeabi_ui2d",
+          "__finite",
+          "memchr",
+          "memset",
+          "strcmp"
+        ]
+      },
+      "local_stack": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      }
+    },
+    {
+      "path": "repeat-2/hard/torque_allocator.o",
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "bytes": 6432,
+      "abi": "hard",
+      "repeat": 2,
+      "size": {
+        "text": 2965,
+        "data": 0,
+        "bss": 0,
+        "total": 2965
+      },
+      "raw_elf": {
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 670
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_allocator_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocator_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocate_propulsive_torque",
+            "type": 1,
+            "flags": 6,
+            "bytes": 2104
+          },
+          {
+            "name": ".rel.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 744
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 260
+          },
+          {
+            "name": ".rel.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 311
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 752
+          }
+        ],
+        "public_functions": [
+          {
+            "name": "tc_allocator_version",
+            "bytes": 4,
+            "value": 1,
+            "section_index": 3
+          },
+          {
+            "name": "tc_allocator_abi_sizeof",
+            "bytes": 18,
+            "value": 1,
+            "section_index": 6
+          },
+          {
+            "name": "tc_allocate_propulsive_torque",
+            "bytes": 2104,
+            "value": 1,
+            "section_index": 9
+          }
+        ],
+        "undefined_symbols": [
+          "__aeabi_dadd",
+          "__aeabi_dcmpeq",
+          "__aeabi_dcmpgt",
+          "__aeabi_dcmple",
+          "__aeabi_dcmplt",
+          "__aeabi_ddiv",
+          "__aeabi_dsub",
+          "__aeabi_ui2d",
+          "__finite",
+          "memchr",
+          "memset",
+          "strcmp"
+        ]
+      },
+      "local_stack": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      }
+    },
+    {
+      "path": "repeat-2/softfp/torque_allocator.o",
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "bytes": 6456,
+      "abi": "softfp",
+      "repeat": 2,
+      "size": {
+        "text": 2993,
+        "data": 0,
+        "bss": 0,
+        "total": 2993
+      },
+      "raw_elf": {
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 670
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_allocator_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocator_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocate_propulsive_torque",
+            "type": 1,
+            "flags": 6,
+            "bytes": 2128
+          },
+          {
+            "name": ".rel.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 744
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 264
+          },
+          {
+            "name": ".rel.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 311
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 752
+          }
+        ],
+        "public_functions": [
+          {
+            "name": "tc_allocator_version",
+            "bytes": 4,
+            "value": 1,
+            "section_index": 3
+          },
+          {
+            "name": "tc_allocator_abi_sizeof",
+            "bytes": 18,
+            "value": 1,
+            "section_index": 6
+          },
+          {
+            "name": "tc_allocate_propulsive_torque",
+            "bytes": 2128,
+            "value": 1,
+            "section_index": 9
+          }
+        ],
+        "undefined_symbols": [
+          "__aeabi_dadd",
+          "__aeabi_dcmpeq",
+          "__aeabi_dcmpgt",
+          "__aeabi_dcmple",
+          "__aeabi_dcmplt",
+          "__aeabi_ddiv",
+          "__aeabi_dsub",
+          "__aeabi_ui2d",
+          "__finite",
+          "memchr",
+          "memset",
+          "strcmp"
+        ]
+      },
+      "local_stack": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      }
+    }
+  ],
+  "limitations": [
+    "The exact team STM32 part, ABI, compiler/library/startup configuration, flash/RAM budgets and task/deadline/recovery ownership remain unknown; these candidates do not select them.",
+    "This compiles one producer unit into relocatables. It neither links all five units nor supplies/reset/startup/HAL/interrupt/controller scheduling/physical signals. Unresolved helpers may dominate linked size, numerical behavior or execution cost.",
+    "Clang static assertions and strict flags constrain translation; generated Cortex-M4 code has not been executed. Host bit-parity and sanitizers remain prior host evidence, not target parity or safety certification.",
+    "Binary64 arithmetic, ordinary rounding/subnormal retention and source epsilon quirks remain unchanged. Single-precision FPU metadata and an assembly listing cannot establish correct target runtime behavior of double operations.",
+    "No target/HIL/emulation, firmware image, CAN/transport, flashing, motor mapping/calibration/traction policy, real hardware actuation, whole-stack/resource-fit/deadline/WCET or independent shutdown authority."
+  ],
+  "scope": "Owner read-only raw-file audit, separate from required root independent artifact review; no new toolchain/target calls"
+}

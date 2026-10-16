@@ -1,0 +1,27 @@
+{
+  "schema": "lapsim-native-bench-fixture-repair-evidence/v1",
+  "original_red_head": "2dd4615e651cf74b2720b0db7432e9232ec07c8e",
+  "workflow_run": 38715215671,
+  "failed_job": 116356189867,
+  "finding": "The balanced 2000-level JSON array was valid. CI Python3.13 accepted it, revealing that the test expected local3.12 recursion failure rather than malformed syntax.",
+  "repair": "Only one closing bracket removed and a test comment added. No production exporter, validator, native controller, fixture, chart, styling or physics policy changed.",
+  "root_tiny_diff_review": "Clear before new dispatch.",
+  "files": {
+    "actual-failed-CI-job5.log": {
+      "bytes": 34854,
+      "sha256": "14e39901876b93a7172abd6fcd9024c83512a5c355a6607a515c5457a69d4e3f"
+    },
+    "before-fixture-repair.json": {
+      "bytes": 581,
+      "sha256": "7786deb9c022f223cd93fca0f94d83a69b71a7aee13bdff7e8d30adaf930c861"
+    },
+    "fixture-portability-proof.json": {
+      "bytes": 1718,
+      "sha256": "ddf5c520655529e182aec9b5637030e9184956647c8cd8f426c96503833ea69d"
+    },
+    "fixture-repair.diff": {
+      "bytes": 770,
+      "sha256": "9bb82eb57e46f45b9db39a6bf9b294e6287fc6b71ab77355a3dc9e068f715321"
+    }
+  }
+}

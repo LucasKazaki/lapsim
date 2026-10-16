@@ -1,0 +1,443 @@
+"""Actual five-unit offline allocator/guard/pedal/clock/final-gate parity."""
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+import ctypes as ct
+from dataclasses import replace
+import hashlib
+import itertools
+import json
+import math
+import multiprocessing as mp
+import os
+from pathlib import Path
+import random
+import struct
+import subprocess
+import sys
+import tempfile
+import traceback
+
+from allocator import AllocationInput, AllocationResult, AllocatorConfig, allocate_propulsive_torque
+from allocation_contract import allocation_contract_fault
+from command_guard import CommandGuardConfig, CommandGuardInput, CommandGuardState, apply_command_guard
+from control_pipeline import ControlSample, PipelineConfig, replay_control_pipeline
+from cycle_clock import CycleClockState, observe_cycle_clock
+from fault_state import FaultPolicy
+from guard_trusted_clear import apply_trusted_clear_guard
+from c_parity import (ROOT, Allocation, Scalar, Text, Cycle, Policy, Snapshot, STATE_NAMES,
+                      _digest_add, _packed_signature, scalar, text, guard, find_compiler)
+from clock_parity import ClockState, clock_input, clock_policy, unpack
+from pedal_parity import boolean, facts, adapted
+from guard_parity import (GuardCore, guard_input, config as guard_config, state as guard_state,
+                          decoded as decoded_guard, signature as guard_signature)
+
+PROTOCOL = ROOT / '../research/TC-03H-portable-allocator-protocol.json'
+PROTOCOL_SHA256 = '899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3'
+CASE_FREEZE = ROOT / '../research/TC-03H-allocator-case-generator.json'
+VERSION, SEED = 1, 2026101508
+UINT64_MAX = 2**64 - 1
+ZERO = (0.,) * 4
+STATUS_NAMES = {1: 'ok', 2: 'saturated', 3: 'fault'}
+NEW_FILES = ('allocator_parity.py', 'test_allocator_parity.py', 'native/torque_allocator.c',
+             'native/torque_allocator.h', 'native/allocator_sanitizer_probe.c')
+
+
+class AllocatorConfigC(ct.Structure):
+    _fields_ = [('type_valid', ct.c_uint8), ('max_input_age_valid', ct.c_uint8),
+                ('max_input_age_ms', ct.c_uint64)]
+
+
+class AllocatorInputC(ct.Structure):
+    _fields_ = [('type_valid', ct.c_uint8), ('now_valid', ct.c_uint8), ('timestamp_valid', ct.c_uint8),
+        ('now_ms', ct.c_uint64), ('input_timestamp_ms', ct.c_uint64), ('request', Scalar),
+        ('limits_vector_valid', ct.c_uint8), ('enabled_vector_valid', ct.c_uint8),
+        ('limits', Scalar * 4), ('enabled', ct.c_uint8 * 4), ('external_interlock', ct.c_uint8),
+        ('torque_unit', Text)]
+
+
+def tick(value, label):
+    if type(value) is int and value > UINT64_MAX:
+        raise ValueError(label + ' is outside the no-wrap uint64 domain')
+    return (1, value) if type(value) is int and value >= 0 else (0, 0)
+
+
+def allocator_config(value):
+    result = AllocatorConfigC()
+    result.type_valid = type(value) is AllocatorConfig
+    if result.type_valid:
+        result.max_input_age_valid, result.max_input_age_ms = tick(value.max_input_age_ms, 'max_input_age_ms')
+    return result
+
+
+def allocator_input(value):
+    result = AllocatorInputC()
+    result.type_valid = type(value) is AllocationInput
+    if result.type_valid:
+        result.now_valid, result.now_ms = tick(value.now_ms, 'now_ms')
+        result.timestamp_valid, result.input_timestamp_ms = tick(value.input_timestamp_ms, 'input_timestamp_ms')
+        result.request, result.torque_unit = scalar(value.request_nm), text(value.torque_unit)
+        result.external_interlock = boolean(value.external_interlock)
+        for source, target, validity in ((value.wheel_limits_nm, result.limits, 'limits_vector_valid'),
+                                        (value.wheel_enabled, result.enabled, 'enabled_vector_valid')):
+            if type(source) in (tuple, list) and len(source) == 4:
+                setattr(result, validity, 1)
+                for index, item in enumerate(source):
+                    target[index] = scalar(item) if validity == 'limits_vector_valid' else boolean(item)
+    return result
+
+
+def decoded(raw):
+    return AllocationResult(tuple(v.value for v in raw.wheels), raw.requested.value,
+        raw.delivered.value, STATUS_NAMES[raw.status], bytes(raw.fault.value).decode('ascii') if raw.fault.kind else None)
+
+
+def bits(value): return struct.pack('>d', float(value)).hex()
+
+
+def signature(value):
+    return {'wheel_bits': [bits(v) for v in value.wheel_torque_nm], 'requested_bits': bits(value.requested_nm),
+            'delivered_bits': bits(value.delivered_nm), 'status': value.status, 'fault': value.fault}
+
+
+def frozen_protocol():
+    raw = PROTOCOL.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != PROTOCOL_SHA256: raise ValueError('frozen allocator protocol changed')
+    protocol = json.loads(raw)
+    for name, identity in protocol['authority']['source_hashes'].items():
+        data = (ROOT / name).read_bytes().replace(b'\r\n', b'\n')
+        if hashlib.sha256(data).hexdigest() != identity['lf_normalized_sha256']:
+            raise ValueError('frozen allocator owner or prior port changed: ' + name)
+    return protocol
+
+
+def frozen_cases():
+    manifest = json.loads(CASE_FREEZE.read_bytes())
+    for name, expected in manifest['generator_files'].items():
+        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != expected:
+            raise ValueError('case-generator snapshot changed: ' + name)
+    return manifest
+
+
+def build_allocator_library(folder, compiler=None):
+    frozen_protocol(); frozen_cases()
+    compiler = find_compiler(compiler)
+    version = subprocess.run([compiler, '--version'], check=True, capture_output=True,
+                             text=True, errors='replace', timeout=15).stdout.splitlines()[0]
+    target = folder / ('torque_allocator.dll' if sys.platform == 'win32' else 'torque_allocator.so')
+    protocol = frozen_protocol()
+    flags = protocol['planned_verification']['host_common_flags']
+    flags += protocol['planned_verification']['host_platform_flags'][
+        'Windows' if sys.platform == 'win32' else 'other_supported_hosts']
+    args = [compiler, *flags, 'torque_contract.c', 'torque_clock.c', 'torque_pedal.c',
+            'torque_guard.c', 'torque_allocator.c', '-o', str(target), '-lm']
+    environment = dict(os.environ)
+    environment['PATH'] = str(Path(compiler).parent) + os.pathsep + environment.get('PATH', '')
+    result = subprocess.run(args, cwd=ROOT / 'native', env=environment, capture_output=True,
+                            text=True, errors='replace', timeout=60)
+    if result.returncode: raise ValueError('allocator C build failed:\n' + result.stdout + result.stderr)
+    return target, {'compiler': compiler, 'version': version, 'flags': flags, 'argv': args,
+                   'binary_sha256': hashlib.sha256(target.read_bytes()).hexdigest(),
+                   'build_diagnostics': result.stdout + result.stderr}
+
+
+class AllocatorCore(GuardCore):
+    def __init__(self, library):
+        super().__init__(library)
+        lib = self.library
+        lib.tc_allocator_version.argtypes, lib.tc_allocator_version.restype = [], ct.c_uint32
+        lib.tc_allocator_abi_sizeof.argtypes, lib.tc_allocator_abi_sizeof.restype = [ct.c_uint32], ct.c_size_t
+        lib.tc_allocate_propulsive_torque.argtypes = [ct.POINTER(AllocatorInputC), ct.POINTER(AllocatorConfigC), ct.POINTER(Allocation)]
+        lib.tc_allocate_propulsive_torque.restype = ct.c_uint32
+        if lib.tc_allocator_version() != VERSION: raise ValueError('allocator version mismatch')
+        self.allocator_sizes = {v.__name__: ct.sizeof(v) for v in (AllocatorConfigC, AllocatorInputC)}
+        for number, kind in enumerate((AllocatorConfigC, AllocatorInputC), 1):
+            if lib.tc_allocator_abi_sizeof(number) != ct.sizeof(kind): raise ValueError('allocator ABI size mismatch')
+
+    def allocate_raw(self, inp, cfg):
+        result = Allocation()
+        if self.library.tc_allocate_propulsive_torque(ct.byref(inp), ct.byref(cfg), ct.byref(result)):
+            raise ValueError('required allocator pointer rejected')
+        return result
+
+
+def ordinary():
+    return AllocationInput(1000, 1000, 40., (20.,) * 4, (True,) * 4, True), AllocatorConfig(50)
+
+
+def direct_cases():
+    good, cfg = ordinary()
+    maximum, minimum, tiny = sys.float_info.max, sys.float_info.min, math.ulp(0.)
+    requests = (-0., 0., tiny, minimum, 1e-13, math.nextafter(1e-12, 0.), 1e-12,
+        math.nextafter(1e-12, math.inf), 2e-12, 1e-9, math.nextafter(1e-9, math.inf),
+        1., math.nextafter(1., math.inf), 40., 100., 1e100, maximum / 3., maximum)
+    mixed = (1e-12, 1., 1e100, maximum)
+    limits = ((0.,) * 4, (-0.,) * 4, (tiny,) * 4, (minimum,) * 4, (1e-12,) * 4,
+        (1.,) * 4, (20.,) * 4, (maximum,) * 4, (4., 20., 20., 20.), (1., 2., 3., 4.),
+        (4., 3., 2., 1.), mixed, tuple(reversed(mixed)), (1., 0., 0., 0.),
+        (maximum, 0., maximum, 0.), (maximum / 3.,) * 3 + (0.,))
+    for r, lim, mask in itertools.product(range(18), range(16), range(16)):
+        yield 'grid', f'{r}/{lim}/{mask}', replace(good, request_nm=requests[r], wheel_limits_nm=limits[lim],
+            wheel_enabled=tuple(bool(mask & (1 << i)) for i in range(4))), cfg
+    rng = random.Random(SEED)
+    def finite(): return struct.unpack('>d', rng.randrange(0x7ff0000000000000).to_bytes(8, 'big'))[0]
+    for i in range(8192):
+        now = rng.randrange(2**64)
+        age = rng.randrange(0, 100)
+        born = max(0, now - age)
+        if i % 8 == 0 and now < UINT64_MAX: born = now + 1
+        yield 'random', str(i), replace(good, now_ms=now, input_timestamp_ms=born,
+            request_nm=finite(), wheel_limits_nm=tuple(finite() for _ in range(4)),
+            wheel_enabled=tuple(bool(rng.getrandbits(1)) for _ in range(4))), cfg
+    for count, request, direction in itertools.product(range(1, 5), requests, (-math.inf, None, math.inf)):
+        threshold = request / count + 1e-12
+        cap = threshold if direction is None else math.nextafter(threshold, direction)
+        yield 'threshold', f'{count}/{bits(request)}/{direction}', replace(good, request_nm=request,
+            wheel_limits_nm=(cap,) * count + (0.,) * (4 - count),
+            wheel_enabled=tuple(i < count for i in range(4))), cfg
+    profiles = [({'request_nm': 10**400}, {}), ({'request_nm': True}, {}), ({'request_nm': math.inf}, {}),
+        ({'request_nm': -1.}, {}), ({'wheel_limits_nm': None}, {}), ({'wheel_enabled': (2, True, True, True)}, {}),
+        ({'external_interlock': 2}, {}), ({'wheel_limits_nm': (-1., 20., 20., 20.)}, {}),
+        ({'external_interlock': False}, {}), ({'now_ms': -1}, {}), ({'input_timestamp_ms': 1001}, {}),
+        ({'input_timestamp_ms': 949}, {}), ({'torque_unit': 'wrong'}, {}), ({}, {'max_input_age_ms': -1})]
+    for a, b in itertools.product(range(len(profiles)), repeat=2):
+        ia, ca = profiles[a]; ib, cb = profiles[b]
+        yield 'mixed_fault', f'{a}/{b}', replace(good, **(ia | ib)), replace(cfg, **(ca | cb))
+    for field, values in (
+        ('request_nm', (None, False, '40', math.nan, -math.inf, -10**400, 40, 2**53 + 1, 10**308)),
+        ('wheel_limits_nm', (None, True, '1234', [], [1, 2, 3], [1] * 5, [20] * 4,
+                            (True, 1., 1., 1.), (10**400, 1., 1., 1.), (math.nan, 1., 1., 1.))),
+        ('wheel_enabled', (None, [], [True] * 3, [True] * 5, [False] * 4, [True, 0, True, True])),
+        ('torque_unit', (None, True, 'N*m\0ignored', 'N*m\0', 'N*m' + 'x' * 100)),
+        ('now_ms', (None, True, 1000., math.nan, UINT64_MAX)),
+        ('input_timestamp_ms', (None, False, 1000., math.inf, 950, 949, 1001, UINT64_MAX))):
+        for i, value in enumerate(values): yield 'schema', f'{field}/{i}', replace(good, **{field: value}), cfg
+    for value in (None, True, 50., math.nan, math.inf, -1, 0, UINT64_MAX):
+        yield 'config', repr(value), good, AllocatorConfig(value)
+    for age in (0, 1, 50, UINT64_MAX):
+        yield 'time', str(age), replace(good, now_ms=UINT64_MAX, input_timestamp_ms=UINT64_MAX - age), cfg
+    for request, cap in ((1., 1. + 1e-12), (1., 1. - 5e-10), (1e-13, 20.),
+                         (1e-12, 20.), (-0., 0.), (maximum, maximum)):
+        yield 'named', f'{bits(request)}/{bits(cap)}', replace(good, request_nm=request,
+            wheel_limits_nm=(cap, 0., 0., 0.), wheel_enabled=(True, False, False, False)), cfg
+
+
+def composition_scenarios():
+    cfg = PipelineConfig(AllocatorConfig(50), CommandGuardConfig(100., .6, .2), FaultPolicy(2), 50)
+    samples = []
+    for i in range(1024):
+        inp = AllocationInput(i * 50, i * 50, (40., 20., 0., 60.)[(i // 8) % 4],
+                              (100.,) * 4, (True,) * 4, True)
+        samples.append(ControlSample(inp, CommandGuardInput(.05, .4, False, True, True, True)))
+    yield 'healthy', cfg, samples
+    samples, tick_value = [], 0
+    for i in range(4096):
+        phase = i % 32
+        tick_value += 0 if phase == 10 else (100 if phase == 9 else 50)
+        inp = AllocationInput(tick_value, tick_value, 40., (100.,) * 4, (True,) * 4, True)
+        gi = CommandGuardInput(.05, .4, False, True, True, True)
+        if phase in (6, 29): gi = replace(gi, accelerator_fraction=.8, brake_active=True)
+        if phase in (7, 8, 9, 10, 11, 30, 31): gi = replace(gi, accelerator_fraction=.1)
+        if phase in (7, 29): gi = replace(gi, critical_comms_ok=False)
+        if phase == 8: gi = replace(gi, dt_s=.1)
+        if phase == 13: inp = replace(inp, external_interlock=False)
+        if phase == 14: gi = replace(gi, external_interlock=False)
+        if phase in (15, 30): gi = replace(gi, sensor_agreement_ok=False)
+        if phase == 16: inp = replace(inp, input_timestamp_ms=tick_value - 100)
+        if phase == 17: inp = replace(inp, input_timestamp_ms=tick_value + 1)
+        if phase == 18: inp = replace(inp, request_nm=1., wheel_limits_nm=(1. + 1e-12, 0., 0., 0.))
+        if phase == 19: inp = replace(inp, request_nm=100., wheel_limits_nm=(5.,) * 4)
+        if phase == 20: inp = replace(inp, request_nm=1e-13)
+        if phase == 21: inp = replace(inp, torque_unit='N*m\0ignored')
+        if phase == 22: inp = replace(inp, request_nm=10**400)
+        if phase == 23: inp = replace(inp, wheel_limits_nm=(True, 100., 100., 100.))
+        if phase == 24: inp = replace(inp, wheel_enabled=(2, True, True, True))
+        if phase == 25: inp = replace(inp, request_nm=sys.float_info.max, wheel_limits_nm=(sys.float_info.max,) * 3 + (0.,))
+        if phase == 26: inp = replace(inp, wheel_enabled=(False,) * 4)
+        if phase == 27: inp = replace(inp, request_nm=-1.)
+        if phase == 28: inp = replace(inp, request_nm=0., wheel_enabled=(False,) * 4)
+        samples.append(ControlSample(inp, gi, phase == 12))
+    yield 'recovery', cfg, samples
+
+
+def run_allocator_parity(core):
+    direct_digest, composed_digest = hashlib.sha256(), hashlib.sha256()
+    counts, reasons, contracts, named = Counter(), Counter(), Counter(), {}
+    for cohort, label, inp, cfg in direct_cases():
+        raw = core.allocate_raw(allocator_input(inp), allocator_config(cfg))
+        actual, expected = decoded(raw), allocate_propulsive_torque(inp, cfg)
+        if signature(actual) != signature(expected):
+            raise AssertionError(f'allocator mismatch {cohort}/{label}: {signature(expected)!r} vs {signature(actual)!r}')
+        code = core.library.tc_validate_allocation(ct.byref(raw))
+        actual_contract = core.library.tc_contract_reason(code).decode('ascii') if code else None
+        wanted_contract = allocation_contract_fault(expected)
+        if actual_contract != wanted_contract: raise AssertionError('raw allocator contract mismatch ' + cohort + '/' + label)
+        if actual.status == 'fault' and not positive_zero(raw): raise AssertionError('allocator fault is not positive zero')
+        _digest_add(direct_digest, {'cohort': cohort, 'label': label, 'input': _packed_signature(allocator_input(inp)),
+                                  'config': _packed_signature(allocator_config(cfg)), 'result': signature(actual), 'contract': actual_contract})
+        counts['direct_cases'] += 1; counts[cohort + '_cases'] += 1
+        reasons[actual.fault or 'NONE'] += 1; contracts[actual_contract or 'OK'] += 1
+        if cohort == 'named': named[label] = {'result': signature(actual), 'contract': actual_contract}
+    for label, cfg, samples in composition_scenarios():
+        rows = replay_control_pipeline(samples, cfg)
+        previous, py_previous = CommandGuardState(ZERO), CommandGuardState(ZERO)
+        clock_state, py_clock, gate_state = ClockState(), CycleClockState(), Snapshot(3, 0, 0)
+        for sample, row in zip(samples, rows):
+            if sample.restart_requested:
+                previous = CommandGuardState(ZERO, previous.pedal_overlap_latched)
+                py_previous = CommandGuardState(ZERO, py_previous.pedal_overlap_latched)
+                counts['restarts'] += 1
+            raw = core.allocate_raw(allocator_input(sample.allocation), allocator_config(cfg.allocator))
+            candidate = decoded(raw)  # Native output only, never replaced by the Python allocator result.
+            oracle = AllocationResult(**row['allocator'])
+            if signature(candidate) != signature(oracle): raise AssertionError('composed allocator mismatch')
+            base_raw = core.apply_raw(raw, guard_input(sample.guard), guard_config(cfg.guard), guard_state(previous))
+            base = decoded_guard(base_raw)
+            py_base = apply_command_guard(oracle, sample.guard, cfg.guard, py_previous)
+            if guard_signature(base) != guard_signature(py_base): raise AssertionError('composed base guard mismatch')
+            clock = core.step(clock_state, clock_input(sample.allocation.now_ms, sample.guard.dt_s), clock_policy(cfg.period_ms))
+            py_step = observe_cycle_clock(py_clock, sample.allocation.now_ms, sample.guard.dt_s, cfg.period_ms)
+            wanted_clock = {'previous_tick': py_step.next_state.previous_tick, 'now_ms': py_step.now_ms, 'fault': py_step.fault}
+            if unpack(clock) != wanted_clock: raise AssertionError('composed full clock mismatch')
+            reconciled = core.reconcile(facts(candidate, sample.guard, cfg.guard, previous, base, bool(clock.fault.kind)))
+            effective = adapted(base, reconciled)
+            py_effective = apply_trusted_clear_guard(oracle, sample.guard, cfg.guard, py_previous)
+            py_latch = py_effective.next_state.pedal_overlap_latched or (py_step.fault is not None and py_previous.pedal_overlap_latched)
+            py_effective = replace(py_effective, next_state=replace(py_effective.next_state, pedal_overlap_latched=py_latch))
+            if guard_signature(effective) != guard_signature(py_effective): raise AssertionError('composed effective guard mismatch')
+            decision = core.decide_raw(gate_state, Cycle(raw, guard(effective), clock.fault, sample.restart_requested), Policy(cfg.fault.valid_samples_to_recover))
+            actual = {'allowed': bool(decision.command_allowed), 'command_bits': [bits(v) for v in decision.command],
+                'latch': bool(reconciled.next_latched), 'state': STATE_NAMES[decision.next.state],
+                'streak': decision.next.recovery_streak, 'generation': decision.next.generation, 'reason': bytes(decision.reason).decode('ascii')}
+            wanted = {'allowed': row['command_allowed'], 'command_bits': [bits(v) for v in row['command_nm']],
+                'latch': row['guard']['pedal_overlap_latched'], 'state': row['fault']['next_state'],
+                'streak': row['fault']['recovery_streak'], 'generation': row['fault']['generation'], 'reason': row['fault']['reason']}
+            if actual != wanted: raise AssertionError(f'composed final mismatch {label}/{row["sequence"]}: {wanted!r} vs {actual!r}')
+            if not decision.command_allowed and bytes(decision.command) != b'\0' * 32: raise AssertionError('held command is not positive zero')
+            counts['composed_cycles'] += 1; counts[label + '_cycles'] += 1
+            counts['allowed_cycles' if decision.command_allowed else 'held_cycles'] += 1
+            counts['positive_allowed_cycles'] += bool(decision.command_allowed and any(v > 0. for v in decision.command))
+            counts['allowed_limited_cycles'] += bool(decision.command_allowed and effective.status == 'limited' and any(v > 0. for v in decision.command))
+            counts['clock_fault_cycles'] += py_step.fault is not None
+            counts['latch_clearances'] += previous.pedal_overlap_latched and not bool(reconciled.next_latched)
+            _digest_add(composed_digest, {'stream': label, 'sequence': row['sequence'], 'allocator': signature(candidate),
+                'base': guard_signature(base), 'effective': guard_signature(effective), 'clock': unpack(clock), 'final': actual})
+            previous = CommandGuardState(tuple(decision.command), bool(reconciled.next_latched))
+            py_previous = CommandGuardState(tuple(row['command_nm']), row['guard']['pedal_overlap_latched'])
+            clock_state, py_clock, gate_state = clock.next, py_step.next_state, decision.next
+    for key, minimum in (('positive_allowed_cycles', 64), ('held_cycles', 64), ('allowed_limited_cycles', 16),
+                          ('latch_clearances', 16), ('restarts', 16), ('clock_fault_cycles', 16)):
+        if counts[key] < minimum: raise AssertionError('insufficient actual composition coverage: ' + key)
+    return {**counts, 'reasons': dict(reasons), 'contracts': dict(contracts), 'named': named,
+            'direct_results_sha256': direct_digest.hexdigest(), 'composed_results_sha256': composed_digest.hexdigest()}
+
+
+def positive_zero(raw):
+    return raw.status == 3 and all(bits(v.value) == bits(0.) for v in raw.wheels) and bits(raw.delivered.value) == bits(0.)
+
+
+def check_boundaries(core):
+    inp, cfg = ordinary(); baseline = (allocator_input(inp), allocator_config(cfg))
+    checks, digest = 0, hashlib.sha256()
+    def require(condition, label):
+        nonlocal checks
+        if not condition: raise AssertionError('allocator ABI boundary: ' + label)
+        checks += 1; _digest_add(digest, label)
+    fields = [(0, n, None) for n in ('type_valid', 'now_valid', 'timestamp_valid', 'limits_vector_valid', 'enabled_vector_valid', 'external_interlock')]
+    fields += [(1, 'type_valid', None), (1, 'max_input_age_valid', None), (0, 'request', 'numeric'), (0, 'torque_unit', 'kind')]
+    fields += [(0, 'limits', i) for i in range(4)] + [(0, 'enabled', i) for i in range(4)]
+    for owner, field, member in fields:
+        for tag in range(256):
+            values = tuple(type(v).from_buffer_copy(v) for v in baseline)
+            target = getattr(values[owner], field)
+            if isinstance(member, int):
+                if field == 'limits': target[member].numeric = tag
+                else: target[member] = tag
+            elif member is not None: setattr(target, member, tag)
+            else: setattr(values[owner], field, tag)
+            raw = core.allocate_raw(*values)
+            malformed = tag > 1 if field in ('external_interlock', 'enabled') else tag != 1
+            require(not malformed or positive_zero(raw), f'{owner}/{field}/{member}/{tag}')
+            require(raw.type_valid == raw.wheel_vector_valid == raw.requested.numeric == raw.delivered.numeric == 1
+                    and all(v.numeric == 1 for v in raw.wheels), f'initialized/{owner}/{field}/{member}/{tag}')
+    raw_input = AllocatorInputC.from_buffer_copy(baseline[0])
+    ct.memset(ct.addressof(raw_input.torque_unit) + Text.value.offset, 65, 64)
+    require(positive_zero(core.allocate_raw(raw_input, baseline[1])), 'unterminated unit')
+    raw_input = AllocatorInputC.from_buffer_copy(baseline[0])
+    raw_input.torque_unit.value = b'N*m\0ignored'
+    require(core.allocate_raw(raw_input, baseline[1]).status == 1, 'raw C trailing bytes after terminator ignored')
+    for field in ('now_ms', 'input_timestamp_ms'):
+        for value in (UINT64_MAX + 1, 10**400):
+            try: allocator_input(replace(inp, **{field: value}))
+            except ValueError: require(True, 'out_of_domain/' + field + '/' + str(value))
+            else: require(False, 'out_of_domain/' + field)
+    try: allocator_config(AllocatorConfig(UINT64_MAX + 1))
+    except ValueError: require(True, 'out_of_domain/max_age')
+    else: require(False, 'out_of_domain/max_age')
+    for unit in ('N*m\0', 'N*m\0ignored'):
+        packed = allocator_input(replace(inp, torque_unit=unit))
+        require(packed.torque_unit.kind == 2 and positive_zero(core.allocate_raw(packed, baseline[1])), 'source embedded NUL rejected/' + repr(unit))
+    for i in range(3):
+        result = Allocation(); ct.memset(ct.addressof(result), 255, ct.sizeof(result))
+        args = [ct.byref(v) for v in baseline] + [ct.byref(result)]; args[i] = None
+        code = core.library.tc_allocate_propulsive_torque(*args)
+        require(code == 1 and (i == 2 or (positive_zero(result) and bits(result.requested.value) == bits(0.))), 'null/' + str(i))
+    require(core.library.tc_allocator_abi_sizeof(999) == 0, 'unknown size kind')
+    return {'checks': checks, 'sha256': digest.hexdigest()}
+
+
+def _worker(library, sender):
+    try:
+        core = AllocatorCore(Path(library))
+        boundaries = check_boundaries(core)
+        first, second = run_allocator_parity(core), run_allocator_parity(core)
+        if first != second: raise AssertionError('allocator parity did not repeat')
+        sender.send({'results': first, 'allocator_abi_sizes': core.allocator_sizes, 'boundaries': boundaries})
+    except BaseException: sender.send({'error': traceback.format_exc()})
+    finally: sender.close()
+
+
+def verify_in_child(library):
+    context = mp.get_context('spawn'); receiver, sender = context.Pipe(duplex=False)
+    process = context.Process(target=_worker, args=(str(library), sender)); process.start(); sender.close()
+    try:
+        if not receiver.poll(180): raise RuntimeError('allocator child timed out')
+        result = receiver.recv(); process.join(10)
+        if process.is_alive() or process.exitcode != 0 or 'error' in result:
+            raise RuntimeError(result.get('error', f'allocator child exit {process.exitcode}'))
+        return result
+    finally:
+        receiver.close()
+        if process.is_alive(): process.terminate()
+        process.join(10)
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--cc'); parser.add_argument('--output', type=Path, required=True)
+    args = parser.parse_args(argv)
+    if args.output.exists() or args.output.is_symlink(): parser.error('receipt output must be new')
+    protocol = frozen_protocol(); frozen_cases()
+    names = tuple(protocol['authority']['source_hashes']) + NEW_FILES
+    receipt = {'schema': 'enme408-portable-allocator-owner-parity/v1', 'status': 'preparing',
+        'allocator_version': VERSION, 'numeric_contract_version': 2, 'protocol_sha256': PROTOCOL_SHA256,
+        'case_freeze_sha256': hashlib.sha256(CASE_FREEZE.read_bytes()).hexdigest(), 'seed': SEED,
+        'python': sys.version, 'source_sha256': {n: hashlib.sha256((ROOT / n).read_bytes()).hexdigest() for n in names},
+        'limits': protocol['limitations']}
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    def save(): args.output.write_bytes((json.dumps(receipt, indent=2, sort_keys=True, allow_nan=False) + '\n').encode())
+    with args.output.open('x', encoding='utf-8') as stream: stream.write(json.dumps(receipt, indent=2) + '\n')
+    try:
+        with tempfile.TemporaryDirectory(prefix='enme408-allocator-') as directory:
+            library, build = build_allocator_library(Path(directory), args.cc)
+            receipt['build'] = build; save()
+            receipt.update(verify_in_child(library))
+        receipt.update({'status': 'passed', 'repeat_agreement': True})
+    except BaseException:
+        receipt.update({'status': 'failed_retained', 'error': traceback.format_exc()})
+        save(); print(json.dumps({'status': receipt['status'], 'output': str(args.output)})); return 1
+    save(); print(json.dumps(receipt['results'], sort_keys=True)); return 0
+
+
+if __name__ == '__main__': raise SystemExit(main())

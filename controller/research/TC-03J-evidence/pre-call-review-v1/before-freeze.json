@@ -1,0 +1,25 @@
+{
+  "head": "8ae9d8ffd491d1baf7909c6faaf8935340719af0",
+  "status": "unexecuted original source preserved before narrow repair",
+  "files": [
+    {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\allocator_cortex_m4_objects.py",
+      "copy": "allocator_cortex_m4_objects.py",
+      "bytes": 24201,
+      "sha256": "8e2c7f604fbd224f02396bdd3a90646107091b45498769c5194e79b5b179d252"
+    },
+    {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\test_allocator_cortex_m4_objects.py",
+      "copy": "test_allocator_cortex_m4_objects.py",
+      "bytes": 21746,
+      "sha256": "064c8919ccde1ebf148b7822f5880200ebc36093690ffa9755a50f953f2e62f6"
+    },
+    {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\outputs\\enme408-allocator-arm-root-source-findings-v1.json",
+      "copy": "enme408-allocator-arm-root-source-findings-v1.json",
+      "bytes": 1038,
+      "sha256": "37fe88bab2556f5ad9bdd299d2d70b4e9ed0bd7b073aaa94352bce6362ccfac5"
+    }
+  ],
+  "actual_ARM_toolchain_calls": 0
+}

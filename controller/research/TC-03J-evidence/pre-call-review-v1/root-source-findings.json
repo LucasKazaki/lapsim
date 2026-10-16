@@ -1,0 +1,30 @@
+{
+  "schema": "enme408.allocator-arm.root-source-findings.v1",
+  "source_sha256": "8e2c7f604fbd224f02396bdd3a90646107091b45498769c5194e79b5b179d252",
+  "findings": [
+    {
+      "case": "snapshot changes during preflight",
+      "real_ARM_calls": 0,
+      "fake_command_calls": 31,
+      "overall_status": "failed_retained",
+      "error": "frozen allocator source changed: torque_allocator.c",
+      "expected": "Reject before any executable/fake command."
+    },
+    {
+      "case": "precall persistence failure",
+      "real_ARM_calls": 0,
+      "prepared_list_length": 1,
+      "slot_status": "starting",
+      "expected": "Prepared intent must not count as actual subprocess launch attempt."
+    },
+    {
+      "case": "post-return artifact failure",
+      "real_ARM_calls": 0,
+      "fake_subprocess_returns": 1,
+      "slot_status": "starting",
+      "retained_exit_code": null,
+      "expected": "Preserve known actual return code17 even if subsequent artifact writing fails."
+    }
+  ],
+  "no_actual_toolchain_execution": true
+}

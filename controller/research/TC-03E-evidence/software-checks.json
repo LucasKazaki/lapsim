@@ -1,0 +1,11 @@
+{
+  "schema": "enme408-cortex-m4-software-checks/v1",
+  "command": "py -3.12 -B -m unittest discover -s projects/enme408-torque-control/reference -p test_cortex_m4_objects.py -q",
+  "observed_result": "Ran 17 tests in 0.126s; OK",
+  "tests": 17,
+  "passed": 17,
+  "runner_sha256": "d2815f25604f99596ef0cc0cfad5d3f11bc4dd5067299b24757856a854bbfcf9",
+  "test_source_sha256": "04d3b650ce0a4ca21e474caf366805dc26c8de026087fbb491c477d9bad054c5",
+  "new_arm_compiler_calls_in_tests": 0,
+  "scope": "Software guards only; exact actual build/audit receipts are separate"
+}

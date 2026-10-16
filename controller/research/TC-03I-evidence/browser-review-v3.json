@@ -1,0 +1,46 @@
+{
+  "schema": "enme408-native-bench-browser-review/v1",
+  "url": "http://127.0.0.1:8879/enme408-native-bench-review.html",
+  "route_limit": "Actual loopback browser review; no direct-file UI navigation claim.",
+  "desktop": [
+    "Compiled C identity and unverified synthetic caller declaration visible",
+    "18 cycles / 9 allowed / 9 held / 5 recovering",
+    "Keyboard Right from cycle 0 selects cycle 1 with 5 Nm per abstract slot",
+    "Event 6 selects brake/accelerator overlap, a latched pedal and four zero commands"
+  ],
+  "mobile": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "rendered_document_width": 375,
+    "checks": [
+      "Native identity/provenance wraps without horizontal overflow",
+      "Keyboard and event selection reproduce desktop outputs"
+    ],
+    "override_reset": true
+  },
+  "console_warning_error_entries": [],
+  "retained_capture_failure": "Full-page CDP capture timed out after 5000 ms; ordinary viewport screenshots succeeded. No source changes or retry compilation.",
+  "sources": "Exact exported HTML and paired receipt hashes in the external bundle manifest.",
+  "limits": [
+    "Presentation/UI evidence only; JS does not authenticate or rerun the controller.",
+    "No GPU, target or hardware calls."
+  ],
+  "reviewed_attempt": "enme408-native-bench-example-v3",
+  "runtime_head": "969e788",
+  "final_HTML_reloaded_and_checked": true,
+  "final_desktop_capture": "Cycle 7: critical communication loss, pedal latched, four exact zero proposed commands.",
+  "retained_stale_capture": {
+    "file": "work/enme408-native-bench-qa-stale-frame-v3.jpg",
+    "reason": "An immediate viewport capture after event selection showed a prior compositor frame while AX already showed the new cycle. A separate later observation captured the settled cycle 7 state. No product/source change."
+  },
+  "server": {
+    "route": "loopback only",
+    "owned_session": 36586,
+    "stopped_after_QA": true,
+    "actual_stop_exit_code": 1,
+    "requests": "Two HTML GETs returned 200; one missing favicon returned 404."
+  },
+  "scope": "Same visible final v3 bundle checked again on desktop/mobile; older v2 outputs/QA retained before replacement."
+}

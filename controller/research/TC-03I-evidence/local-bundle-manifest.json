@@ -1,0 +1,48 @@
+{
+  "schema": "enme408-native-bench-bundle/v1",
+  "binding_order": "sealed run -> viewer metadata run SHA -> this external file manifest; no backwards hash references",
+  "files": {
+    "enme408-native-bench-run.json": {
+      "bytes": 177310,
+      "sha256": "4a6bcdeeba57b3fe1908fdfa2f90282d3a9afdfa51656b039540287aa274bdd2"
+    },
+    "enme408-native-bench-receipt.json": {
+      "bytes": 28688,
+      "sha256": "111f998c705bdf85955c0054e08789791ff7d1c566a623267c9988869ba2ff43"
+    },
+    "enme408-native-bench-trace.csv": {
+      "bytes": 2042,
+      "sha256": "cf1008383b1b9a8d0a605a3c21637b7a42580321aa2958d303627425fa423dff"
+    },
+    "enme408-native-bench-export-status.json": {
+      "bytes": 449,
+      "sha256": "226f92e85ada9fe3776854de7e38684ddf8ae01847b1249f7e8ccfd77d5c1248"
+    },
+    "enme408-native-bench-overflow-run.json": {
+      "bytes": 58380,
+      "sha256": "db230f7c83543a295642982d7fcb23c3653fb52ab1e85d7be8566931501854c1"
+    },
+    "enme408-native-bench-review.html": {
+      "bytes": 51638,
+      "sha256": "2db611b6c6c7bf36e4bb47788144aa13a2dc651688b393b927d022f2271ee01c"
+    },
+    "enme408-native-bench-overview.jpg": {
+      "bytes": 118559,
+      "sha256": "8697553287ca6a6201e143b85e77893689694836b8a0b91a43fe5295b1407e31"
+    },
+    "enme408-native-bench-desktop.jpg": {
+      "bytes": 108916,
+      "sha256": "7b8cd7a7fb50a7ac9b8759329cd981e809b4e1002ec46cedf83b4f213a479727"
+    },
+    "enme408-native-bench-mobile.jpg": {
+      "bytes": 34653,
+      "sha256": "781865f802ceee0b1fb1d7afb27aee08f071324d991d204a65869d80f3847353"
+    },
+    "enme408-native-bench-browser-review.json": {
+      "bytes": 1276,
+      "sha256": "e6ffc0a6558bb9f25b4bd8c772af20f9906a5908fe75d7684dd3bbe353f35f31"
+    }
+  },
+  "run_sha256": "4a6bcdeeba57b3fe1908fdfa2f90282d3a9afdfa51656b039540287aa274bdd2",
+  "scope": "Synthetic compiled-host review bundle; no target/vehicle/transport/hardware authority."
+}

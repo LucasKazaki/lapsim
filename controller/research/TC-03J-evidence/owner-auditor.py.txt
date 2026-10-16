@@ -1,0 +1,117 @@
+"""Read-only owner artifact audit. No subprocess, toolchain or target calls."""
+from pathlib import Path
+import hashlib
+import json
+import struct
+
+W = Path(__file__).resolve().parent.parent
+ROOT = W / "work/enme408-allocator-cortex-m4-v1"
+
+
+def sha(path):
+    h = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+checks = []
+
+
+def check(label, value):
+    checks.append({"check": label, "passed": bool(value)})
+    if not value:
+        raise AssertionError(label)
+
+
+def elf_facts(path):
+    raw = path.read_bytes()
+    h = struct.unpack_from("<16sHHIIIIIHHHHHH", raw)
+    check(path.name + " raw ELF32 little ARM relocatable", raw[:6] == b"\x7fELF\x01\x01" and h[1:3] == (1, 40))
+    offset, stride, count, names_index = h[6], h[11], h[12], h[13]
+    check("bounded section table", stride == 40 and 0 < count and names_index < count and offset + stride * count <= len(raw))
+    sections = [struct.unpack_from("<10I", raw, offset + i * stride) for i in range(count)]
+    strings = sections[names_index]
+    names = raw[strings[4]:strings[4]+strings[5]]
+    def cstring(data, position):
+        return data[position:data.index(0, position)].decode("ascii")
+    records = []
+    exports, undefined = [], []
+    for index, s in enumerate(sections):
+        name = cstring(names, s[0])
+        check("section bounds " + name, s[1] == 8 or s[4] + s[5] <= len(raw))
+        records.append({"name": name, "type": s[1], "flags": s[2], "bytes": s[5]})
+        if s[1] != 2:
+            continue
+        check("symbol table shape", s[9] == 16 and s[5] % 16 == 0 and s[6] < count)
+        string_section = sections[s[6]]
+        table = raw[string_section[4]:string_section[4]+string_section[5]]
+        for position in range(s[4], s[4]+s[5], 16):
+            n, value, size, info, other, section = struct.unpack_from("<IIIBBH", raw, position)
+            symbol = cstring(table, n)
+            if section == 0 and symbol:
+                undefined.append(symbol)
+            if symbol in ("tc_allocator_version", "tc_allocator_abi_sizeof", "tc_allocate_propulsive_torque"):
+                check("raw defined global Thumb function " + symbol, section != 0 and info >> 4 == 1 and info & 15 == 2 and value & 1 == 1)
+                exports.append({"name": symbol, "bytes": size, "value": value, "section_index": section})
+    check("three allocator exports", len(exports) == 3)
+    return {"flags": h[7], "sections": records, "public_functions": exports, "undefined_symbols": sorted(undefined)}
+
+
+receipt = json.loads((ROOT / "receipt.json").read_text())
+plan = json.loads((ROOT / "protocol.json").read_text())
+check("attempt completed passed", receipt["status"] == "passed")
+check("31 confirmed requests, zero uncertainty", receipt["actual_commands"] == receipt["prepared_commands"] == len(receipt["commands"]) == 31 and receipt["uncertain_command_slots"] == [] and receipt["not_run_command_slots"] == [])
+check("known final receipt saved", receipt["final_receipt_persisted"] is True)
+check("pre-call source check", receipt["pre_call_frozen_copy_check"] == "passed")
+manifest = ROOT / "verified-toolchain-files.jsonl"
+check("fresh manifest SHA", sha(manifest) == receipt["toolchain"]["manifest_sha256"])
+files = [json.loads(line) for line in manifest.read_text().splitlines()]
+check("48211 unique verified entries", len(files) == len({x["path"] for x in files}) == 48211)
+index = {row["path"]: row for row in files}
+for name, value in receipt["verified_five_tools"].items():
+    check("verified fifth-inclusive tool " + name, index["bin/"+name]["sha256"] == value["sha256"] == plan["toolchain"]["five_proposed_tool_pins"][name]["sha256"])
+for slot, entry in enumerate(receipt["commands"]):
+    check("known successful command slot " + str(slot), entry["slot"] == slot and entry["launch_state"] == "confirmed_return" and entry["status"] == "completed" and entry["exit_code"] == 0 and entry["artifact_status"] == "written")
+    for channel in ("stdout", "stderr"):
+        path = ROOT / entry[channel]
+        check("raw log SHA " + entry["label"]+"/"+channel, sha(path) == entry[channel+"_sha256"] == entry[channel+"_observed_sha256"] and path.stat().st_size == entry[channel+"_observed_bytes"])
+check("versions tools order", [Path(x["argv"][0]).name for x in receipt["commands"][:5]] == [x[0] for x in plan["version_commands_in_order"]])
+objects = []
+for row in receipt["objects"]:
+    obj = ROOT / row["path"]
+    check("object byte identity " + row["path"], obj.stat().st_size == row["bytes"] and sha(obj) == row["sha256"])
+    raw = elf_facts(obj)
+    check("raw ELF metadata equals recorded sections", raw["flags"] == row["elf"]["flags"] and raw["sections"] == row["elf"]["sections"])
+    check("raw undefined symbol set equals nm", raw["undefined_symbols"] == sorted(row["undefined_symbols"]))
+    tags = row["elf"]["arm_attribute_tags"]
+    check("recorded ABI tag " + row["abi"], tags.get("28", 0) == (1 if row["abi"] == "hard" else 0))
+    dep = ROOT / row["dependency_file"]["path"]
+    check("dependency bytes", sha(dep) == row["dependency_file"]["sha256"])
+    for item in row["dependencies"]:
+        if item["owner"] == "verified_toolchain":
+            check("dependency bound to verified manifest " + item["path"], item["sha256"] == index[item["path"]]["sha256"])
+        else:
+            check("source snapshot dependency " + item["path"], item["sha256"] == sha(ROOT/"native"/item["path"]))
+    stack = row["stack_usage"]
+    if stack["status"] == "emitted":
+        check("local frame raw hash", sha(obj.with_suffix(".su")) == stack["sha256"])
+    text = (ROOT/receipt["command_slots"][row["inspection_slots"][-1]]["stdout"]).read_text()
+    check("disassembly labels and no unknown", all("<"+name+">:" in text for name in row["public_definitions"]) and "<unknown>" not in text.lower())
+    objects.append({"path":row["path"],"sha256":row["sha256"],"bytes":row["bytes"],"abi":row["abi"],"repeat":row["repeat"],"size":row["berkeley_size"],"raw_elf":raw,"local_stack":stack})
+for abi in ("hard", "softfp"):
+    pair = [x for x in objects if x["abi"] == abi]
+    check("same-condition repeat " + abi, len(pair) == 2 and pair[0]["sha256"] == pair[1]["sha256"])
+baseline = json.loads((ROOT/"historical-baseline.json").read_text())
+for anchor in baseline["historical_anchors"]:
+    check("old source/protocol/receipt anchor", sha(Path(anchor["path"])) == anchor["sha256"])
+for attempt in baseline["historical_attempts"]:
+    old = Path(attempt["root"])
+    actual = [{"path":p.relative_to(old).as_posix(),"bytes":p.stat().st_size,"sha256":sha(p)} for p in sorted(old.rglob("*"),key=lambda x:x.relative_to(old).as_posix()) if p.is_file()]
+    check("complete old cohort preserved " + attempt["label"], actual == attempt["files"])
+out = {"schema":"enme408.allocator-arm-owner-file-audit.v1","status":"passed","receipt_sha256":sha(ROOT/"receipt.json"),"protocol_sha256":sha(ROOT/"protocol.json"),"checks":checks,"check_count":len(checks),"objects":objects,"limitations":plan["limitations"],"scope":"Owner read-only raw-file audit, separate from required root independent artifact review; no new toolchain/target calls"}
+path = W/"work/enme408-allocator-arm-owner-audit-v1.json"
+with path.open("x",encoding="utf-8",newline="\n") as stream:
+    json.dump(out,stream,indent=2);stream.write("\n")
+print(json.dumps({"status":out["status"],"checks":len(checks),"sha256":sha(path),"path":str(path)}))

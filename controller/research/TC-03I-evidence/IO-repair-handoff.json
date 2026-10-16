@@ -1,0 +1,54 @@
+{
+  "schema": "enme408-native-bench-IO-repair-handoff/v1",
+  "head": "969e788bff4797be09fb82d7e33b92baf2f2c39c",
+  "protocol_sha256": "474f0a2928b169e13bd41779b45fa73f4806ab03cc7d88817fc231c1c0f83733",
+  "current_files": {
+    "reference/native_bench_replay.py": "a58950870eee9b848417c3ed6ed5b818cd3018c73d0d757920bf48a8a2a42fb9",
+    "reference/test_native_bench_replay.py": "d2a6b200eff02e73651c24d3d3d177fa1ab5bb23adf9e7a06e9fd2fcd6a9f886",
+    "research/TC-03I-native-bench-case-generator.json": "3353aa234ac9a8269dc752a2795e78a5e04238a6a352a578ad39d2daef141037"
+  },
+  "original_files": {
+    "reference/native_bench_replay.py": "1f14c1828c6d33c33520b192273a3828dd1e92a5807546691f6b9a1d8638be8f",
+    "reference/test_native_bench_replay.py": "02f9001f06e358adc18d36621f9a07678272039c0baeaba2a4aaccb4e7cfdecd",
+    "research/TC-03I-native-bench-case-generator.json": "b858e004bc2053305f77e2a75679f82c0e22ec6b924b8e06ea9ac9857504d90c"
+  },
+  "preserved_directory": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-native-bench-pre-IO-repair-v2",
+  "repair_diff": {
+    "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-native-bench-IO-repair.diff",
+    "sha256": "e2f582136bcd13269f1e875a6eae7f34be0db92877c381d82e3222ecdcf41468"
+  },
+  "top_level_AST_changed": [
+    "execute"
+  ],
+  "all_other_function_class_AST_unchanged": true,
+  "scope": "Only downstream execute export stage/file diagnostics, explicit status-write fallback/last-resort stderr, and focused packaging IO regression changed. Native run/oracle/builder/row projection unchanged.",
+  "new_actual_attempt": {
+    "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-native-bench-example-v3",
+    "run_sha256": "b96b9cc5e6b27e2d2d4e8a345393a1635ca713dda2a1dfaec7025300cca21d5f",
+    "viewer_sha256": "dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8",
+    "actual_invocations": {
+      "compile": 1,
+      "version": 1
+    },
+    "native_child": {
+      "alive_after_cleanup": false,
+      "cycles_per_run_completed": 18,
+      "cycles_per_run_requested": 18,
+      "elapsed_seconds": 0.1559999999954016,
+      "exitcode": 0,
+      "pid": 45104,
+      "replay_runs_completed": 2,
+      "replay_runs_requested": 2,
+      "status": "completed"
+    },
+    "summary": {
+      "allowed_cycles": 9,
+      "cycles": 18,
+      "inhibited_cycles": 4,
+      "recovery_pending_cycles": 5,
+      "zero_command_cycles": 9
+    }
+  },
+  "old_actual_attempts": "v2 run/viewer/overflow/QA and original review evidence remain unchanged, including pre-repair user artifacts copied into preserved_directory.",
+  "test_scope": "Same genuine library reused within the labeled IO fixture; four downstream cases exercise viewer write, CSV write, status write, and fallback write failures. Numerical functions unchanged."
+}

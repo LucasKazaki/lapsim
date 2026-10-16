@@ -1,0 +1,908 @@
+{
+  "artifact_bindings": {
+    "outputs/enme408-allocator-independent-review.md": {
+      "bytes": 4067,
+      "sha256": "f061283a04bd411b29d8d7c6bf20fb920d5e183dbb850c0ec9b7a1c966247083"
+    },
+    "work/allocator_review_cases_v1.py": {
+      "bytes": 9087,
+      "sha256": "dae7ffee04ab4cf4e5d2d18a54158f58505425e20324de6c21c0321be25743ee"
+    },
+    "work/enme408-allocator-caller-comparison.md": {
+      "bytes": 3092,
+      "sha256": "8143e5726719a2fe5b51a8a9762c7e21ca8f157d2798035ba105f08b3124894c"
+    },
+    "work/enme408-allocator-caller-repair-v2.diff": {
+      "bytes": 5776,
+      "sha256": "c074ffe86ccfe2921cc9e1ea46d1082a1d3f884e2c4b85e11624ac8bd3d56c9e"
+    },
+    "work/enme408-allocator-caller-repair-v3.diff": {
+      "bytes": 2852,
+      "sha256": "9e7d9130ffbef4c23d329b0c175a7fa6aa51aaa8ddf66295a6b35ca4af4b1daa"
+    },
+    "work/enme408-allocator-full-tests-v1.txt": {
+      "bytes": 1513,
+      "sha256": "93ceb69296586d9770c8544a4308b4b38b4b7a033e61ac89d7ba73d555c7c567"
+    },
+    "work/enme408-allocator-independent-extreme-gates-v1/before-calls.json": {
+      "bytes": 4389,
+      "sha256": "f607dbfc8b33fde64ac484b9728c508bb63f033adbab1d4590ace0ca99faf030"
+    },
+    "work/enme408-allocator-independent-extreme-gates-v1/receipt.json": {
+      "bytes": 4959,
+      "sha256": "ba7acfbe29d06a281dd664701b15089e926c575f59abe6efe070f3a06780a9a6"
+    },
+    "work/enme408-allocator-independent-review-plan-v1.json": {
+      "bytes": 3741,
+      "sha256": "a7daf88cbf07055fcf002f304405243bada92436e413aff512f33e759728fc4a"
+    },
+    "work/enme408-allocator-independent-v1/before-calls.json": {
+      "bytes": 14651,
+      "sha256": "25ec415e65d5a5a363134145ce4deb9723628c7b73885328f74d7af348e3a049"
+    },
+    "work/enme408-allocator-independent-v1/build-stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "work/enme408-allocator-independent-v1/build-stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "work/enme408-allocator-independent-v1/compiler-version.txt": {
+      "bytes": 253,
+      "sha256": "c0893df720b154b7a1a89b011e94f9a548a0788fd249f8e5596a74932d2a3f84"
+    },
+    "work/enme408-allocator-independent-v1/independent_allocator.dll": {
+      "bytes": 113719,
+      "sha256": "c99b287d6315487ddcadcb2b200eb7f319fd3358a10790589b699f07ce0fb650"
+    },
+    "work/enme408-allocator-independent-v1/receipt.json": {
+      "bytes": 29398,
+      "sha256": "3d80120b813889f611f3dabb26f7c66462c7ef6717997ed8aad2e85fab3ffa50"
+    },
+    "work/enme408-allocator-parity-v1.json": {
+      "bytes": 6853,
+      "sha256": "8e7c29d0dfc06e11622958db4954f6f951c65aabbb924ed425970d43a7c2da50"
+    },
+    "work/enme408-allocator-parity-v2.json": {
+      "bytes": 6842,
+      "sha256": "fb5105e3ede28748be939cfe214c8d6586ed1240e95a61b0e3560afb298a1a54"
+    },
+    "work/enme408-allocator-parity-v3.json": {
+      "bytes": 10015,
+      "sha256": "9a9ccd559dcffa27d359ff07dc2b1087bc5c88a25b2d4c79d47ec4618d2b2aa5"
+    },
+    "work/enme408-allocator-review-handoff.json": {
+      "bytes": 4859,
+      "sha256": "49a006a5a8249e1a809496f2d58d1b19b0671c0f7fa5739a415aca0073bd3b54"
+    },
+    "work/review_allocator_extreme_gate_v1.py": {
+      "bytes": 7080,
+      "sha256": "93b41d20f9f6354af27202b7c4e7f154f3006a7beea26c86020886ad592bfaab"
+    },
+    "work/review_allocator_owner_v1.py": {
+      "bytes": 28253,
+      "sha256": "9a159f9a4fb9d81574328d2c8273ef884a8e9394615ba6ee91a28dd9d53560b2"
+    }
+  },
+  "binary_identity_note": "The independent DLL uses a different output basename and its hash differs from the owner DLL. Behavior, source and flags are bound; cross-worker binary equality is not claimed.",
+  "caller_projection_scope_note": "Main review compares the full native clock output before using the already-matched reason text for inhibited observer metadata. The focused follow-up constructs observer diagnostics exclusively from actual native outputs. Python allocator/guard command vectors do not feed native command production.",
+  "findings": [],
+  "independent_direct_ABI_and_state_review": {
+    "ABI_boundaries": {
+      "counts": {
+        "all_tag_values": 4608,
+        "checks": 4663,
+        "explicit_domain_rejections": 10,
+        "ordered_C_schema_cases": 48,
+        "raw_C_text_cases": 5,
+        "required_NULL_cases": 3,
+        "unknown_size_kinds": 4
+      },
+      "results_sha256": "39663b4360810a25bd6d11d71cbd11298bef9a697004bc65dcdac5acf5f10757"
+    },
+    "abi_sizes": {
+      "Allocation": 176,
+      "ClockInput": 32,
+      "ClockPolicy": 4,
+      "ClockResult": 104,
+      "ClockState": 16,
+      "Cycle": 392,
+      "Decision": 120,
+      "Guard": 144,
+      "GuardConfig": 56,
+      "GuardInput": 48,
+      "GuardResult": 224,
+      "GuardState": 72,
+      "PedalFacts": 152,
+      "PedalResult": 69,
+      "Policy": 4,
+      "Scalar": 16,
+      "Snapshot": 12,
+      "Text": 65,
+      "independent_config": 16,
+      "independent_input": 184
+    },
+    "build": {
+      "argv": [
+        "C:\\msys64\\mingw64\\bin\\gcc.exe",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-shared",
+        "-static-libgcc",
+        "-Wl,--no-insert-timestamp",
+        "-Wl,--image-base,0x180000000",
+        "torque_contract.c",
+        "torque_clock.c",
+        "torque_pedal.c",
+        "torque_guard.c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-independent-v1\\independent_allocator.dll",
+        "-lm"
+      ],
+      "binary_sha256": "c99b287d6315487ddcadcb2b200eb7f319fd3358a10790589b699f07ce0fb650",
+      "compiler_sha256": "ddc0bdba9c5169d5546a43786c8d7c2ceecc49baaa65a2e270f3d8e2e3f5374f",
+      "owner_binary_match": false,
+      "returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version": "gcc.exe (Rev2, Built by MSYS2 project) 12.1.0"
+    },
+    "case_generator_sha256": "dae7ffee04ab4cf4e5d2d18a54158f58505425e20324de6c21c0321be25743ee",
+    "compiler_invocations": 1,
+    "composition": {
+      "counts": {
+        "allowed": 2454,
+        "clock_fault": 512,
+        "cycles": 5120,
+        "healthy_cycles": 1024,
+        "held": 2666,
+        "latch_clearance": 128,
+        "positive_allowed": 2406,
+        "positive_allowed_limited": 1330,
+        "recovery_stress_cycles": 4096,
+        "restart": 128
+      },
+      "historical_projection_counterfactuals": {
+        "first_projection": [
+          {
+            "cycle": 83,
+            "expected": {
+              "allowed": false,
+              "command_bits": [
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000"
+              ],
+              "generation": 0,
+              "latch": false,
+              "reason": "candidate_exceeds_request",
+              "state": "inhibited",
+              "streak": 0
+            },
+            "old_projection": {
+              "allowed": false,
+              "command_bits": [
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000"
+              ],
+              "generation": 0,
+              "latch": false,
+              "reason": "invalid_allocator_result",
+              "state": "inhibited",
+              "streak": 0
+            },
+            "stream": "independent/0"
+          },
+          {
+            "cycle": 115,
+            "expected": {
+              "allowed": false,
+              "command_bits": [
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000"
+              ],
+              "generation": 1,
+              "latch": false,
+              "reason": "candidate_exceeds_request",
+              "state": "inhibited",
+              "streak": 0
+            },
+            "old_projection": {
+              "allowed": false,
+              "command_bits": [
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000"
+              ],
+              "generation": 1,
+              "latch": false,
+              "reason": "invalid_allocator_result",
+              "state": "inhibited",
+              "streak": 0
+            },
+            "stream": "independent/0"
+          }
+        ],
+        "second_projection": [
+          {
+            "cycle": 89,
+            "expected": {
+              "allowed": false,
+              "command_bits": [
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000"
+              ],
+              "generation": 1,
+              "latch": false,
+              "reason": "cycle_period_mismatch",
+              "state": "inhibited",
+              "streak": 0
+            },
+            "old_projection": {
+              "allowed": false,
+              "command_bits": [
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000"
+              ],
+              "generation": 1,
+              "latch": false,
+              "reason": "invalid_guard_result",
+              "state": "inhibited",
+              "streak": 0
+            },
+            "stream": "independent/0"
+          },
+          {
+            "cycle": 90,
+            "expected": {
+              "allowed": false,
+              "command_bits": [
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000"
+              ],
+              "generation": 1,
+              "latch": false,
+              "reason": "guard_period_mismatch",
+              "state": "inhibited",
+              "streak": 0
+            },
+            "old_projection": {
+              "allowed": false,
+              "command_bits": [
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000",
+                "0000000000000000"
+              ],
+              "generation": 1,
+              "latch": false,
+              "reason": "invalid_guard_result",
+              "state": "inhibited",
+              "streak": 0
+            },
+            "stream": "independent/0"
+          }
+        ]
+      },
+      "reasons": {
+        "aggregate_limit": 245,
+        "allocator_ok": 1839,
+        "brake_accelerator_overlap": 128,
+        "candidate_exceeds_request": 128,
+        "critical_communication_loss": 256,
+        "cycle_period_mismatch": 128,
+        "external_interlock_open": 128,
+        "guard_period_mismatch": 256,
+        "invalid_request_numeric": 128,
+        "invalid_wheel_limit": 128,
+        "no_available_wheels": 128,
+        "nonmonotonic_cycle_timestamp": 128,
+        "recovery_criteria_met": 370,
+        "recovery_valid_sample": 648,
+        "recovery_waiting_for_unsaturated_valid_sample": 226,
+        "sensor_disagreement": 128,
+        "stale_input": 128
+      },
+      "results_sha256": "90114a15cbcab0cdc95e18c39ab38a580fe95fe9be47111e9d83b2b94e1087b0"
+    },
+    "current_head_after": "e93124c82634eaf6f907a20ac329780c6a8bc463",
+    "direct_first": {
+      "contracts": {
+        "OK": 10743,
+        "candidate_exceeds_request": 280,
+        "invalid_candidate_delivered": 16
+      },
+      "counts": {
+        "defined": 11042,
+        "early-request-diagnostic": 12,
+        "explicit_out_of_domain": 3,
+        "malformed": 173,
+        "native_compared": 11039,
+        "ordered": 432,
+        "ordered-fault": 196,
+        "raw-finite": 8192,
+        "uint64": 6,
+        "ulp": 2012,
+        "unit": 8,
+        "zero-availability": 8
+      },
+      "named_invalid_raw_examples": {
+        "candidate_exceeds_request": {
+          "input": {
+            "external_interlock": true,
+            "input_timestamp_ms": 50,
+            "now_ms": 100,
+            "request_nm": {
+              "binary64": "3d719799812dea12"
+            },
+            "torque_unit": "N*m",
+            "wheel_enabled": [
+              true,
+              false,
+              false,
+              false
+            ],
+            "wheel_limits_nm": [
+              {
+                "binary64": "3d819799812dea11"
+              },
+              {
+                "binary64": "8000000000000000"
+              },
+              {
+                "binary64": "8000000000000000"
+              },
+              {
+                "binary64": "8000000000000000"
+              }
+            ]
+          },
+          "label": "ulp/784",
+          "result": {
+            "delivered_bits": "3d819799812dea11",
+            "fault": null,
+            "requested_bits": "3d719799812dea12",
+            "status": "ok",
+            "wheel_bits": [
+              "3d819799812dea11",
+              "0000000000000000",
+              "0000000000000000",
+              "0000000000000000"
+            ]
+          }
+        },
+        "invalid_candidate_delivered": {
+          "input": {
+            "external_interlock": true,
+            "input_timestamp_ms": 50,
+            "now_ms": 100,
+            "request_nm": {
+              "binary64": "7fefffffffffffff"
+            },
+            "torque_unit": "N*m",
+            "wheel_enabled": [
+              true,
+              true,
+              true,
+              false
+            ],
+            "wheel_limits_nm": [
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "8000000000000000"
+              }
+            ]
+          },
+          "label": "ulp/1960",
+          "result": {
+            "delivered_bits": "7ff0000000000000",
+            "fault": null,
+            "requested_bits": "7fefffffffffffff",
+            "status": "ok",
+            "wheel_bits": [
+              "7fd5555555555555",
+              "7fd5555555555555",
+              "7fd5555555555555",
+              "0000000000000000"
+            ]
+          }
+        }
+      },
+      "reasons": {
+        "NONE": 5259,
+        "aggregate_limit": 1795,
+        "external_interlock_open": 10,
+        "input_timestamp_in_future": 1029,
+        "invalid_external_interlock": 22,
+        "invalid_input_timestamp": 27,
+        "invalid_max_input_age": 43,
+        "invalid_request_numeric": 28,
+        "invalid_wheel_enabled": 54,
+        "invalid_wheel_limit": 56,
+        "invalid_wheel_vector": 38,
+        "negative_request_unsupported": 22,
+        "no_available_wheels": 528,
+        "nonfinite_request": 24,
+        "stale_input": 2054,
+        "unsupported_torque_unit": 50
+      },
+      "results_sha256": "d31796430926b5221743006238965ccfa211b4407b6f9bbc9a6351d17ff6dfc5"
+    },
+    "direct_repeat_equal": true,
+    "direct_second": {
+      "contracts": {
+        "OK": 10743,
+        "candidate_exceeds_request": 280,
+        "invalid_candidate_delivered": 16
+      },
+      "counts": {
+        "defined": 11042,
+        "early-request-diagnostic": 12,
+        "explicit_out_of_domain": 3,
+        "malformed": 173,
+        "native_compared": 11039,
+        "ordered": 432,
+        "ordered-fault": 196,
+        "raw-finite": 8192,
+        "uint64": 6,
+        "ulp": 2012,
+        "unit": 8,
+        "zero-availability": 8
+      },
+      "named_invalid_raw_examples": {
+        "candidate_exceeds_request": {
+          "input": {
+            "external_interlock": true,
+            "input_timestamp_ms": 50,
+            "now_ms": 100,
+            "request_nm": {
+              "binary64": "3d719799812dea12"
+            },
+            "torque_unit": "N*m",
+            "wheel_enabled": [
+              true,
+              false,
+              false,
+              false
+            ],
+            "wheel_limits_nm": [
+              {
+                "binary64": "3d819799812dea11"
+              },
+              {
+                "binary64": "8000000000000000"
+              },
+              {
+                "binary64": "8000000000000000"
+              },
+              {
+                "binary64": "8000000000000000"
+              }
+            ]
+          },
+          "label": "ulp/784",
+          "result": {
+            "delivered_bits": "3d819799812dea11",
+            "fault": null,
+            "requested_bits": "3d719799812dea12",
+            "status": "ok",
+            "wheel_bits": [
+              "3d819799812dea11",
+              "0000000000000000",
+              "0000000000000000",
+              "0000000000000000"
+            ]
+          }
+        },
+        "invalid_candidate_delivered": {
+          "input": {
+            "external_interlock": true,
+            "input_timestamp_ms": 50,
+            "now_ms": 100,
+            "request_nm": {
+              "binary64": "7fefffffffffffff"
+            },
+            "torque_unit": "N*m",
+            "wheel_enabled": [
+              true,
+              true,
+              true,
+              false
+            ],
+            "wheel_limits_nm": [
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "8000000000000000"
+              }
+            ]
+          },
+          "label": "ulp/1960",
+          "result": {
+            "delivered_bits": "7ff0000000000000",
+            "fault": null,
+            "requested_bits": "7fefffffffffffff",
+            "status": "ok",
+            "wheel_bits": [
+              "7fd5555555555555",
+              "7fd5555555555555",
+              "7fd5555555555555",
+              "0000000000000000"
+            ]
+          }
+        }
+      },
+      "reasons": {
+        "NONE": 5259,
+        "aggregate_limit": 1795,
+        "external_interlock_open": 10,
+        "input_timestamp_in_future": 1029,
+        "invalid_external_interlock": 22,
+        "invalid_input_timestamp": 27,
+        "invalid_max_input_age": 43,
+        "invalid_request_numeric": 28,
+        "invalid_wheel_enabled": 54,
+        "invalid_wheel_limit": 56,
+        "invalid_wheel_vector": 38,
+        "negative_request_unsupported": 22,
+        "no_available_wheels": 528,
+        "nonfinite_request": 24,
+        "stale_input": 2054,
+        "unsupported_torque_unit": 50
+      },
+      "results_sha256": "d31796430926b5221743006238965ccfa211b4407b6f9bbc9a6351d17ff6dfc5"
+    },
+    "elapsed_seconds": 2.9349903000038466,
+    "handoff_sha256": "49a006a5a8249e1a809496f2d58d1b19b0671c0f7fa5739a415aca0073bd3b54",
+    "model_or_target_calls": 0,
+    "owner_case_freeze_sha256": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "protocol_sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+    "python": "3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]",
+    "retained_owner_attempts": [
+      {
+        "attempt": 1,
+        "error": "Traceback (most recent call last):\n  File \"C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\allocator_parity.py\", line 435, in main\n    receipt.update(verify_in_child(library))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\allocator_parity.py\", line 408, in verify_in_child\n    raise RuntimeError(result.get('error', f'allocator child exit {process.exitcode}'))\nRuntimeError: Traceback (most recent call last):\n  File \"C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\allocator_parity.py\", line 394, in _worker\n    first, second = run_allocator_parity(core), run_allocator_parity(core)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\allocator_parity.py\", line 316, in run_allocator_parity\n    if actual != wanted: raise AssertionError(f'composed final mismatch {label}/{row[\"sequence\"]}: {wanted!r} vs {actual!r}')\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: composed final mismatch recovery/18: {'allowed': False, 'command_bits': ['0000000000000000', '0000000000000000', '0000000000000000', '0000000000000000'], 'latch': False, 'state': 'inhibited', 'streak': 0, 'generation': 1, 'reason': 'candidate_exceeds_request'} vs {'allowed': False, 'command_bits': ['0000000000000000', '0000000000000000', '0000000000000000', '0000000000000000'], 'latch': False, 'state': 'inhibited', 'streak': 0, 'generation': 1, 'reason': 'invalid_allocator_result'}\n\n",
+        "results": null,
+        "sha256": "8e7c29d0dfc06e11622958db4954f6f951c65aabbb924ed425970d43a7c2da50",
+        "status": "failed_retained"
+      },
+      {
+        "attempt": 2,
+        "error": "Traceback (most recent call last):\n  File \"C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\allocator_parity.py\", line 445, in main\n    receipt.update(verify_in_child(library))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\allocator_parity.py\", line 418, in verify_in_child\n    raise RuntimeError(result.get('error', f'allocator child exit {process.exitcode}'))\nRuntimeError: Traceback (most recent call last):\n  File \"C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\allocator_parity.py\", line 404, in _worker\n    first, second = run_allocator_parity(core), run_allocator_parity(core)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\allocator_parity.py\", line 325, in run_allocator_parity\n    if actual != wanted: raise AssertionError(f'composed final mismatch {label}/{row[\"sequence\"]}: {wanted!r} vs {actual!r}')\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: composed final mismatch recovery/8: {'allowed': False, 'command_bits': ['0000000000000000', '0000000000000000', '0000000000000000', '0000000000000000'], 'latch': True, 'state': 'inhibited', 'streak': 0, 'generation': 0, 'reason': 'guard_period_mismatch'} vs {'allowed': False, 'command_bits': ['0000000000000000', '0000000000000000', '0000000000000000', '0000000000000000'], 'latch': True, 'state': 'inhibited', 'streak': 0, 'generation': 0, 'reason': 'invalid_guard_result'}\n\n",
+        "results": null,
+        "sha256": "fb5105e3ede28748be939cfe214c8d6586ed1240e95a61b0e3560afb298a1a54",
+        "status": "failed_retained"
+      },
+      {
+        "attempt": 3,
+        "error": null,
+        "results": {
+          "allowed_cycles": 1790,
+          "allowed_limited_cycles": 193,
+          "clock_fault_cycles": 384,
+          "composed_cycles": 5120,
+          "composed_reasons": {
+            "allocator_ok": 1661,
+            "brake_accelerator_overlap": 128,
+            "candidate_exceeds_request": 128,
+            "critical_communication_loss": 256,
+            "cycle_period_mismatch": 128,
+            "external_interlock_open": 256,
+            "guard_period_mismatch": 128,
+            "input_timestamp_in_future": 128,
+            "invalid_candidate_delivered": 128,
+            "invalid_request_numeric": 128,
+            "invalid_wheel_enabled": 128,
+            "invalid_wheel_limit": 128,
+            "negative_request_unsupported": 128,
+            "no_available_wheels": 128,
+            "nonmonotonic_cycle_timestamp": 128,
+            "recovery_criteria_met": 129,
+            "recovery_valid_sample": 642,
+            "recovery_waiting_for_unsaturated_valid_sample": 128,
+            "sensor_disagreement": 256,
+            "stale_input": 128,
+            "unsupported_torque_unit": 128
+          },
+          "composed_results_sha256": "b350f11086d91c28e3caeeed5f59e249bd66abdcf0ffef3dfa65e32bb5ffb5aa",
+          "config_cases": 8,
+          "contracts": {
+            "OK": 13180,
+            "candidate_exceeds_request": 85,
+            "invalid_candidate_delivered": 8
+          },
+          "direct_cases": 13273,
+          "direct_results_sha256": "62303d8cdfdd951b5fe8ee60f918903529ff3e0340b002899d0963d4b9c79711",
+          "grid_cases": 4608,
+          "healthy_cycles": 1024,
+          "held_cycles": 3330,
+          "latch_clearances": 256,
+          "mixed_fault_cases": 196,
+          "named": {
+            "3d3c25c268497682/4034000000000000": {
+              "contract": null,
+              "result": {
+                "delivered_bits": "0000000000000000",
+                "fault": null,
+                "requested_bits": "3d3c25c268497682",
+                "status": "ok",
+                "wheel_bits": [
+                  "0000000000000000",
+                  "0000000000000000",
+                  "0000000000000000",
+                  "0000000000000000"
+                ]
+              }
+            },
+            "3d719799812dea11/4034000000000000": {
+              "contract": null,
+              "result": {
+                "delivered_bits": "0000000000000000",
+                "fault": null,
+                "requested_bits": "3d719799812dea11",
+                "status": "ok",
+                "wheel_bits": [
+                  "0000000000000000",
+                  "0000000000000000",
+                  "0000000000000000",
+                  "0000000000000000"
+                ]
+              }
+            },
+            "3ff0000000000000/3fefffffffbb47d0": {
+              "contract": null,
+              "result": {
+                "delivered_bits": "3fefffffffbb47d0",
+                "fault": null,
+                "requested_bits": "3ff0000000000000",
+                "status": "ok",
+                "wheel_bits": [
+                  "3fefffffffbb47d0",
+                  "0000000000000000",
+                  "0000000000000000",
+                  "0000000000000000"
+                ]
+              }
+            },
+            "3ff0000000000000/3ff0000000001198": {
+              "contract": "candidate_exceeds_request",
+              "result": {
+                "delivered_bits": "3ff0000000001198",
+                "fault": null,
+                "requested_bits": "3ff0000000000000",
+                "status": "ok",
+                "wheel_bits": [
+                  "3ff0000000001198",
+                  "0000000000000000",
+                  "0000000000000000",
+                  "0000000000000000"
+                ]
+              }
+            },
+            "7fefffffffffffff/7fefffffffffffff": {
+              "contract": null,
+              "result": {
+                "delivered_bits": "7fefffffffffffff",
+                "fault": null,
+                "requested_bits": "7fefffffffffffff",
+                "status": "ok",
+                "wheel_bits": [
+                  "7fefffffffffffff",
+                  "0000000000000000",
+                  "0000000000000000",
+                  "0000000000000000"
+                ]
+              }
+            },
+            "8000000000000000/0000000000000000": {
+              "contract": null,
+              "result": {
+                "delivered_bits": "0000000000000000",
+                "fault": null,
+                "requested_bits": "0000000000000000",
+                "status": "ok",
+                "wheel_bits": [
+                  "0000000000000000",
+                  "0000000000000000",
+                  "0000000000000000",
+                  "0000000000000000"
+                ]
+              }
+            }
+          },
+          "named_cases": 6,
+          "positive_allowed_cycles": 1534,
+          "random_cases": 8192,
+          "reasons": {
+            "NONE": 5523,
+            "aggregate_limit": 1771,
+            "external_interlock_open": 8,
+            "input_timestamp_in_future": 1028,
+            "invalid_external_interlock": 10,
+            "invalid_input_timestamp": 13,
+            "invalid_max_input_age": 33,
+            "invalid_request_numeric": 44,
+            "invalid_wheel_enabled": 14,
+            "invalid_wheel_limit": 14,
+            "invalid_wheel_vector": 24,
+            "negative_request_unsupported": 20,
+            "no_available_wheels": 1139,
+            "nonfinite_request": 22,
+            "stale_input": 3580,
+            "unsupported_torque_unit": 30
+          },
+          "recovery_cycles": 4096,
+          "restarts": 128,
+          "schema_cases": 43,
+          "threshold_cases": 216,
+          "time_cases": 4
+        },
+        "sha256": "9a9ccd559dcffa27d359ff07dc2b1087bc5c88a25b2d4c79d47ec4618d2b2aa5",
+        "status": "passed"
+      }
+    ],
+    "review_script_sha256": "9a159f9a4fb9d81574328d2c8273ef884a8e9394615ba6ee91a28dd9d53560b2",
+    "reviewed_head": "e93124c82634eaf6f907a20ac329780c6a8bc463",
+    "schema": "enme408.portable-allocator-independent-review.v1",
+    "scope": [
+      "Finite independent host comparisons only; no proof for all binary64 values or arbitrary Python objects.",
+      "Known source epsilon/status quirks retained; native downstream acceptance was not relaxed.",
+      "No Studio changes; no model, GPU, ARM/compiler-target, firmware link, emulator or hardware calls.",
+      "No physical mapping, dynamics, traction, timing, WCET, HIL or safety/release claim."
+    ],
+    "seed": 2026101548,
+    "source_sha256": {
+      "../research/TC-03C-clock-protocol.json": "93230dd090bc13da17158e07d1ca02e24f24abd3e90c3dbe0789f66060e9e068",
+      "../research/TC-03D-pedal-protocol.json": "d09b7aa92e849624a3a194087cdf019833b777bd8f9b1373af7de03917beadbb",
+      "../research/TC-03F-base-command-guard-protocol.json": "dae91039428cd0e4d55596d5e99734acebc59378100b2984fda80e1e80babff2",
+      "../research/TC-03H-allocator-case-generator.json": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
+      "../research/TC-03H-portable-allocator-protocol.json": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+      "allocation_contract.py": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
+      "allocator.py": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
+      "allocator_parity.py": "7e13e91fb097795ddddd595f05b09299428a4caf62a3869d0f4621be013c4fea",
+      "bench-scenario.example.json": "5af0071216b03e781ee1e9cd89d74b870dc0e2f090fd75a5ff15800fcb686bcc",
+      "bench_replay.py": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc",
+      "c_parity.py": "eca7539e503dfb96b5106d3ec2af6feffb8955f83b4de036dd4d47d78e70a04a",
+      "clock_parity.py": "0a8e161de374a181adf98f344f2b34f10233d3fb53e929b9d334de4aa36fbfaf",
+      "command_guard.py": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+      "control_pipeline.py": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531",
+      "cycle_clock.py": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5",
+      "fault_state.py": "1abe78b642ca381257f1b7e26eb8ac5b125e98d33a91c97f9808ab9a5690d9d3",
+      "guard_overlap_observation.py": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+      "guard_parity.py": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854",
+      "guard_request_contract.py": "e2e900515d76aa19a2226b5d4f5a4620708043c91b1180dd386be5c1d536837b",
+      "guard_trusted_clear.py": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+      "native/allocator_sanitizer_probe.c": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495",
+      "native/clock_sanitizer_probe.c": "4fc043b38bf473fc06ae93d5b02dd5f160bc765dbabb0d81497859f88c2f7d7d",
+      "native/guard_sanitizer_probe.c": "740a0c27b5477cef295b461dd9b96a131caf8444fd8cadc83424285e341ce665",
+      "native/pedal_sanitizer_probe.c": "543030400c8b85db7014b5d43bf633d83c57ebc178c5b7119ce214272e2f3655",
+      "native/torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+      "native/torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+      "native/torque_clock.c": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+      "native/torque_clock.h": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+      "native/torque_contract.c": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+      "native/torque_contract.h": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "native/torque_guard.c": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+      "native/torque_guard.h": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+      "native/torque_pedal.c": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
+      "native/torque_pedal.h": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
+      "pedal_parity.py": "e044d6f2dcf91211ec6b1fb7f046dcb3a20ef2e967194052246363a436daaa7c",
+      "test_allocator_parity.py": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336",
+      "torque_numeric.py": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
+    },
+    "source_unchanged_after": true,
+    "status": "passed"
+  },
+  "limits": [
+    "Finite independent host comparisons only; no proof for all binary64 values or arbitrary Python objects.",
+    "Known source epsilon/status quirks retained; native downstream acceptance was not relaxed.",
+    "No Studio changes; no model, GPU, ARM/compiler-target, firmware link, emulator or hardware calls.",
+    "No physical mapping, dynamics, traction, timing, WCET, HIL or safety/release claim."
+  ],
+  "original_receipts_preserved": true,
+  "packaging_script_sha256": "fff480a9728c4ce8a47a90eaa3bbd7596f69605fc599106909da976cd593c718",
+  "reviewed_source_head": "e93124c82634eaf6f907a20ac329780c6a8bc463",
+  "schema": "enme408.portable-allocator-independent-review-package.v1",
+  "source_semantics_and_prior_ports_unchanged": true,
+  "targeted_invalid_raw_candidate_gate_review": {
+    "binary_sha256": "c99b287d6315487ddcadcb2b200eb7f319fd3358a10790589b699f07ce0fb650",
+    "case_generator_sha256": "dae7ffee04ab4cf4e5d2d18a54158f58505425e20324de6c21c0321be25743ee",
+    "compiler_invocations": 0,
+    "counts": {
+      "candidate_exceeds_request": 280,
+      "full_native_rejections": 592,
+      "invalid_candidate_delivered": 16,
+      "invalid_raw_candidates": 296,
+      "retained_latch_rejections": 296
+    },
+    "elapsed_seconds": 0.2237648000009358,
+    "model_or_target_calls": 0,
+    "original_review_receipt_sha256": "3d80120b813889f611f3dabb26f7c66462c7ef6717997ed8aad2e85fab3ffa50",
+    "results_sha256": "58c9a02a3f6de0d9ff5108be7aa245f4f96104f1f984daa80f49b701d94903f4",
+    "review_source_sha256": "93b41d20f9f6354af27202b7c4e7f154f3006a7beea26c86020886ad592bfaab",
+    "reviewed_head": "e93124c82634eaf6f907a20ac329780c6a8bc463",
+    "schema": "enme408.allocator-independent-extreme-gate-review.v1",
+    "scope": "All invalid raw candidates in the frozen independent corpus, each with initially clear and retained latch; reused one actual host library. No compiler/target/model calls.",
+    "source_and_binary_unchanged_after": true,
+    "source_sha256": {
+      "../research/TC-03C-clock-protocol.json": "93230dd090bc13da17158e07d1ca02e24f24abd3e90c3dbe0789f66060e9e068",
+      "../research/TC-03D-pedal-protocol.json": "d09b7aa92e849624a3a194087cdf019833b777bd8f9b1373af7de03917beadbb",
+      "../research/TC-03F-base-command-guard-protocol.json": "dae91039428cd0e4d55596d5e99734acebc59378100b2984fda80e1e80babff2",
+      "../research/TC-03H-allocator-case-generator.json": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
+      "../research/TC-03H-portable-allocator-protocol.json": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+      "allocation_contract.py": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
+      "allocator.py": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
+      "allocator_parity.py": "7e13e91fb097795ddddd595f05b09299428a4caf62a3869d0f4621be013c4fea",
+      "bench-scenario.example.json": "5af0071216b03e781ee1e9cd89d74b870dc0e2f090fd75a5ff15800fcb686bcc",
+      "bench_replay.py": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc",
+      "c_parity.py": "eca7539e503dfb96b5106d3ec2af6feffb8955f83b4de036dd4d47d78e70a04a",
+      "clock_parity.py": "0a8e161de374a181adf98f344f2b34f10233d3fb53e929b9d334de4aa36fbfaf",
+      "command_guard.py": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+      "control_pipeline.py": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531",
+      "cycle_clock.py": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5",
+      "fault_state.py": "1abe78b642ca381257f1b7e26eb8ac5b125e98d33a91c97f9808ab9a5690d9d3",
+      "guard_overlap_observation.py": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+      "guard_parity.py": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854",
+      "guard_request_contract.py": "e2e900515d76aa19a2226b5d4f5a4620708043c91b1180dd386be5c1d536837b",
+      "guard_trusted_clear.py": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+      "native/allocator_sanitizer_probe.c": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495",
+      "native/clock_sanitizer_probe.c": "4fc043b38bf473fc06ae93d5b02dd5f160bc765dbabb0d81497859f88c2f7d7d",
+      "native/guard_sanitizer_probe.c": "740a0c27b5477cef295b461dd9b96a131caf8444fd8cadc83424285e341ce665",
+      "native/pedal_sanitizer_probe.c": "543030400c8b85db7014b5d43bf633d83c57ebc178c5b7119ce214272e2f3655",
+      "native/torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+      "native/torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+      "native/torque_clock.c": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+      "native/torque_clock.h": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+      "native/torque_contract.c": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+      "native/torque_contract.h": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "native/torque_guard.c": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+      "native/torque_guard.h": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+      "native/torque_pedal.c": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
+      "native/torque_pedal.h": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
+      "pedal_parity.py": "e044d6f2dcf91211ec6b1fb7f046dcb3a20ef2e967194052246363a436daaa7c",
+      "test_allocator_parity.py": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336",
+      "torque_numeric.py": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
+    },
+    "status": "passed"
+  },
+  "test_scope_note": "One independent native host compile plus its --version metadata command. Two identical direct passes, one 5120-cycle independent stream corpus and a targeted 592-path follow-up on the same DLL. Owner full-suite log inspected, not rerun. No sanitizer/remote-CI success claimed here.",
+  "verdict": "No actionable discrepancy in the finite independent host review. Clear to proceed to required actual sanitizer/CI checks; no target or hardware conclusion."
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "enme408.allocator-arm-root-repair-review.v1",
+  "reviewer": "root",
+  "status": "approved_for_one_actual_object_only_attempt",
+  "reviewed_head": "2ae0c158aa7d36d9705ce986920d7832f17da6df",
+  "review_scope": [
+    "Full original driver and tests previously read; complete 23966-byte narrow repair diff read.",
+    "Pre-call retained source revalidation now precedes first executable.",
+    "Prepared intent, confirmed subprocess request and interrupted uncertain state distinguished.",
+    "Known return/status/time/output identities recorded before fallible artifact writes; persistent receipt error exposed separately."
+  ],
+  "driver_sha256": "132b2fe3ec9d7ffb2b7a8d0efc7b153ce547192c2fea99034ccc855cb8910ce4",
+  "tests_sha256": "126295bfa6e57a5c09e0379dbe049357751ac04a3d02714b2c8ed63c6f9dccef",
+  "protocol_sha256": "6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912",
+  "independent_reexecution": {
+    "tests": 56,
+    "exit": 0,
+    "elapsed_seconds": 1.8730078,
+    "log": "enme408-allocator-arm-root-repair-tests.txt",
+    "actual_ARM_calls": 0
+  },
+  "authority": "One fresh preflight archive/tree verification and exact frozen31-command/four-object attempt. Preserve all partial failures and unknowns; no retry or altered flags. Independent raw artifact review before publishing conclusions.",
+  "limits": [
+    "Object compilation and inspections only; no linking, target execution, firmware/CAN/vehicle/hardware action.",
+    "No WCET, whole-call-stack, target fit or hardware validation claim.",
+    "Original unexecuted implementation/findings and all historical cohorts retained."
+  ]
+}

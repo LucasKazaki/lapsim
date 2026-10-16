@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "export_method": "Git checkout-index with core.autocrlf=true and core.eol=crlf; explicit file attribute still requires LF",
+  "export_header_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+  "bytes": 3938,
+  "CRLF_present": false,
+  "header_source_and_Git_blob_unchanged": true,
+  "driver_protocol_unchanged": true,
+  "actual_ARM_reruns": 0
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "enme408-numeric-contract-change/v1",
+  "date": "2026-10-15",
+  "historical_python_commit": "c7e781f2117fd0081d6625581ef3f85d353fc2ef",
+  "historical_numeric_contract": "implicit builtin sum; CPython3.12 uses compensated float summation",
+  "old_c_source_sha256": "5029434d154b50191567ce3a403ef45d3dd7307f1c2ace19f5eb33d29d1b8427",
+  "failure_log_sha256": "22c7f536835d99593b032c8acfb913db38c337ccc84f2e19dcd7d9907d1d1e8b",
+  "original_failed_cases": [
+    {
+      "label": "independent_mixed_scale_below",
+      "wheels_hex": [
+        "0x1.8000000000000p+0",
+        "0x1.0000000000000p-53",
+        "0x1.0000000000000p-53",
+        "0x0.0p+0"
+      ],
+      "requested_hex": "0x1.0000000000000p+1",
+      "delivered_hex": "0x1.7fffffffffff8p+0",
+      "historical_python_reason": "candidate_sum_mismatch",
+      "initial_c_reason": null,
+      "numeric_v2_python_and_c_reason": null
+    },
+    {
+      "label": "independent_mixed_scale_above",
+      "wheels_hex": [
+        "0x1.8000000000000p+0",
+        "0x1.0000000000000p-53",
+        "0x1.0000000000000p-53",
+        "0x0.0p+0"
+      ],
+      "requested_hex": "0x1.0000000000000p+1",
+      "delivered_hex": "0x1.8000000000009p+0",
+      "historical_python_reason": null,
+      "initial_c_reason": "candidate_sum_mismatch",
+      "numeric_v2_python_and_c_reason": "candidate_sum_mismatch"
+    }
+  ],
+  "observation": {
+    "historical_python_total_hex": "0x1.8000000000001p+0",
+    "fixed_slot_binary64_total_hex": "0x1.8000000000000p+0"
+  },
+  "decision": "Version 2 explicitly adds four binary64 values in fixed slot order in both implementations. The 8-ULP comparison and exact-zero requirements remain. This is a documented numerical-policy change, not a retroactive claim that historical semantics always matched C.",
+  "audit": {
+    "python_allocator_delivery": "torque_numeric.wheel_total",
+    "python_allocation_validation": "torque_numeric.wheel_total",
+    "python_guard_and_fault_and_final_gate": "no independent floating aggregate; shared allocation validator owns candidate sums",
+    "c_allocation_and_guard_validation": "one shared static wheel_total helper",
+    "final_command_gate": "copies four individually bounded guard outputs or writes exact zeros; no independent aggregate",
+    "bench_summary_sum_calls": "integer event counts only"
+  },
+  "compatibility": "CABI version1 layout unchanged; numeric contract version2 separately queried and checked. Compiled parity receipt schema advances to v2. Bench wire schema v1 is structurally unchanged and gains explicit numeric_contract_version=2; historical receipts omit that field and retain their original source hashes.",
+  "primary_reference": "https://raw.githubusercontent.com/python/cpython/v3.12.2/Python/bltinmodule.c",
+  "preserved_local_checkpoint": "work/enme408-c-before-numeric-v2"
+}

@@ -1,0 +1,2448 @@
+{
+  "schema": "enme408-base-guard-cortex-m4-annex/v1",
+  "status": "passed",
+  "protocol_sha256": "6fd1aa2c1aab66d5fef12ccb46d727e233ecc1d4a531eb21e7148e55ad9b8d20",
+  "driver_sha256": "64f51787e0c8bfcff20bf423316480414d941df51f603235df1636053c4781b4",
+  "helper_sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090",
+  "source_files": {
+    "torque_guard.c": {
+      "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+      "bytes": 6920
+    },
+    "torque_guard.h": {
+      "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+      "bytes": 1972
+    },
+    "torque_contract.h": {
+      "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "bytes": 3938
+    }
+  },
+  "planned_objects": 4,
+  "planned_commands": 26,
+  "commands": [
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--version"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/version-clang.stdout.txt",
+      "stdout_sha256": "5253bf2711948e8d49ce32b64fe1946a39bf0fc05e576618ec95f5ad3e4276cc",
+      "stderr": "logs/version-clang.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.06300000000192085
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--version"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/version-llvm-readobj.stdout.txt",
+      "stdout_sha256": "3f8af3c3b94795d47dcf6db50ee24cc7c87445be73e53af38459599fe07c8271",
+      "stderr": "logs/version-llvm-readobj.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--version"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/version-llvm-size.stdout.txt",
+      "stdout_sha256": "c5ca086372ff5f6022e36968047bec07534d6a606cad8f924a40a881fa916180",
+      "stderr": "logs/version-llvm-size.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.031000000002677552
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--version"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/version-llvm-nm.stdout.txt",
+      "stdout_sha256": "828d1bd5e3fe0e0c87afc32ed08a85e4b2f64032cb3a7c6e789b61a4da10afa6",
+      "stderr": "logs/version-llvm-nm.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.031000000002677552
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-print-multi-directory"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/multilib-hard.stdout.txt",
+      "stdout_sha256": "3eef8e35c2edf63d53216f3f13beef6325ddc2b6ec4158435e7374309215c974",
+      "stderr": "logs/multilib-hard.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=softfp",
+        "-print-multi-directory"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/multilib-softfp.stdout.txt",
+      "stdout_sha256": "7eccd009f7d3a027c6477094c17ec2c90858ee8c2f994aa88379964c7b2f0261",
+      "stderr": "logs/multilib-softfp.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.031000000002677552
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\hard\\torque_guard.d",
+        "-c",
+        "torque_guard.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/compile-1-hard-torque_guard.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-hard-torque_guard.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.07800000000133878
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-1-hard-torque_guard-0.stdout.txt",
+      "stdout_sha256": "88c8b31940d75d5df7664d9f9c510c578a7e99ceb9a5b2fc6516dcd4f18d0df9",
+      "stderr": "logs/inspect-1-hard-torque_guard-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-1-hard-torque_guard-1.stdout.txt",
+      "stdout_sha256": "13c88bae3d569c43be7586566ba2b519f6268b4c26045f658ef1b745b8102164",
+      "stderr": "logs/inspect-1-hard-torque_guard-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-1-hard-torque_guard-2.stdout.txt",
+      "stdout_sha256": "6ea7a81b3d92b5be2c4056b70ca4fb1ae9416e30e3118e63b93556faf292f95e",
+      "stderr": "logs/inspect-1-hard-torque_guard-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-1-hard-torque_guard-3.stdout.txt",
+      "stdout_sha256": "0fd04a045c310ecaa38e7a903b935d6e17dda2a1e78b4d1b60bc30b0216c41b5",
+      "stderr": "logs/inspect-1-hard-torque_guard-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\softfp\\torque_guard.d",
+        "-c",
+        "torque_guard.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/compile-1-softfp-torque_guard.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-softfp-torque_guard.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.07899999999790452
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-1-softfp-torque_guard-0.stdout.txt",
+      "stdout_sha256": "dca6278de91c4a1d7d6724ec4763897d0ebc51a302e70d2c234a68c7c72e4444",
+      "stderr": "logs/inspect-1-softfp-torque_guard-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-1-softfp-torque_guard-1.stdout.txt",
+      "stdout_sha256": "1c743f2f58b0818a5ed2ee9b57af593fb5d2a6d10d38041f6dad7806add7d5fa",
+      "stderr": "logs/inspect-1-softfp-torque_guard-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-1-softfp-torque_guard-2.stdout.txt",
+      "stdout_sha256": "650758f593fef1dd5fa63ac411190dea5f7a0bbbd6fafe82cdbfee58681445f0",
+      "stderr": "logs/inspect-1-softfp-torque_guard-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-1\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-1-softfp-torque_guard-3.stdout.txt",
+      "stdout_sha256": "0fd04a045c310ecaa38e7a903b935d6e17dda2a1e78b4d1b60bc30b0216c41b5",
+      "stderr": "logs/inspect-1-softfp-torque_guard-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\hard\\torque_guard.d",
+        "-c",
+        "torque_guard.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/compile-2-hard-torque_guard.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-hard-torque_guard.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.07800000000133878
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-2-hard-torque_guard-0.stdout.txt",
+      "stdout_sha256": "901d2b545a1fa4a820f1b092d9d82c7a6725f119c4d9eec13990f6ab52287354",
+      "stderr": "logs/inspect-2-hard-torque_guard-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-2-hard-torque_guard-1.stdout.txt",
+      "stdout_sha256": "030b3200004bc8d349e36520899517250338f3a24e7f5d6f8c6e521baade4167",
+      "stderr": "logs/inspect-2-hard-torque_guard-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-2-hard-torque_guard-2.stdout.txt",
+      "stdout_sha256": "5df72d8e83f6f0d5925ee0023bf5380719249ab1e6337ae3a3900e7383125b95",
+      "stderr": "logs/inspect-2-hard-torque_guard-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\hard\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-2-hard-torque_guard-3.stdout.txt",
+      "stdout_sha256": "0fd04a045c310ecaa38e7a903b935d6e17dda2a1e78b4d1b60bc30b0216c41b5",
+      "stderr": "logs/inspect-2-hard-torque_guard-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.0
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\softfp\\torque_guard.d",
+        "-c",
+        "torque_guard.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/compile-2-softfp-torque_guard.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-softfp-torque_guard.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.06199999999807915
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-2-softfp-torque_guard-0.stdout.txt",
+      "stdout_sha256": "78be113a3193a05360e8d36f375e8b8a7badfc4c7a9cd783498fea93c3269088",
+      "stderr": "logs/inspect-2-softfp-torque_guard-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-2-softfp-torque_guard-1.stdout.txt",
+      "stdout_sha256": "2610a566a208da84cd6b86e9157166ec691ae1073c9335c6b4d44fe5e11d9133",
+      "stderr": "logs/inspect-2-softfp-torque_guard-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-2-softfp-torque_guard-2.stdout.txt",
+      "stdout_sha256": "2fed45ebdd20559d49a5c615caefda166a44362cc420449dbe7a724489dccbff",
+      "stderr": "logs/inspect-2-softfp-torque_guard-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1\\repeat-2\\softfp\\torque_guard.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "stdout": "logs/inspect-2-softfp-torque_guard-3.stdout.txt",
+      "stdout_sha256": "0fd04a045c310ecaa38e7a903b935d6e17dda2a1e78b4d1b60bc30b0216c41b5",
+      "stderr": "logs/inspect-2-softfp-torque_guard-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923
+    }
+  ],
+  "objects": [
+    {
+      "repeat": 1,
+      "abi": "hard",
+      "unit": "torque_guard",
+      "status": "inspected",
+      "path": "repeat-1/hard/torque_guard.o",
+      "sha256": "125aed6d4048d37dbdfc2531c02d77af061b8e65e9acaaf8c79b0f4dd8ceae0f",
+      "bytes": 6572,
+      "berkeley_size": {
+        "text": 2677,
+        "data": 0,
+        "bss": 0,
+        "total": 2677
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__finite",
+        "memset",
+        "tc_contract_reason",
+        "tc_validate_allocation"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 850
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_init_command_guard_state",
+            "type": 1,
+            "flags": 6,
+            "bytes": 46
+          },
+          {
+            "name": ".rel.text.tc_init_command_guard_state",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_command_guard_state",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_command_guard_state",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_command_guard_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_command_guard_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_command_guard_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_command_guard_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_command_guard_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_command_guard_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_command_guard_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_apply_command_guard",
+            "type": 1,
+            "flags": 6,
+            "bytes": 1816
+          },
+          {
+            "name": ".rel.text.tc_apply_command_guard",
+            "type": 9,
+            "flags": 64,
+            "bytes": 696
+          },
+          {
+            "name": ".ARM.exidx.text.tc_apply_command_guard",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_apply_command_guard",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.inhibit",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.inhibit",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_reason",
+            "type": 1,
+            "flags": 6,
+            "bytes": 168
+          },
+          {
+            "name": ".rel.text.set_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_reason",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 329
+          },
+          {
+            "name": ".rodata.cst16",
+            "type": 1,
+            "flags": 18,
+            "bytes": 16
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 784
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "4764df6c3e95434d68dcc00d886b42d2047451e65cfe0a4975c4b33875f13c71",
+        "records": [
+          {
+            "location": "torque_guard.c:28:tc_init_command_guard_state",
+            "function": "tc_init_command_guard_state",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:52:tc_command_guard_version",
+            "function": "tc_command_guard_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:53:tc_command_guard_abi_sizeof",
+            "function": "tc_command_guard_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:63:tc_apply_command_guard",
+            "function": "tc_apply_command_guard",
+            "bytes": 72,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:47:inhibit",
+            "function": "inhibit",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:18:set_reason",
+            "function": "set_reason",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/hard/torque_guard.d",
+        "sha256": "40242202a0446744b4285b1a22124cb1da239b2b9b2342ee1119c173f14ebce2"
+      },
+      "dependencies": [
+        {
+          "owner": "native_snapshot",
+          "path": "torque_guard.c",
+          "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_guard.h",
+          "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_contract.h",
+          "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stddef.h",
+          "sha256": "9245af60f3017ee5b637ea78471020bd312d5cbe33ebdb75ab2d1aee3c8645aa"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_header_macro.h",
+          "sha256": "382ca526b3c02543ef14bc7d5e66dff4d7d5ed6c7a8bdfe41c074b7b2c679054"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_ptrdiff_t.h",
+          "sha256": "081e8da51380e3b0052c665fa384add46326249669b535f0b1b638f925f6ff66"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_size_t.h",
+          "sha256": "48229bf33855a1972ca1b344d9900ceff2384c8811c4a294b85afb2fa7c20067"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wchar_t.h",
+          "sha256": "a4c5be18087bf273f60e40189c3386b0c63ead39c1bb56080e20ada5cc9a8aa6"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_null.h",
+          "sha256": "d26f5a5c37e9de305374094d696351e49e36b0373ded4bebffd1ab17efdabb7c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_max_align_t.h",
+          "sha256": "56e3736aac61bd5d23eabf09792623866f8b350039cd65932b8f66a901709f2c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_offsetof.h",
+          "sha256": "48c1114831de8119d6cf28319cf5f7c16178fa841f1a929a181b50ace0282a98"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stdint.h",
+          "sha256": "fbc158f94b53cc98e6c6d566b6751c26e59385dab4e3d45520677bf0847a8653"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+          "sha256": "fcd98cee81331da6aea2cc193c783e7cb8c99113bba9f6f5c13e5eb903c2421c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/float.h",
+          "sha256": "cf41e012eebe6c12ade76a0a888207675cfd38796c47a69821d44bbb90a530ca"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_header_macro.h",
+          "sha256": "05902d174e83391194969d4adc4edb36678fae092e305f7024f5c095bc74b6e8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_float.h",
+          "sha256": "79ed3248742ce32bad1051acd38db5ce9edef70cb8b76e8231e802d09773e6c3"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/math.h",
+          "sha256": "ef5703641e440639526935783c779822844f623c512f94ceecb23e72362aa328"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+          "sha256": "440cf4da4aea5622411567fc9ded390eb271bc14a9769edc741e945847f356ac"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+          "sha256": "b1df7e11edc2015cd4ed56665fef61ee8058114f76e6d71572b4dc989aa51135"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+          "sha256": "b8bf6f34e14dbb59b1e10ec0844f5be7a6346261f0baab9372ad9ae6e3a6b1c7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+          "sha256": "3505698cda939c5d472af4cd3b020061321c55f4e18fae4e61acc91accf9aabb"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+          "sha256": "3a8e303eabc24154259b49ec2e9a9f484df3f52af589bb265c9a975769c90a3d"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+          "sha256": "3cf06859b619eb64d2d57088e25f73a8883457ae01cb46181b61d5440db8b5b8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+          "sha256": "8f2dd84ae10f1a471a895a0ee571f6e9f3d77595f91bcb0385b9719dfc800bd8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/string.h",
+          "sha256": "14b8991af70a368eb3e57ab897999f33ff9134c3838c659ecbce129e1d8f9ba5"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+          "sha256": "ddf8dfcb860f53719732d5e954af185757985d489a20df8d202f272a1c8fee41"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/strings.h",
+          "sha256": "c7c53dea6165f1b3ec938c56e10a3fa5d52631e442d88a08c39c7915d2393324"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+          "sha256": "0851fd0453c47e96ac051652df82148e05afafbfb4d2c97bf7d11924a3224202"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wint_t.h",
+          "sha256": "c11551356296bf075f5c28595fa064db4a4fe748e1b42e3316a994d39bfa857b"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+          "sha256": "c56ad9a6339e8580a3d4e1fe5ac527a18bfb7d18d7d88bb64666db935d8427fd"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+          "sha256": "449bfbcd321cc07e1806dfe3bb9e923d4e97a5d07f1fb07d12e8224ae97542e7"
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "abi": "softfp",
+      "unit": "torque_guard",
+      "status": "inspected",
+      "path": "repeat-1/softfp/torque_guard.o",
+      "sha256": "de0c6e8b457f50e1658e8e540200734e9c5c9b8df75695ca701c56f2d8b90bb4",
+      "bytes": 6604,
+      "berkeley_size": {
+        "text": 2709,
+        "data": 0,
+        "bss": 0,
+        "total": 2709
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__finite",
+        "memset",
+        "tc_contract_reason",
+        "tc_validate_allocation"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 850
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_init_command_guard_state",
+            "type": 1,
+            "flags": 6,
+            "bytes": 46
+          },
+          {
+            "name": ".rel.text.tc_init_command_guard_state",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_command_guard_state",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_command_guard_state",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_command_guard_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_command_guard_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_command_guard_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_command_guard_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_command_guard_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_command_guard_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_command_guard_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_apply_command_guard",
+            "type": 1,
+            "flags": 6,
+            "bytes": 1848
+          },
+          {
+            "name": ".rel.text.tc_apply_command_guard",
+            "type": 9,
+            "flags": 64,
+            "bytes": 696
+          },
+          {
+            "name": ".ARM.exidx.text.tc_apply_command_guard",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_apply_command_guard",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.inhibit",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.inhibit",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_reason",
+            "type": 1,
+            "flags": 6,
+            "bytes": 168
+          },
+          {
+            "name": ".rel.text.set_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_reason",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 329
+          },
+          {
+            "name": ".rodata.cst16",
+            "type": 1,
+            "flags": 18,
+            "bytes": 16
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 784
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "4764df6c3e95434d68dcc00d886b42d2047451e65cfe0a4975c4b33875f13c71",
+        "records": [
+          {
+            "location": "torque_guard.c:28:tc_init_command_guard_state",
+            "function": "tc_init_command_guard_state",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:52:tc_command_guard_version",
+            "function": "tc_command_guard_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:53:tc_command_guard_abi_sizeof",
+            "function": "tc_command_guard_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:63:tc_apply_command_guard",
+            "function": "tc_apply_command_guard",
+            "bytes": 72,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:47:inhibit",
+            "function": "inhibit",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:18:set_reason",
+            "function": "set_reason",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/softfp/torque_guard.d",
+        "sha256": "04c88dd688f9fa1fe1f35f861efa04b3c49e31f851bb27845a4bbb9bb76f2b4c"
+      },
+      "dependencies": [
+        {
+          "owner": "native_snapshot",
+          "path": "torque_guard.c",
+          "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_guard.h",
+          "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_contract.h",
+          "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stddef.h",
+          "sha256": "9245af60f3017ee5b637ea78471020bd312d5cbe33ebdb75ab2d1aee3c8645aa"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_header_macro.h",
+          "sha256": "382ca526b3c02543ef14bc7d5e66dff4d7d5ed6c7a8bdfe41c074b7b2c679054"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_ptrdiff_t.h",
+          "sha256": "081e8da51380e3b0052c665fa384add46326249669b535f0b1b638f925f6ff66"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_size_t.h",
+          "sha256": "48229bf33855a1972ca1b344d9900ceff2384c8811c4a294b85afb2fa7c20067"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wchar_t.h",
+          "sha256": "a4c5be18087bf273f60e40189c3386b0c63ead39c1bb56080e20ada5cc9a8aa6"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_null.h",
+          "sha256": "d26f5a5c37e9de305374094d696351e49e36b0373ded4bebffd1ab17efdabb7c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_max_align_t.h",
+          "sha256": "56e3736aac61bd5d23eabf09792623866f8b350039cd65932b8f66a901709f2c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_offsetof.h",
+          "sha256": "48c1114831de8119d6cf28319cf5f7c16178fa841f1a929a181b50ace0282a98"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stdint.h",
+          "sha256": "fbc158f94b53cc98e6c6d566b6751c26e59385dab4e3d45520677bf0847a8653"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+          "sha256": "fcd98cee81331da6aea2cc193c783e7cb8c99113bba9f6f5c13e5eb903c2421c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/float.h",
+          "sha256": "cf41e012eebe6c12ade76a0a888207675cfd38796c47a69821d44bbb90a530ca"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_header_macro.h",
+          "sha256": "05902d174e83391194969d4adc4edb36678fae092e305f7024f5c095bc74b6e8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_float.h",
+          "sha256": "79ed3248742ce32bad1051acd38db5ce9edef70cb8b76e8231e802d09773e6c3"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/math.h",
+          "sha256": "ef5703641e440639526935783c779822844f623c512f94ceecb23e72362aa328"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+          "sha256": "440cf4da4aea5622411567fc9ded390eb271bc14a9769edc741e945847f356ac"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+          "sha256": "b1df7e11edc2015cd4ed56665fef61ee8058114f76e6d71572b4dc989aa51135"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+          "sha256": "b8bf6f34e14dbb59b1e10ec0844f5be7a6346261f0baab9372ad9ae6e3a6b1c7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+          "sha256": "3505698cda939c5d472af4cd3b020061321c55f4e18fae4e61acc91accf9aabb"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+          "sha256": "3a8e303eabc24154259b49ec2e9a9f484df3f52af589bb265c9a975769c90a3d"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+          "sha256": "3cf06859b619eb64d2d57088e25f73a8883457ae01cb46181b61d5440db8b5b8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+          "sha256": "8f2dd84ae10f1a471a895a0ee571f6e9f3d77595f91bcb0385b9719dfc800bd8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/string.h",
+          "sha256": "14b8991af70a368eb3e57ab897999f33ff9134c3838c659ecbce129e1d8f9ba5"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+          "sha256": "ddf8dfcb860f53719732d5e954af185757985d489a20df8d202f272a1c8fee41"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/strings.h",
+          "sha256": "c7c53dea6165f1b3ec938c56e10a3fa5d52631e442d88a08c39c7915d2393324"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+          "sha256": "0851fd0453c47e96ac051652df82148e05afafbfb4d2c97bf7d11924a3224202"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wint_t.h",
+          "sha256": "c11551356296bf075f5c28595fa064db4a4fe748e1b42e3316a994d39bfa857b"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+          "sha256": "c56ad9a6339e8580a3d4e1fe5ac527a18bfb7d18d7d88bb64666db935d8427fd"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+          "sha256": "449bfbcd321cc07e1806dfe3bb9e923d4e97a5d07f1fb07d12e8224ae97542e7"
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "abi": "hard",
+      "unit": "torque_guard",
+      "status": "inspected",
+      "path": "repeat-2/hard/torque_guard.o",
+      "sha256": "125aed6d4048d37dbdfc2531c02d77af061b8e65e9acaaf8c79b0f4dd8ceae0f",
+      "bytes": 6572,
+      "berkeley_size": {
+        "text": 2677,
+        "data": 0,
+        "bss": 0,
+        "total": 2677
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__finite",
+        "memset",
+        "tc_contract_reason",
+        "tc_validate_allocation"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 850
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_init_command_guard_state",
+            "type": 1,
+            "flags": 6,
+            "bytes": 46
+          },
+          {
+            "name": ".rel.text.tc_init_command_guard_state",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_command_guard_state",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_command_guard_state",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_command_guard_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_command_guard_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_command_guard_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_command_guard_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_command_guard_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_command_guard_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_command_guard_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_apply_command_guard",
+            "type": 1,
+            "flags": 6,
+            "bytes": 1816
+          },
+          {
+            "name": ".rel.text.tc_apply_command_guard",
+            "type": 9,
+            "flags": 64,
+            "bytes": 696
+          },
+          {
+            "name": ".ARM.exidx.text.tc_apply_command_guard",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_apply_command_guard",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.inhibit",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.inhibit",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_reason",
+            "type": 1,
+            "flags": 6,
+            "bytes": 168
+          },
+          {
+            "name": ".rel.text.set_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_reason",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 329
+          },
+          {
+            "name": ".rodata.cst16",
+            "type": 1,
+            "flags": 18,
+            "bytes": 16
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 784
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "4764df6c3e95434d68dcc00d886b42d2047451e65cfe0a4975c4b33875f13c71",
+        "records": [
+          {
+            "location": "torque_guard.c:28:tc_init_command_guard_state",
+            "function": "tc_init_command_guard_state",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:52:tc_command_guard_version",
+            "function": "tc_command_guard_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:53:tc_command_guard_abi_sizeof",
+            "function": "tc_command_guard_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:63:tc_apply_command_guard",
+            "function": "tc_apply_command_guard",
+            "bytes": 72,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:47:inhibit",
+            "function": "inhibit",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:18:set_reason",
+            "function": "set_reason",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/hard/torque_guard.d",
+        "sha256": "9506ab1611ec8e6a3086d395d9a7de27268e6e1ca1537e19992ad2a9e412946c"
+      },
+      "dependencies": [
+        {
+          "owner": "native_snapshot",
+          "path": "torque_guard.c",
+          "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_guard.h",
+          "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_contract.h",
+          "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stddef.h",
+          "sha256": "9245af60f3017ee5b637ea78471020bd312d5cbe33ebdb75ab2d1aee3c8645aa"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_header_macro.h",
+          "sha256": "382ca526b3c02543ef14bc7d5e66dff4d7d5ed6c7a8bdfe41c074b7b2c679054"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_ptrdiff_t.h",
+          "sha256": "081e8da51380e3b0052c665fa384add46326249669b535f0b1b638f925f6ff66"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_size_t.h",
+          "sha256": "48229bf33855a1972ca1b344d9900ceff2384c8811c4a294b85afb2fa7c20067"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wchar_t.h",
+          "sha256": "a4c5be18087bf273f60e40189c3386b0c63ead39c1bb56080e20ada5cc9a8aa6"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_null.h",
+          "sha256": "d26f5a5c37e9de305374094d696351e49e36b0373ded4bebffd1ab17efdabb7c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_max_align_t.h",
+          "sha256": "56e3736aac61bd5d23eabf09792623866f8b350039cd65932b8f66a901709f2c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_offsetof.h",
+          "sha256": "48c1114831de8119d6cf28319cf5f7c16178fa841f1a929a181b50ace0282a98"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stdint.h",
+          "sha256": "fbc158f94b53cc98e6c6d566b6751c26e59385dab4e3d45520677bf0847a8653"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+          "sha256": "fcd98cee81331da6aea2cc193c783e7cb8c99113bba9f6f5c13e5eb903c2421c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/float.h",
+          "sha256": "cf41e012eebe6c12ade76a0a888207675cfd38796c47a69821d44bbb90a530ca"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_header_macro.h",
+          "sha256": "05902d174e83391194969d4adc4edb36678fae092e305f7024f5c095bc74b6e8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_float.h",
+          "sha256": "79ed3248742ce32bad1051acd38db5ce9edef70cb8b76e8231e802d09773e6c3"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/math.h",
+          "sha256": "ef5703641e440639526935783c779822844f623c512f94ceecb23e72362aa328"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+          "sha256": "440cf4da4aea5622411567fc9ded390eb271bc14a9769edc741e945847f356ac"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+          "sha256": "b1df7e11edc2015cd4ed56665fef61ee8058114f76e6d71572b4dc989aa51135"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+          "sha256": "b8bf6f34e14dbb59b1e10ec0844f5be7a6346261f0baab9372ad9ae6e3a6b1c7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+          "sha256": "3505698cda939c5d472af4cd3b020061321c55f4e18fae4e61acc91accf9aabb"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+          "sha256": "3a8e303eabc24154259b49ec2e9a9f484df3f52af589bb265c9a975769c90a3d"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+          "sha256": "3cf06859b619eb64d2d57088e25f73a8883457ae01cb46181b61d5440db8b5b8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+          "sha256": "8f2dd84ae10f1a471a895a0ee571f6e9f3d77595f91bcb0385b9719dfc800bd8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/string.h",
+          "sha256": "14b8991af70a368eb3e57ab897999f33ff9134c3838c659ecbce129e1d8f9ba5"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+          "sha256": "ddf8dfcb860f53719732d5e954af185757985d489a20df8d202f272a1c8fee41"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/strings.h",
+          "sha256": "c7c53dea6165f1b3ec938c56e10a3fa5d52631e442d88a08c39c7915d2393324"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+          "sha256": "0851fd0453c47e96ac051652df82148e05afafbfb4d2c97bf7d11924a3224202"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wint_t.h",
+          "sha256": "c11551356296bf075f5c28595fa064db4a4fe748e1b42e3316a994d39bfa857b"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+          "sha256": "c56ad9a6339e8580a3d4e1fe5ac527a18bfb7d18d7d88bb64666db935d8427fd"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+          "sha256": "449bfbcd321cc07e1806dfe3bb9e923d4e97a5d07f1fb07d12e8224ae97542e7"
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "abi": "softfp",
+      "unit": "torque_guard",
+      "status": "inspected",
+      "path": "repeat-2/softfp/torque_guard.o",
+      "sha256": "de0c6e8b457f50e1658e8e540200734e9c5c9b8df75695ca701c56f2d8b90bb4",
+      "bytes": 6604,
+      "berkeley_size": {
+        "text": 2709,
+        "data": 0,
+        "bss": 0,
+        "total": 2709
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__finite",
+        "memset",
+        "tc_contract_reason",
+        "tc_validate_allocation"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 850
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_init_command_guard_state",
+            "type": 1,
+            "flags": 6,
+            "bytes": 46
+          },
+          {
+            "name": ".rel.text.tc_init_command_guard_state",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_command_guard_state",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_command_guard_state",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_command_guard_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_command_guard_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_command_guard_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_command_guard_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_command_guard_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_command_guard_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_command_guard_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_apply_command_guard",
+            "type": 1,
+            "flags": 6,
+            "bytes": 1848
+          },
+          {
+            "name": ".rel.text.tc_apply_command_guard",
+            "type": 9,
+            "flags": 64,
+            "bytes": 696
+          },
+          {
+            "name": ".ARM.exidx.text.tc_apply_command_guard",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_apply_command_guard",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.inhibit",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.inhibit",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_reason",
+            "type": 1,
+            "flags": 6,
+            "bytes": 168
+          },
+          {
+            "name": ".rel.text.set_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_reason",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 329
+          },
+          {
+            "name": ".rodata.cst16",
+            "type": 1,
+            "flags": 18,
+            "bytes": 16
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 784
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "4764df6c3e95434d68dcc00d886b42d2047451e65cfe0a4975c4b33875f13c71",
+        "records": [
+          {
+            "location": "torque_guard.c:28:tc_init_command_guard_state",
+            "function": "tc_init_command_guard_state",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:52:tc_command_guard_version",
+            "function": "tc_command_guard_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:53:tc_command_guard_abi_sizeof",
+            "function": "tc_command_guard_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:63:tc_apply_command_guard",
+            "function": "tc_apply_command_guard",
+            "bytes": 72,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:47:inhibit",
+            "function": "inhibit",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_guard.c:18:set_reason",
+            "function": "set_reason",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/softfp/torque_guard.d",
+        "sha256": "aed99feea892be4595c7fe5af9bde2a6419354b405c89155eb3db3c720fba771"
+      },
+      "dependencies": [
+        {
+          "owner": "native_snapshot",
+          "path": "torque_guard.c",
+          "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_guard.h",
+          "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_contract.h",
+          "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stddef.h",
+          "sha256": "9245af60f3017ee5b637ea78471020bd312d5cbe33ebdb75ab2d1aee3c8645aa"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_header_macro.h",
+          "sha256": "382ca526b3c02543ef14bc7d5e66dff4d7d5ed6c7a8bdfe41c074b7b2c679054"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_ptrdiff_t.h",
+          "sha256": "081e8da51380e3b0052c665fa384add46326249669b535f0b1b638f925f6ff66"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_size_t.h",
+          "sha256": "48229bf33855a1972ca1b344d9900ceff2384c8811c4a294b85afb2fa7c20067"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wchar_t.h",
+          "sha256": "a4c5be18087bf273f60e40189c3386b0c63ead39c1bb56080e20ada5cc9a8aa6"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_null.h",
+          "sha256": "d26f5a5c37e9de305374094d696351e49e36b0373ded4bebffd1ab17efdabb7c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_max_align_t.h",
+          "sha256": "56e3736aac61bd5d23eabf09792623866f8b350039cd65932b8f66a901709f2c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_offsetof.h",
+          "sha256": "48c1114831de8119d6cf28319cf5f7c16178fa841f1a929a181b50ace0282a98"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stdint.h",
+          "sha256": "fbc158f94b53cc98e6c6d566b6751c26e59385dab4e3d45520677bf0847a8653"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+          "sha256": "fcd98cee81331da6aea2cc193c783e7cb8c99113bba9f6f5c13e5eb903c2421c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/float.h",
+          "sha256": "cf41e012eebe6c12ade76a0a888207675cfd38796c47a69821d44bbb90a530ca"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_header_macro.h",
+          "sha256": "05902d174e83391194969d4adc4edb36678fae092e305f7024f5c095bc74b6e8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_float.h",
+          "sha256": "79ed3248742ce32bad1051acd38db5ce9edef70cb8b76e8231e802d09773e6c3"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/math.h",
+          "sha256": "ef5703641e440639526935783c779822844f623c512f94ceecb23e72362aa328"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+          "sha256": "440cf4da4aea5622411567fc9ded390eb271bc14a9769edc741e945847f356ac"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+          "sha256": "b1df7e11edc2015cd4ed56665fef61ee8058114f76e6d71572b4dc989aa51135"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+          "sha256": "b8bf6f34e14dbb59b1e10ec0844f5be7a6346261f0baab9372ad9ae6e3a6b1c7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+          "sha256": "3505698cda939c5d472af4cd3b020061321c55f4e18fae4e61acc91accf9aabb"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+          "sha256": "3a8e303eabc24154259b49ec2e9a9f484df3f52af589bb265c9a975769c90a3d"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+          "sha256": "3cf06859b619eb64d2d57088e25f73a8883457ae01cb46181b61d5440db8b5b8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+          "sha256": "8f2dd84ae10f1a471a895a0ee571f6e9f3d77595f91bcb0385b9719dfc800bd8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/string.h",
+          "sha256": "14b8991af70a368eb3e57ab897999f33ff9134c3838c659ecbce129e1d8f9ba5"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+          "sha256": "ddf8dfcb860f53719732d5e954af185757985d489a20df8d202f272a1c8fee41"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/strings.h",
+          "sha256": "c7c53dea6165f1b3ec938c56e10a3fa5d52631e442d88a08c39c7915d2393324"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+          "sha256": "0851fd0453c47e96ac051652df82148e05afafbfb4d2c97bf7d11924a3224202"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wint_t.h",
+          "sha256": "c11551356296bf075f5c28595fa064db4a4fe748e1b42e3316a994d39bfa857b"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+          "sha256": "c56ad9a6339e8580a3d4e1fe5ac527a18bfb7d18d7d88bb64666db935d8427fd"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+          "sha256": "449bfbcd321cc07e1806dfe3bb9e923d4e97a5d07f1fb07d12e8224ae97542e7"
+        }
+      ]
+    }
+  ],
+  "linked_firmware": false,
+  "target_execution_calls": 0,
+  "limitations": [
+    "Exact STM32 part, team ABI/toolchain/library/startup, signal mapping and approved resource budgets remain unknown.",
+    "Object sections exclude linked helpers/libraries/startup/layout/runtime storage; unresolved symbols do not establish successful linkage or their runtime/numerical behavior.",
+    "Clang local stack frames exclude caller/callee/helper frames, interrupts/FPU context, scheduler and whole-program bounds.",
+    "Original three-unit experiment remains historical and separately identified; this annex does not silently add a fourth object to it.",
+    "No target runtime parity, continuous-time behavior, timing/deadline/WCET, firmware fit, HIL, CAN, vehicle actuation or safety approval."
+  ],
+  "toolchain": {
+    "archive_sha256": "9db55e43d5fdb1619692259897bf1e64f61da82a558827aae6928a2ccb39d348",
+    "archive_bytes": 710565705,
+    "verified_file_count": 48211,
+    "tools": {
+      "clang.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "sha256": "b3b1f1a074e4312449c54a058034a4abd4edf8015db88fe35f1f5cf26f975dcd"
+      },
+      "llvm-nm.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "sha256": "f161335bfe6d45a49b4517bc190df1f1a2561f16f1d0634ce1dadddc4043667a"
+      },
+      "llvm-readobj.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "sha256": "88021c83dd2dd96723316ab351580357ac5ac385fc277364b4bdc331b1f8e674"
+      },
+      "llvm-size.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "sha256": "463ba9ff5d2a5dda72a790868382b7e382f3b4e4612774a8d7c2b41096210584"
+      }
+    },
+    "manifest_sha256": "e61db4e336f1727579b6a5581d07feaa859c3c472960187ec52fff794aa7aa0a",
+    "license_files": [
+      {
+        "path": "LICENSE.txt",
+        "sha256": "a9ed3eae930adbc631b83300b78ab5d228c9b1e4560d64ec4b4ea2bcf69f4569"
+      },
+      {
+        "path": "third-party-licenses/picolibc/COPYING.picolibc",
+        "sha256": "df8aecac86a7cce2db23fac812e058aef093f667ff20b95793f7032a4a668a43"
+      }
+    ],
+    "verification_seconds": 121.29699999999866
+  },
+  "repeat_comparisons": [
+    {
+      "abi": "hard",
+      "equal_object_sha256": true
+    },
+    {
+      "abi": "softfp",
+      "equal_object_sha256": true
+    }
+  ],
+  "elapsed_seconds": 122.67199999999866
+}

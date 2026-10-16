@@ -1,0 +1,56 @@
+{
+  "schema": "enme408-team-evidence-request/v1",
+  "evidence_revision": "unpopulated-template",
+  "target_car": "2027-28",
+  "mcu": {
+    "part_number": null,
+    "package": null,
+    "silicon_revision": null,
+    "board_revision": null
+  },
+  "firmware": {
+    "repository_reference": null,
+    "revision": null,
+    "build_working_directory": null,
+    "build_command": null,
+    "toolchain": null,
+    "compiler_version": null,
+    "optimization": null,
+    "cpu_flags": null,
+    "linker_script": null
+  },
+  "clock": {
+    "sysclk_hz": null,
+    "hclk_hz": null,
+    "apb1_hz": null,
+    "apb2_hz": null,
+    "configuration_source": null
+  },
+  "reset": {
+    "startup_file": null,
+    "system_init_file": null,
+    "reset_cause_owner": null
+  },
+  "watchdog": {
+    "independent_watchdog_used": null,
+    "window_watchdog_used": null,
+    "configuration_file": null,
+    "ownership": null
+  },
+  "logging": {
+    "sink": null,
+    "format": null,
+    "timestamp_source": null
+  },
+  "can": {
+    "controllers": [],
+    "message_map_reference": null
+  },
+  "control_path_files": [],
+  "sources": [],
+  "claims": {
+    "vehicle_specific_thresholds_verified": false,
+    "hardware_test_executed": false,
+    "rule_compliance_verified": false
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "schema": "enme408.base-command-guard-protocol.v1",
+  "status": "frozen_before_guard_C_implementation",
+  "question": "Can an additive portable C11 owner reproduce apply_command_guard and compose its actual proposed outputs through existing native pedal, normalized-clock and recovery/final gates without the external Python base-guard result?",
+  "source_owner": "reference/command_guard.py apply_command_guard; existing Python semantics remain unchanged",
+  "sources": {
+    "command_guard.py": {
+      "exact_local_sha256": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+      "lf_normalized_sha256": "6eb22f6b7c90e2cbfb5131a7678074c799b85a3f648fb2d553b34b9d458b36a6"
+    },
+    "allocation_contract.py": {
+      "exact_local_sha256": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
+      "lf_normalized_sha256": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415"
+    },
+    "torque_numeric.py": {
+      "exact_local_sha256": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26",
+      "lf_normalized_sha256": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
+    },
+    "guard_request_contract.py": {
+      "exact_local_sha256": "e2e900515d76aa19a2226b5d4f5a4620708043c91b1180dd386be5c1d536837b",
+      "lf_normalized_sha256": "e9c908ab5bf6bbfb90ba0694c70e57c6e10f3a78b95a801d8b67e2c67b29bcfe"
+    },
+    "guard_overlap_observation.py": {
+      "exact_local_sha256": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+      "lf_normalized_sha256": "f60bd194a60b23c546185a3be8878d5864bd9d62dbd78562f3c6c84a334e22e2"
+    },
+    "guard_trusted_clear.py": {
+      "exact_local_sha256": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+      "lf_normalized_sha256": "2b612e1e9924e5625840a6ad768219622a133b23caeb4b8528d40b7644f48ee1"
+    },
+    "control_pipeline.py": {
+      "exact_local_sha256": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531",
+      "lf_normalized_sha256": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531"
+    },
+    "native/torque_contract.h": {
+      "exact_local_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "lf_normalized_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+    },
+    "native/torque_contract.c": {
+      "exact_local_sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+      "lf_normalized_sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c"
+    },
+    "native/torque_clock.h": {
+      "exact_local_sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+      "lf_normalized_sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088"
+    },
+    "native/torque_pedal.h": {
+      "exact_local_sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
+      "lf_normalized_sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128"
+    },
+    "native/torque_pedal.c": {
+      "exact_local_sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
+      "lf_normalized_sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15"
+    }
+  },
+  "domain": [
+    "Offline proposed-control records over four synthetic slots, not confirmed motors or a physical wheel mapping.",
+    "Direct Python/C parity is restricted to exact CommandGuardConfig/Input/State records, exact AllocationResult candidates (or candidates deliberately encoded as invalid), ordinary int/float scalars converted to binary64, ordinary list/tuple length4 vectors and bounded existing text/enum conventions.",
+    "Numeric subclasses/custom conversion hooks, Python duck-typed outer records, arbitrary-precision values not convertible to finite binary64, unbounded/NUL-containing text, and unbounded raw Python state/counter domains are not newly claimed as representable.",
+    "Representable NaN/Inf, Boolean/nonnumeric tags, wrong vector shape tags, malformed Boolean bytes, invalid statuses, contradictions and allocation-contract violations are explicit rejection cases.",
+    "New C-only outer schema tags/null pointers have deterministic fail-closed semantics but are not misrepresented as Python result parity where Python raises instead of producing a result."
+  ],
+  "new_files": [
+    "native/torque_guard.h",
+    "native/torque_guard.c",
+    "native/guard_sanitizer_probe.c",
+    "guard_parity.py",
+    "test_guard_parity.py",
+    "../research/TC-03F-base-command-guard-protocol.json",
+    "../research/TC-03F-base-command-guard.md"
+  ],
+  "api": {
+    "version": "Separate base-command-guard semantic/layout version1; existing torque ABI1/numeric contract2 and prior clock/pedal versions remain unchanged.",
+    "config": "tc_command_guard_config: type_valid; tc_scalar max_rise,trip,clear",
+    "input": "tc_command_guard_input: type_valid; tc_scalar dt_s,accelerator; uint8 brake,comms,sensors,interlock",
+    "state": "tc_command_guard_state: type_valid,previous_vector_valid,previous_latched; tc_scalar previous[4]",
+    "result": "tc_command_guard_result: tc_guard guard; tc_command_guard_state next; uint32 contract_code (0 before validation or on contract success)",
+    "functions": [
+      "tc_command_guard_version()",
+      "tc_command_guard_abi_sizeof(kind)",
+      "tc_init_command_guard_state(state)",
+      "tc_apply_command_guard(candidate,input,config,previous,result)"
+    ],
+    "initial_state": "Non-NULL initializer writes valid type/vector/numeric tags, four positive zero previous outputs, latchfalse. NULL initializer is a no-op.",
+    "pointer_contract": "Aligned complete objects, input/output storage mutually non-overlapping; no heap allocation. Required NULL returns1; any available result is initialized inhibited with four positive zeros and valid zero next-state/latchtrue, reason invalid_argument. Non-NULL calls return0 even when inhibited.",
+    "c_only_outer_schema_order": "After required pointers: invalid state.type_valid -> invalid_guard_state_type/latchtrue; malformed latch -> Python invalid_pedal_latch_state/latchtrue; invalid config.type_valid at config stage -> invalid_guard_config_type/preserve valid prior latch; invalid input.type_valid after previous-vector checks -> invalid_guard_input_type/preserve prior latch."
+  },
+  "exact_base_fault_precedence": [
+    "Malformed prior latch -> invalid_pedal_latch_state; latchtrue.",
+    "Config max-rise: finite ordinary numeric and >0, else invalid_max_rise_rate.",
+    "Config trip/clear: both finite ordinary numeric and0<=clear<trip<=1, else invalid_pedal_threshold.",
+    "Previous vector: ordinary length4, each finite ordinary numeric >=0, else invalid_previous_output.",
+    "Input dt: finite ordinary numeric >0, else invalid_dt.",
+    "Input accelerator: finite ordinary numeric in[0,1], else invalid_accelerator_fraction.",
+    "All four Boolean fields must be exactBoolean bytes0/1, else invalid_boolean_input.",
+    "Existing tc_validate_allocation, preserving its current ordered contract code and tc_contract_reason.",
+    "Then and only then evolve base latch: priortrue clears when accel<=clear; priorfalse trips when brake&&accel>=trip.",
+    "Valid allocator fault -> allocator_fault; then external_interlock_open; critical_communication_loss; sensor_disagreement; brake_accelerator_overlap.",
+    "Compute rounded binary64 max_step=rise*dt. Nonfinite -> invalid_rise_step.",
+    "All inhibit paths produce exact positive-zero output and previous-output vector immediately, preserving the appropriate evolved/prior latch."
+  ],
+  "exact_slew_and_status": [
+    "For each slot in fixed order: target<=previous -> command=target immediately; otherwise command=min(target,previous+max_step).",
+    "max_step underflow to0 is finite and remains source-compatible. previous+max_step overflow to+Inf is allowed because finite target wins the min; do not invent a new inhibit.",
+    "Preserve the source's rate label test commanded<target-1e-12 exactly; it is an existing diagnostic threshold, not a newly selected physical torque margin.",
+    "Statuslimited iff allocationstatussaturated or source rate_limited. Reasons exactly aggregate_and_rise_rate_limit / aggregate_limit / rise_rate_limit / None.",
+    "Valid negative-zero target values remain source-compatible; inhibited outputs specifically require positive zero bits.",
+    "No new allocator, aggregate cap, traction allocation, sensor calibration, continuous-time interpolation, transport, motor-enable or hardware policy."
+  ],
+  "composition": {
+    "scope": "New offline parity runner orchestrates actual compiled C base guard plus existing C pedal adapter, clock and final gate; no claim of a fully native scheduler/allocator/pipeline.",
+    "order": [
+      "On valid restart, zero previous proposed output before C base guard and preserve pedal latch; clock anchor is not reset.",
+      "Use already computed external allocation as the shared candidate. Call new C base guard, then existing trusted overlap/clear reconciliation; use actual C-produced vectors/status/reason/latch.",
+      "Observe existing native normalized clock. Clock faults retain prior latch even if base clear was healthy; conservative new trips remain.",
+      "Construct final cycle with effective reconciled guard, native clock fault and restart; use existing C final gate/recovery owner.",
+      "Next slew history is the actually proposed final command, zero while recovery/inhibit holds. Retain reconciled/clock-qualified latch and native clock/gate state."
+    ],
+    "source_corner_cases": [
+      "Base guard can set a pedal latch before a later communication/sensor/interlock inhibit; preserve that behavior.",
+      "A valid zero-output allocatorfault can clear the raw base latch at lowpedal; existing trusted-clear adapter restores it on an inhibited cycle.",
+      "A trusted overlap can be observed despite invalid dt/interlock or candidate contract, according to the existing narrow helper; base result remains inhibited.",
+      "No clock-fault low-pedal cycle may be the sole clearance observation; no invisible slew credit while recovery holds."
+    ]
+  },
+  "build_policy": [
+    "Additive separate guarded-library build over four C units; existing3unit build helper/old receipts and frozen Cortex-M4 cohort remain untouched.",
+    "Strict C11 binary64 static assertions; no fast/finite-only math, no excess precision/reassociation; explicitly disable FP contraction in the new build.",
+    "GCC/Clang host builds and ordinary IEEE round-to-nearest semantics only. Retain diagnostics/compiler/version/flags/source/binary hashes; deterministic receipts and repeated binary/behavior signatures.",
+    "No new ARM object compilation, linker, firmware, target emulator, CAN, board IO, physical mapping, or actuation.",
+    "Ordinary IEEE binary64 round-to-nearest with retained subnormals is an explicit assumption; no changed floating environment, FTZ/DAZ, or MCU runtime behavior is claimed."
+  ],
+  "planned_verification": {
+    "direct": "Source-grounded ordered-fault cross-products; all valid/inhibited/limited reasons; threshold neighbors, signed/subnormal zeros, DBL_TRUE_MIN/MIN/MAX, NaN/Inf, multiplication overflow/underflow, addition overflow, shape/type/status/fault contradictions.",
+    "stateful": "Deterministic seeded finite streams including repeated trip/clear, decreases, recovery holds, restart and corrupted inputs; state always compared after each cycle.",
+    "composition": "Reuse existing source scenario families and add cases closing the external base-guard gap; compare direct base result, adapter result, clock fault/state, recovery snapshot, proposedcommand/reason and next slew/latch history.",
+    "abi": "Every declared struct size, invalid scalar/vector/status/text and outer tags, all malformed Boolean bytevalues, NULL required pointers, default result initialization and exact-positive-zero inhibits.",
+    "sanitizer": "New finite C guard probe under actual ASAN+UBSan GCC/Clang\u00d7Python3.11/12/13 CI; old probes retained. Push checkpoint CI before draft publication.",
+    "review": "Independent practical adversarial source/compiled-result review, retained counterexamples before fixes, then source-bound final-head CI handoff.",
+    "local_model": "No model calls without root GPU/memory coordination. Any later suggestion is only a bounded hypothesis, separately retained and deterministically accepted/rejected."
+  },
+  "excluded_claims": [
+    "Full native allocator/scheduler/pipeline ownership",
+    "Physical motor/wheel order or pedal/sensor provenance",
+    "STM32 behavior or runtime parity",
+    "Hardware timing, WCET, complete stack/flash/RAM fit",
+    "HIL/CAN/firmware deployment or safety approval"
+  ],
+  "root_plan_review": "Accepted for implementation after final green PR73 ownership handoff; source policy unchanged.",
+  "base": {
+    "draft_pr": 73,
+    "head": "e00f7d8feb2f18698c8406352bbcffc6b1d8d469",
+    "green_owner_handoff_received": true,
+    "preserve_prior_object_protocol_and_receipts": true
+  }
+}

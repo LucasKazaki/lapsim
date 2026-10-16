@@ -1,0 +1,22 @@
+{
+  "schema": "enme408.allocator-case-generator-freeze.v1",
+  "status": "frozen_before_first_native_verification",
+  "seed": 2026101508,
+  "protocol_sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+  "generator_files": {
+    "allocator_parity.py": "6a3ee416b6aa375c93a7daff5c015356897243130168383c527b028206208966",
+    "test_allocator_parity.py": "48c6579bd56717df5597fe99d961d75892a01858ead11f20a9a22c8695c353dd",
+    "native/torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+    "native/torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+    "native/allocator_sanitizer_probe.c": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495"
+  },
+  "direct_grid_cases": 4608,
+  "random_finite_cases": 8192,
+  "healthy_composed_cycles": 1024,
+  "recovery_composed_cycles": 4096,
+  "notes": [
+    "Whole source bytes freeze generator, ABI, tests and native implementation before first compiled comparison.",
+    "All source-defined epsilon/status quirks remain unchanged; no result-driven tuning.",
+    "Independent review uses separate seed and retained source."
+  ]
+}

@@ -1,0 +1,108 @@
+diff --git a/projects/enme408-torque-control/reference/native_bench_replay.py b/projects/enme408-torque-control/reference/native_bench_replay.py
+index 8ace37f..6b47adc 100644
+--- a/projects/enme408-torque-control/reference/native_bench_replay.py
++++ b/projects/enme408-torque-control/reference/native_bench_replay.py
+@@ -410,15 +410,31 @@ def execute(raw, folder, compiler=None):
+     export = {'schema': 'enme408-native-bench-export/v1', 'run_sha256': sha(run_raw),
+               'status': 'not_attempted', 'completed_files': {'run.json': sha(run_raw)}}
+     if run['status'] == 'native_verified':
++        export_stage, failed_file = 'encode_viewer', 'viewer-receipt.json'
+         try:
+             viewer_raw = representation_check(viewer_receipt(value, cfg, rows, identities, raw, sha(run_raw), build))
+             for name, data in (('viewer-receipt.json', viewer_raw), ('trace.csv', csv_raw)):
++                export_stage = 'write_viewer_receipt' if name == 'viewer-receipt.json' else 'write_csv'
++                failed_file = name
+                 write_new(folder / name, data)
+                 export['completed_files'][name] = sha(data)
+             export['status'] = 'completed'
+         except (ValueError, OSError, UnicodeError) as exc:
+-            export.update(status='failed_retained', error={'type': type(exc).__name__, 'message': str(exc)})
+-    write_new(folder / 'export-status.json', encoded(export))
++            export.update(status='failed_retained', error={'stage': export_stage, 'failed_file': failed_file,
++                          'type': type(exc).__name__, 'message': str(exc)})
++    try:
++        write_new(folder / 'export-status.json', encoded(export))
++    except (OSError, UnicodeError) as exc:
++        failure = {'schema': 'enme408-native-bench-export-failure/v1', 'status': 'failed_retained',
++                   'error': {'stage': 'write_export_status', 'failed_file': 'export-status.json',
++                             'type': type(exc).__name__, 'message': str(exc)}, 'prior_export': export}
++        try:
++            write_new(folder / 'export-failure.json', encoded(failure))
++        except (OSError, UnicodeError) as fallback:
++            failure['fallback_error'] = {'stage': 'write_export_failure', 'failed_file': 'export-failure.json',
++                                         'type': type(fallback).__name__, 'message': str(fallback)}
++            print(json.dumps(failure, sort_keys=True, ensure_ascii=True), file=sys.stderr)
++        return 2
+     return 0 if export['status'] == 'completed' else 2
+ 
+ 
+diff --git a/projects/enme408-torque-control/reference/test_native_bench_replay.py b/projects/enme408-torque-control/reference/test_native_bench_replay.py
+index f4d51c2..d4c54f8 100644
+--- a/projects/enme408-torque-control/reference/test_native_bench_replay.py
++++ b/projects/enme408-torque-control/reference/test_native_bench_replay.py
+@@ -1,6 +1,7 @@
+ """Finite consumer boundaries and actual compiled native replay/export evidence."""
+ from copy import deepcopy
+ import hashlib
++import io
+ import json
+ import os
+ from pathlib import Path
+@@ -147,21 +148,42 @@ class InputAndArtifactBoundaries(unittest.TestCase):
+         # this is a packaging injection, not a claimed real build attempt.
+         with tempfile.TemporaryDirectory() as folder:
+             library, build = build_allocator_library(Path(folder))
+-            attempt = replay.reserve_directory(Path(folder) / 'attempt')
+-            original, sealed = replay.write_new, []
+-            def fail_csv(path, raw):
+-                if path.name == 'trace.csv': raise OSError('finite injected export failure')
+-                original(path, raw)
+-                if path.name == 'run.json': sealed.append(raw)
+-            with patch.object(replay.native, 'build_allocator_library', return_value=(library, build)), patch.object(replay, 'write_new', side_effect=fail_csv):
+-                self.assertEqual(replay.execute(replay.encoded(scenario()), attempt), 2)
+-            self.assertEqual((attempt / 'run.json').read_bytes(), sealed[0])
+-            status = json.loads((attempt / 'export-status.json').read_bytes())
+-            self.assertEqual(status['status'], 'failed_retained')
+-            self.assertNotIn('trace.csv', status['completed_files'])
+-            self.assertEqual(status['completed_files']['run.json'], hashlib.sha256(sealed[0]).hexdigest())
+-            receipt = json.loads((attempt / 'viewer-receipt.json').read_bytes())
+-            self.assertEqual(receipt['native_execution']['run_sha256'], hashlib.sha256(sealed[0]).hexdigest())
++            for index, failed in enumerate(({'viewer-receipt.json'}, {'trace.csv'}, {'export-status.json'},
++                                             {'export-status.json', 'export-failure.json'})):
++                with self.subTest(failed=sorted(failed)):
++                    attempt = replay.reserve_directory(Path(folder) / str(index))
++                    original, sealed, stderr = replay.write_new, [], io.StringIO()
++                    def fail_export(path, raw):
++                        if path.name in failed: raise OSError('identical finite injected IO failure')
++                        original(path, raw)
++                        if path.name == 'run.json': sealed.append(raw)
++                    with patch.object(replay.native, 'build_allocator_library', return_value=(library, build)), \
++                         patch.object(replay, 'write_new', side_effect=fail_export), patch.object(replay.sys, 'stderr', stderr):
++                        self.assertEqual(replay.execute(replay.encoded(scenario()), attempt), 2)
++                    self.assertEqual((attempt / 'run.json').read_bytes(), sealed[0])
++                    if 'export-status.json' in failed:
++                        if 'export-failure.json' in failed:
++                            status = json.loads(stderr.getvalue())
++                            self.assertEqual(status['fallback_error']['stage'], 'write_export_failure')
++                            self.assertEqual(status['fallback_error']['failed_file'], 'export-failure.json')
++                        else:
++                            status = json.loads((attempt / 'export-failure.json').read_bytes())
++                        self.assertEqual(status['error']['stage'], 'write_export_status')
++                        self.assertEqual(status['error']['failed_file'], 'export-status.json')
++                        completed = status['prior_export']['completed_files']
++                        self.assertEqual(set(completed), {'run.json', 'viewer-receipt.json', 'trace.csv'})
++                    else:
++                        status = json.loads((attempt / 'export-status.json').read_bytes())
++                        name = next(iter(failed))
++                        self.assertEqual(status['status'], 'failed_retained')
++                        self.assertEqual(status['error']['failed_file'], name)
++                        self.assertEqual(status['error']['stage'], 'write_csv' if name == 'trace.csv' else 'write_viewer_receipt')
++                        completed = status['completed_files']
++                        self.assertNotIn(name, completed)
++                    self.assertEqual(completed['run.json'], hashlib.sha256(sealed[0]).hexdigest())
++                    if (attempt / 'viewer-receipt.json').exists():
++                        receipt = json.loads((attempt / 'viewer-receipt.json').read_bytes())
++                        self.assertEqual(receipt['native_execution']['run_sha256'], hashlib.sha256(sealed[0]).hexdigest())
+ 
+ 
+ if __name__ == '__main__':

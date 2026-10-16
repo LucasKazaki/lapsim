@@ -1,0 +1,29 @@
+{
+  "scope": "Plain host execution only; this is not local sanitizer execution",
+  "build_argv": [
+    "C:/msys64/mingw64/bin/gcc.exe",
+    "-std=c11",
+    "-O1",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pedantic",
+    "-fno-fast-math",
+    "-fno-finite-math-only",
+    "-ffp-contract=off",
+    "-fexcess-precision=standard",
+    "-static-libgcc",
+    "torque_contract.c",
+    "torque_clock.c",
+    "torque_pedal.c",
+    "torque_guard.c",
+    "torque_allocator.c",
+    "allocator_sanitizer_probe.c",
+    "-lm",
+    "-o",
+    "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-local-probe\\probe.exe"
+  ],
+  "build_exit": 0,
+  "run_exit": 0,
+  "binary_sha256": "3ab0b94c06886955d4a17f52d44a35b056081a0055944d2a3d7f5a0bf85c81b5"
+}

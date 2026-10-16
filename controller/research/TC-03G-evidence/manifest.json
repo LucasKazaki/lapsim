@@ -1,0 +1,46 @@
+{
+  "schema": "enme408-guard-annex-curated-evidence-manifest/v1",
+  "scope": "Exact packaged evidence bytes, excluding this manifest itself",
+  "files": [
+    {
+      "path": "actual-receipt.json",
+      "bytes": 87051,
+      "sha256": "b03ac8621d127153d4b0b354d00e9d8a3dd673d8735cd86527be89e47077ceb8"
+    },
+    {
+      "path": "command-logs.json",
+      "bytes": 106836,
+      "sha256": "54635d46e3bd36e6a39720b9d64448f53508c47325a84ed55ee13ecef170a801"
+    },
+    {
+      "path": "executed-driver.py.txt",
+      "bytes": 11997,
+      "sha256": "64f51787e0c8bfcff20bf423316480414d941df51f603235df1636053c4781b4"
+    },
+    {
+      "path": "independent-artifact-review.json",
+      "bytes": 11659,
+      "sha256": "97a80a90464ac841cd5916b5a603a5319021fc6c7fe38e0e562c00007c6fe0bc"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1926,
+      "sha256": "ccc365439047687bbee02cce1d7bc7cdbc9b8ef0e30e62a7fd78f795da2acebc"
+    },
+    {
+      "path": "retained-artifact-manifest.json",
+      "bytes": 12499,
+      "sha256": "b4c6d9377c665de82e9e43cf51dc5a70170c0adf263af319d19c0b5044600749"
+    },
+    {
+      "path": "software-tests.txt",
+      "bytes": 1513,
+      "sha256": "984459d0b5f17a79263fda4564211d5140ab93dcec960b15e87d17f0cfd61095"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 19799,
+      "sha256": "22c1ff4d4140a320511709c270bcc59e93dc1c02ef03ca92de44609e68402a33"
+    }
+  ]
+}

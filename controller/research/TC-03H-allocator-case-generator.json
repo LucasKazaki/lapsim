@@ -1,0 +1,28 @@
+{
+  "schema": "enme408.allocator-case-generator-freeze.v1",
+  "status": "caller_interface_projection_frozen_before_third_native_verification",
+  "seed": 2026101508,
+  "protocol_sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+  "generator_files": {
+    "allocator_parity.py": "7e13e91fb097795ddddd595f05b09299428a4caf62a3869d0f4621be013c4fea",
+    "test_allocator_parity.py": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336",
+    "native/torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+    "native/torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+    "native/allocator_sanitizer_probe.c": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495"
+  },
+  "direct_grid_cases": 4608,
+  "random_finite_cases": 8192,
+  "healthy_composed_cycles": 1024,
+  "recovery_composed_cycles": 4096,
+  "notes": [
+    "Whole source bytes freeze generator, ABI, tests and native implementation before first compiled comparison.",
+    "All source-defined epsilon/status quirks remain unchanged; no result-driven tuning.",
+    "Independent review uses separate seed and retained source.",
+    "First native attempt retained exact-zero held output but caught incorrect caller fault-reason precedence. Only the new driver now mirrors control_pipeline.py effective-fault substitution; allocator/native policy and fixture cases unchanged.",
+    "Second attempt retained zero but caught a C gate pair-validity mismatch on clock-only faults. Preserve its valid raw candidate/guard pair and use the explicit native clock fault; substitute effective fault candidate only after inhibited guard. Raw producer/guard and final source decisions remain unchanged."
+  ],
+  "previous_freeze_commit": "484348124d05a8e180eabfb942e29bef7764dd44",
+  "retained_failed_receipt_sha256": "8e7c29d0dfc06e11622958db4954f6f951c65aabbb924ed425970d43a7c2da50",
+  "second_freeze_commit": "a61f28e0ce196238cb15c02c624f8364f20c6c62",
+  "second_failed_receipt_sha256": "fb5105e3ede28748be939cfe214c8d6586ed1240e95a61b0e3560afb298a1a54"
+}
