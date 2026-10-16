@@ -17,6 +17,9 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 ROOT = Path(__file__).resolve().parents[1]
 PYODIDE_VERSION = "314.0.7"
 VENDORED_PURE_PYTHON = {"openpyxl": "3.1.5", "et_xmlfile": "2.0.0"}
+REVIEWED_REPLAY_EXAMPLES = (
+    "enme408-synthetic-replay.json", "enme408-native-c-replay.json",
+)
 
 
 def _git(arguments: list[str]) -> str | None:
@@ -96,7 +99,20 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
             if not source.is_file():
                 raise FileNotFoundError(f"Frontend file is missing: {source}")
             shutil.copy2(source, output / name)
-        shutil.copytree(ROOT / "web/examples", output / "examples", dirs_exist_ok=True)
+        examples = output / "examples"
+        if examples.is_symlink():
+            raise ValueError("refusing an aliased example output directory")
+        if examples.exists() and any(
+            path.name not in REVIEWED_REPLAY_EXAMPLES or path.is_symlink() or not path.is_file()
+            for path in examples.iterdir()
+        ):
+            raise ValueError("output contains unreviewed examples; choose a fresh output directory")
+        examples.mkdir(exist_ok=True)
+        for name in REVIEWED_REPLAY_EXAMPLES:
+            source = ROOT / "web/examples" / name
+            if source.is_symlink():
+                raise ValueError("refusing an aliased replay source")
+            shutil.copy2(source, examples / name)
     else:
         shutil.copy2(ROOT / "web/worker.js", output / "worker.js")
     files = runtime_files()
