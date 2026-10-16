@@ -131,6 +131,16 @@ Fresh basic dynamics sessions should start with the **synthetic bicycle**. Keep 
 
 Done when: straight-line, coast, small-angle constant-turn, zero-steer symmetry, left/right mirrored response, invalid-parameter and low-speed tests pass; refinement changes are measured; startup defaults select the intended basic mode; restored historical records retain their original model.
 
+Implementation candidate, 16 October 2026: the six-state `dynamic_bicycle_v1`
+plant and versioned recorded-run route are implemented with the frozen
+[bicycle contract](docs/dynamic_bicycle_contract.md). Actual Tk and
+Chromium/Pyodide sessions select the synthetic bicycle, execute it, and export
+records that replay in Python. The portable self-test also exercises this UI
+route and replay. This remains a prescribed-contact-force baseline; E03 sensor
+freshness and E06/E07 constrained closed-loop work are separate gates. Source
+and browser checks do not establish a passing frozen build; the exact candidate
+must also pass Windows CI before integration.
+
 ### E05 / P0: fix reproducibility and historical-document drift
 
 Dependencies: E01. Related: R01/R03.

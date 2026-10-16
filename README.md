@@ -33,6 +33,31 @@ and trace the recorded source hashes. A standalone HTML export embeds the
 synthetic demo for sharing. See [the review instructions](docs/web_simulator.md#enme408-torque-review).
 This view displays host-reference evidence; it has no live command transport.
 
+## Basic dynamics: synthetic bicycle
+
+Choose **Basic dynamics · bicycle** in the desktop header, or **Basic dynamics**
+in the browser navigation. New basic sessions select `dynamic_bicycle_v1` with
+the separate `synthetic_bicycle_v1` parameter profile. Longitudinal/lateral
+velocity and yaw evolve with tire forces; the lap solver and existing saved
+runs keep their original physics. This first mode uses a prescribed rear-axle
+contact-force input (`none_prescribed_force`), with no torque controller,
+wheel angular dynamics or battery model. Independent wheel allocation belongs
+to the separate four-wheel plant.
+
+From an installed source checkout:
+
+```powershell
+python -m lapsim.ui.basic_dynamics
+python -m lapsim.experiments.basic_dynamics --output bicycle-run.json
+python -m lapsim.experiments.basic_dynamics --replay bicycle-run.json
+```
+
+Desktop JSON save/load verifies numerical replay before displaying an imported
+result. Browser JSON and CSV exports contain actual calculated samples; the
+JSON replays through the command above. Model parameters, SI units, solver,
+source revision, clock periods and validity assumptions are inspectable in
+each record. See the [equations and acceptance contract](docs/dynamic_bicycle_contract.md).
+
 ## Run or share the Windows app
 
 The portable team release is **`LapSim-Windows-x64.zip`**. Extract it and

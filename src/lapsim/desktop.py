@@ -18,6 +18,8 @@ def self_test(report_path: Path) -> dict:
     from .resources import build_identity, documentation_root, repository_root
     from .ui.app import LapSimDesktop
     from .ui.dynamics_lab import DynamicsLab
+    from .ui.basic_dynamics import BasicDynamicsLab
+    from .experiments.basic_dynamics import decode_json, replay_bicycle_record
     from .ui.simulation import load_team_endurance_track, run_one_lap
     from .courses.spatial_track import SpatialTrack
     from .courses.track import Curve, Track
@@ -27,6 +29,7 @@ def self_test(report_path: Path) -> dict:
     from .profiles import build_vehicle
     from math import pi
     from tempfile import TemporaryDirectory
+    import time
 
     checks = {}
     root = tk.Tk()
@@ -42,6 +45,24 @@ def self_test(report_path: Path) -> dict:
         lab = DynamicsLab(root, dark=False)
         root.update_idletasks()
         checks["four_wheel_lab_widgets"] = True
+        basic = BasicDynamicsLab(root)
+        root.update_idletasks()
+        checks["basic_bicycle_default"] = basic.model_id.get() == "dynamic_bicycle_v1"
+        basic.inputs["duration"].set("0.2")
+        basic.run_button.invoke()
+        deadline = time.monotonic() + 30
+        while basic.busy and time.monotonic() < deadline:
+            root.update()
+            time.sleep(0.01)
+        if basic.record is None:
+            raise RuntimeError("Basic bicycle desktop execution failed: " + basic.status.get())
+        bicycle_record = basic.record
+        checks["basic_bicycle_ui_run"] = (
+            bicycle_record["scenario"]["model_id"] == "dynamic_bicycle_v1"
+            and bicycle_record["scenario"]["controller_backend_id"] == "none_prescribed_force"
+            and len(basic.path_axes.lines) == 1
+        )
+        basic.close()
         # Child widgets are destroyed by root, allowing their lifecycle hooks to run.
     finally:
         root.destroy()
@@ -81,6 +102,11 @@ def self_test(report_path: Path) -> dict:
         checks["recorded_control_replay"] = replay.model_agreement and replay.replay_completed
         if not checks["recorded_control_replay"]:
             raise RuntimeError(str(replay.mismatch_reasons))
+        bicycle_path = Path(temporary) / "bicycle.json"
+        bicycle_path.write_text(json.dumps(bicycle_record, allow_nan=False), encoding="utf-8")
+        checks["basic_bicycle_record_replay"] = replay_bicycle_record(
+            decode_json(bicycle_path.read_bytes())
+        )["model_agreement"]
     report = {
         "status": "passed" if all(checks.values()) else "failed",
         "frozen": bool(getattr(sys, "frozen", False)), "checks": checks,
@@ -88,6 +114,9 @@ def self_test(report_path: Path) -> dict:
         "synthetic_lap_time_s": result.driving_time_s,
         "telemetry_samples": result.telemetry.sample_count,
         "replay": replay.to_dict(),
+        "basic_bicycle": {"run_id": bicycle_record["run_id"],
+                          "model_id": bicycle_record["scenario"]["model_id"],
+                          "plant_ticks": bicycle_record["result"]["plant_ticks"]},
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
