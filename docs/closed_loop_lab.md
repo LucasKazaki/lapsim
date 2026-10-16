@@ -81,7 +81,8 @@ an explicit <=1e-9 rad/s stop event and separately recorded remaining kinetic
 energy. The controller/sensor/logging clocks do not advance during trials.
 The exact accepted launch from source `85076f1` remains a regression fixture;
 the repaired near-stop counterexample has an energy-refinement test. Current
-closed-loop records use v2. Earlier unreleased development v1 records explicitly
+closed-loop records use v3, which adds separate rejected-regeneration accounting
+and verified native build/toolchain identity. Earlier unreleased development v1/v2 records explicitly
 require their recorded source; the separate legacy lap/bicycle schemas retain
 their existing replay paths.
 

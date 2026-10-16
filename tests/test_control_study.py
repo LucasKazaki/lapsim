@@ -81,3 +81,36 @@ def test_cancel_and_unavailable_backend_never_return_a_partial_or_relabelled_rec
 def test_invalid_request_fails_before_work(change):
     with pytest.raises(ValueError):
         study_scenario(dict(DEFAULT_REQUEST, **change))
+
+
+@pytest.mark.parametrize("soc", [1.0, 0.5])
+def test_regeneration_unmet_is_separate_and_reconciles_accepted_command(soc):
+    scenario = replace(
+        study_scenario(dict(DEFAULT_REQUEST, case_id="full_braking", duration_s=0.2)),
+        initial_soc=soc,
+    )
+    scenario = replace(
+        scenario, actuation=replace(scenario.actuation, pack_charge_power_limit_w=100.0)
+    )
+    record = run_control_comparison(scenario)
+    for key, run in record["runs"].items():
+        healthy = [
+            event
+            for event in run["result"]["controller_events"]
+            if event["core"]["command_allowed"]
+        ]
+        assert healthy
+        for event in healthy:
+            requested = -event["requested_regen_nm"]
+            accepted = -sum(min(0.0, v) for v in event["limited_command_nm"])
+            assert requested == pytest.approx(accepted + event["unmet_regen_torque_nm"])
+            assert event["unmet_command_torque_nm"] == 0
+            if soc == 1.0:
+                assert accepted == 0 and event["unmet_regen_torque_nm"] > 0
+        if soc == 0.5:
+            assert any(
+                -sum(min(0.0, v) for v in event["limited_command_nm"]) > 0
+                for event in healthy
+            )
+        assert record["metrics"][key]["unmet_regen_impulse_nm_s"] > 0
+    assert replay_control_comparison(record)["model_agreement"]
