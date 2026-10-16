@@ -59,7 +59,30 @@ def stage_assets() -> Path:
         for folder in ("src", "scripts", "tests", "docs", "data", "analysis", "output", "packaging", ".vscode"):
             paths.extend(path for path in (ROOT / folder).rglob("*") if path.is_file())
         paths.extend(path for path in ROOT.glob("LICENSE*") if path.is_file())
-        paths.extend(ROOT / name for name in (".gitignore", ".gitattributes") if (ROOT / name).is_file())
+        paths.extend(
+            ROOT / name
+            for name in (
+                ".gitignore",
+                ".gitattributes",
+                "NOTICE",
+                "CONTRIBUTING.md",
+            )
+            if (ROOT / name).is_file()
+        )
+    required_legal_files = (
+        "LICENSE",
+        "LICENSE_SCOPE.md",
+        "NOTICE",
+        "CONTRIBUTING.md",
+        "docs/licensing.md",
+    )
+    missing_legal_files = [name for name in required_legal_files if not (ROOT / name).is_file()]
+    if missing_legal_files:
+        raise RuntimeError(
+            "Refusing to build a distributable archive without legal notices: "
+            + ", ".join(missing_legal_files)
+        )
+
     checksums = {}
     for source in sorted(set(paths)):
         if any(part in {"__pycache__", ".venv", "build", "work"} for part in source.relative_to(ROOT).parts):
@@ -111,7 +134,8 @@ def stage_assets() -> Path:
                     shutil.copy2(origin, destination)
     (notices / "README.txt").write_text(
         "License and notice texts from the Python interpreter and installed runtime dependencies.\n"
-        "The repository itself does not declare a redistribution license; this build is for internal team review.\n",
+        "Project permissions are controlled separately by LICENSE, LICENSE_SCOPE.md, and NOTICE.\n"
+        "Third-party notices do not expand or replace the project's source-available terms.\n",
         encoding="utf-8",
     )
     for path in notices.rglob("*"):

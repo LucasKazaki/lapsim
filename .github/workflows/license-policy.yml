@@ -1,0 +1,50 @@
+name: License policy
+
+on:
+  pull_request:
+    paths:
+      - LICENSE
+      - LICENSE_SCOPE.md
+      - NOTICE
+      - CONTRIBUTING.md
+      - START-HERE.txt
+      - docs/licensing.md
+      - docs/release.md
+      - scripts/build_windows.py
+      - scripts/check_license_policy.py
+      - .github/workflows/license-policy.yml
+  push:
+    branches: [main]
+    paths:
+      - LICENSE
+      - LICENSE_SCOPE.md
+      - NOTICE
+      - CONTRIBUTING.md
+      - START-HERE.txt
+      - docs/licensing.md
+      - docs/release.md
+      - scripts/build_windows.py
+      - scripts/check_license_policy.py
+      - .github/workflows/license-policy.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: license-policy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate license scope and packaging
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python scripts/check_license_policy.py

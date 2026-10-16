@@ -1,0 +1,332 @@
+LapSim Source-Available Competition-Restricted License 1.0
+LSCRL-1.0
+Effective date: October 16, 2026
+
+IMPORTANT: THIS IS A SOURCE-AVAILABLE LICENSE, NOT AN OPEN-SOURCE LICENSE.
+IT GRANTS ONLY THE PERMISSIONS EXPRESSLY STATED BELOW. USE BY OR FOR
+COMPETING FORMULA SAE, FORMULA STUDENT, FORMULA HYBRID + ELECTRIC, OR
+SIMILAR STUDENT VEHICLE COMPETITION PROGRAMS IS NOT LICENSED.
+
+1. DEFINITIONS
+
+1.1 "Covered Material" means source code, object code, documentation, and
+other copyrightable material to which a person or entity that owns or controls
+the applicable copyright ("Licensor") has expressly applied this License.
+Coverage is determined file-by-file and contribution-by-contribution. The
+repository's LICENSE_SCOPE.md and notices may identify known coverage and
+exclusions. No person grants rights that person does not own or control.
+
+1.2 "Repository" means the repository that contains this License and any
+release or archive expressly identified as originating from that repository.
+
+1.3 "You" means the individual or legal entity exercising permissions under
+this License. "Your" has a corresponding meaning. If You act for an employer,
+school, team, organization, client, or other principal, "You" includes that
+principal and all persons acting under its direction or control for the
+relevant use.
+
+1.4 "UMD Affiliate" means a currently enrolled student, faculty member, staff
+member, or academic unit of the University of Maryland, College Park.
+
+1.5 "Authorized UMD Team" means current UMD Affiliates acting for the
+University of Maryland, College Park Terps Racing organization, including its
+Electric Vehicle program and any formally recognized successor student vehicle
+program, solely while acting for that UMD program.
+
+1.6 "Competition Program" means any team, club, academic program, company,
+organization, or coordinated group that participates in, prepares to
+participate in, or materially supports a vehicle entered or intended to be
+entered in Formula SAE, Formula Student, Formula Hybrid + Electric, Formula
+Bharat, any SAE Collegiate Design Series vehicle event, or another
+intercollegiate competition in which students design, build, simulate, test, or
+race a vehicle and vehicle performance is evaluated.
+
+1.7 "Competing Team" means any Competition Program other than the Authorized
+UMD Team. It includes the program's current or prospective members, advisors,
+faculty, sponsors, contractors, consultants, vendors, service providers, and
+other persons acting for its benefit with respect to Competition Use.
+
+1.8 "Competition Use" means using the Covered Material, a modified version,
+or results produced by executing either, directly or indirectly, to design,
+select, size, model, simulate, analyze, optimize, calibrate, tune, validate,
+test, manufacture, inspect, control, operate, strategize for, train a driver
+for, or otherwise improve a vehicle, subsystem, controller, software stack,
+data pipeline, setup, or competition performance of a Competition Program.
+Competition Use includes benchmarking against another vehicle or simulator,
+processing competition telemetry, generating vehicle parameters, developing
+torque control or torque vectoring, and providing any of those activities as
+a service.
+
+1.9 "Evaluation Use" means inspection, reproduction, execution, and private
+modification solely to evaluate the Covered Material or its contributors for
+employment, recruitment, academic review, code quality, security review, or
+technical due diligence. Evaluation Use excludes Competition Use, production
+deployment, commercial product development, and providing a hosted or managed
+service.
+
+1.10 "Educational Use" means coursework, teaching, independent study, and
+noncommercial academic research by a UMD Affiliate. Educational Use excludes
+Competition Use for a Competing Team, commercial product development, and any
+use governed by a separate agreement that does not permit the use.
+
+1.11 "Distribute" means to provide, publish, transmit, sublicense, sell,
+lease, host for third-party access, or otherwise make a copy or modified
+version available to another person or entity. Internal sharing expressly
+permitted below is not Distribution.
+
+1.12 "Scope Notice" means the version of `LICENSE_SCOPE.md` distributed with
+the copy of Covered Material You received. A later change to that file does not
+retroactively enlarge or reduce rights already granted for that copy unless
+You and every applicable Licensor agree in a Signed Writing.
+
+1.13 "Signed Writing" means a writing, including an electronic writing, that
+clearly identifies the applicable Licensor, Covered Material, permission, and
+recipient and bears that Licensor's manual or legally effective electronic
+signature. A repository issue, pull request, comment, commit, email, chat
+message, or oral statement is not a Signed Writing merely because it exists.
+
+2. ACCEPTANCE AND RELATION TO PUBLIC ACCESS
+
+2.1 This License is an offer by each Licensor for that Licensor's Covered
+Material. By exercising any permission granted by this License, You accept its
+terms. If You do not accept them, You receive no permission under this License.
+
+2.2 Public availability is not a grant of unrestricted rights. Viewing and
+forking through GitHub remain subject to GitHub's terms and functionality.
+Rights provided by applicable law are not restricted. This License grants only
+additional permissions expressly stated here.
+
+2.3 A Competing Team may view or fork material made publicly accessible
+through GitHub only to the extent GitHub's terms and applicable law allow.
+This License grants a Competing Team no additional permission to execute,
+modify, create derivative works from, Distribute, or make Competition Use of
+Covered Material. Public availability, possession, or a platform-created fork
+does not imply any further permission.
+
+3. PUBLIC EVALUATION LICENSE
+
+Subject to every condition and restriction in this License, a person or entity
+that is not a Competing Team and is not acting for a Competing Team may:
+
+(a) inspect the Covered Material;
+
+(b) reproduce, download, execute, and make private modifications to the
+Covered Material solely for Evaluation Use; and
+
+(c) share copies internally with its employees or individual contractors
+solely as reasonably necessary for the same Evaluation Use, provided each
+recipient is informed of and bound by restrictions at least as protective as
+this License.
+
+No permission under this Section includes public Distribution, production
+deployment, commercial product development, or Competition Use.
+
+4. UMD EDUCATIONAL LICENSE
+
+Subject to every condition and restriction in this License, a UMD Affiliate
+may reproduce, execute, and privately modify Covered Material for Educational
+Use and may share it internally with other UMD Affiliates for the same
+Educational Use. A UMD Affiliate may describe results in coursework, teaching,
+or academic publications, but may not reproduce a substantial portion of the
+Covered Material or any excluded data in a public work without a separate
+Signed Writing.
+
+UMD affiliation does not authorize Competition Use for a Competing Team or
+commercial use. A person who is both a UMD Affiliate and affiliated with a
+Competing Team may exercise this Section only for work wholly unrelated to that
+Competing Team.
+
+5. AUTHORIZED UMD TEAM LICENSE
+
+Subject to every condition and restriction in this License, the Authorized UMD
+Team may reproduce, execute, modify, create derivative works from, and
+internally distribute Covered Material for its own educational, research,
+vehicle-development, testing, and competition activities. It may deploy
+Covered Material on or in connection with its own vehicles.
+
+The Authorized UMD Team may share Covered Material with UMD faculty, advisors,
+sponsors, contractors, and service providers solely as necessary to support
+the Authorized UMD Team, provided each recipient is bound in writing to use it
+only for that support, to protect nonpublic material, and not to Distribute it
+further. This Section does not authorize public Distribution or use for any
+other Competition Program.
+
+6. MATERIAL COMPETITION RESTRICTION
+
+6.1 Except for the Authorized UMD Team under Section 5, You must not, directly
+or indirectly:
+
+(a) make any Competition Use of Covered Material;
+
+(b) provide Covered Material, a modified version, or access to either to a
+Competing Team;
+
+(c) run Covered Material using actual, estimated, fictionalized, or anonymized
+parameters, telemetry, track data, or requirements for the benefit of a
+Competing Team;
+
+(d) use a contractor, consultant, sponsor, vendor, cloud service, automated
+agent, artificial-intelligence system, or other intermediary to do anything
+this License prohibits You from doing directly;
+
+(e) use Covered Material, a modified version, or software-generated output to
+train, fine-tune, retrieve for, evaluate, or operate an artificial-intelligence
+or machine-learning system for Competition Use; or
+
+(f) use output from Covered Material when that output was generated in breach
+of this License.
+
+6.2 The restrictions in this Section are material conditions of every license
+grant. No permission is granted for an act that violates them.
+
+7. REDISTRIBUTION, HOSTING, AND NOTICE CONDITIONS
+
+7.1 Except for internal sharing expressly allowed by Sections 3, 4, and 5, You
+may not Distribute Covered Material or any modified version without a separate
+Signed Writing from every applicable Licensor.
+
+7.2 You may not offer Covered Material or a modified version as a hosted,
+managed, consulting, analysis, simulation, or software-as-a-service offering.
+
+7.3 Every permitted copy and modified version must retain this License,
+LICENSE_SCOPE.md, NOTICE, all copyright and attribution notices, and all
+third-party notices. You must clearly identify Your material modifications and
+must not state or imply that a Licensor, the University of Maryland, or Terps
+Racing reviewed, approved, endorsed, or validated them.
+
+7.4 You may not remove, conceal, alter, or misrepresent provenance, authorship,
+model limitations, safety warnings, validation status, or license notices.
+
+7.5 GitHub may permit public forks as a platform function. Such a fork does not
+grant rights beyond GitHub's terms and this License. Any exercise of permissions
+under this License through a fork remains subject to all of its conditions.
+
+8. EXCLUDED MATERIAL AND RESERVED RIGHTS
+
+8.1 This License does not cover material identified as excluded in
+LICENSE_SCOPE.md or an accompanying notice.
+
+8.2 Unless expressly identified as Covered Material, no license is granted for
+telemetry, measured or reconstructed vehicle data, track data, calibration
+data, fitted parameters, vehicle-specific configurations, CAD, firmware,
+hardware designs, CAN databases, log files, personal data, credentials,
+secrets, vendor material, competition submissions, or third-party content.
+
+8.3 Third-party software, libraries, documents, and data remain governed by
+their own terms. Availability in the Repository does not mean that a Licensor
+owns or can license them.
+
+8.4 No patent, trademark, trade-secret, publicity, privacy, database, or other
+non-copyright right is granted. No right to use the names, logos, marks, or
+branding of the University of Maryland, Terps Racing, any contributor, or any
+sponsor is granted.
+
+8.5 All rights not expressly granted are reserved. Nothing in this License
+limits a right or exception that applicable law gives You independently of the
+Licensors.
+
+9. CONTRIBUTIONS
+
+9.1 Unless a separate Signed Writing states otherwise, by intentionally
+submitting a contribution for inclusion in the Repository after this License
+has been adopted, You represent that You have the authority to submit it and
+expressly apply this License to the copyrightable portion of Your contribution.
+
+9.2 You must not submit confidential information, restricted team data,
+third-party material without adequate permission, or material whose license is
+incompatible with this License.
+
+9.3 Repository acceptance of a contribution is not a representation that the
+contribution is legally clear, safe, accurate, or suitable for vehicle use.
+
+10. TERMINATION
+
+10.1 Your permissions under this License terminate automatically and
+immediately when You breach any condition.
+
+10.2 If the breach was unintentional, was not Competition Use or unauthorized
+Distribution, and was Your first breach, permissions are automatically
+reinstated if You fully cure it within thirty days after discovery. Intentional
+Competition Use, assistance to a Competing Team, unauthorized Distribution,
+or knowing misrepresentation has no automatic cure.
+
+10.3 On termination, You must immediately stop all licensed activity and
+delete or destroy all copies and modified versions in Your possession or
+control, except one archival copy that applicable law requires You to retain.
+Sections 6, 8, 10, 11, 12, and 13 survive termination.
+
+10.4 A Licensor may reinstate permissions only in a Signed Writing. Termination
+does not limit any remedy available for conduct before termination.
+
+10.5 Unauthorized Competition Use or Distribution may cause harm for which
+money damages are inadequate. Subject to applicable law, each affected
+Licensor may seek injunctive or other equitable relief in addition to any
+other available remedy.
+
+11. SAFETY AND REGULATORY NOTICE
+
+The Covered Material is research and educational software. It may contain
+errors and may not be validated against a real vehicle, track, controller,
+sensor suite, rule set, or safety case. It is not certified for safety-critical
+control, road use, autonomous operation, regulatory compliance, or competition
+compliance. You are solely responsible for independent engineering review,
+testing, hazard analysis, rules compliance, and safe operation.
+
+12. DISCLAIMER OF WARRANTY
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE COVERED MATERIAL IS PROVIDED "AS
+IS" AND "AS AVAILABLE," WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED, OR
+STATUTORY, INCLUDING WARRANTIES OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, SAFETY, RELIABILITY, OR RESULTS.
+NO LICENSOR WARRANTS THAT THE COVERED MATERIAL IS COMPLETE, ERROR-FREE, SECURE,
+SUPPORTED, OR SUITABLE FOR ANY VEHICLE OR COMPETITION.
+
+13. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, NO LICENSOR, CONTRIBUTOR, MAINTAINER,
+OR PERSON OR ENTITY THAT MERELY HOSTS, SPONSORS, ADVISES, OR IS REFERENCED IN
+CONNECTION WITH THE PROJECT WILL BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR
+LOSS OF DATA, PROFITS, REVENUE, USE, OPPORTUNITY, COMPETITION POINTS, VEHICLE,
+PROPERTY, OR LIFE, ARISING FROM OR RELATED TO THE COVERED MATERIAL OR THIS
+LICENSE, UNDER ANY THEORY OF LIABILITY, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+14. GENERAL TERMS
+
+14.1 This License is nonexclusive, worldwide, royalty-free, revocable only as
+provided in Section 10, and nontransferable. You may not sublicense or assign
+Your permissions, including by merger, acquisition, or change of control,
+without a Signed Writing from every applicable Licensor.
+
+14.2 The competition restriction, limits on Distribution, and coverage limits
+are essential conditions. If a court finds a provision unenforceable, it must
+be enforced to the maximum lawful extent. No severance, reformation, or
+interpretation may expand the permissions granted. If an essential restriction
+cannot lawfully be preserved as applied to You, the affected permission to You
+terminates rather than expanding.
+
+14.3 This License is governed by Maryland law, excluding its conflict-of-laws
+rules. Subject-matter jurisdiction permitting, exclusive venue lies in the
+state courts located in Prince George's County, Maryland, or the United States
+District Court for the District of Maryland. This clause does not bind a
+Licensor that lacks authority to adopt it.
+
+14.4 Failure to enforce a provision is not a waiver. A waiver must be in a
+Signed Writing and applies only to the specific instance stated.
+
+14.5 This License and the incorporated Scope Notice are the complete terms
+for the permissions granted here. A separate Signed Writing may grant
+additional rights. A repository issue, pull request, comment, commit, email,
+chat message, or oral statement does not modify this License unless it
+satisfies the definition of a Signed Writing and is made by every affected
+Licensor.
+
+14.6 A later version of this License applies only when the applicable Licensor
+expressly adopts it for specified Covered Material. Public availability of a
+later version does not alter permissions already granted under this version.
+
+14.7 Headings are for convenience only. "Including" means "including without
+limitation." The singular includes the plural where context permits.
+
+END OF TERMS

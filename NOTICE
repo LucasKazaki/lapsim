@@ -1,0 +1,25 @@
+LapSim copyright and provenance notice
+Status date: October 16, 2026
+
+Copyright © 2026 the respective copyright holders.
+
+Known upstream baseline:
+- Repository: terps-racing-ev/lapsim
+- Baseline commit: 4b55928cffbc8a5a3dbf8f489dec791f7d791269
+- Recorded author/committer identities include Adi and funnysomething.
+
+Subsequent repository work includes contributions recorded under LucasKazaki
+and any other contributors shown in the Git history.
+
+The root LICENSE is LSCRL-1.0, a source-available, competition-restricted
+license. It applies only to material for which an applicable rights holder has
+expressly adopted it. `LICENSE_SCOPE.md` is the incorporated Scope Notice; read
+it before relying on any permission.
+
+This repository and its contributors are not endorsed by the University of
+Maryland, Terps Racing, SAE International, Formula SAE, Formula Student,
+Formula Hybrid + Electric, sponsors, suppliers, or cited organizations merely
+because their names or materials are referenced.
+
+No trademark license is granted. Third-party materials and dependencies remain
+subject to their own notices and terms.
