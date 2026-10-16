@@ -199,6 +199,11 @@ def main() -> int:
             )
         except (OSError, ValueError):
             ready = False
+        if args.check and not ready:
+            raise ValueError(
+                "Environment setup marker is absent or stale; rerun without --check "
+                "using the same --dev and --environment options to verify/install the declared dependencies"
+            )
         if not args.check and not ready:
             print("Installing the declared source dependencies…", flush=True)
             try:

@@ -32,7 +32,7 @@ from .basic_dynamics import decode_json
 from .controller_backend import PythonController, controller_source_identity
 from .dynamics_record import _canonical_json, _content_id, _runtime_identity
 
-SCHEMA = "lapsim.closed-loop.record.v2"
+SCHEMA = "lapsim.closed-loop.record.v3"
 MODEL_ID = "independent_wheel_planar_v1"
 PROFILE_ID = "synthetic_rear_drive_control_v1"
 ZERO = (0.0, 0.0, 0.0, 0.0)
@@ -572,6 +572,11 @@ def run_closed_loop(
                         "constraints": feasible.constraints,
                         "unmet_command_torque_nm": request
                         - sum(max(0.0, v) for v in command),
+                        "unmet_regen_torque_nm": max(
+                            0.0,
+                            -sum(min(0.0, v) for v in guarded)
+                            + sum(min(0.0, v) for v in command),
+                        ),
                     }
                 )
         if now % scenario.logging_period_us == 0 or tick == count:
@@ -691,6 +696,13 @@ def replay_closed_loop(record: Any, backend: Any = None) -> dict:
             "Development record v1 uses solver policy 1; replay with its recorded source. Current brake-stop solver is policy 2."
         )
     if (
+        isinstance(record, dict)
+        and record.get("schema") == "lapsim.closed-loop.record.v2"
+    ):
+        raise ValueError(
+            "Development record v2 requires its recorded source; v3 adds explicit rejected-regeneration and verified native-build provenance."
+        )
+    if (
         not isinstance(record, dict)
         or record.get("schema") != SCHEMA
         or record.get("run_id")
@@ -701,7 +713,12 @@ def replay_closed_loop(record: Any, backend: Any = None) -> dict:
     if _content_id(asdict(scenario)) != record.get("configuration_sha256"):
         raise ValueError("configuration identity mismatch")
     actual = run_closed_loop(scenario, backend)
-    for key in ("binary_sha256", "firmware_build_id", "firmware_elf_sha256"):
+    for key in (
+        "binary_sha256",
+        "native_build",
+        "firmware_build_id",
+        "firmware_elf_sha256",
+    ):
         if record.get("controller_source", {}).get(key) != actual[
             "controller_source"
         ].get(key):

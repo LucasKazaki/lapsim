@@ -155,6 +155,8 @@ def metrics(record: dict) -> dict:
         "pack_draw_j": result["pack_draw_j"],
         "unmet_command_impulse_nm_s": sum(e["unmet_command_torque_nm"] for e in events)
         * dt,
+        "unmet_regen_impulse_nm_s": sum(e["unmet_regen_torque_nm"] for e in events)
+        * dt,
         "limited_control_ticks": sum(
             bool(e["constraints"]) or e["core"]["allocator"]["status"] == "saturated"
             for e in events

@@ -106,8 +106,9 @@ kinetic energy separately as wheel-stop dissipation. The default wheel's
 maximum event energy is 1.5e-19 J; it is never assigned to the battery. Retain
 all integrated brake/contact/pack work and check total energy/refinement.
 Actual RK trials plus stop events share the 50,000-work budget. Non-braking
-reverse motion stays outside this adapter's domain. This is solver policy v2
-and closed-loop record v2; earlier development v1 records remain tied to their
+reverse motion stays outside this adapter's domain. This is solver policy v2.
+Current record v3 adds separate rejected-regeneration
+accounting and verified native build identity; earlier development v1/v2 records remain tied to their
 recorded source rather than silently replaying with a different policy.
 
 Browser comparison import accepts at most 40 MB of strict JSON. It reruns both
