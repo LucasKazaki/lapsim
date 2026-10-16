@@ -1,0 +1,5 @@
+llvm-nm, compatible with GNU nm
+LLVM (http://llvm.org/):
+  LLVM version 22.1.0
+  Optimized build.
+Arm Toolchain ID: E0075 (44010d72)
