@@ -32,7 +32,7 @@ from .basic_dynamics import decode_json
 from .controller_backend import PythonController, controller_source_identity
 from .dynamics_record import _canonical_json, _content_id, _runtime_identity
 
-SCHEMA = "lapsim.closed-loop.record.v1"
+SCHEMA = "lapsim.closed-loop.record.v2"
 MODEL_ID = "independent_wheel_planar_v1"
 PROFILE_ID = "synthetic_rear_drive_control_v1"
 ZERO = (0.0, 0.0, 0.0, 0.0)
@@ -640,9 +640,10 @@ def run_closed_loop(
         "plant_source": plant_source_identity(),
         "solver": {
             "family": "held-command augmented RK4",
-            "version": 1,
+            "version": 2,
             "internal_step_policy": "minimum of planar tire-stiffness limit and actuator time constant / 4",
             "diagnostic_quadrature": "same RK stages; physical driver/steering/brake input held for each base plant tick",
+            "brake_stops": "reject/subdivide negative brake-stop trials; static stop at <=1e-9 rad/s with separate residual kinetic-energy dissipation",
         },
         "frames": {
             "body": "x forward, y left, yaw counterclockwise",
@@ -682,6 +683,13 @@ def run_closed_loop(
 
 
 def replay_closed_loop(record: Any, backend: Any = None) -> dict:
+    if (
+        isinstance(record, dict)
+        and record.get("schema") == "lapsim.closed-loop.record.v1"
+    ):
+        raise ValueError(
+            "Development record v1 uses solver policy 1; replay with its recorded source. Current brake-stop solver is policy 2."
+        )
     if (
         not isinstance(record, dict)
         or record.get("schema") != SCHEMA

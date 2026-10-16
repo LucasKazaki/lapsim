@@ -1,0 +1,157 @@
+{
+  "source_commit": "85076f1c5c58e37b67c155437337505759e753db",
+  "dirty_worktree": false,
+  "original_schema": "lapsim.closed-loop.record.v1",
+  "original_record_sha256": "bca4bc2a24c25f52aaec40e88158d77bd48095c5190305db80d5e0589f77aa85",
+  "plant_source": {
+    "hash_scope": "Python source bytes with CRLF normalized to LF only",
+    "files_sha256": {
+      "src/lapsim/dynamics/planar.py": "c0d0d80dedbd984efd197c2fb68e54245ea224ade43a71c50515a4ea770aa167",
+      "src/lapsim/dynamics/conditions.py": "bafb9d90d1c258395ec9652047fe0c3cbc67de417bfcfb911fbbc7e3fb91bf8b",
+      "src/lapsim/dynamics/actuation.py": "5541f655a528aafc7316a905537fc22cb6f2e51befc670196cdbeb3b369d84e5",
+      "src/lapsim/dynamics/powered_planar.py": "1380aa3471a1349bd6453afec2bdb6ec1e6c018744467acaca108c18ec64435f",
+      "src/lapsim/experiments/closed_loop.py": "526866fea64cbcbe91e64374b73af38704f2cb8fea3ac621b493b2ba3be0993a",
+      "src/lapsim/experiments/controller_backend.py": "7f4675ac8c886e7151fc6f1647e88c26b734c9db8915805e66b6b52523791520"
+    }
+  },
+  "scenario": {
+    "schema_version": 1,
+    "model_id": "independent_wheel_planar_v1",
+    "vehicle_profile_id": "synthetic_rear_drive_control_v1",
+    "drivetrain_topology_id": "synthetic_independent_rear_rwd_v1",
+    "controller_backend_id": "python_reference",
+    "strategy": "equal_split",
+    "vehicle": {
+      "mass_kg": 300,
+      "yaw_inertia_kgm2": 160,
+      "cg_to_front_axle_m": 0.8,
+      "cg_to_rear_axle_m": 0.8,
+      "front_track_m": 1.2,
+      "rear_track_m": 1.2,
+      "wheel_radius_m": 0.2,
+      "wheel_inertia_kgm2": 0.3,
+      "tire_mu": 1.2,
+      "longitudinal_stiffness_n_per_slip": 7000,
+      "cornering_stiffness_n_per_rad": 8000,
+      "low_speed_regularization_mps": 0.5,
+      "gravity_mps2": 9.80665,
+      "maximum_integration_step_s": 0.002
+    },
+    "actuation": {
+      "topology_id": "synthetic_independent_rear_rwd_v1",
+      "gear_ratio": 4.0,
+      "gear_efficiency": 0.96,
+      "motor_conversion_efficiency": 0.95,
+      "inverter_efficiency": 0.97,
+      "torque_constant_nm_per_a": 0.8,
+      "motor_current_limit_a": 100.0,
+      "inverter_current_limit_a": 90.0,
+      "motor_peak_torque_nm": 80.0,
+      "motor_base_speed_rad_s": 250.0,
+      "motor_maximum_speed_rad_s": 700.0,
+      "equivalent_copper_resistance_ohm": 0.02,
+      "pack_voltage_v": 300.0,
+      "pack_capacity_j": 18000000.0,
+      "pack_discharge_current_limit_a": 100.0,
+      "pack_charge_current_limit_a": 40.0,
+      "pack_discharge_power_limit_w": 25000.0,
+      "pack_charge_power_limit_w": 8000.0,
+      "actuator_time_constant_s": 0.025,
+      "actuator_slew_nm_per_s": 8000.0
+    },
+    "environment": {
+      "wind_world_x_mps": 0.0,
+      "wind_world_y_mps": 0.0,
+      "air_density_kgpm3": 1.225,
+      "drag_area_m2": 0.0,
+      "road": {
+        "base_material_id": "reference_pavement",
+        "base_friction_multiplier": 1.0,
+        "patches": [],
+        "valid_domain": null
+      }
+    },
+    "initial_state": {
+      "x_m": 0.0,
+      "y_m": 0.0,
+      "heading_rad": 0.0,
+      "u_mps": 0.0,
+      "v_mps": 0.0,
+      "yaw_rate_rad_s": 0.0,
+      "wheel_speeds_rad_s": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "initial_soc": 0.5,
+    "duration_us": 100000,
+    "plant_step_us": 1000,
+    "controller_period_us": 10000,
+    "sensor_period_us": 10000,
+    "sensor_delay_us": 10000,
+    "logging_period_us": 20000,
+    "maximum_sensor_age_ms": 50,
+    "maximum_driver_request_nm": 400.0,
+    "maximum_friction_brake_nm": 40.0,
+    "maximum_regen_request_nm": 120.0,
+    "driver": [
+      {
+        "time_us": 0,
+        "accelerator_fraction": 0.0,
+        "brake_fraction": 0.0,
+        "steering_rad": 0.0,
+        "valid": true,
+        "enabled": true
+      },
+      {
+        "time_us": 100000,
+        "accelerator_fraction": 0.6,
+        "brake_fraction": 0.0,
+        "steering_rad": 0.0,
+        "valid": true,
+        "enabled": true
+      }
+    ],
+    "dropped_sequences": [],
+    "duplicate_sequences": [],
+    "extra_delays_us": [],
+    "restart_times_us": [],
+    "failed_rear_index": null,
+    "failure_time_us": 0
+  },
+  "expected_final_state": {
+    "plant": {
+      "x_m": 0.001774828722349319,
+      "y_m": 0.0,
+      "heading_rad": 0.0,
+      "u_mps": 0.07484790969324433,
+      "v_mps": 0.0,
+      "yaw_rate_rad_s": 0.0,
+      "wheel_speeds_rad_s": [
+        0.3684272154786945,
+        0.3684272154786945,
+        0.4971470589457776,
+        0.4971470589457776
+      ]
+    },
+    "actuator_memory_nm": [
+      0.0,
+      0.0,
+      72.59561707501317,
+      72.59561707501317
+    ],
+    "pack_energy_j": 8999997.985985674,
+    "wheel_work_j": 1.3286576298858777,
+    "conversion_loss_j": 0.6853566970866275,
+    "contact_dissipation_j": 0.373458051135888,
+    "friction_brake_work_j": 0.0,
+    "external_work_j": 0.0,
+    "driver_proxy_impulse_ns": 59.4,
+    "tire_longitudinal_impulse_ns": 22.454372907973283,
+    "absolute_contact_force_error_ns": 36.94562709202672
+  },
+  "controller_calls": 10,
+  "plant_ticks": 100
+}

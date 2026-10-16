@@ -76,6 +76,15 @@ owned once by the wheel-inertia parameters. See the frozen
 [execution contract](closed_loop_execution_contract.md) and
 [four-wheel model](four_wheel_dynamics.md) for equations, units and limitations.
 
+Solver policy 2 resolves braked-wheel stops with bounded adaptive RK trials,
+an explicit <=1e-9 rad/s stop event and separately recorded remaining kinetic
+energy. The controller/sensor/logging clocks do not advance during trials.
+The exact accepted launch from source `85076f1` remains a regression fixture;
+the repaired near-stop counterexample has an energy-refinement test. Current
+closed-loop records use v2. Earlier unreleased development v1 records explicitly
+require their recorded source; the separate legacy lap/bicycle schemas retain
+their existing replay paths.
+
 ## Native C against the same PC plant
 
 An optional GCC/Clang-compatible host compiler builds all five unchanged C owners.

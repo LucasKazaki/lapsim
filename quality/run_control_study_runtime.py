@@ -131,8 +131,26 @@ def main():
                 page.locator("#control-save").is_disabled()
                 and page.locator("#control-results").is_hidden()
             )
-            page.locator("#control-file").set_input_files(str(OUT / "launch.json"))
+            page.locator("#control-case").select_option("full_braking")
+            page.locator("#control-speed").fill(".01")
+            page.locator("#control-run").click()
             page.wait_for_function("window.__controlResults.length>=4", timeout=180000)
+            with page.expect_download() as event:
+                page.locator("#control-save").click()
+            stop_path = OUT / "near-stop-braking.json"
+            event.value.save_as(stop_path)
+            stopped = decode_json(stop_path.read_bytes(), maximum_bytes=40_000_000)
+            assert replay_control_comparison(stopped)["model_agreement"]
+            for run in stopped["runs"].values():
+                assert run["schema"] == "lapsim.closed-loop.record.v2"
+                assert run["result"]["final_state"]["wheel_stop_events"] >= 4
+                assert run["result"]["pack_draw_j"] == 0
+                assert all(
+                    w >= 0
+                    for w in run["result"]["final_state"]["plant"]["wheel_speeds_rad_s"]
+                )
+            page.locator("#control-file").set_input_files(str(OUT / "launch.json"))
+            page.wait_for_function("window.__controlResults.length>=5", timeout=180000)
             assert page.locator("#control-speed").is_disabled()
             assert page.locator("#control-run").is_disabled()
             assert "Imported comparison" in page.locator("#control-status").inner_text()
@@ -156,8 +174,9 @@ def main():
             assert page.locator("#control-run").is_enabled()
             assert not errors, errors
             summary = {
-                "actual_worker_comparisons": 3,
-                "host_replayed_runs": 6,
+                "actual_worker_comparisons": 4,
+                "host_replayed_runs": 8,
+                "near_stop_braking_checked": True,
                 "browser_replayed_imported_runs": 2,
                 "import_preserves_exact_record": True,
                 "invalid_import_rejected": True,
