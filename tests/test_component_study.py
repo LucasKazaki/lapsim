@@ -24,6 +24,52 @@ def point(value):
     return Interval(value, value, value)
 
 
+@pytest.mark.parametrize("failure", ["exit", "timeout", "missing_output"])
+def test_fe_failure_preserves_process_outcome_and_remaining_skips(
+    tmp_path, monkeypatch, failure
+):
+    import importlib.util
+    import json
+    import subprocess
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "quality/run_component_fe.py"
+    spec = importlib.util.spec_from_file_location("component_fe_test", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    executable = tmp_path / "ccx.exe"
+    executable.write_bytes(b"test process fixture, never executed")
+
+    def process(command, **kwargs):
+        if command[-1] == "-v":
+            return subprocess.CompletedProcess(command, 201, "This is Version 2.23", "")
+        if failure == "timeout":
+            raise subprocess.TimeoutExpired(command, 60, output=b"partial output")
+        code = 7 if failure == "exit" else 0
+        return subprocess.CompletedProcess(
+            command, code, "Job finished", "fixture stderr"
+        )
+
+    monkeypatch.setattr(module.subprocess, "run", process)
+    output = tmp_path / "receipt"
+    with pytest.raises(RuntimeError):
+        module.run(executable, output)
+    receipt = json.loads((output / "summary.json").read_text(encoding="utf-8"))
+    assert receipt["outcomes"] == {"passed": 0, "failed": 1, "skipped": 11}
+    first = receipt["cases"][0]
+    assert first["status"] == "failed"
+    assert first["solve_exit_code"] == (
+        None if failure == "timeout" else 7 if failure == "exit" else 0
+    )
+    assert first["timed_out"] is (failure == "timeout")
+    assert first["error"]
+    assert first["log_sha256"]
+    assert all(
+        row["status"] == "skipped" and row["solve_exit_code"] is None
+        for row in receipt["cases"][1:]
+    )
+
+
 def solid():
     return GeometryCard(point(1), point(0.02), point(0))
 

@@ -58,6 +58,12 @@ optional headless FE comparison at multiple meshes with actual solver identity,
 input/output hashes and discrepancy retained. No optional solver is required at
 startup. Ordinary runtime introduces no specialist dependency.
 
+FE receipt repair acceptance (16 October, PR67 review): retain each attempted
+solve's actual exit code, timeout state and log hash. A failed process, timeout
+or unreadable result must still produce a summary with explicit passed/failed/
+skipped counts before returning failure. Stop after that case and mark remaining
+cases unstarted; a null exit code must never imply a successful solve.
+
 Tool decision and primary references (accessed 2026-10-16):
 
 - [MIT structural mechanics worked examples](https://ocw.mit.edu/courses/2-080j-structural-mechanics-fall-2013/d822a94a5e00663ee03a4909086181bb_MIT2_080JF13_ProbSet_10_Sol.pdf):

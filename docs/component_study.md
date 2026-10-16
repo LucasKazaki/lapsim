@@ -96,7 +96,9 @@ differences from Euler–Bernoulli are **0.07731% / 0.03905%**, decreasing from
 not an exact formulation equivalence or a torsion/material correlation.
 The FE beam expands into solid elements and includes shear. Complete measured
 values and input/output/log hashes are in
-[the compact receipt](evidence/e15-calculix-refinement.json).
+[the rerun receipt](evidence/e15-calculix-process-outcomes.json): 12 passed,
+zero failed/skipped, each actual solve exit 0. The
+[original receipt](evidence/e15-calculix-refinement.json) remains historical.
 
 ```text
 python quality/run_component_fe.py --ccx PATH_TO_CALCULIX_2.23 --output work/new-fe-run
@@ -106,7 +108,11 @@ python quality/run_component_runtime.py
 Use a fresh output directory for each FE run. No solver download or installation
 is automatic. The Windows distribution returns 201 for its successful `-v`
 query; that is retained explicitly, while every actual solve must return zero,
-write results and report completion. The author documentation was downloaded
+write results and report completion.
+Each attempted solve retains its exit code, timeout state and log hash. On a
+failure the runner writes its summary, marks remaining cases skipped, and then
+returns failure; null exits identify processes without a completed exit code.
+The author documentation was downloaded
 and checked for PIPE radius/thickness conventions. See the
 [frozen contract and dependency assessment](structural_study_contract.md) for
 Chrono, CalculiX, OpenModelica and FMI decisions and primary references.

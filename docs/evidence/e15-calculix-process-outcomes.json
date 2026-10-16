@@ -1,0 +1,242 @@
+{
+  "schema": "lapsim.component-fe-benchmark.v1",
+  "solver_version": "This is Version 2.23",
+  "version_probe_exit_code": 201,
+  "binary_sha256": "e18360eb32a5cd48f91a212c57069212cd8e27d2f798a599a78106bd0b3ecc1f",
+  "cases": [
+    {
+      "material": "synthetic_light_v1",
+      "elements": 4,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.01068290902554761,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "dc5e17569b7c7a8be0d4decd76e8306fe837d1380671455132939576c8551ddc",
+      "log_sha256": "7d15e75139169adf69ffb1457b0da69bd3023ac0650f8ebfd1b064231fa99f6b",
+      "dat_sha256": "072a6108b44c516d4aac91165508d10b877d9281bdc5aefc7115d6c3b56623be",
+      "fe_tip_y_m": 0.01032156,
+      "relative_difference": 0.03382496515541433
+    },
+    {
+      "material": "synthetic_light_v1",
+      "elements": 8,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.01068290902554761,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "84bf65333ef5aefc53c1f970d4ec09d231a99badfbaf0cb05b3ce1d05a3fbf6f",
+      "log_sha256": "f3daa86df1da542e4839b7f36ffb98a8e2e40ebdca7802b20f9b86bf661a05aa",
+      "dat_sha256": "f4c4c5ae36734945bc45023dcb1b91be1a2485683363d66ea3d009c72f1c740e",
+      "fe_tip_y_m": 0.01050949,
+      "relative_difference": 0.016233314833336898
+    },
+    {
+      "material": "synthetic_light_v1",
+      "elements": 16,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.01068290902554761,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "8df012738ccc8209e8877fd1261ae7fbc7c7d37c720fcbdb6b96edbefe482dcd",
+      "log_sha256": "79b3c3132028eb33bd2a93577a15e3371f7cdb9b46c7c624b64bc074b42694df",
+      "dat_sha256": "b483e90339eaa637eff24c14b93cf50ee3232e275ee3720eac304a4150eddcb4",
+      "fe_tip_y_m": 0.01060238,
+      "relative_difference": 0.007538117693881796
+    },
+    {
+      "material": "synthetic_light_v1",
+      "elements": 32,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.01068290902554761,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "fec43fd6baa867bbdcadb383b0a4588bf841c9258bb69852b884f977344ca635",
+      "log_sha256": "62b1ef4c7998d00bea03776ca840071edc8d472d742324fe98a429c4d4bc7757",
+      "dat_sha256": "db43e27f27f04f27bcbd23c5beb93e7bbaad86a4ce44f0a1cef08cee7605d398",
+      "fe_tip_y_m": 0.01064691,
+      "relative_difference": 0.003369777413766206
+    },
+    {
+      "material": "synthetic_light_v1",
+      "elements": 64,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.01068290902554761,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "d620dc3f55c67dc4309a30bf301eac9d40c33b05709d57d9607909c5f7853280",
+      "log_sha256": "9c2f20df53185e1193553c5dee07820bd5430c28b93afab261c0f73059ebb916",
+      "dat_sha256": "01e3250a480de1a26e4b21864d51633be78d48efdf1eea13e6708efb3eadd944",
+      "fe_tip_y_m": 0.01066667,
+      "relative_difference": 0.0015200939658641666
+    },
+    {
+      "material": "synthetic_light_v1",
+      "elements": 128,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.01068290902554761,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "acb31863c4ae78013f83b62e0d0ec8ef1c3f592b09b8234f22681b5626a7e2b5",
+      "log_sha256": "4105db81086b3378bf3b3fd8226db82b5a4c79887f5fcfe917f4a2fd95cd06ed",
+      "dat_sha256": "f736386fffa601ca845e761db686f14371587dbe66b047616439e8aac3c3d0b5",
+      "fe_tip_y_m": 0.01067465,
+      "relative_difference": 0.0007731064195958259
+    },
+    {
+      "material": "synthetic_dense_v1",
+      "elements": 4,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.003739018158941664,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "d9fa8ca0dc244a0a0544deca87499f78a1d1749943ddf3b8e577d6baf43039c1",
+      "log_sha256": "6cfd200cd63e4731237ce37d1bf85161f54524dcb49544ffeeeb6b69ab9d90cb",
+      "dat_sha256": "1edc04b8f4b6d3f8e4938ad576e5a01b17ae8298dd80df3f9a2ba52f1b70dddc",
+      "fe_tip_y_m": 0.003636604,
+      "relative_difference": 0.027390655671662323
+    },
+    {
+      "material": "synthetic_dense_v1",
+      "elements": 8,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.003739018158941664,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "83d0a801717566ddd7e01226a003646923fcc93a3421f37d384f0a775dc18139",
+      "log_sha256": "697568c2f8a206f6ca43b95a0bfd0ddbb893b4ddb1c230c9c310d1ec7869f9ec",
+      "dat_sha256": "ea2a2ea81278a9511045ebca7c8900b06ba09daccd903fe210c87a609d649bb6",
+      "fe_tip_y_m": 0.003690357,
+      "relative_difference": 0.013014421667167708
+    },
+    {
+      "material": "synthetic_dense_v1",
+      "elements": 16,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.003739018158941664,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "a474e078ff907b11bf04be601e5000736847df142077bbf52b6e0c67b58f2a3b",
+      "log_sha256": "4f5feec2c107d2ae1c71a70d2e242baf7d05ff8f0a4674726362266104eb0367",
+      "dat_sha256": "4c48fa444e830dc1d473fd16079020e8f9a9afa22672afc49f38dcd552bc61b9",
+      "fe_tip_y_m": 0.003716913,
+      "relative_difference": 0.005912022355066826
+    },
+    {
+      "material": "synthetic_dense_v1",
+      "elements": 32,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.003739018158941664,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "ca40f231770f3bf5a452cb40ae0ea4fd3a54af0573931634aae601e98240ddae",
+      "log_sha256": "6fe0f3139f998c5174696f206c6a7518d6b520d37302bde99d742cb778fc1367",
+      "dat_sha256": "fbe901bac34ba197edb396b3e782161a2037f5030befdfd3a8271a3afebc8c9f",
+      "fe_tip_y_m": 0.003729634,
+      "relative_difference": 0.002509792288444057
+    },
+    {
+      "material": "synthetic_dense_v1",
+      "elements": 64,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.003739018158941664,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "d13a3ce84664dfeffbbe4117da22453378f47232e067e7e4303e3d108f42ae67",
+      "log_sha256": "8f79516fb970a88e1144269694df87bb03140fb11dd817b53e85bb99ef279eae",
+      "dat_sha256": "7c91d35256928c1fc1bd8e2ecde92c7d34f42855588a83b2f608d99aaa1cd426",
+      "fe_tip_y_m": 0.003735272,
+      "relative_difference": 0.0010019098015625616
+    },
+    {
+      "material": "synthetic_dense_v1",
+      "elements": 128,
+      "element": "B32R PIPE",
+      "analytic_eb_tip_y_m": 0.003739018158941664,
+      "command": [
+        "ccx_static.exe",
+        "-i",
+        "beam"
+      ],
+      "status": "passed",
+      "solve_exit_code": 0,
+      "timed_out": false,
+      "input_sha256": "cd99cab2deb9b3c6b3b50c6ca1575eb25e43acffc58a0195f160d5b369334fe2",
+      "log_sha256": "5e095f454d71556cdc096cd3674433513586a0b8acc36297359e32b0528cb413",
+      "dat_sha256": "5fdd4f178e2df2284bba48051bb6256ac7796d30c240449187b5eee05f9aaa85",
+      "fe_tip_y_m": 0.003737558,
+      "relative_difference": 0.00039051935015932404
+    }
+  ],
+  "outcomes": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0
+  },
+  "limits": "Linear bending-only FE comparison, not torsion, material calibration or vehicle correlation; B32R expands to solid elements and includes shear."
+}
