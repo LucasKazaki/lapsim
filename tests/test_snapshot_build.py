@@ -17,7 +17,7 @@ def test_no_git_rebuild_preserves_handoff_and_hashes(tmp_path, monkeypatch):
     snapshot.mkdir()
     names = (
         "README.md", "START-HERE.txt", "AGENTS.md", "ENME408_IMPLEMENTATION_PLAN.md",
-        "pyproject.toml", "requirements-build.lock", "build_lapsim.cmd",
+        "pyproject.toml", "setup.py", "requirements-build.lock", "build_lapsim.cmd",
         "setup_lapsim.cmd", "setup_lapsim.ps1", "launch_lapsim.cmd", "packaging/LapSim.spec",
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",

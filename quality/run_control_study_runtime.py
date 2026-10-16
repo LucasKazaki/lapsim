@@ -16,6 +16,14 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "audit/control-study"
 
 
+def wait_result(page, count):
+    page.wait_for_function(
+        "n=>window.__controlResults.length>=n || !document.getElementById('control-error').hidden",
+        arg=count, timeout=180000,
+    )
+    assert page.locator("#control-error").is_hidden(), page.locator("#control-error").inner_text()
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     server = ThreadingHTTPServer(
@@ -42,6 +50,8 @@ def main():
             )
             page.get_by_role("link", name="Torque control", exact=True).click()
             page.wait_for_url("**/control.html")
+            assert page.title() == "LapSim · Torque control study"
+            assert "N·m" in page.locator("body").text_content()
             assert page.locator("#control-case").input_value() == "launch"
             page.locator("#control-run").click()
             page.locator("#control-cancel").click()
@@ -50,9 +60,7 @@ def main():
             for count, case in enumerate(("launch", "split_grip", "stale"), 1):
                 page.locator("#control-case").select_option(case)
                 page.locator("#control-run").click()
-                page.wait_for_function(
-                    "n=>window.__controlResults.length>=n", arg=count, timeout=180000
-                )
+                wait_result(page, count)
                 with page.expect_download() as event:
                     page.locator("#control-save").click()
                 path = OUT / (case + ".json")
@@ -131,8 +139,27 @@ def main():
                 page.locator("#control-save").is_disabled()
                 and page.locator("#control-results").is_hidden()
             )
+            page.locator("#control-case").select_option("full_braking")
+            page.locator("#control-speed").fill(".01")
+            assert page.locator("#control-form").evaluate("form=>form.checkValidity()")
+            page.locator("#control-run").click()
+            wait_result(page, 4)
+            with page.expect_download() as event:
+                page.locator("#control-save").click()
+            stop_path = OUT / "near-stop-braking.json"
+            event.value.save_as(stop_path)
+            stopped = decode_json(stop_path.read_bytes(), maximum_bytes=40_000_000)
+            assert replay_control_comparison(stopped)["model_agreement"]
+            for run in stopped["runs"].values():
+                assert run["schema"] == "lapsim.closed-loop.record.v2"
+                assert run["result"]["final_state"]["wheel_stop_events"] >= 4
+                assert run["result"]["pack_draw_j"] == 0
+                assert all(
+                    w >= 0
+                    for w in run["result"]["final_state"]["plant"]["wheel_speeds_rad_s"]
+                )
             page.locator("#control-file").set_input_files(str(OUT / "launch.json"))
-            page.wait_for_function("window.__controlResults.length>=4", timeout=180000)
+            wait_result(page, 5)
             assert page.locator("#control-speed").is_disabled()
             assert page.locator("#control-run").is_disabled()
             assert "Imported comparison" in page.locator("#control-status").inner_text()
@@ -156,8 +183,9 @@ def main():
             assert page.locator("#control-run").is_enabled()
             assert not errors, errors
             summary = {
-                "actual_worker_comparisons": 3,
-                "host_replayed_runs": 6,
+                "actual_worker_comparisons": 4,
+                "host_replayed_runs": 8,
+                "near_stop_braking_checked": True,
                 "browser_replayed_imported_runs": 2,
                 "import_preserves_exact_record": True,
                 "invalid_import_rejected": True,

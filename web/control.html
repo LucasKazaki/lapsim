@@ -5,7 +5,7 @@
 <div class="workspace"><section class="panel" aria-labelledby="setup-title"><h2 id="setup-title">Set up a comparison</h2><form id="control-form">
 <label for="control-case">Scenario</label><select id="control-case"><option value="launch">Launch</option><option value="corner_exit">Corner exit</option><option value="split_grip">Split grip</option><option value="actuator_loss">Rear actuator loss</option><option value="near_empty">Near-empty pack</option><option value="full_braking">Full-pack braking</option><option value="overlap">Pedal overlap</option><option value="stale">Stale sensors</option><option value="reordered">Delayed and reordered</option><option value="restart">Controller restart</option></select>
 <p class="note">Four-wheel dynamic plant<br>Two independent rear actuators · synthetic<br>Backend: Python reference in this browser</p>
-<label for="control-speed">Starting speed <span>m/s</span></label><input id="control-speed" type="number" min="0" max="30" step="0.1" value="0" required>
+<label for="control-speed">Starting speed <span>m/s</span></label><input id="control-speed" type="number" min="0" max="30" step="any" value="0" required>
 <label for="control-steer">Road-wheel steering <span>deg</span></label><input id="control-steer" type="number" min="-10" max="10" step="0.1" value="0" required>
 <label for="control-duration">Duration <span>s</span></label><input id="control-duration" type="number" min="0.1" max="2" step="0.01" value="1" required>
 <button id="control-run" type="submit">Run matched comparison</button><button id="control-cancel" type="button" hidden>Cancel calculation</button></form>

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from math import ceil, isfinite
 
 from .actuation import ActuationConfig, constrain_actuation, four_numbers
@@ -14,6 +14,13 @@ from .planar import (
     PlanarVehicleConfig,
     evaluate_planar_dynamics,
 )
+
+BRAKE_STOP_SPEED_RAD_S = 1e-9
+MAX_POWERED_WORK = 50_000
+
+
+class _BrakeStopTrial(Exception):
+    """An unaccepted numerical stage crossed a friction-braked wheel stop."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,6 +36,10 @@ class PoweredState:
     driver_proxy_impulse_ns: float = 0.0
     tire_longitudinal_impulse_ns: float = 0.0
     absolute_contact_force_error_ns: float = 0.0
+    wheel_stop_dissipation_j: float = 0.0
+    integration_substeps: int = 0
+    integration_trials: int = 0
+    wheel_stop_events: int = 0
 
     def __post_init__(self) -> None:
         if not isinstance(self.plant, PlanarState):
@@ -44,8 +55,14 @@ class PoweredState:
             "driver_proxy_impulse_ns",
             "tire_longitudinal_impulse_ns",
             "absolute_contact_force_error_ns",
+            "wheel_stop_dissipation_j",
         ):
             _finite(getattr(self, name), name)
+        for name in ("integration_substeps", "integration_trials", "wheel_stop_events"):
+            if type(getattr(self, name)) is not int or getattr(self, name) < 0:
+                raise ValueError("integration counters must be nonnegative integers")
+        if self.wheel_stop_dissipation_j < 0:
+            raise ValueError("wheel-stop dissipation cannot be negative")
 
 
 def _vector(state: PoweredState) -> tuple:
@@ -188,41 +205,148 @@ def advance_powered(
         raise ValueError("powered integration exceeds the work budget")
     h = timestep_s / count
     conditions = environment or PlanarEnvironment()
+    trials = state.integration_trials
     for _ in range(count):
-        value = _vector(state)
-
-        def derivative(values):
-            return evaluate_powered(
+        remaining = h
+        while remaining > 0:
+            rate = evaluate_powered(
                 config,
                 actuation,
-                _state(values),
+                state,
                 command_nm,
                 steering,
                 brakes,
                 available,
-                h,
+                remaining,
                 conditions,
                 driver_proxy_n,
             )[0]
-
-        def shifted(rate, scale, base=value):
-            return tuple(x + scale * dx for x, dx in zip(base, rate, strict=True))
-
-        k1 = derivative(value)
-        k2 = derivative(shifted(k1, h / 2))
-        k3 = derivative(shifted(k2, h / 2))
-        k4 = derivative(shifted(k3, h))
-        state = _state(
-            tuple(
-                x + h / 6 * (a + 2 * b + 2 * c + d)
-                for x, a, b, c, d in zip(value, k1, k2, k3, k4, strict=True)
+            stops = [
+                i
+                for i, omega in enumerate(state.plant.wheel_speeds_rad_s)
+                if 0 < omega <= BRAKE_STOP_SPEED_RAD_S
+                and brakes[i] > 0
+                and rate[6 + i] < 0
+            ]
+            if stops:
+                wheels = list(state.plant.wheel_speeds_rad_s)
+                loss = (
+                    0.5 * config.wheel_inertia_kgm2 * sum(wheels[i] ** 2 for i in stops)
+                )
+                for i in stops:
+                    wheels[i] = 0.0
+                state = replace(
+                    state,
+                    plant=replace(
+                        state.plant,
+                        wheel_speeds_rad_s=four_numbers(wheels, "stopped wheels"),
+                    ),
+                    wheel_stop_dissipation_j=state.wheel_stop_dissipation_j + loss,
+                    wheel_stop_events=state.wheel_stop_events + len(stops),
+                )
+                if trials + state.wheel_stop_events > MAX_POWERED_WORK:
+                    raise ValueError(
+                        "powered integration exceeds the actual work budget"
+                    )
+                continue
+            trial_h = min(
+                [remaining]
+                + [
+                    0.25 * omega / -rate[6 + i]
+                    for i, omega in enumerate(state.plant.wheel_speeds_rad_s)
+                    if omega > 0 and brakes[i] > 0 and rate[6 + i] < 0
+                ]
             )
-        )
-        if not 0 <= state.pack_energy_j <= actuation.pack_capacity_j:
-            raise ValueError(
-                "pack energy crossed its physical bounds; integration rejected"
+            while True:
+                trials += 1
+                if trials + state.wheel_stop_events > MAX_POWERED_WORK:
+                    raise ValueError(
+                        "powered integration exceeds the actual work budget"
+                    )
+                try:
+                    candidate = _rk_trial(
+                        config,
+                        actuation,
+                        state,
+                        command_nm,
+                        steering,
+                        brakes,
+                        available,
+                        trial_h,
+                        conditions,
+                        driver_proxy_n,
+                    )
+                    break
+                except _BrakeStopTrial:
+                    trial_h /= 2
+                    if remaining - trial_h == remaining:
+                        raise ValueError(
+                            "brake stop exceeds the supported temporal resolution"
+                        ) from None
+            state = replace(
+                candidate,
+                integration_substeps=state.integration_substeps + 1,
+                integration_trials=trials,
+                wheel_stop_events=state.wheel_stop_events,
+                wheel_stop_dissipation_j=state.wheel_stop_dissipation_j,
             )
+            remaining -= trial_h
+            if not 0 <= state.pack_energy_j <= actuation.pack_capacity_j:
+                raise ValueError(
+                    "pack energy crossed its physical bounds; integration rejected"
+                )
     return state
+
+
+def _rk_trial(
+    config,
+    actuation,
+    state,
+    command,
+    steering,
+    brakes,
+    available,
+    h,
+    environment,
+    driver_proxy_n,
+):
+    value = _vector(state)
+
+    def check_wheels(values):
+        for i, omega in enumerate(values[6:10]):
+            if omega < 0:
+                if brakes[i] > 0:
+                    raise _BrakeStopTrial()
+                raise ValueError("reverse wheel motion is outside the powered domain")
+
+    def derivative(values):
+        check_wheels(values)
+        return evaluate_powered(
+            config,
+            actuation,
+            _state(values),
+            command,
+            steering,
+            brakes,
+            available,
+            h,
+            environment,
+            driver_proxy_n,
+        )[0]
+
+    def shifted(rate, scale):
+        return tuple(x + scale * dx for x, dx in zip(value, rate, strict=True))
+
+    k1 = derivative(value)
+    k2 = derivative(shifted(k1, h / 2))
+    k3 = derivative(shifted(k2, h / 2))
+    k4 = derivative(shifted(k3, h))
+    final = tuple(
+        x + h / 6 * (a + 2 * b + 2 * c + d)
+        for x, a, b, c, d in zip(value, k1, k2, k3, k4, strict=True)
+    )
+    check_wheels(final)
+    return _state(final)
 
 
 def energy_residual_j(
@@ -245,6 +369,8 @@ def energy_residual_j(
         - initial.conversion_loss_j
         + final.contact_dissipation_j
         - initial.contact_dissipation_j
+        + final.wheel_stop_dissipation_j
+        - initial.wheel_stop_dissipation_j
         - (final.friction_brake_work_j - initial.friction_brake_work_j)
         - (final.external_work_j - initial.external_work_j)
     )

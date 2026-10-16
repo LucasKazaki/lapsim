@@ -12,7 +12,7 @@ import shutil
 import subprocess
 import sys
 import sysconfig
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, gettempdir
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,7 +53,7 @@ def stage_assets() -> Path:
             paths.extend((ROOT / folder).rglob(pattern))
     paths.extend(ROOT / name for name in (
         "README.md", "START-HERE.txt", "AGENTS.md", "ENME408_IMPLEMENTATION_PLAN.md",
-        "pyproject.toml", "requirements-build.lock", "build_lapsim.cmd",
+        "pyproject.toml", "setup.py", "requirements-build.lock", "build_lapsim.cmd",
         "setup_lapsim.cmd", "setup_lapsim.ps1", "launch_lapsim.cmd", "packaging/LapSim.spec",
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",
@@ -175,7 +175,13 @@ def main() -> int:
     report_path = output / "portable-self-test.json"
     # Launch a copy outside the checkout, with no Python/Git on PATH and no
     # optional engineering evidence or existing user data.
-    with TemporaryDirectory(prefix="LapSim team test ") as temporary:
+    # Keep the owned directory's cleanup on the same extended-path route as
+    # the frozen help copy; ordinary Win32 cleanup cannot unlink long names.
+    temporary_parent = gettempdir()
+    if os.name == "nt" and not temporary_parent.startswith("\\\\?\\"):
+        temporary_parent = ("\\\\?\\UNC\\" + temporary_parent[2:]
+                            if temporary_parent.startswith("\\\\") else "\\\\?\\" + temporary_parent)
+    with TemporaryDirectory(prefix="LapSim team test ", dir=temporary_parent) as temporary:
         sandbox = Path(temporary)
         copied_exe = sandbox / "LapSim.exe"
         sandbox_report = sandbox / "portable-self-test.json"

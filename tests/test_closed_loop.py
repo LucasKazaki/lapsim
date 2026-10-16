@@ -1,8 +1,9 @@
 """Frozen TC scenario observations through the actual causal controller loop."""
 
+import json
 from copy import deepcopy
 from dataclasses import replace
-import json
+from pathlib import Path
 
 import pytest
 
@@ -41,9 +42,48 @@ def test_scenario_rejects_boolean_initial_physics(field):
 
 def test_scenario_rejects_boolean_wheel_or_road_physics():
     with pytest.raises(ValueError, match="ordinary|boolean|finite"):
-        replace(scenario(), initial_state=PlanarState(wheel_speeds_rad_s=(False, 0, 0, 0)))
+        replace(
+            scenario(), initial_state=PlanarState(wheel_speeds_rad_s=(False, 0, 0, 0))
+        )
     with pytest.raises(ValueError, match="ordinary|boolean|finite"):
-        scenario(environment=PlanarEnvironment(road=PlanarRoad(base_friction_multiplier=True)))
+        scenario(
+            environment=PlanarEnvironment(
+                road=PlanarRoad(base_friction_multiplier=True)
+            )
+        )
+
+
+def test_accepted_v1_launch_keeps_exact_physics_and_energy_after_stop_repair():
+    frozen = json.loads(
+        (
+            Path(__file__).parent / "fixtures/closed-loop-v1-accepted-launch.json"
+        ).read_text()
+    )
+    assert frozen["source_commit"] == "85076f1c5c58e37b67c155437337505759e753db"
+    assert frozen["dirty_worktree"] is False
+    record = run_closed_loop(ClosedLoopScenario.from_dict(frozen["scenario"]))
+    actual = json.loads(json.dumps(record["result"]["final_state"]))
+    for key, value in frozen["expected_final_state"].items():
+        assert actual[key] == value, key
+    assert actual["wheel_stop_events"] == 0 and actual["wheel_stop_dissipation_j"] == 0
+
+
+def test_near_stop_closed_loop_records_brake_event_and_keeps_fixed_clocks():
+    base = scenario(speed=0.01)
+    record = run_closed_loop(
+        replace(
+            base,
+            driver=(
+                DriverPoint(0, brake_fraction=0.2),
+                DriverPoint(200_000, brake_fraction=0.2),
+            ),
+        )
+    )
+    result = record["result"]
+    assert result["controller_calls"] == 20 and result["plant_ticks"] == 200
+    assert result["final_state"]["wheel_stop_events"] >= 4
+    assert all(w >= 0 for w in result["final_state"]["plant"]["wheel_speeds_rad_s"])
+    assert replay_closed_loop(json.loads(json.dumps(record)))["model_agreement"]
 
 
 def test_tc_s01_launch_has_causal_snapshot_and_distinct_requested_guarded_actual_contact_stages():
@@ -89,7 +129,7 @@ def test_tc_s02_s03_mirrored_corner_exit_swaps_wheels_and_yaw_sign():
     )
 
 
-@pytest.mark.parametrize("steer", [0, .06])
+@pytest.mark.parametrize("steer", [0, 0.06])
 def test_tc_s04_split_grip_strategy_uses_same_inputs_and_bounded_shared_power(steer):
     env = PlanarEnvironment(
         road=PlanarRoad(patches=(RectangularGripPatch(-100, 100, 0, 100, 0.2),))
@@ -167,19 +207,28 @@ def test_tc_s08_stale_sensor_never_reuses_an_allowed_propulsive_command():
     stale = [row for row in result["controller_events"] if row["time_us"] >= 90_000]
     assert stale and all(not row["core"]["command_allowed"] for row in stale)
     assert all(row["core"]["allocator"]["fault"] == "stale_input" for row in stale)
-    assert all(row["actual_actuator"]["wheel_torques_nm"] == (0.,)*4
-               for row in result["observations"] if row["time_us"] >= 90_000)
+    assert all(
+        row["actual_actuator"]["wheel_torques_nm"] == (0.0,) * 4
+        for row in result["observations"]
+        if row["time_us"] >= 90_000
+    )
 
 
 def test_tc_s08_invalid_driver_sample_inhibits_actual_torque_after_its_arrival():
     base = scenario()
-    program = (DriverPoint(0, .5), DriverPoint(50_000, .5, valid=False),
-               DriverPoint(200_000, .5, valid=False))
+    program = (
+        DriverPoint(0, 0.5),
+        DriverPoint(50_000, 0.5, valid=False),
+        DriverPoint(200_000, 0.5, valid=False),
+    )
     result = run_closed_loop(replace(base, driver=program))["result"]
     late = [e for e in result["controller_events"] if e["time_us"] >= 60_000]
     assert late and all(not e["core"]["command_allowed"] for e in late)
-    assert all(row["actual_actuator"]["wheel_torques_nm"] == (0.,)*4
-               for row in result["observations"] if row["time_us"] >= 60_000)
+    assert all(
+        row["actual_actuator"]["wheel_torques_nm"] == (0.0,) * 4
+        for row in result["observations"]
+        if row["time_us"] >= 60_000
+    )
 
 
 def test_tc_s09_delay_duplicate_order_and_restart_preserve_causality():
@@ -198,9 +247,9 @@ def test_tc_s09_delay_duplicate_order_and_restart_preserve_causality():
     assert all(
         row["source_us"] <= row["arrival_us"] for row in result["sensor_arrivals"]
     )
-    restarted = [
+    restarted = next(
         row for row in result["controller_events"] if row["time_us"] == 80_000
-    ][0]
+    )
     assert restarted["core"]["restart_requested"]
     assert restarted["core"]["fault"]["generation"] == 1
 
@@ -222,7 +271,9 @@ def test_tc_s10_controller_period_sweep_is_separate_sampling_sensitivity():
     slow = run_closed_loop(replace(base, controller_period_us=20_000))["result"]
     assert fast["plant_ticks"] == slow["plant_ticks"] == 200
     assert fast["controller_calls"] == 20 and slow["controller_calls"] == 10
-    assert [e["time_us"] for e in slow["controller_events"]] == list(range(0, 200_000, 20_000))
+    assert [e["time_us"] for e in slow["controller_events"]] == list(
+        range(0, 200_000, 20_000)
+    )
     assert fast["final_state"]["plant"]["u_mps"] != pytest.approx(
         slow["final_state"]["plant"]["u_mps"], abs=1e-8
     )

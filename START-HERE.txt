@@ -11,8 +11,9 @@ Public release/site deployment are deferred by the owner during this run.
 
 SOURCE CHECKOUT - existing Windows route
 Install a supported 64-bit Python with Tk as described in the README, then run:
-  setup_lapsim.cmd
-  launch_lapsim.cmd
+  python scripts/bootstrap.py --launch
+Read-only repeat check: python scripts/bootstrap.py --check --desktop
+The script finds its own checkout, even when called from another directory.
 Setup may need internet access to install dependencies. The public synthetic
 example must not require private team data, an AI account or hardware.
 
