@@ -91,7 +91,8 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
     assets.mkdir(parents=True, exist_ok=True)
     if not runtime_only:
         for name in ("index.html", "app.js", "styles.css", "worker.js",
-                     "bench.html", "bench.css", "bench.js", "bench-data.js"):
+                     "bench.html", "bench.css", "bench.js", "bench-data.js",
+                     "basic.html", "basic.css", "basic.js"):
             source = ROOT / "web" / name
             if not source.is_file():
                 raise FileNotFoundError(f"Frontend file is missing: {source}")
