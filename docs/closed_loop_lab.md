@@ -16,7 +16,10 @@ Run the matched comparison. Both strategies share driver inputs, plant,
 sensor realization, clocks and physical limits. Only allocation strategy changes.
 Default launch may produce identical outcomes; traction limiting is not assumed
 to improve every metric. Inspect distance/speed together with slip, energy,
-unmet command and the raw driver/contact-force proxy error.
+unmet command and the raw driver/contact-force proxy error. Unmet propulsion
+and rejected regeneration have separate nonnegative command-stage magnitudes
+and time integrals; rejection is measured before actuator response lag. Actual
+torque, contact forces and pack energy remain separately recorded.
 
 Desktop and browser can save comparison JSON and open it for checked replay.
 Both stored runs execute again before the imported result appears. Imported
@@ -101,7 +104,12 @@ python -m lapsim.experiments.closed_loop --replay native-launch.json --native-li
 The library suffix is `.dll` on Windows and `.so` on other supported hosts.
 Use the builder's actual returned filename. Native results come from C owners;
 Python does not supply their numeric outputs. Artifact identity is checked on
-replay. A missing compiler/library fails explicitly. The ordinary desktop and
+replay. Keep the builder's adjacent `build.json` with the library when copying
+it. Loading verifies its binary hash, complete current C/header hashes and frozen
+numeric/compiler recipe before native execution. Compiler invocation/version,
+arguments and source hashes are bound into the recorded native build identity.
+This receipt is reproducibility evidence, not a signed attestation. A missing
+compiler/library/receipt fails explicitly. The ordinary desktop and
 browser demo does not require a native compiler.
 
 ## Virtual STM32F405
