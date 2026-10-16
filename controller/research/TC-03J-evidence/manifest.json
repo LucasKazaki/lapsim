@@ -1,0 +1,628 @@
+{
+  "schema": "enme408.allocator-arm-public-evidence-manifest.v1",
+  "scope": "Exact public file bytes; excludes this manifest to keep bindings acyclic. Full retained attempt inventory/public aliases are in retained-artifact-manifest.json.",
+  "actual_receipt_sha256": "ec187f77bbc2dd45303f78edcf859d1207e91e8469e83627166ec6d9e8a571bd",
+  "independent_review_sha256": "541f42ef1d2b113d9842fabc54a43cbad3274869636e5208a1a3cc1237ef8f13",
+  "files": [
+    {
+      "path": "accounting-repair-v1/driver-and-tests.diff",
+      "bytes": 23966,
+      "sha256": "832fe70e939616a45aa8f69d0a6a5d8410210d68447e62840a1125a2eef9a017"
+    },
+    {
+      "path": "accounting-repair-v1/old-guard-tests.txt",
+      "bytes": 1502,
+      "sha256": "a1e5b9e800f8dc3388c1d3cdf542cb46352b1512fc0a378fa787e93c4e45edd5"
+    },
+    {
+      "path": "accounting-repair-v1/shared-tests.txt",
+      "bytes": 3286,
+      "sha256": "23fabf25d5d69e3c9bd72bb4e8956fde41504f6b293f2736fa5bc1e92992d0df"
+    },
+    {
+      "path": "accounting-repair-v1/software-freeze.json",
+      "bytes": 823,
+      "sha256": "1ffa92f8b24c9cc76dab4c30044823da533938a787dd4e13c2f982c5344ea65c"
+    },
+    {
+      "path": "accounting-repair-v1/source-handoff.json",
+      "bytes": 10606,
+      "sha256": "c8cd8687a3a642eea950c822f543bb497e41f36c4b1fa34b1359a36b07b546d6"
+    },
+    {
+      "path": "accounting-repair-v1/test-log.txt",
+      "bytes": 5960,
+      "sha256": "d061e89285738dc8df212b2061e6bf4dd3c6ac82a114d33119f77b0cb8b33f8a"
+    },
+    {
+      "path": "actual-cli.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "actual-cli.stdout.txt",
+      "bytes": 149,
+      "sha256": "755c5345686250eb93e69d672db995f135ea23be8298629e8eed14f7815f059b"
+    },
+    {
+      "path": "actual-receipt.json",
+      "bytes": 165613,
+      "sha256": "ec187f77bbc2dd45303f78edcf859d1207e91e8469e83627166ec6d9e8a571bd"
+    },
+    {
+      "path": "executed-allocator_cortex_m4_objects.py.txt",
+      "bytes": 28707,
+      "sha256": "132b2fe3ec9d7ffb2b7a8d0efc7b153ce547192c2fea99034ccc855cb8910ce4"
+    },
+    {
+      "path": "executed-historical-baseline.json",
+      "bytes": 63395,
+      "sha256": "beb053e98a5410381bd0b02a8c96d59e39f4ff9c9419f1b7622de79d60806e21"
+    },
+    {
+      "path": "executed-protocol.json",
+      "bytes": 27343,
+      "sha256": "6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912"
+    },
+    {
+      "path": "executed-shared-helper.py.txt",
+      "bytes": 21282,
+      "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090"
+    },
+    {
+      "path": "full-host-tests.txt",
+      "bytes": 1513,
+      "sha256": "76367a323de5916e9a308fed2592d8bc6d50683fc18ac6eb56578d96fa494360"
+    },
+    {
+      "path": "independent-artifact-review.json",
+      "bytes": 82260,
+      "sha256": "541f42ef1d2b113d9842fabc54a43cbad3274869636e5208a1a3cc1237ef8f13"
+    },
+    {
+      "path": "independent-auditor/allocator-arm-root-audit-attempt1.txt",
+      "bytes": 690,
+      "sha256": "f72329d0333c17882e4d4fe38a3b264fa062679b230014f09c1868ed7b680636"
+    },
+    {
+      "path": "independent-auditor/allocator-arm-root-audit-attempt2.txt",
+      "bytes": 665,
+      "sha256": "cb3f7d055d8293b269c06ce6fa126794afcba40073369a6a0bcf584c033acedd"
+    },
+    {
+      "path": "independent-auditor/allocator-arm-root-audit-attempt3.txt",
+      "bytes": 453,
+      "sha256": "3ab241a5631c3dadfca81d5efeac2a9f25138c4e0b8b0b19496be4e687cdf5de"
+    },
+    {
+      "path": "independent-auditor/audit_allocator_arm_root_before_archive_path_repair.py.txt",
+      "bytes": 14117,
+      "sha256": "14c432ac4e773a2893722f82077f5424a411f6970dcbd698fb8e327adede8d9d"
+    },
+    {
+      "path": "independent-auditor/audit_allocator_arm_root_before_listing_parser_repair.py.txt",
+      "bytes": 12915,
+      "sha256": "17b3bf2a8e511a4dd0fd9a223be543ce793c8bdad12797299efdbec7c88b849c"
+    },
+    {
+      "path": "independent-auditor/audit_allocator_arm_root_before_relocation_parser_repair.py.txt",
+      "bytes": 13591,
+      "sha256": "d252d8c2845fe1c620419c7cab348971fe99a0b3497ac76ec8942cbc8f6943a9"
+    },
+    {
+      "path": "independent-auditor/audit_allocator_arm_root_v1.py.txt",
+      "bytes": 14267,
+      "sha256": "4821f10b7f14e1905f35703675056ff022cfb359af33ed331e51a3ffc31cc292"
+    },
+    {
+      "path": "independent-auditor/audit_guard_arm_annex.py.txt",
+      "bytes": 12814,
+      "sha256": "19add6395a1be6367984363349bee10a60ab0e0dc066368fd34ebd6ddf0026e1"
+    },
+    {
+      "path": "logs/compile-1-hard-torque_allocator.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-1-hard-torque_allocator.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-1-softfp-torque_allocator.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-1-softfp-torque_allocator.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-2-hard-torque_allocator.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-2-hard-torque_allocator.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-2-softfp-torque_allocator.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-2-softfp-torque_allocator.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-0.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-0.stdout.txt",
+      "bytes": 18797,
+      "sha256": "b3baa4b4a4baeb598b2c772043b9c44691f7add707e41ab5b6f699d8dbd233a6"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-1.stdout.txt",
+      "bytes": 203,
+      "sha256": "1fa51de781c61cb3fe1179b3fd4ca64eaa5d130d03e209e5dcedd9b6adf25783"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-2.stdout.txt",
+      "bytes": 1228,
+      "sha256": "160bc07596ff737e4239e8df849b2dbde5e73bf3f5d770bd6a2ca9551f48f85a"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-3.stdout.txt",
+      "bytes": 274,
+      "sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-4.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_allocator-4.stdout.txt",
+      "bytes": 49810,
+      "sha256": "116126741ea89bc2c439b3a57f47524ee59a39d7a04618ac3d1e67072a0fe005"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-0.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-0.stdout.txt",
+      "bytes": 18679,
+      "sha256": "558cb395ce4d9b8921925d796511077fab5226af8010410b545173d51c49f733"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-1.stdout.txt",
+      "bytes": 205,
+      "sha256": "034350e94b66364f75905c91ee14e6be65d5ef90d0a3898ca4e8b6b30afe537e"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-2.stdout.txt",
+      "bytes": 1230,
+      "sha256": "026221f906a9ad42fbacc1bbd9df5d9105a626c28e5732ac9f8d9aa3d5b1ca88"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-3.stdout.txt",
+      "bytes": 274,
+      "sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-4.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_allocator-4.stdout.txt",
+      "bytes": 50066,
+      "sha256": "7e51fc0f2b3319545e0423521ae7302d30b425a2d53a8826fee10ee1cb163a4e"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-0.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-0.stdout.txt",
+      "bytes": 18797,
+      "sha256": "d554958990cf1012168f1ae4b28b883dc4f3443c208abdd33464bbe7ad55bfc8"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-1.stdout.txt",
+      "bytes": 203,
+      "sha256": "d70ea0ad63950390aaeb6ea04e1b5ac213a6265d2f56f1fdcf0d912b68816cc3"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-2.stdout.txt",
+      "bytes": 1228,
+      "sha256": "40920f0990f4946860bfec421c64e87e47e7978c523393a63f617f2b88bef31d"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-3.stdout.txt",
+      "bytes": 274,
+      "sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-4.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_allocator-4.stdout.txt",
+      "bytes": 49810,
+      "sha256": "4a213285cf9070456dfb964774263b0dd232f32235d6e3b952b678dba747a5d5"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-0.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-0.stdout.txt",
+      "bytes": 18679,
+      "sha256": "a1b64df43c7f51d3fbd14ab4acd04ecbd7391e4e6b2f569b89075615de0e9431"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-1.stdout.txt",
+      "bytes": 205,
+      "sha256": "91050ad1e667ef732d59fab98354ef3b5175c1d6d374ced782819d43dc25bd31"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-2.stdout.txt",
+      "bytes": 1230,
+      "sha256": "359a00302e5026335ec03a44201cbf8dab342b63a93fbcd5ce654e87c379827a"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-3.stdout.txt",
+      "bytes": 274,
+      "sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-4.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_allocator-4.stdout.txt",
+      "bytes": 50066,
+      "sha256": "6940ffc953e0d676a1e423987c3ae7cd872ebc0ac15519b452c5eac2756b5e40"
+    },
+    {
+      "path": "logs/multilib-hard.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/multilib-hard.stdout.txt",
+      "bytes": 62,
+      "sha256": "3eef8e35c2edf63d53216f3f13beef6325ddc2b6ec4158435e7374309215c974"
+    },
+    {
+      "path": "logs/multilib-softfp.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/multilib-softfp.stdout.txt",
+      "bytes": 62,
+      "sha256": "7eccd009f7d3a027c6477094c17ec2c90858ee8c2f994aa88379964c7b2f0261"
+    },
+    {
+      "path": "logs/version-clang.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/version-clang.stdout.txt",
+      "bytes": 235,
+      "sha256": "5253bf2711948e8d49ce32b64fe1946a39bf0fc05e576618ec95f5ad3e4276cc"
+    },
+    {
+      "path": "logs/version-llvm-nm.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/version-llvm-nm.stdout.txt",
+      "bytes": 133,
+      "sha256": "828d1bd5e3fe0e0c87afc32ed08a85e4b2f64032cb3a7c6e789b61a4da10afa6"
+    },
+    {
+      "path": "logs/version-llvm-objdump.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/version-llvm-objdump.stdout.txt",
+      "bytes": 449,
+      "sha256": "e080ab287e5a9ef1d874477b78c0d77c7d05c0e8ce15c4f874d6ef93b48bcde8"
+    },
+    {
+      "path": "logs/version-llvm-readobj.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/version-llvm-readobj.stdout.txt",
+      "bytes": 101,
+      "sha256": "3f8af3c3b94795d47dcf6db50ee24cc7c87445be73e53af38459599fe07c8271"
+    },
+    {
+      "path": "logs/version-llvm-size.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/version-llvm-size.stdout.txt",
+      "bytes": 226,
+      "sha256": "c5ca086372ff5f6022e36968047bec07534d6a606cad8f924a40a881fa916180"
+    },
+    {
+      "path": "native-snapshot/torque_allocator.c.txt",
+      "bytes": 6677,
+      "sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4"
+    },
+    {
+      "path": "native-snapshot/torque_allocator.h.txt",
+      "bytes": 1823,
+      "sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee"
+    },
+    {
+      "path": "native-snapshot/torque_contract.h.txt",
+      "bytes": 3938,
+      "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+    },
+    {
+      "path": "objects/repeat-1-hard-torque_allocator.d",
+      "bytes": 4730,
+      "sha256": "f05a9be7a5b783352e92edee685819d1042bce2f17d30e0b8b36d3d68e8ab6a4"
+    },
+    {
+      "path": "objects/repeat-1-hard-torque_allocator.o",
+      "bytes": 6432,
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60"
+    },
+    {
+      "path": "objects/repeat-1-hard-torque_allocator.su",
+      "bytes": 250,
+      "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0"
+    },
+    {
+      "path": "objects/repeat-1-softfp-torque_allocator.d",
+      "bytes": 4732,
+      "sha256": "45c57627419a1034daf1cfa8b7b787d025fa663f132fd4fef10967e59dc15bfc"
+    },
+    {
+      "path": "objects/repeat-1-softfp-torque_allocator.o",
+      "bytes": 6456,
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf"
+    },
+    {
+      "path": "objects/repeat-1-softfp-torque_allocator.su",
+      "bytes": 250,
+      "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0"
+    },
+    {
+      "path": "objects/repeat-2-hard-torque_allocator.d",
+      "bytes": 4730,
+      "sha256": "0c0fd1318549574aab840c45263b768fd522978777cf895997846aec1f515b69"
+    },
+    {
+      "path": "objects/repeat-2-hard-torque_allocator.o",
+      "bytes": 6432,
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60"
+    },
+    {
+      "path": "objects/repeat-2-hard-torque_allocator.su",
+      "bytes": 250,
+      "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0"
+    },
+    {
+      "path": "objects/repeat-2-softfp-torque_allocator.d",
+      "bytes": 4732,
+      "sha256": "0d0c445175e6f9fa49782b06766310feafa1132baa29ae62208dfa36ff3d0b79"
+    },
+    {
+      "path": "objects/repeat-2-softfp-torque_allocator.o",
+      "bytes": 6456,
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf"
+    },
+    {
+      "path": "objects/repeat-2-softfp-torque_allocator.su",
+      "bytes": 250,
+      "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0"
+    },
+    {
+      "path": "old-guard-tests.txt",
+      "bytes": 1502,
+      "sha256": "4fe978b2f0b8d908b0474cc5f839c7d4c67c7b16c05be187113a3a2fc7728b03"
+    },
+    {
+      "path": "owner-audit.log",
+      "bytes": 226,
+      "sha256": "57042880eacb8f53029fb068a3bc759fa404aa210f31b196228600e3dcb42f7d"
+    },
+    {
+      "path": "owner-auditor.py.txt",
+      "bytes": 7517,
+      "sha256": "17f726025f402de66ea71f5b8f2fef12e3a48e90d585dd438576c9bf79f05d36"
+    },
+    {
+      "path": "owner-raw-file-audit.json",
+      "bytes": 70950,
+      "sha256": "c6676284220aceda8ea14dcaeac31ec3e3f4d56d5fe3dca0cc7ab5581eef9267"
+    },
+    {
+      "path": "pre-call-review-v1/before-freeze.json",
+      "bytes": 1211,
+      "sha256": "a80214a623cd70c59b264133f5b1c9be4ee3903f2a12e36a0b54b20a3cab0c4e"
+    },
+    {
+      "path": "pre-call-review-v1/root-source-findings.json",
+      "bytes": 1038,
+      "sha256": "37fe88bab2556f5ad9bdd299d2d70b4e9ed0bd7b073aaa94352bce6362ccfac5"
+    },
+    {
+      "path": "pre-call-review-v1/unexecuted-driver.py.txt",
+      "bytes": 24201,
+      "sha256": "8e2c7f604fbd224f02396bdd3a90646107091b45498769c5194e79b5b179d252"
+    },
+    {
+      "path": "pre-call-review-v1/unexecuted-tests.py.txt",
+      "bytes": 21746,
+      "sha256": "064c8919ccde1ebf148b7822f5880200ebc36093690ffa9755a50f953f2e62f6"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3172,
+      "sha256": "e99195ae4f36437851ad9d72ef2f8307550bdd24ad3b2f9342b9bc8052aed8b1"
+    },
+    {
+      "path": "retained-artifact-manifest.json",
+      "bytes": 48114,
+      "sha256": "e66f00f14562e6f61f21a1a0aa288ad3b77f2c6e30418b278bf6a1bad3860783"
+    },
+    {
+      "path": "root-proposal-review.json",
+      "bytes": 1566,
+      "sha256": "be105357850edb883f687ef3ab63a80e2e9a85c726d23bb0608cf90b62f7826d"
+    },
+    {
+      "path": "root-repair-review.json",
+      "bytes": 1634,
+      "sha256": "ab013b8bcc420eb4f795e9022a7870bb1ac5cfe324fbc9e7a0d2e1bc68c193c1"
+    },
+    {
+      "path": "root-repair-tests.txt",
+      "bytes": 10481,
+      "sha256": "47c1261931cbddc9be19ebc8f565703640980e1db199d0304051e42d748e2726"
+    },
+    {
+      "path": "shared-tests.txt",
+      "bytes": 3286,
+      "sha256": "c0bdfe6175e929801795d2891f47ee0dca9adb523e67a349a183fa0dac1137c4"
+    },
+    {
+      "path": "source-handoff-before-root-review-v2.json",
+      "bytes": 9630,
+      "sha256": "9de89b18c307a3017c9f50b521a9cb4e9b08e9ceea00ac468cd2fdcc91462661"
+    },
+    {
+      "path": "source-handoff-before-root-review.json",
+      "bytes": 9329,
+      "sha256": "bc72d6c1fbe201609bca9718f8e10b2945d76cdd0fafb4f25eef9cbadc6c1e7f"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 10422,
+      "sha256": "c4e06f5afab7a970650f894d1b353f3c448915a718211b3cef0baf02c4f32731"
+    },
+    {
+      "path": "test-log.txt",
+      "bytes": 4448,
+      "sha256": "e370fde52aafa81a0c9956c948d90c199a93974e9c370b54573ed7ab79083910"
+    },
+    {
+      "path": "toolchain-provenance.json",
+      "bytes": 6191,
+      "sha256": "9e9f350c9ea138bd0738adf03592111ee5c9feea9a67010e47b63bfe13471297"
+    },
+    {
+      "path": "windows-checkout-repair-v1/attribute.diff",
+      "bytes": 781,
+      "sha256": "5086c8e1c1549c5d8e2560c49bf5286297cda976891e794ab089c95df7b9ee6f"
+    },
+    {
+      "path": "windows-checkout-repair-v1/earlier-inventory-check-failure.json",
+      "bytes": 889,
+      "sha256": "3cf80dc34dc73ca848f6f92fcf0c9b93ecb93321fa1b39c45f887c2f44dab319"
+    },
+    {
+      "path": "windows-checkout-repair-v1/fixed-checkout-verification.json",
+      "bytes": 408,
+      "sha256": "6e2c641d676a33c9352e2a6588805bd609715fd877d1885f6898855455f61043"
+    },
+    {
+      "path": "windows-checkout-repair-v1/initial-failed-CI-log.txt",
+      "bytes": 35983,
+      "sha256": "6fd4ebe0b85e9d47ec921781392dce8e507dda74c20d9e735f126faf7d1fd53e"
+    },
+    {
+      "path": "windows-checkout-repair-v1/original-reproduction.json",
+      "bytes": 549,
+      "sha256": "02e6ee727683c748404cbe491cd9cb26d17d357cb67d333b0685eaef98663538"
+    }
+  ]
+}

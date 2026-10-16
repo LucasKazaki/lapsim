@@ -1,0 +1,13 @@
+{
+  "status": "reproduced_exact_byte_checkout_precondition",
+  "head": "28542f9fbc21e1dc5a412b0f7e7ebeb5a1b6980a",
+  "failure": {
+    "type": "ValueError",
+    "message": "frozen allocator source changed: torque_contract.h"
+  },
+  "LF_restoration_matches_source_pins": true,
+  "normalized_CRLF_hash_matches": true,
+  "proposed_fix": "Explicit Git text eol=lf for existing reference/native/torque_contract.h; preserve source Git bytes and strict validator",
+  "actual_ARM_calls": 0,
+  "existing_driver_protocol_source_unchanged": true
+}

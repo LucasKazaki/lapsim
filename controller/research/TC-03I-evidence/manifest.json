@@ -1,0 +1,187 @@
+{
+  "schema": "enme408-native-bench-curated-evidence/v1",
+  "reviewed_runtime_head": "ba75ddc3cbc3fa0169ec5d785c23811f70759607",
+  "files": {
+    "before-IO-repair-case-freeze.json": {
+      "bytes": 1056,
+      "sha256": "b858e004bc2053305f77e2a75679f82c0e22ec6b924b8e06ea9ac9857504d90c"
+    },
+    "before-IO-repair-consumer.py.txt": {
+      "bytes": 24268,
+      "sha256": "1f14c1828c6d33c33520b192273a3828dd1e92a5807546691f6b9a1d8638be8f"
+    },
+    "before-IO-repair-tests.py.txt": {
+      "bytes": 9385,
+      "sha256": "02f9001f06e358adc18d36621f9a07678272039c0baeaba2a4aaccb4e7cfdecd"
+    },
+    "browser-review-v3.json": {
+      "bytes": 2195,
+      "sha256": "0f598ae749475711e7d7a7891f6310706e0f1e017f4f2546cb34b289f77024d8"
+    },
+    "browser-review.json": {
+      "bytes": 1276,
+      "sha256": "e6ffc0a6558bb9f25b4bd8c772af20f9906a5908fe75d7684dd3bbe353f35f31"
+    },
+    "example-command-01-stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "example-command-01-stdout.txt": {
+      "bytes": 248,
+      "sha256": "d870defbc8dad583cff66a34b8f2e3247bc7cd6d77d301aefded73c4f7b483da"
+    },
+    "example-command-02-stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "example-command-02-stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "example-v3-command-01-stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "example-v3-command-01-stdout.txt": {
+      "bytes": 248,
+      "sha256": "d870defbc8dad583cff66a34b8f2e3247bc7cd6d77d301aefded73c4f7b483da"
+    },
+    "example-v3-command-02-stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "example-v3-command-02-stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "export-status-v3.json": {
+      "bytes": 449,
+      "sha256": "c6c37633692690c0bb361e78154a92a3fb0f0cb4ba69050cb6eefb2439b47900"
+    },
+    "export-status.json": {
+      "bytes": 449,
+      "sha256": "226f92e85ada9fe3776854de7e38684ddf8ae01847b1249f7e8ccfd77d5c1248"
+    },
+    "full-reference-tests-v3.txt": {
+      "bytes": 1513,
+      "sha256": "0b7c2e3d86030e7a89bd44ba048ac40fab2815d63235e5b6724ce2b46a6a8635"
+    },
+    "full-reference-tests.txt": {
+      "bytes": 1513,
+      "sha256": "aa71640976962a610927a3ea0f1a404fbcd1f740c36c496e5219ddc8707399b5"
+    },
+    "independent-review.json": {
+      "bytes": 122896,
+      "sha256": "ab61e8132c0d0bd2c7cc0b82a87fc5af0eedf088018c98f110024c3399a5a3f4"
+    },
+    "independent-review.md": {
+      "bytes": 4076,
+      "sha256": "f0fc305199d61569e679d3fc8336cc0bf488771d2aa6314f8e7fc2a75a22d677"
+    },
+    "initial-case-freeze.json": {
+      "bytes": 1056,
+      "sha256": "ca540a808352c308193cf72d87ccceb5d01cdd0a7ee62c1b81ec41ac1840915d"
+    },
+    "initial-executed-native-consumer.py.txt": {
+      "bytes": 21448,
+      "sha256": "b9cf3f95a6ef88d8ad3561c2d994a9c0079c133619426b4528279f46aa841cdb"
+    },
+    "initial-executed-tests.py.txt": {
+      "bytes": 9431,
+      "sha256": "2627a65e1a91fd254c996bec56b43ffda4c8c136690c17297427a96dc44c096e"
+    },
+    "initial-failed-tests.txt": {
+      "bytes": 5312,
+      "sha256": "db8d055231eb28678e4c7648e1037668e46798810a345fd508e11f6acd9b3f88"
+    },
+    "IO-diagnostic-repair.diff": {
+      "bytes": 7623,
+      "sha256": "e2f582136bcd13269f1e875a6eae7f34be0db92877c381d82e3222ecdcf41468"
+    },
+    "IO-repair-handoff.json": {
+      "bytes": 2849,
+      "sha256": "0de8186c9cbe8b16fece4196d445f442a3c7797f187dd7f45707244876bcbf12"
+    },
+    "lapsim-viewer-tests-v3.txt": {
+      "bytes": 101,
+      "sha256": "89e74573b01fdaec858683172308db8276e0ecdb056073f3c52479b4d935d8ba"
+    },
+    "lapsim-viewer-tests.txt": {
+      "bytes": 101,
+      "sha256": "323e209327482bb8e7fda4a9f9077a661b20ac7180e09d79597a6bcc65996f38"
+    },
+    "local-bundle-manifest-v3.json": {
+      "bytes": 2174,
+      "sha256": "1ca045dfdd504dea4594c7c207b165dbff8d3bef06dea5dbc072505ad282ccf1"
+    },
+    "local-bundle-manifest.json": {
+      "bytes": 1928,
+      "sha256": "4325cb6ef0fe94728af5bcbc88e278038ac4a5dcb80391ec83269a9395a5b10b"
+    },
+    "manifest-v2.json": {
+      "bytes": 3960,
+      "sha256": "5d503e110aaf5ef8799e8a86902c8773048b8eb19690e4c618a2ba3ec0e20815"
+    },
+    "native-run-v3.json": {
+      "bytes": 177310,
+      "sha256": "b96b9cc5e6b27e2d2d4e8a345393a1635ca713dda2a1dfaec7025300cca21d5f"
+    },
+    "native-run.json": {
+      "bytes": 177310,
+      "sha256": "4a6bcdeeba57b3fe1908fdfa2f90282d3a9afdfa51656b039540287aa274bdd2"
+    },
+    "overflow-command-01-stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "overflow-command-01-stdout.txt": {
+      "bytes": 248,
+      "sha256": "d870defbc8dad583cff66a34b8f2e3247bc7cd6d77d301aefded73c4f7b483da"
+    },
+    "overflow-command-02-stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "overflow-command-02-stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "overflow-export-status.json": {
+      "bytes": 273,
+      "sha256": "5411fe0c94de0d71732aceed9ca08845e76766002d9a576273ac9484303ece2d"
+    },
+    "overflow-run.json": {
+      "bytes": 58380,
+      "sha256": "db230f7c83543a295642982d7fcb23c3653fb52ab1e85d7be8566931501854c1"
+    },
+    "trace-v3.csv": {
+      "bytes": 2042,
+      "sha256": "cf1008383b1b9a8d0a605a3c21637b7a42580321aa2958d303627425fa423dff"
+    },
+    "trace.csv": {
+      "bytes": 2042,
+      "sha256": "cf1008383b1b9a8d0a605a3c21637b7a42580321aa2958d303627425fa423dff"
+    },
+    "viewer-receipt-v3.json": {
+      "bytes": 28688,
+      "sha256": "dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8"
+    },
+    "viewer-receipt.json": {
+      "bytes": 28688,
+      "sha256": "111f998c705bdf85955c0054e08789791ff7d1c566a623267c9988869ba2ff43"
+    }
+  },
+  "initial_failure": "9 tests ran; overall FAILED(errors=2), Windows loaded-DLL cleanup. Semantic bodies completed. Original source/freeze/log preserved; child isolation is a separate repair.",
+  "native_invocations": "Each retained actual CLI attempt: one compiler-version call, one five-unit compile, one owned native child with two same-library replays.",
+  "limits": [
+    "No binary committed.",
+    "Synthetic source data only.",
+    "No GPU, ARM, target, hardware, CAN or vehicle authority.",
+    "Browser review used loopback; full-page capture timeout and ordinary viewport capture outcomes are explicit."
+  ],
+  "final_runtime_head": "969e788",
+  "final_demo": "native-run-v3.json",
+  "historical_original_demo": "native-run.json and original manifest-v2.json remain exact pre-IO-repair v2 evidence",
+  "IO_repair": "Only execute export diagnostics and focused tests changed; native numerical/row/oracle/builder functions unchanged.",
+  "independent_review_sha256": "ab61e8132c0d0bd2c7cc0b82a87fc5af0eedf088018c98f110024c3399a5a3f4"
+}

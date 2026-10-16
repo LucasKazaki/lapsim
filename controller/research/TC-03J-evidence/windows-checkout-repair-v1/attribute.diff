@@ -1,0 +1,12 @@
+diff --git a/.gitattributes b/.gitattributes
+index c31c633..1348bc8 100644
+--- a/.gitattributes
++++ b/.gitattributes
+@@ -32,6 +32,7 @@ projects/enme408-torque-control/research/TC-03H-portable-allocator-protocol.json
+ # New allocator implementation and pre-verification case-generator snapshot.
+ projects/enme408-torque-control/reference/native/torque_allocator.c text eol=lf
+ projects/enme408-torque-control/reference/native/torque_allocator.h text eol=lf
++projects/enme408-torque-control/reference/native/torque_contract.h text eol=lf
+ projects/enme408-torque-control/reference/native/allocator_sanitizer_probe.c text eol=lf
+ projects/enme408-torque-control/reference/allocator_parity.py text eol=lf
+ projects/enme408-torque-control/reference/test_allocator_parity.py text eol=lf

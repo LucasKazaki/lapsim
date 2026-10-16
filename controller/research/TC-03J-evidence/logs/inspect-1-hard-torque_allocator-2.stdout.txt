@@ -1,0 +1,21 @@
+C:\Users\lucas\Documents\Codex\2026-10-15\go\work\enme408-allocator-cortex-m4-v1\repeat-1\hard\torque_allocator.o  :
+section                                           size   addr
+.text                                                0      0
+.text.tc_allocator_version                           4      0
+.ARM.exidx.text.tc_allocator_version                 8      0
+.text.tc_allocator_abi_sizeof                       18      0
+.ARM.exidx.text.tc_allocator_abi_sizeof              8      0
+.text.tc_allocate_propulsive_torque               2104      0
+.ARM.exidx.text.tc_allocate_propulsive_torque        8      0
+.text.set_fault                                    228      0
+.ARM.exidx.text.set_fault                            8      0
+.text.fault                                        260      0
+.ARM.exidx.text.fault                                8      0
+.rodata.str1.1                                     311      0
+.comment                                            22      0
+.note.GNU-stack                                      0      0
+.ARM.attributes                                     73      0
+.llvm_addrsig                                        0      0
+Total                                             3060
+
+

@@ -1,0 +1,1 @@
+arm-none-eabi/armv7m_soft_fpv4_sp_d16_exn_rtti_unaligned_size

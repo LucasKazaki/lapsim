@@ -1,0 +1,18 @@
+{
+  "schema": "lapsim.controller-relocation-verification.v1",
+  "date": "2026-10-16",
+  "platform": "Windows x64; CPython 3.13.15 with -S -E -B",
+  "placement": "Fresh standalone clone directly below the operating system temporary directory; no sibling Studio source or site packages",
+  "before_source": "2697e1025b0acf34ab6820beed03f72af0728a89",
+  "before_tests": {"run": 538, "errors": 27, "exit": 1, "cause": "Relocated runner protected the temporary-directory parent as if it were the source root"},
+  "tested_source": "0379be051ef61644b8c27fc27c34677810ed7019",
+  "after_tests": {"run": 538, "failures": 0, "errors": 0, "skipped": 0, "exit": 0, "seconds": 28.381},
+  "inventory": {"original_blobs_verified": 419, "relocated_runtime_wrappers": 2, "original_bytes_retained": true, "historical_receipts_unchanged": true},
+  "native_replay": {"execution": "Actual compiled five-owner C replay from the fresh clone", "compiler": "GCC 12.1.0, MSYS2", "exit": 0, "cycles": 18, "allowed": 9, "zero_command": 9, "recovery_pending": 5},
+  "commands": [
+    "python -S -E -B scripts/check_controller_import.py",
+    "python -S -E -B -m unittest discover -s controller/reference -p test_*.py -q",
+    "python -S -E -B controller/reference/native_bench_replay.py --example --output-dir ABSOLUTE_NEW_TEMP_ATTEMPT --cc GCC_EXECUTABLE"
+  ],
+  "scope": "Relocation, host Python and native C evidence; no closed-loop, linked firmware, emulator or physical PIL claim"
+}

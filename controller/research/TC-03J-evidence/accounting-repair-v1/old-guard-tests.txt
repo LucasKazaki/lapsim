@@ -1,0 +1,14 @@
+test_bad_archive_retains_four_not_run_rows_and_no_executable_calls (test_guard_cortex_m4_objects.GuardObjectAnnexTests.test_bad_archive_retains_four_not_run_rows_and_no_executable_calls) ... ok
+test_changed_helper_is_rejected_before_import (test_guard_cortex_m4_objects.GuardObjectAnnexTests.test_changed_helper_is_rejected_before_import) ... ok
+test_changed_protocol_is_rejected (test_guard_cortex_m4_objects.GuardObjectAnnexTests.test_changed_protocol_is_rejected) ... ok
+test_changed_source_and_wrong_cohort_are_rejected (test_guard_cortex_m4_objects.GuardObjectAnnexTests.test_changed_source_and_wrong_cohort_are_rejected) ... ok
+test_exact_flag_order_and_unit_are_enforced (test_guard_cortex_m4_objects.GuardObjectAnnexTests.test_exact_flag_order_and_unit_are_enforced) ... ok
+test_existing_output_is_rejected (test_guard_cortex_m4_objects.GuardObjectAnnexTests.test_existing_output_is_rejected) ... ok
+test_frozen_cohort_denominator_and_base (test_guard_cortex_m4_objects.GuardObjectAnnexTests.test_frozen_cohort_denominator_and_base) ... ok
+test_only_object_compile_commands_are_constructed (test_guard_cortex_m4_objects.GuardObjectAnnexTests.test_only_object_compile_commands_are_constructed) ... ok
+test_retained_attempt_descendant_is_rejected_before_creation (test_guard_cortex_m4_objects.GuardObjectAnnexTests.test_retained_attempt_descendant_is_rejected_before_creation) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.075s
+
+OK

@@ -1,0 +1,30 @@
+{
+  "schema": "enme408-pedal-adapter-protocol/v1",
+  "frozen_before_native_pedal_edits": true,
+  "base_commit": "be45cc6261d1ee694e0e5282c39de5150c1beed5",
+  "pedal_adapter_contract_version": 1,
+  "scope": "The trusted overlap-trip predicate, trusted-clear predicate, adapter reconciliation and clock-fault latch retention around an externally computed base guard result. Not the base latch/slew algorithm or full native pedal controller.",
+  "source_owners": ["reference/guard_overlap_observation.py", "reference/guard_trusted_clear.py", "reference/control_pipeline.py"],
+  "semantics": [
+    "trusted_overlap_trip requires exact input/config/state types, an ordinary Boolean prior latch, ordinary Boolean brake/comms/sensor flags all true, ordinary finite numeric policy with rise>0 and 0<=clear<trip<=1, and ordinary finite accelerator in[0,1] at or above trip.",
+    "External interlock and dt are deliberately absent from that narrow overlap-trip predicate; an early allocator or interlock fault can still retain a trusted missed trip.",
+    "trusted_clear_cycle requires normal candidate type/status(ok or saturated), exact input type, ordinary true Boolean comms/sensor/interlock, normal result type/status(ok or limited). It is a narrow predicate, not full candidate/result validation or signal provenance.",
+    "First adapter forces a trusted missed trip to latched+inhibited and preserves the base reason, falling back to brake_accelerator_overlap only when no reason exists.",
+    "Second adapter vetoes a prior-true to proposed-false transition unless trusted_clear_cycle holds; it forces latched+inhibited and preserves base reason, falling back to untrusted_overlap_latch_clear.",
+    "Clock faults additionally retain a prior true latch; they do not undo a newly observed conservative trip. Clock inhibition of final commands remains the separate native clock/final gate's ownership.",
+    "The base guard can itself trip its latch before a later communication/sensor inhibit. Adapters preserve that existing base result; do not silently redefine every trip as trusted.",
+    "C supports ordinary binary64 numbers, exact byte type/Boolean/status tags and valid Boolean base-proposed latches. It produces adapter action/latch/reason metadata only; it cannot independently authorize or generate positive torque.",
+    "Invalid C prior/proposed latch tags, clock tags and null required inputs fail closed with a veto and conservative true latch. These are explicit ABI guard extensions, not parity claims for impossible base-guard outputs.",
+    "Full allocation/output validation, base guard generation, pedal-source attestation, slew and signal mapping remain external obligations. The narrow predicates alone never certify a command."
+  ],
+  "planned_validation": {
+    "seed": 410,
+    "oracle": "Compare compiled predicates against unchanged Python helpers and adapter metadata against the real base-guard -> overlap -> trusted-clear -> clock-retention chain.",
+    "coverage": "Threshold nextafter boundaries, malformed/nonnumeric scalars, every Boolean/type/status byte, early allocator/config/input faults, comms/sensor/interlock trust combinations, prior latch transitions, clock-invalid clear attempts and deterministic stateful sequences.",
+    "zero_acceptance": "Whenever native adapter vetoes, apply an exact-zero inhibited guard before the existing C clock/final gate. Every held composed command must be exact positive zero; verify original clock-latch counterexamples and healthy low-pedal recovery.",
+    "domains": "No custom Python numeric conversion hooks, unbounded diagnostic identifiers or malformed native pointers. Finite fixed-size native storage and explicit version; no byte-tag coercion.",
+    "repetition": "Repeat a finite source-hashed compiled experiment deterministically; preserve prior PR heads and receipts.",
+    "review": "Independent practical source review and adversarial probes at a stable checkpoint before draft PR.",
+    "excluded": "No full base guard/slew/allocator port, actual APPS/BPPS attestation, firmware, CAN, target timing, hardware, HIL or safety approval."
+  }
+}

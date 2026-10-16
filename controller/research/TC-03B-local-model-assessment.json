@@ -1,0 +1,81 @@
+{
+  "schema": "enme408-local-model-review-assessment/v1",
+  "date": "2026-10-15",
+  "purpose": "Local GPU model supplied bounded test proposals; deterministic Python/compiled-C checks decide acceptance.",
+  "model_alias": "qwen3.8-27b-local-q2k:latest",
+  "reported_model_details": {
+    "parent_model": "",
+    "format": "gguf",
+    "family": "qwen35",
+    "families": [
+      "qwen35"
+    ],
+    "parameter_size": "27.3B",
+    "quantization_level": "Q2_K"
+  },
+  "model_digest": "7b0c2ef4e855aa2ea19d0a4d892311961e2710243ea624c300e6ccaa50ffeee2",
+  "hardware_observations": {
+    "gpu_before": "97 %, 13993 MiB, 47",
+    "gpu_after": "98 %, 13992 MiB, 50",
+    "resident_vram_bytes": 11373757069
+  },
+  "attempts": [
+    {
+      "receipt_sha256": "2ceede110905af50690ede11488f0a4e265637216eae6b80d027ed312cd2b894",
+      "prompt_sha256": "e55cb6e9e5d7878ed7aef17ca92b4d4ab05700931a1786fc038e46a626ffacea",
+      "raw_response_text": "{\n  \"hypotheses\": [\n    {\n      \"issue\": \"Floating-point extremes and subnormals may violate the 8-ULP tolerance or the `isfinite`/`fabs` comparisons in `tc_validate_allocation` and `guard_valid`.\",\n      \"test\": \"Construct `tc_allocation` and `tc_guard` candidates with `DBL_MAX`, `DBL_MIN`, `DBL_TRUE_MIN`, and `INFINITY`/`NAN` in `wheels`, `delivered`, `requested`, and `guard.output`. Verify that `tc_validate_allocation` and `tc_decide` return the expected `TC_CONTRACT_OK` or specific `TC_INVALID_*`/`TC_CANDIDATE_*` codes, and that `tc_decide` does not produce non-finite or out-of-bounds `command` values.\",\n      \"reason\": \"The contract relies on `isfinite`, `fabs`, `fmax`, and `ulp` (via `frexp`/`ldexp`) to bound rounding error. Subnormals and extremes stress the `8.0 * fmax(ulp(...), ulp(...))` tolerance and the `isfinite(total)` check in `guard_valid`, where a single ULP difference or an infinite `total` could be misclassified as valid or rejected.\"\n    },\n    {\n      \"issue\": \"Malformed text and tagged booleans may be accepted or rejected inconsistently due to the `uint8_t` boolean fields and the `text_valid`/`text_nonempty` logic.\",\n      \"test\": \"Populate `tc_text` fields with `kind = TC_TEXT_STRING` but missing NUL, `kind = TC_TEXT_INVALID`, and `kind = TC_TEXT_NONE` with non-NUL bytes. Set `type_valid`, `wheel_vector_valid`, `output_valid`, and `restart_requested` to `0`, `1`, and `2`. Verify that `tc_validate_allocation`, `tc_decide`, and `tc_contract_reason` return the expected `TC_INVALID_CANDIDATE_*` or `TC_CONTRACT_OK` codes and that `tc_decide` inhibits with the correct `reason` string.\",\n      \"reason\": \"The `uint8_t` boolean fields are interpreted as `0`/`1` but are not type-checked at the ABI boundary. `text_valid` and `text_nonempty` use `memchr` and",
+      "done_reason": "length",
+      "structured_output_valid": false,
+      "assessment": "Incomplete structured response. Broad floating-point, text and tagged-boolean test suggestions retained; no correctness verdict accepted."
+    },
+    {
+      "receipt_sha256": "aa461b28efdb11f3805661c8e7ca1809cb6ffc6d966f19a18edc0097129f4cec",
+      "prompt_sha256": "703289aa2bcaaaffd7e0a839a619fda300fa2b8add2a5fac7a1d0132bf0554e0",
+      "raw_response_text": "{\"hypotheses\": [{\"issue\": \"Subnormal floating-point values near DBL_MIN may violate the 8*ULP tolerance due to ulp() returning DBL_TRUE_MIN for subnormals, causing false TC_CANDIDATE_SUMM\",\"test\": \"Set wheels[0]=DBL_MIN, wheels[1]=0, delivered=DBL_MIN*2, requested=DBL_MIN*2; verify tc_validate_allocation returns TC_CONTRACT_OK, not TC_CANDIDATE_SUM_MISMATCH or TC_CANDIDATE_EXCEEDS_REQUEST.\"},{\"issue\": \"recovery_streak overflow at UINT32_MAX with restart_requested=0 and prior_state=TC_RECOVERY_PENDING may allow invalid state transition\",\"test\": \"Set previous.state=TC_RECOVERY_PENDING, previous.recovery_streak=UINT32_MAX, restart_requested=0, allocation.status=TC_ALLOCATION_OK; verify tc_decide returns 0 and output.next.state remains TC_RECOVERY_PENDING, not TC_READY.\"}], \"limitation\": \"No firmware, transport, or physical wheel mapping is defined; safety certification is not assumed.\"}",
+      "done_reason": "stop",
+      "structured_output_valid": true,
+      "assessment": "Valid JSON is not a validated engineering conclusion. Both proposed expected outcomes require correction below."
+    }
+  ],
+  "proposal_assessments": [
+    {
+      "raw_proposal": {
+        "issue": "Subnormal floating-point values near DBL_MIN may violate the 8*ULP tolerance due to ulp() returning DBL_TRUE_MIN for subnormals, causing false TC_CANDIDATE_SUMM",
+        "test": "Set wheels[0]=DBL_MIN, wheels[1]=0, delivered=DBL_MIN*2, requested=DBL_MIN*2; verify tc_validate_allocation returns TC_CONTRACT_OK, not TC_CANDIDATE_SUM_MISMATCH or TC_CANDIDATE_EXCEEDS_REQUEST."
+      },
+      "status": "expected_outcome_rejected",
+      "observed_python_reason": "candidate_sum_mismatch",
+      "observed_c_reason": "candidate_sum_mismatch",
+      "evidence": "contract_cases label local_model_DBL_MIN_sum_mismatch was included in both successful parity passes. One wheel carries DBL_MIN but delivered claims twice DBL_MIN; that exceeds the numerical sum tolerance.",
+      "source_policy_change": "none"
+    },
+    {
+      "raw_proposal": {
+        "issue": "recovery_streak overflow at UINT32_MAX with restart_requested=0 and prior_state=TC_RECOVERY_PENDING may allow invalid state transition",
+        "test": "Set previous.state=TC_RECOVERY_PENDING, previous.recovery_streak=UINT32_MAX, restart_requested=0, allocation.status=TC_ALLOCATION_OK; verify tc_decide returns 0 and output.next.state remains TC_RECOVERY_PENDING, not TC_READY."
+      },
+      "status": "edge_case_covered_but_proposed_expected_state_rejected",
+      "observed_c_state": "inhibited",
+      "observed_c_reason": "counter_overflow",
+      "observed_command": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "evidence": "check_boundaries label recovery_streak_overflow_state_4 passed. Unsigned-counter overflow is an explicit C-domain fail-closed extension; it must not remain a recoverable wrapped state.",
+      "source_policy_change": "none"
+    }
+  ],
+  "verification": {
+    "numeric_contract_version": 2,
+    "parity_allocation_cases": 2179,
+    "decision_cycles_per_pass": 8210,
+    "repeated_pass_agreement": true,
+    "c_boundary_checks": 34,
+    "allocation_results_sha256": "4daa52d35a32649d6af38e2983ef9ecb1da03f65b4cf881473b883bd7b0dd8a4",
+    "decision_results_sha256": "45fc00ece457eeb8e1d9bc1f8b25df0d39bddcfbc17bbf33250be95ea13fc0e6"
+  },
+  "limits": "Host prototype and local-model assistance only. No external reviewer approval, firmware, MCU measurement, CAN mapping, actuator control or safety certification.",
+  "subsequent_independent_review": "An independent code reviewer found the initial C/Python builtin-sum difference. Numeric contract version2 now defines fixed-slot accumulation; both model-proposal assessments above remain unchanged. See TC-03B-numeric-contract-change.json for original failed cases and preserved source/receipt provenance."
+}

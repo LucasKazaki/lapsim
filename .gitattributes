@@ -1,5 +1,5 @@
 *.pdf binary
 web/examples/enme408-native-c-replay.json -text
 analysis/native-bench-evidence/** -text -whitespace
-
+controller/** -text
 web/examples/enme408-synthetic-replay.json -text

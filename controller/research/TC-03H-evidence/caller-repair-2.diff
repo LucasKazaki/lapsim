@@ -1,0 +1,69 @@
+diff --git a/projects/enme408-torque-control/reference/allocator_parity.py b/projects/enme408-torque-control/reference/allocator_parity.py
+index 56e1898..769ce6b 100644
+--- a/projects/enme408-torque-control/reference/allocator_parity.py
++++ b/projects/enme408-torque-control/reference/allocator_parity.py
+@@ -27,7 +27,8 @@ from cycle_clock import CycleClockState, observe_cycle_clock
+ from fault_state import FaultPolicy
+ from guard_trusted_clear import apply_trusted_clear_guard
+ from c_parity import (ROOT, Allocation, Scalar, Text, Cycle, Policy, Snapshot, STATE_NAMES,
+-                      _digest_add, _packed_signature, scalar, text, guard, find_compiler)
++                      _digest_add, _packed_signature, scalar, text, guard, find_compiler,
++                      allocation as pack_allocation)
+ from clock_parity import ClockState, clock_input, clock_policy, unpack
+ from pedal_parity import boolean, facts, adapted
+ from guard_parity import (GuardCore, guard_input, config as guard_config, state as guard_state,
+@@ -263,7 +264,7 @@ def composition_scenarios():
+ 
+ def run_allocator_parity(core):
+     direct_digest, composed_digest = hashlib.sha256(), hashlib.sha256()
+-    counts, reasons, contracts, named = Counter(), Counter(), Counter(), {}
++    counts, reasons, contracts, composed_reasons, named = Counter(), Counter(), Counter(), Counter(), {}
+     for cohort, label, inp, cfg in direct_cases():
+         raw = core.allocate_raw(allocator_input(inp), allocator_config(cfg))
+         actual, expected = decoded(raw), allocate_propulsive_torque(inp, cfg)
+@@ -306,7 +307,15 @@ def run_allocator_parity(core):
+             py_latch = py_effective.next_state.pedal_overlap_latched or (py_step.fault is not None and py_previous.pedal_overlap_latched)
+             py_effective = replace(py_effective, next_state=replace(py_effective.next_state, pedal_overlap_latched=py_latch))
+             if guard_signature(effective) != guard_signature(py_effective): raise AssertionError('composed effective guard mismatch')
+-            decision = core.decide_raw(gate_state, Cycle(raw, guard(effective), clock.fault, sample.restart_requested), Policy(cfg.fault.valid_samples_to_recover))
++            # The real source pipeline substitutes a zero fault candidate after
++            # clock/guard inhibition. The raw C producer still feeds the C guard
++            # directly and is retained above; this is caller orchestration only.
++            gate_candidate = raw
++            if clock.fault.kind or effective.status == 'inhibited':
++                fault_reason = (bytes(clock.fault.value).decode('ascii') if clock.fault.kind else
++                    (candidate.fault if candidate.status == 'fault' else effective.reason))
++                gate_candidate = pack_allocation(AllocationResult(ZERO, candidate.requested_nm, 0., 'fault', fault_reason))
++            decision = core.decide_raw(gate_state, Cycle(gate_candidate, guard(effective), clock.fault, sample.restart_requested), Policy(cfg.fault.valid_samples_to_recover))
+             actual = {'allowed': bool(decision.command_allowed), 'command_bits': [bits(v) for v in decision.command],
+                 'latch': bool(reconciled.next_latched), 'state': STATE_NAMES[decision.next.state],
+                 'streak': decision.next.recovery_streak, 'generation': decision.next.generation, 'reason': bytes(decision.reason).decode('ascii')}
+@@ -321,6 +330,7 @@ def run_allocator_parity(core):
+             counts['allowed_limited_cycles'] += bool(decision.command_allowed and effective.status == 'limited' and any(v > 0. for v in decision.command))
+             counts['clock_fault_cycles'] += py_step.fault is not None
+             counts['latch_clearances'] += previous.pedal_overlap_latched and not bool(reconciled.next_latched)
++            composed_reasons[actual['reason'] or 'NONE'] += 1
+             _digest_add(composed_digest, {'stream': label, 'sequence': row['sequence'], 'allocator': signature(candidate),
+                 'base': guard_signature(base), 'effective': guard_signature(effective), 'clock': unpack(clock), 'final': actual})
+             previous = CommandGuardState(tuple(decision.command), bool(reconciled.next_latched))
+@@ -329,7 +339,7 @@ def run_allocator_parity(core):
+     for key, minimum in (('positive_allowed_cycles', 64), ('held_cycles', 64), ('allowed_limited_cycles', 16),
+                           ('latch_clearances', 16), ('restarts', 16), ('clock_fault_cycles', 16)):
+         if counts[key] < minimum: raise AssertionError('insufficient actual composition coverage: ' + key)
+-    return {**counts, 'reasons': dict(reasons), 'contracts': dict(contracts), 'named': named,
++    return {**counts, 'reasons': dict(reasons), 'contracts': dict(contracts), 'composed_reasons': dict(composed_reasons), 'named': named,
+             'direct_results_sha256': direct_digest.hexdigest(), 'composed_results_sha256': composed_digest.hexdigest()}
+ 
+ 
+diff --git a/projects/enme408-torque-control/reference/test_allocator_parity.py b/projects/enme408-torque-control/reference/test_allocator_parity.py
+index af9c2cc..b9ce326 100644
+--- a/projects/enme408-torque-control/reference/test_allocator_parity.py
++++ b/projects/enme408-torque-control/reference/test_allocator_parity.py
+@@ -46,6 +46,7 @@ class CompiledAllocatorTests(unittest.TestCase):
+         self.assertIsNone(corner['result']['fault'])
+         self.assertEqual(corner['result']['wheel_bits'][0], bits(1. + 1e-12))
+         self.assertEqual(corner['contract'], 'candidate_exceeds_request')
++        self.assertEqual(self.receipt['results']['composed_reasons']['candidate_exceeds_request'], 128)
+ 
+     def test_shortfall_label_and_tiny_request_remain_source_behavior(self):
+         named = self.receipt['results']['named']

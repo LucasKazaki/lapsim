@@ -1,0 +1,186 @@
+"""Software guards only; actual ARM object builds have separate receipts."""
+import hashlib
+import json
+from pathlib import Path
+import struct
+import tempfile
+import unittest
+import zipfile
+
+import cortex_m4_objects as build
+
+
+def attributes(tags):
+    body = bytearray()
+    for key, value in tags:
+        body.append(key)
+        body.extend(value.encode() + b"\0" if isinstance(value, str) else bytes([value]))
+    subsection = b"\1" + struct.pack("<I", len(body) + 5) + body
+    vendor = b"aeabi\0" + subsection
+    return b"A" + struct.pack("<I", len(vendor) + 4) + vendor
+
+
+class ObjectBuildTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+
+    def test_protocol_is_frozen_and_native_sources_match_without_mutation(self):
+        plan = build.load_protocol()
+        self.assertEqual(len(build.source_facts(build.REFERENCE / "native", plan)), 6)
+        self.assertEqual(plan["build_matrix"]["planned_objects"], 12)
+
+    def test_changed_protocol_rejected_before_any_build(self):
+        path = self.root / "plan.json"
+        path.write_bytes(build.PROTOCOL.read_bytes() + b" ")
+        with self.assertRaisesRegex(ValueError, "protocol identity"):
+            build.load_protocol(path)
+
+    def test_changed_native_source_rejected_before_output_creation(self):
+        plan = build.load_protocol()
+        for name in plan["sources"]:
+            (self.root / name).write_bytes((build.REFERENCE / "native" / name).read_bytes())
+        (self.root / "torque_clock.c").write_bytes(b"changed source")
+        with self.assertRaisesRegex(ValueError, "frozen source changed"):
+            build.source_facts(self.root, plan)
+
+    def test_lf_checkout_is_explicitly_supported_but_exact_bytes_are_recorded(self):
+        plan = build.load_protocol()
+        for name in plan["sources"]:
+            (self.root / name).write_bytes((build.REFERENCE / "native" / name).read_bytes().replace(b"\r\n", b"\n"))
+        facts = build.source_facts(self.root, plan)
+        for name, value in facts.items():
+            self.assertEqual(value["sha256"], plan["sources"][name]["lf_normalized_sha256"])
+
+    def test_existing_attempt_and_native_descendant_or_ancestor_are_rejected(self):
+        native = self.root / "native"
+        native.mkdir()
+        for target in (self.root, native, native / "new-attempt"):
+            with self.subTest(target=target), self.assertRaises(ValueError):
+                build.output_path(target, native)
+        self.assertEqual(build.output_path(self.root / "safe", native), self.root / "safe")
+
+    def test_compile_command_is_object_only_and_rejects_math_or_abi_escape(self):
+        flags = build.load_protocol()["compile_common_flags"]
+        args = build.compile_args(Path("clang.exe"), flags, "hard", "torque_clock", self.root / "clock.o")
+        self.assertEqual(args.count("-c"), 1)
+        self.assertNotIn("-shared", args)
+        self.assertEqual(args[-3], "torque_clock.c")
+        for options, abi, unit in ((flags + ["-ffast-math"], "hard", "torque_clock"),
+                (flags + ["--config=Omax.cfg"], "hard", "torque_clock"),
+                (flags, "soft", "torque_clock"), (flags, "hard", "../../other")):
+            with self.subTest(abi=abi, unit=unit, options=options[-1]), self.assertRaises(ValueError):
+                build.compile_args(Path("clang.exe"), options, abi, unit, self.root / "bad.o")
+
+    def test_any_flag_addition_removal_or_reordering_is_rejected(self):
+        flags = build.load_protocol()["compile_common_flags"]
+        for changed in (flags + ["-freciprocal-math"], flags + ["-Xclang", "-ast-dump"],
+                        [f for f in flags if not f.startswith("--target=")],
+                        [f for f in flags if f != "-O2"], list(reversed(flags))):
+            with self.subTest(changed=changed), self.assertRaisesRegex(ValueError, "exact frozen"):
+                build.compile_args(Path("clang.exe"), changed, "hard", "torque_clock", self.root / "bad.o")
+
+    def test_zip_paths_cannot_escape_or_use_windows_drive_paths(self):
+        for value in ("../bad", "/absolute", "C:/bad", "top/../../bad", "top\\bad"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                build.safe_member(value)
+
+    def test_toolchain_tampering_is_rejected_before_execution(self):
+        root = self.root / "toolchain"
+        (root / "bin").mkdir(parents=True)
+        archive = self.root / "test.zip"
+        with zipfile.ZipFile(archive, "w") as z:
+            for tool in build.TOOLS:
+                z.writestr("toolchain/bin/" + tool, b"FAKE NO EXECUTABLE")
+                (root / "bin" / tool).write_bytes(b"FAKE NO EXECUTABLE")
+        identity = {"archive_bytes": archive.stat().st_size, "archive_size_cap_bytes": 100000,
+                    "archive_sha256": build.digest(archive)}
+        (root / "bin/clang.exe").write_bytes(b"TAMPERED")
+        with self.assertRaisesRegex(ValueError, "differs from verified ZIP"):
+            build.verify_toolchain(archive, root, identity, self.root / "manifest.jsonl")
+
+    def test_archive_identity_mismatch_prevents_even_manifest_creation(self):
+        archive = self.root / "wrong.zip"
+        archive.write_bytes(b"untrusted")
+        with self.assertRaisesRegex(ValueError, "archive size/hash"):
+            build.verify_toolchain(archive, self.root, {"archive_bytes": 9, "archive_size_cap_bytes": 100,
+                "archive_sha256": hashlib.sha256(b"different").hexdigest()}, self.root / "manifest.jsonl")
+        self.assertFalse((self.root / "manifest.jsonl").exists())
+
+    def test_attributes_distinguish_hard_and_omitted_base_argument_convention(self):
+        common = [(5, "cortex-m4"), (6, 13), (7, 77), (9, 2), (10, 6), (27, 1)]
+        soft = build.arm_tags(attributes(common))
+        hard = build.arm_tags(attributes(common + [(28, 1)]))
+        build.validate_abi(soft, "softfp")
+        build.validate_abi(hard, "hard")
+        with self.assertRaisesRegex(ValueError, "argument ABI"):
+            build.validate_abi(hard, "softfp")
+        with self.assertRaisesRegex(ValueError, "argument ABI"):
+            build.validate_abi(soft, "hard")
+
+    def test_wrong_cpu_and_truncated_attributes_cannot_look_valid(self):
+        tags = {6: 10, 7: 77, 9: 2, 10: 6, 27: 1, 28: 1}
+        with self.assertRaisesRegex(ValueError, "ARMv7E-M"):
+            build.validate_abi(tags, "hard")
+        for raw in (b"", b"A\xff\xff\xff\xff", attributes([(5, "cortex-m4")])[:-1]):
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                build.arm_tags(raw)
+
+    def test_host_pe_or_executable_cannot_be_reported_as_arm_object(self):
+        path = self.root / "bad.o"
+        path.write_bytes(b"MZ" + bytes(100))
+        with self.assertRaisesRegex(ValueError, "ELF32"):
+            build.read_elf(path)
+        raw = bytearray(52)
+        raw[:6] = b"\x7fELF\x01\x01"
+        struct.pack_into("<HH", raw, 16, 2, 40)
+        path.write_bytes(raw)
+        with self.assertRaisesRegex(ValueError, "relocatable"):
+            build.read_elf(path)
+
+    def test_clang_stack_qualifier_is_retained_and_missing_is_not_zero(self):
+        path = self.root / "function.su"
+        self.assertEqual(build.stack_records(path)["status"], "not_emitted")
+        path.write_text("torque_clock.c:75:tc_clocked_decide\t480\tstatic\nother.c:4:f\t16\tdynamic\n")
+        records = build.stack_records(path)["records"]
+        self.assertEqual(records[0]["bytes"], 480)
+        self.assertEqual(records[1]["qualifier"], "dynamic")
+        path.write_text("unrecognized output\n")
+        with self.assertRaisesRegex(ValueError, "stack-usage"):
+            build.stack_records(path)
+
+    def test_dependency_outside_verified_roots_is_rejected_before_read(self):
+        native, toolchain = self.root / "native", self.root / "toolchain"
+        native.mkdir()
+        toolchain.mkdir()
+        path = self.root / "file.d"
+        path.write_text("x.o: ../secret.h\n")
+        with self.assertRaisesRegex(ValueError, "outside verified"):
+            build.dependency_facts(path, native, toolchain)
+
+    def test_retained_windows_dependency_style_preserves_drive_backslashes(self):
+        # The first attempt's Clang 22 .d files use this literal drive-path form.
+        raw = ("C:\\review\\object.o: \\\r\n  torque_contract.c torque_contract.h \\\r\n"
+               "  C:\\toolchain\\lib\\clang\\22\\include\\stddef.h \\\r\n"
+               "  C:\\Program\\ Files\\ATfE\\math.h\r\n")
+        self.assertEqual(build.dependency_names(raw), ["torque_contract.c", "torque_contract.h",
+            r"C:\toolchain\lib\clang\22\include\stddef.h", r"C:\Program Files\ATfE\math.h"])
+
+    def test_dependency_escaped_space_and_continuation_resolve_to_verified_files(self):
+        native, toolchain = self.root / "native files", self.root / "toolchain files"
+        native.mkdir()
+        toolchain.mkdir()
+        (native / "unit.c").write_text("/* fixture */")
+        header = toolchain / "math defs.h"
+        header.write_text("/* fixture */")
+        escaped = header.as_posix().replace(" ", "\\ ")
+        path = self.root / "file.d"
+        path.write_text("x.o: unit.c \\\n  " + escaped + "\n")
+        rows = build.dependency_facts(path, native, toolchain)
+        self.assertEqual([row["owner"] for row in rows], ["native_snapshot", "verified_toolchain"])
+        self.assertEqual(rows[1]["path"], "math defs.h")
+
+
+if __name__ == "__main__":
+    unittest.main()

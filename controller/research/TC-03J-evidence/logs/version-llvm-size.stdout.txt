@@ -1,0 +1,5 @@
+C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\llvm-size.exe
+LLVM (http://llvm.org/):
+  LLVM version 22.1.0
+  Optimized build.
+Arm Toolchain ID: E0075 (44010d72)

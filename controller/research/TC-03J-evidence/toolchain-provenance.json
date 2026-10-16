@@ -1,0 +1,113 @@
+{
+  "scope": "Hash/provenance metadata only; no toolchain executable/library/archive distributed",
+  "toolchain": {
+    "name": "Arm Toolchain for Embedded",
+    "version": "22.1.0",
+    "host": "Windows-x86_64",
+    "official_release": "https://github.com/arm/arm-toolchain/releases/tag/release-22.1.0-ATfE",
+    "release_metadata_url": "https://api.github.com/repos/arm/arm-toolchain/releases/tags/release-22.1.0-ATfE",
+    "retained_metadata_sha256": "3aba3a90d2cdee0e8543c28b5e066a5831954b9625991a6c62be8105da85fb30",
+    "archive_url": "https://github.com/arm/arm-toolchain/releases/download/release-22.1.0-ATfE/ATfE-22.1.0-Windows-x86_64.zip",
+    "archive_bytes": 710565705,
+    "archive_sha256": "9db55e43d5fdb1619692259897bf1e64f61da82a558827aae6928a2ccb39d348",
+    "checksum_url": "https://github.com/arm/arm-toolchain/releases/download/release-22.1.0-ATfE/ATfE-22.1.0-Windows-x86_64.zip.sha256",
+    "checksum_file_bytes": 97,
+    "checksum_file_sha256": "5b26e494517da1ef726b3bb7634f72fdcb9df7359f4a26e2e970b09e80f2c291",
+    "archive_size_cap_bytes": 1073741824,
+    "portable_location": "workspace work/tools only; never globally installed",
+    "verification": "Verify the retained archive size/SHA and entire existing extracted tree against that ZIP with a NEW JSONL manifest before ANY toolchain executable. Reuse in place: no extraction, download, installation or global environment change.",
+    "license": "Retain package licenses/notices and provenance; component licenses vary. No toolchain redistribution or binaries committed.",
+    "archive_path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\downloads\\ATfE-22.1.0-Windows-x86_64.zip",
+    "root_path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64",
+    "five_proposed_tool_pins": {
+      "clang.exe": {
+        "path": "bin/clang.exe",
+        "bytes": 83728152,
+        "sha256": "b3b1f1a074e4312449c54a058034a4abd4edf8015db88fe35f1f5cf26f975dcd"
+      },
+      "llvm-nm.exe": {
+        "path": "bin/llvm-nm.exe",
+        "bytes": 11251480,
+        "sha256": "f161335bfe6d45a49b4517bc190df1f1a2561f16f1d0634ce1dadddc4043667a"
+      },
+      "llvm-objdump.exe": {
+        "path": "bin/llvm-objdump.exe",
+        "bytes": 11219224,
+        "sha256": "4e4e2d082eb8974f420f316b4d7f054ebe81ba81107adc9d87585e8725e8886f"
+      },
+      "llvm-readobj.exe": {
+        "path": "bin/llvm-readobj.exe",
+        "bytes": 7562520,
+        "sha256": "88021c83dd2dd96723316ab351580357ac5ac385fc277364b4bdc331b1f8e674"
+      },
+      "llvm-size.exe": {
+        "path": "bin/llvm-size.exe",
+        "bytes": 4219672,
+        "sha256": "463ba9ff5d2a5dda72a790868382b7e382f3b4e4612774a8d7c2b41096210584"
+      }
+    }
+  },
+  "actual_fresh_verification": {
+    "archive_sha256": "9db55e43d5fdb1619692259897bf1e64f61da82a558827aae6928a2ccb39d348",
+    "archive_bytes": 710565705,
+    "verified_file_count": 48211,
+    "tools": {
+      "clang.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "sha256": "b3b1f1a074e4312449c54a058034a4abd4edf8015db88fe35f1f5cf26f975dcd"
+      },
+      "llvm-nm.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "sha256": "f161335bfe6d45a49b4517bc190df1f1a2561f16f1d0634ce1dadddc4043667a"
+      },
+      "llvm-readobj.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "sha256": "88021c83dd2dd96723316ab351580357ac5ac385fc277364b4bdc331b1f8e674"
+      },
+      "llvm-size.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "sha256": "463ba9ff5d2a5dda72a790868382b7e382f3b4e4612774a8d7c2b41096210584"
+      }
+    },
+    "manifest_sha256": "e61db4e336f1727579b6a5581d07feaa859c3c472960187ec52fff794aa7aa0a",
+    "license_files": [
+      {
+        "path": "LICENSE.txt",
+        "sha256": "a9ed3eae930adbc631b83300b78ab5d228c9b1e4560d64ec4b4ea2bcf69f4569"
+      },
+      {
+        "path": "third-party-licenses/picolibc/COPYING.picolibc",
+        "sha256": "df8aecac86a7cce2db23fac812e058aef093f667ff20b95793f7032a4a668a43"
+      }
+    ],
+    "verification_seconds": 112.875
+  },
+  "five_verified_executables": {
+    "clang.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+      "bytes": 83728152,
+      "sha256": "b3b1f1a074e4312449c54a058034a4abd4edf8015db88fe35f1f5cf26f975dcd"
+    },
+    "llvm-readobj.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+      "bytes": 7562520,
+      "sha256": "88021c83dd2dd96723316ab351580357ac5ac385fc277364b4bdc331b1f8e674"
+    },
+    "llvm-size.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+      "bytes": 4219672,
+      "sha256": "463ba9ff5d2a5dda72a790868382b7e382f3b4e4612774a8d7c2b41096210584"
+    },
+    "llvm-nm.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+      "bytes": 11251480,
+      "sha256": "f161335bfe6d45a49b4517bc190df1f1a2561f16f1d0634ce1dadddc4043667a"
+    },
+    "llvm-objdump.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+      "bytes": 11219224,
+      "sha256": "4e4e2d082eb8974f420f316b4d7f054ebe81ba81107adc9d87585e8725e8886f"
+    }
+  },
+  "new_acquisition_or_install": false
+}

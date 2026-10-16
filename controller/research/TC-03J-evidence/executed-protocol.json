@@ -1,0 +1,395 @@
+{
+  "schema": "enme408.allocator-cortex-m4-annex-protocol.v1",
+  "status": "frozen_before_driver_implementation_and_any_new_toolchain_executable",
+  "proposed_base_commit": "17715fc698a4bc7b3a7807d0d6f869045fdab5a4",
+  "proposed_base_pr": 77,
+  "source_review_checkpoint": {
+    "pr": 76,
+    "commit": "01bc4eee1839f448afcd5fdfe83b8fbbc0bf68d7",
+    "relationship": "The exact C/header/helper/old-protocol files are unchanged between PR76 and current PR77. New branch would stack on latest PR77, preserving all existing heads."
+  },
+  "proposed_branch": "enme408/allocator-cortex-m4-object-annex-20261015",
+  "question": "Does the unchanged reviewed allocator compile as strict binary64 Cortex-M4 relocatable objects for each candidate calling convention, and which actual sections, unresolved symbols, disassembled code/relocations and local frames result?",
+  "usefulness": "Completes a separately identified object-feasibility view for the missing candidate producer after the earlier contract/clock/pedal and guard-only cohorts. It gives the EV software lead concrete compiler diagnostics, source/header identity, library-helper obligations and local resource observations for this unit. It does not grant hardware authority or establish that a five-unit controller links, runs or meets a budget.",
+  "source_findings": [
+    "Only torque_allocator.c is compiled. Snapshot exactly torque_allocator.c, torque_allocator.h and torque_contract.h. No other native unit, probe or Python controller is compiled or linked.",
+    "The producer exports tc_allocator_version, tc_allocator_abi_sizeof and tc_allocate_propulsive_torque. It uses fixed-size tagged records and four abstract slots, ordinary automatic arrays/scalars, no heap, runtime IO or persistent state.",
+    "Arithmetic includes binary64 division by converted active-count, additions, subtractions, ordered comparisons, epsilon 1e-12 and status threshold 1e-9. The explicit ordered four-slot total is retained. Strict static assertions and no-fast-math guards remain byte-exact.",
+    "torque_contract.h supplies data definitions; this allocator source calls no external tc_* function. Do not copy the guard annex's tc_validate_allocation/tc_contract_reason unresolved-symbol prediction. Math classification, C memory/string routines and ABI/compiler helpers are observed from actual objects; no exact symbol list or costs are predicted.",
+    "Numeric contract2, shared ABI1 and allocator version1 remain unchanged. Object generation does not check round-to-nearest, subnormal retention, overflow behavior or parity at runtime on Cortex-M4.",
+    "The reviewed normalized offline producer remains a candidate only. The existing validation/base guard/pedal/clock/final gate remains necessary; no transport, signal ownership, physical motor mapping or control-policy change is introduced."
+  ],
+  "sources": {
+    "torque_allocator.c": {
+      "bytes": 6677,
+      "exact_local_sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+      "lf_normalized_sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4"
+    },
+    "torque_allocator.h": {
+      "bytes": 1823,
+      "exact_local_sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+      "lf_normalized_sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee"
+    },
+    "torque_contract.h": {
+      "bytes": 3938,
+      "exact_local_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "lf_normalized_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+    }
+  },
+  "research_facts": {
+    "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-arm-research-facts-v1.json",
+    "bytes": 63395,
+    "sha256": "beb053e98a5410381bd0b02a8c96d59e39f4ff9c9419f1b7622de79d60806e21"
+  },
+  "research_only_state": {
+    "new_toolchain_executable_calls": 0,
+    "new_objects": 0,
+    "new_repository_or_controller_source_changes": false,
+    "fresh_archive_tree_verification_performed": false,
+    "historical_manifest_read_is_not_fresh_verification": true
+  },
+  "shared_helper": {
+    "path": "reference/cortex_m4_objects.py",
+    "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090",
+    "allowed_unchanged_helpers": [
+      "digest",
+      "save",
+      "output_path",
+      "safe_member",
+      "verify_toolchain",
+      "clean_environment",
+      "read_elf",
+      "arm_tags",
+      "validate_abi",
+      "stack_records",
+      "dependency_names",
+      "dependency_facts"
+    ],
+    "prohibited_reuse": "Do not call or modify original fixed-three-unit build/compile_args, guard-only build/compile_args, fixed TOOLS constants, historical protocols, prior receipts, metadata reaccount or prior object cohorts. Verify shared source hash before importing it."
+  },
+  "proposed_new_files": [
+    "reference/allocator_cortex_m4_objects.py",
+    "reference/test_allocator_cortex_m4_objects.py",
+    "research/TC-03J-allocator-object-protocol.json",
+    "research/TC-03J-allocator-object-annex.md",
+    "research/TC-03J-evidence/"
+  ],
+  "toolchain": {
+    "name": "Arm Toolchain for Embedded",
+    "version": "22.1.0",
+    "host": "Windows-x86_64",
+    "official_release": "https://github.com/arm/arm-toolchain/releases/tag/release-22.1.0-ATfE",
+    "release_metadata_url": "https://api.github.com/repos/arm/arm-toolchain/releases/tags/release-22.1.0-ATfE",
+    "retained_metadata_sha256": "3aba3a90d2cdee0e8543c28b5e066a5831954b9625991a6c62be8105da85fb30",
+    "archive_url": "https://github.com/arm/arm-toolchain/releases/download/release-22.1.0-ATfE/ATfE-22.1.0-Windows-x86_64.zip",
+    "archive_bytes": 710565705,
+    "archive_sha256": "9db55e43d5fdb1619692259897bf1e64f61da82a558827aae6928a2ccb39d348",
+    "checksum_url": "https://github.com/arm/arm-toolchain/releases/download/release-22.1.0-ATfE/ATfE-22.1.0-Windows-x86_64.zip.sha256",
+    "checksum_file_bytes": 97,
+    "checksum_file_sha256": "5b26e494517da1ef726b3bb7634f72fdcb9df7359f4a26e2e970b09e80f2c291",
+    "archive_size_cap_bytes": 1073741824,
+    "portable_location": "workspace work/tools only; never globally installed",
+    "verification": "Verify the retained archive size/SHA and entire existing extracted tree against that ZIP with a NEW JSONL manifest before ANY toolchain executable. Reuse in place: no extraction, download, installation or global environment change.",
+    "license": "Retain package licenses/notices and provenance; component licenses vary. No toolchain redistribution or binaries committed.",
+    "archive_path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\downloads\\ATfE-22.1.0-Windows-x86_64.zip",
+    "root_path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64",
+    "five_proposed_tool_pins": {
+      "clang.exe": {
+        "path": "bin/clang.exe",
+        "bytes": 83728152,
+        "sha256": "b3b1f1a074e4312449c54a058034a4abd4edf8015db88fe35f1f5cf26f975dcd"
+      },
+      "llvm-nm.exe": {
+        "path": "bin/llvm-nm.exe",
+        "bytes": 11251480,
+        "sha256": "f161335bfe6d45a49b4517bc190df1f1a2561f16f1d0634ce1dadddc4043667a"
+      },
+      "llvm-objdump.exe": {
+        "path": "bin/llvm-objdump.exe",
+        "bytes": 11219224,
+        "sha256": "4e4e2d082eb8974f420f316b4d7f054ebe81ba81107adc9d87585e8725e8886f"
+      },
+      "llvm-readobj.exe": {
+        "path": "bin/llvm-readobj.exe",
+        "bytes": 7562520,
+        "sha256": "88021c83dd2dd96723316ab351580357ac5ac385fc277364b4bdc331b1f8e674"
+      },
+      "llvm-size.exe": {
+        "path": "bin/llvm-size.exe",
+        "bytes": 4219672,
+        "sha256": "463ba9ff5d2a5dda72a790868382b7e382f3b4e4612774a8d7c2b41096210584"
+      }
+    }
+  },
+  "fifth_tool_verification": [
+    "The unchanged verify_toolchain helper verifies all 48,211 retained tree files against the ZIP, including llvm-objdump.exe, but returns explicit identities only for its original four tools. Do not mutate shared.TOOLS or call a fifth executable on the strength of an old receipt.",
+    "After that NEW full verification, independently require exactly one bin/llvm-objdump.exe row in the NEW manifest, exact pinned bytes/SHA and contained ordinary non-symlink local file. Rehash the actual fifth executable and stream that ZIP member to independently confirm the same bytes/SHA before any new executable. Record this fifth identity in the NEW receipt only.",
+    "Likewise require all original four returned tool identities to match the proposed per-tool pins. All five executable paths are absolute under the verified retained bin directory. A changed/missing/unverified tool or archive stops before versions, multilib or compilation.",
+    "Record fresh manifest hash/count and package license/notice facts. No download, extraction, system install, guessed fallback binary, global PATH edit or acquisition retry. Unused package file contents rely on the fresh all-file equality check; independent review may additionally sample/recheck used files without tool execution."
+  ],
+  "matrix": {
+    "units": [
+      "torque_allocator.c"
+    ],
+    "abis": [
+      "hard",
+      "softfp"
+    ],
+    "repetitions": 2,
+    "row_order": [
+      "repeat-1/hard",
+      "repeat-1/softfp",
+      "repeat-2/hard",
+      "repeat-2/softfp"
+    ],
+    "planned_objects": 4,
+    "concurrency": 1,
+    "planned_toolchain_commands": 31,
+    "breakdown": {
+      "version_queries": 5,
+      "multilib_preflights": 2,
+      "object_compiles": 4,
+      "object_inspections": 20
+    },
+    "change_from_guard_annex": "Five version queries instead of four, plus one llvm-objdump disassembly per object: 31 planned tool calls, not the old guard annex's 26."
+  },
+  "compile_common_flags": [
+    "--no-default-config",
+    "--target=armv7em-none-eabi",
+    "-mcpu=cortex-m4",
+    "-mthumb",
+    "-mfpu=fpv4-sp-d16",
+    "-mlittle-endian",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pedantic",
+    "-ffreestanding",
+    "-fno-fast-math",
+    "-fno-finite-math-only",
+    "-ffp-contract=off",
+    "-fexcess-precision=standard",
+    "-fstack-usage",
+    "-ffunction-sections",
+    "-fdata-sections"
+  ],
+  "compile_command_template": [
+    "<verified-clang>",
+    "--no-default-config",
+    "--target=armv7em-none-eabi",
+    "-mcpu=cortex-m4",
+    "-mthumb",
+    "-mfpu=fpv4-sp-d16",
+    "-mlittle-endian",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pedantic",
+    "-ffreestanding",
+    "-fno-fast-math",
+    "-fno-finite-math-only",
+    "-ffp-contract=off",
+    "-fexcess-precision=standard",
+    "-fstack-usage",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-mfloat-abi=<hard|softfp>",
+    "-MD",
+    "-MF",
+    "<new-attempt>/repeat-<1|2>/<abi>/torque_allocator.d",
+    "-c",
+    "torque_allocator.c",
+    "-o",
+    "<new-attempt>/repeat-<1|2>/<abi>/torque_allocator.o"
+  ],
+  "version_commands_in_order": [
+    [
+      "clang.exe",
+      "--version"
+    ],
+    [
+      "llvm-readobj.exe",
+      "--version"
+    ],
+    [
+      "llvm-size.exe",
+      "--version"
+    ],
+    [
+      "llvm-nm.exe",
+      "--version"
+    ],
+    [
+      "llvm-objdump.exe",
+      "--version"
+    ]
+  ],
+  "multilib_preflights_in_order": [
+    [
+      "clang.exe",
+      "--no-default-config",
+      "--target=armv7em-none-eabi",
+      "-mcpu=cortex-m4",
+      "-mthumb",
+      "-mfpu=fpv4-sp-d16",
+      "-mfloat-abi=hard",
+      "-print-multi-directory"
+    ],
+    [
+      "clang.exe",
+      "--no-default-config",
+      "--target=armv7em-none-eabi",
+      "-mcpu=cortex-m4",
+      "-mthumb",
+      "-mfpu=fpv4-sp-d16",
+      "-mfloat-abi=softfp",
+      "-print-multi-directory"
+    ]
+  ],
+  "per_object_inspections_in_order": [
+    [
+      "llvm-readobj.exe",
+      "--file-headers",
+      "--sections",
+      "--symbols",
+      "--arch-specific",
+      "<object>"
+    ],
+    [
+      "llvm-size.exe",
+      "--format=berkeley",
+      "--radix=10",
+      "<object>"
+    ],
+    [
+      "llvm-size.exe",
+      "--format=sysv",
+      "--radix=10",
+      "<object>"
+    ],
+    [
+      "llvm-nm.exe",
+      "--undefined-only",
+      "<object>"
+    ],
+    [
+      "llvm-objdump.exe",
+      "--disassemble",
+      "--reloc",
+      "--triple=thumbv7em-none-eabi",
+      "--mcpu=cortex-m4",
+      "--no-debuginfod",
+      "--disassembler-color=off",
+      "<object>"
+    ]
+  ],
+  "exact_execution_contract": [
+    "Final protocol-v1 must first be committed on a new branch from the exact approved base. Driver implementation and actual tools are separate later stages; current workspace proposal is not authorization to run them.",
+    "Implement a separate additive driver with frozen protocol/source/header/helper hashes and exact flags/order, tool allowlist and four-row/31-command denominator. No direct shell, linker, script wrapper, implicit installed compiler, source rewrite, ARM executor or emulator.",
+    "Create one new attempt at workspace work/enme408-allocator-cortex-m4-v1 only if absent. Reject existing files/directories, symlink destinations and overlap in either direction with the whole checkout, source, archive, toolchain or prior attempts. Do not create inside any retained attempt (ancestor receipt.json). Resolve canonical paths, including Windows aliases, before containment checks; source snapshot contains exactly the three pinned ordinary files.",
+    "Save preparing receipt and exact protocol, executed driver, executed unchanged helper and native snapshot before verification. Preexisting historical file bindings are checked before any new executable and after finalization. Preserve raw Git/local line-ending identity separately where applicable; exact .c/.h bytes and normalized hashes are both recorded.",
+    "Fresh verify the archive/tree/all five tools first. Use unchanged clean_environment, then locally remove DEBUGINFOD_URLS and set no toolchain/global environment variables. Every objdump invocation also has explicit --no-debuginfod. No implicit source/debug lookup or network dependency is requested.",
+    "Run all commands serially from the exact native snapshot. Actual argv and canonical cwd are recorded before subprocess launch; use a fixed 60-second per-command timeout, captured raw stdout/stderr with hash/path, actual return code or launch/timeout error and elapsed wall time. No timing value is interpreted as target latency.",
+    "Version and multilib failures stop. Ordinary compile or inspection/metadata failures mark that row failed and preserve its outputs; continue the remaining frozen rows where safe. Unexpected source/tool/integrity/IO/launch/timeout failure stops conservatively with not-run rows explicit. Never backfill missing calls or replace the planned denominator by the completed count.",
+    "Only compilation uses -c. No additional preprocessing, optimization search, alternative flag probes, new source unit or automatic retries. If a disassembler option/format is rejected or an instruction is unknown, retain the failure; any adjusted protocol/driver and distinct attempt require a visible separately reviewed amendment.",
+    "After the attempt rehash source/snapshot/protocol/helper/driver, all used tool/header dependencies and historical anchors/cohorts. Do not silently pass a drifted attempt. Record four individual row outcomes, actual command count, two ABI-specific repeat comparisons, all failures and no-target-execution fact."
+  ],
+  "metadata_and_acceptance": {
+    "separate_statuses": "Actual tools, metadata parsing, repeat identity, source/tool/historical preservation and independent review have separate statuses. Overall passed requires all four complete inspected rows, exactly31 successful planned commands, required metadata/disassembly checks, both repeat-object hashes equal and all integrity checks. Software tests cannot substitute for this receipt.",
+    "elf": "Use raw bytes plus llvm-readobj logs: ELF32 little-endian ARM relocatable, complete bounded section table and ARM.attributes. Retain actual e_flags and all AEABI tags rather than fabricating a platform wire ABI.",
+    "aeabi_policy": {
+      "Tag_CPU_arch_6": 13,
+      "Tag_CPU_arch_profile_7": 77,
+      "Tag_THUMB_ISA_use_9": 2,
+      "Tag_FP_arch_10": 6,
+      "Tag_ABI_HardFP_use_27": 1,
+      "Tag_ABI_VFP_args_28": {
+        "hard": 1,
+        "softfp": "0 or absent (base default)"
+      },
+      "interpretation": "Same reviewed ARMv7E-M/M-profile/Thumb2, VFPv4-D16 and single-precision-permission metadata checks as old helper. These express compiler settings/ABI attributes, not measured FP execution, target numeric behavior or compatibility with an unidentified team firmware."
+    },
+    "sections": "Retain every section record, full Berkeley and SysV size logs and ELF file length. Reconcile parsed Berkeley fields with actual logs and distinguish code/constants/data/BSS, relocations/unwind/debug/attribute metadata. No linked flash/RAM fit threshold or summing separate units into a firmware size claim.",
+    "symbols": "Retain raw complete symbol/relocation log and undefined nm names. Check all three public allocator definitions exist in the actual symbol table; extra compiler-local definitions are recorded. No exact helper-name allowlist or assumed helper performance/availability. Do not predict guard-unit tc_* references for this source.",
+    "disassembly": "Retain raw llvm-objdump executable-section disassembly with addresses, instruction bytes, function labels and relocations. Require output contains the three public allocator symbol labels and nonempty disassembly; flag any <unknown> instruction as a retained metadata diagnostic/failure. Thumb triple and Cortex-M4 CPU are explicit. Literal data/mapping symbols and relocation placeholders are not executed opcodes or resolved call targets. Do not infer instruction count, branch-path cost, WCET, software-library parity or complete call graph from this listing.",
+    "local_stack": "Retain every emitted .su record/qualifier with actual file hash. Use unchanged parser: missing .su is explicitly not_emitted, not zero stack; this means local-frame evidence is unavailable and must be visible. Numeric frames exclude caller/callee/compiler helpers, interrupts, scheduler and FPU context. No whole-call-stack or budget assertion.",
+    "dependencies": "Preserve literal Windows drive backslashes, escaped spaces and continuations via the reviewed lexer; canonical roots via reviewed alias repair. Retain .d bytes/hash and every dependency identity; each resolved dependency is in the exact native snapshot or fully verified toolchain. Any external/missing/changed dependency fails integrity.",
+    "repeats": "Compare SHA256 of repeat1 vs repeat2 objects separately for hard and softfp, requiring all corresponding rows pass. Record full object bytes/hash. Equality means reproducible bytes only under these exact frozen conditions; no cross-ABI equality or timing claim is required."
+  },
+  "historical_preservation": {
+    "baseline_facts": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-arm-research-facts-v1.json",
+      "bytes": 63395,
+      "sha256": "beb053e98a5410381bd0b02a8c96d59e39f4ff9c9419f1b7622de79d60806e21"
+    },
+    "old_three_unit_attempt_status": "Original66 tool calls exited0, but original attempt failed metadata due Windows make-dependency parser; its source-bound file-only reaccount passed. Preserve both statuses and exact original executed driver. Do not relabel the old attempt or regenerate its objects/logs.",
+    "guard_annex_status": "Separately frozen4-object/26-command guard annex passed; no commands or object identities are appended to that cohort.",
+    "comparison": "Before/after compare every anchored historical source/protocol/receipt/reaccount and every ordinary retained file in both old attempt trees with the research baseline list/count/aggregate. A changed old file is an explicit failure, not a new accepted baseline. Side-by-side object observations remain labeled by unit, ABI, exact source/tool/flags and separate attempt; no total program size, summed stack or completed integration claim."
+  },
+  "software_tests_before_actual_calls": [
+    "Patch subprocess execution to forbidden in software tests. Freeze source/protocol/helper pins, exact unit/file cohort and 4-object/31-command construction/order; reject an altered flag, added executable/ABI/unit/link flag or accidental use of historical builders.",
+    "Test create-only paths and canonical overlap, source/protocol/helper drift, fifth-tool absence/duplicate/wrong bytes/hash/unsafe path and that no executable is reachable until fresh full verification AND all five identities succeed. Tiny synthetic archive/tree fixtures only; no package re-extraction or tool execution.",
+    "Test bounded command recording/launch errors/timeouts using fake subprocess returns, explicit not-run denominators, raw log hashing, failed metadata/repeat comparison and actual-status preservation. These synthetic cases are software validation only.",
+    "Test known ELF/AEABI/section/stack/dependency behavior through existing helpers without changing their semantics; disassembly label/nonempty/unknown diagnostic acceptance using explicit fake transcripts. CI may run these finite tests, but no new ARM binary/toolchain artifact is uploaded or rebuilt in ordinary CI."
+  ],
+  "staged_reviews_and_execution": [
+    "Root reads this full source-bound workspace proposal and researches/questions the real31-command/fifth-tool scope before any branch, protocol freeze or implementation.",
+    "After root GO: branch from exact approved current head; commit final-v1 protocol first. Only then implement additive driver/tests/docs with original C/ABI/numeric policy and ARM cohorts unchanged.",
+    "Hand exact driver/test/protocol/source hashes and software-test outcomes to an independent reviewer/root. They read source and command construction before any actual toolchain calls; root gives a separate explicit execution GO.",
+    "Execute at most one fixed attempt at the new create-only directory with full fresh pre-call archive/tree verification; retain all failures. No GPU, engine/model, hardware, linking or target executable.",
+    "Independent file-only artifact audit before publication: independently decode all four ELF headers/sections/AEABI/symbols, reconcile all31 argv/log pairs and exits, sizes, unresolved names, disassembly/relocations, .su/.d/dependency hashes, two repeat pairs, used-tool/archive/tree provenance and preservation of old cohorts. No independent compiler/version/tool inspection/target call required.",
+    "Relevant host tests/CI and exact final-head source/evidence binding before a scoped draft PR stacked on the approved base. Attach it; do not merge/deploy. No request to supervisors or safety-approval claim."
+  ],
+  "limitations": [
+    "The exact team STM32 part, ABI, compiler/library/startup configuration, flash/RAM budgets and task/deadline/recovery ownership remain unknown; these candidates do not select them.",
+    "This compiles one producer unit into relocatables. It neither links all five units nor supplies/reset/startup/HAL/interrupt/controller scheduling/physical signals. Unresolved helpers may dominate linked size, numerical behavior or execution cost.",
+    "Clang static assertions and strict flags constrain translation; generated Cortex-M4 code has not been executed. Host bit-parity and sanitizers remain prior host evidence, not target parity or safety certification.",
+    "Binary64 arithmetic, ordinary rounding/subnormal retention and source epsilon quirks remain unchanged. Single-precision FPU metadata and an assembly listing cannot establish correct target runtime behavior of double operations.",
+    "No target/HIL/emulation, firmware image, CAN/transport, flashing, motor mapping/calibration/traction policy, real hardware actuation, whole-stack/resource-fit/deadline/WCET or independent shutdown authority."
+  ],
+  "primary_sources": [
+    {
+      "url": "https://raw.githubusercontent.com/arm/arm-toolchain/release-22.1.0-ATfE/arm-software/embedded/README.md",
+      "support": "Pinned official portable package, target/FPU multilib selection and -print-multi-directory; strict inherited flags exclude Omax/fast-math. Component licenses remain attributed."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-22.1.0/llvm/docs/CommandGuide/llvm-objdump.rst",
+      "support": "Pinned objdump22.1 docs for executable-section disassembly, relocations, raw instruction bytes, CPU/triple, no-debuginfod and color control. Explicit no-debuginfod avoids environment-enabled debug lookups."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-22.1.0/llvm/lib/Target/ARM/ARMProcessors.td",
+      "support": "Pinned LLVM cortex-m4 model includes ARMv7em and FeatureVFP4_D16_SP. This supports the explicit disassembler CPU selection; it does not identify the team's MCU or measure hardware."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ARM-software/abi-aa/2025Q4/addenda32/addenda32.rst",
+      "support": "AEABI tag28 distinguishes intended base vs VFP parameter/result convention; attributes do not establish system linkage or timing."
+    },
+    {
+      "url": "https://www.st.com/resource/en/datasheet/dm00037051.pdf",
+      "support": "Inherited reviewed STM32F405/407 Cortex-M4/single-precision context only; exact team part and budgets are still unknown. No new model/part assumed."
+    }
+  ],
+  "decision_pending": "Approved for protocol-first implementation only. Source/tests must be independently reviewed and receive separate explicit root execution GO before ANY toolchain executable, including --version.",
+  "base_commit": "17715fc698a4bc7b3a7807d0d6f869045fdab5a4",
+  "base_pr": 77,
+  "root_proposal_review": {
+    "path": "outputs/enme408-allocator-arm-root-proposal-review.json",
+    "sha256": "be105357850edb883f687ef3ab63a80e2e9a85c726d23bb0608cf90b62f7826d",
+    "scope": "Full proposal and feasibility approved for protocol-first implementation only; independent source review and separate root GO still required before any executable."
+  },
+  "publication_policy": {
+    "generated_objects": "The four small candidate allocator .o files are public raw generated evidence in TC-03J-evidence/objects/, with .d/.su and exact command/inspection logs and source bindings. They are ARM relocatable object files, not executables or linked firmware. Never execute/load them.",
+    "toolchain": "Toolchain executables, archive, libraries and complete extracted package remain local; do not commit or redistribute them. Retain their hashes, licenses/provenance and fresh verification manifest identity.",
+    "historical": "No old object, receipt, source or curated cohort is copied over or relabeled. Public new evidence is a separate cohort."
+  },
+  "frozen_research_baseline": {
+    "path": "research/TC-03J-allocator-arm-research-baseline.json",
+    "bytes": 63395,
+    "sha256": "beb053e98a5410381bd0b02a8c96d59e39f4ff9c9419f1b7622de79d60806e21",
+    "policy": "Exact original 63k research facts copied byte-for-byte; never rebase its old artifact observations after implementation."
+  }
+}

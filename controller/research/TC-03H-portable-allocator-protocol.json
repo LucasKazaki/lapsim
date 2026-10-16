@@ -1,0 +1,321 @@
+{
+  "schema": "enme408.portable-allocator-owner-protocol.v1",
+  "status": "frozen_before_C_implementation_and_native_verification",
+  "base_commit": "d2e736450f8528356d45641de7a118cd4129ff7e",
+  "base_pr": 75,
+  "proposed_branch": "enme408/portable-allocator-owner-20261015",
+  "question": "Can an additive fixed-size C11 candidate allocator reproduce the existing Python producer's ordered validation, equal-share water filling and binary64 results, then compose through the existing native guard/pedal/clock/final gate without a Python allocator in that proposed path?",
+  "decision": "Root reviewed the full proposal and owner source; bounded implementation approved with no semantic policy changes.",
+  "authority": {
+    "owner": "reference/allocator.py at the exact base, including pre-existing epsilon and status quirks",
+    "numeric_contract": "reference/torque_numeric.py version 2; fixed four-slot ordered binary64 accumulation",
+    "acceptance": "reference/allocation_contract.py plus existing real guard, trusted-pedal, cycle-clock, recovery and final-gate owners",
+    "schema": "AllocationInput and AllocatorConfig dataclasses, as constructed by bench_replay.py; dataclass annotations do not validate their fields",
+    "source_hashes": {
+      "allocator.py": {
+        "raw_sha256": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
+        "lf_normalized_sha256": "9534c4cd52d792c670911d02565573daac38613b959fe53325e4c828dcc641aa"
+      },
+      "torque_numeric.py": {
+        "raw_sha256": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26",
+        "lf_normalized_sha256": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
+      },
+      "allocation_contract.py": {
+        "raw_sha256": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
+        "lf_normalized_sha256": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415"
+      },
+      "command_guard.py": {
+        "raw_sha256": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+        "lf_normalized_sha256": "6eb22f6b7c90e2cbfb5131a7678074c799b85a3f648fb2d553b34b9d458b36a6"
+      },
+      "control_pipeline.py": {
+        "raw_sha256": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531",
+        "lf_normalized_sha256": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531"
+      },
+      "bench_replay.py": {
+        "raw_sha256": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc",
+        "lf_normalized_sha256": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc"
+      },
+      "guard_request_contract.py": {
+        "raw_sha256": "e2e900515d76aa19a2226b5d4f5a4620708043c91b1180dd386be5c1d536837b",
+        "lf_normalized_sha256": "e9c908ab5bf6bbfb90ba0694c70e57c6e10f3a78b95a801d8b67e2c67b29bcfe"
+      },
+      "guard_overlap_observation.py": {
+        "raw_sha256": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+        "lf_normalized_sha256": "f60bd194a60b23c546185a3be8878d5864bd9d62dbd78562f3c6c84a334e22e2"
+      },
+      "guard_trusted_clear.py": {
+        "raw_sha256": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+        "lf_normalized_sha256": "2b612e1e9924e5625840a6ad768219622a133b23caeb4b8528d40b7644f48ee1"
+      },
+      "cycle_clock.py": {
+        "raw_sha256": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5",
+        "lf_normalized_sha256": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5"
+      },
+      "fault_state.py": {
+        "raw_sha256": "1abe78b642ca381257f1b7e26eb8ac5b125e98d33a91c97f9808ab9a5690d9d3",
+        "lf_normalized_sha256": "829535501773f0d02fb685382117dc8cb837da5fd1d61ccb17b29db16083b84f"
+      },
+      "guard_parity.py": {
+        "raw_sha256": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854",
+        "lf_normalized_sha256": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854"
+      },
+      "native/torque_contract.c": {
+        "raw_sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+        "lf_normalized_sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c"
+      },
+      "native/torque_contract.h": {
+        "raw_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+        "lf_normalized_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+      },
+      "native/torque_guard.c": {
+        "raw_sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+        "lf_normalized_sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+      },
+      "native/torque_guard.h": {
+        "raw_sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+        "lf_normalized_sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+      },
+      "native/torque_pedal.c": {
+        "raw_sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
+        "lf_normalized_sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15"
+      },
+      "native/torque_pedal.h": {
+        "raw_sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
+        "lf_normalized_sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128"
+      },
+      "native/torque_clock.c": {
+        "raw_sha256": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+        "lf_normalized_sha256": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5"
+      },
+      "native/torque_clock.h": {
+        "raw_sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+        "lf_normalized_sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088"
+      }
+    },
+    "no_policy_change": true,
+    "no_original_native_source_or_historical_cohort_change": true
+  },
+  "supported_domain": {
+    "records": "Ordinary AllocationInput/AllocatorConfig records and ordinary built-in JSON-style field values; no subclasses, conversion hooks, equality hooks, iterators or duck-typed arbitrary objects.",
+    "slots": "Exactly four abstract slots; ordinary list/tuple shape is a decoder tag, with fixed C arrays. No confirmed physical wheel or motor mapping.",
+    "numeric_scalars": "Ordinary Python int/float excluding bool, projected once to IEEE binary64 by the bridge. Finite converted values preserve bits; unrepresentable ints are malformed numeric tags. Float NaN/Inf remain numeric-tagged values so the request's nonfinite_request diagnosis is preserved. Limits classify every malformed/nonfinite/negative value as invalid_wheel_limit.",
+    "requested_result_projection": "On successful Python paths requested_nm retains its original int/float object, unlike fault paths which normalize it. Direct parity compares float(requested_nm)'s binary64 bits, not Python integer identity, arbitrary integer precision or int-versus-float type. This is explicit normalized numeric result parity, not lossless JSON-integer serialization.",
+    "timestamps_and_age": "Nonnegative ordinary integer no-wrap milliseconds in [0, UINT64_MAX]. A decoder-valid byte represents that exact subset; bool/fractional/negative/nonnumeric values become invalid tags. Python integers larger than UINT64_MAX are outside this supported C domain and the bridge must reject them as out of domain rather than claim an equivalent Python fault. No modulo rollover.",
+    "booleans": "Only actual decoded Booleans map to bytes 0/1. Malformed source flags map to an invalid byte, never truthiness/coercion.",
+    "unit": "Only the ordinary string N*m is supported. Reuse tc_text as a bounded representation; NONE, invalid/unterminated text, wrong strings, long strings and embedded NUL input are unsupported_torque_unit. A bridge may not turn a different source value into N*m. Source Python strings containing any embedded NUL MUST be encoded as invalid, never truncated to N*m. For raw valid C tc_text the first terminator defines its string; bytes after it are not original Python string identity and are ignored. No other port text semantics change.",
+    "floating_environment": "Ordinary IEEE binary64 round-to-nearest with retained subnormals, nontrapping ordinary floating overflow and no reassociation/fast-math. Require sizeof(double)==8, radix 2, mantissa 53, exponent 1024 and FLT_EVAL_METHOD==0. Supported host GCC/Clang builds are checked empirically; no platform-universal or target-runtime claim follows."
+  },
+  "proposed_additive_api": {
+    "files": [
+      "reference/native/torque_allocator.h",
+      "reference/native/torque_allocator.c",
+      "reference/native/allocator_sanitizer_probe.c",
+      "reference/allocator_parity.py",
+      "reference/test_allocator_parity.py",
+      "research/TC-03H-portable-allocator-protocol.json",
+      "research/TC-03H-portable-allocator.md"
+    ],
+    "version": "TC_ALLOCATOR_VERSION 1; existing TC_ABI_VERSION 1 and TC_NUMERIC_CONTRACT_VERSION 2 remain unchanged",
+    "config": "tc_allocator_config: uint8_t type_valid; uint8_t max_input_age_valid; uint64_t max_input_age_ms",
+    "input": "tc_allocator_input: uint8_t type_valid; uint8_t now_valid, timestamp_valid; uint64_t now_ms, input_timestamp_ms; tc_scalar request; uint8_t limits_vector_valid, enabled_vector_valid; tc_scalar limits[4]; uint8_t enabled[4], external_interlock; tc_text torque_unit",
+    "output": "Existing tc_allocation candidate only. Always initialize type_valid=1, wheel_vector_valid=1, every numeric tag=1, positive-zero wheel/delivered/request diagnostics, fault status and an explicit bounded diagnostic before validation. Successful raw proposals are not independently authorized commands.",
+    "functions": [
+      "uint32_t tc_allocator_version(void)",
+      "size_t tc_allocator_abi_sizeof(uint32_t kind): config=1, input=2, otherwise 0",
+      "uint32_t tc_allocate_propulsive_torque(const tc_allocator_input *input, const tc_allocator_config *config, tc_allocation *result)"
+    ],
+    "return_and_null": "Return 0 for a fully initialized semantic result, including faults; return 1 for any required NULL. An available output is faulted/positive-zero before any other read. Output NULL cannot be written. Null failures use C-only missing_allocator_input diagnostics.",
+    "outer_schema_order": "After pointer checks, reject config.type_valid!=1 as C-only invalid_allocator_config_type, then input.type_valid!=1 as C-only invalid_allocator_input_type. These C-only paths retain requested=positive zero; Python cannot inspect these malformed outer objects reliably and direct result parity is not claimed for them.",
+    "memory_preconditions": "Complete aligned input/output objects, mutually non-overlapping storage; fixed arrays, no heap, no I/O, no scheduler or retained state. No alias/packed-wire ABI promise.",
+    "decoder_obligations": "Exactly 1 is a valid ordinary numeric/vector/record/time tag. Other bytes are malformed. Numeric tag 1 plus nonfinite double is a representable nonfinite float input, not an accepted finite value. Invalid Booleans must remain distinguishable from false. Adversarial direct ABI calls test all byte values."
+  },
+  "exact_python_validation_order": [
+    {
+      "order": 1,
+      "check": "max_input_age_ms is not ordinary int or is negative",
+      "fault": "invalid_max_input_age"
+    },
+    {
+      "order": 2,
+      "check": "torque_unit != N*m",
+      "fault": "unsupported_torque_unit"
+    },
+    {
+      "order": 3,
+      "check": "request is bool or not an int/float; or ordinary integer conversion cannot produce a finite binary64",
+      "fault": "invalid_request_numeric"
+    },
+    {
+      "order": 4,
+      "check": "ordinary float request is NaN/+Inf/-Inf",
+      "fault": "nonfinite_request"
+    },
+    {
+      "order": 5,
+      "check": "finite request < 0.0",
+      "fault": "negative_request_unsupported"
+    },
+    {
+      "order": 6,
+      "check": "either vector is not list/tuple or either length is not four",
+      "fault": "invalid_wheel_vector"
+    },
+    {
+      "order": 7,
+      "check": "any enabled flag is not an ordinary bool",
+      "fault": "invalid_wheel_enabled"
+    },
+    {
+      "order": 8,
+      "check": "external_interlock is not an ordinary bool",
+      "fault": "invalid_external_interlock"
+    },
+    {
+      "order": 9,
+      "check": "any limit cannot convert to finite binary64 or is < 0.0",
+      "fault": "invalid_wheel_limit"
+    },
+    {
+      "order": 10,
+      "check": "external_interlock is false",
+      "fault": "external_interlock_open"
+    },
+    {
+      "order": 11,
+      "check": "either timestamp is not an ordinary nonnegative integer",
+      "fault": "invalid_input_timestamp"
+    },
+    {
+      "order": 12,
+      "check": "input_timestamp_ms > now_ms",
+      "fault": "input_timestamp_in_future"
+    },
+    {
+      "order": 13,
+      "check": "now_ms - input_timestamp_ms > max_input_age_ms after the future check",
+      "fault": "stale_input"
+    },
+    {
+      "order": 14,
+      "check": "request == 0.0, including -0.0",
+      "result": "ok, no fault, positive-zero wheels/requested/delivered; occurs before available-slot detection but after all earlier validation"
+    },
+    {
+      "order": 15,
+      "check": "no slot enabled with limit > 0.0",
+      "fault": "no_available_wheels"
+    },
+    {
+      "order": 16,
+      "check": "otherwise execute the original ordered water filling",
+      "result": "unmodified raw candidate, then external validation/guard/final gate in composed tests"
+    }
+  ],
+  "fault_diagnostics": "Every source-defined fault returns positive-zero wheels and delivered, status fault, the exact fault text, and finite converted request if available (including negative and negative-zero diagnostic bits), otherwise positive zero. This happens even when an earlier config/unit fault wins over a malformed request. No int-to-float exception escapes.",
+  "arithmetic_and_reduction_audit": {
+    "no_hidden_sum": "The full current allocator has no builtin sum/fsum, cap-sum prepass, compensation, fairness weights or weighted reduction. The active set is only a membership/count mechanism. A Python3.12 compensated builtin sum is therefore not an allocator operation to reproduce here.",
+    "initialization": "outputs=[+0.0]*4; remaining=converted request; epsilon is the binary64 value of literal 1e-12; active membership is enabled && converted_limit>0.0. Negative-zero limits are valid but unavailable.",
+    "loop_condition": "while active and remaining > epsilon; at most four rounds because each saturated round removes at least one active slot, while a nonsaturated round breaks immediately",
+    "share": "One binary64 division: remaining / len(active); active count is exact integer 1..4 converted to binary64. No division by zero.",
+    "saturation_scan": "Ascending slot index. For each active index, capacity=limits[index]-outputs[index] with binary64 rounding; compare capacity <= (share+epsilon) with a separate binary64 addition. Collect all qualifying slots before updating any remaining/output value.",
+    "nonsaturated_branch": "For every active index in ascending order, outputs[index]=outputs[index]+share; then set remaining=+0.0 and break. Do not substitute min, aggregate caps or a final balance slot.",
+    "saturated_branch": "For every collected slot in ascending order: capacity=max(+0.0, limits[index]-outputs[index]); outputs[index]=outputs[index]+capacity; remaining=remaining-capacity; remove this slot. Preserve each operation and rounding order; do not subtract a combined saturated-capacity sum.",
+    "delivered": "wheel_total(outputs) only: total=+0.0 then four separately rounded binary64 additions in slot order 0,1,2,3. This is the unchanged numeric contract 2. A private equivalent in the new C unit avoids changing the old contract unit's static helper/API/cohort.",
+    "status": "If final remaining > binary64 literal 1e-9, status saturated and fault aggregate_limit; otherwise status ok and fault NONE. No equality-to-request requirement is added.",
+    "no_optimization_substitution": "No sum(caps), request clipping, residual redistribution after the source stops, changing epsilons to relative/ULP tolerance, reordering slots, float32 conversion or numerical-policy update. Infinite sums of finite cap inputs are not an excuse to pre-sum capacities; preserve the source's actual loop.",
+    "overflow_underflow": "Do not assume every raw candidate from finite inputs satisfies the downstream acceptance contract. Preserve source arithmetic, including any nonfinite delivered total or epsilon over-request result encountered; direct parity records its exact result while composition must inhibit it via the existing validator/guard/gate. No downstream acceptance boundary is relaxed. The protocol does not predeclare whether a particular DBL_MAX fixture overflows; the unchanged Python owner supplies that result."
+  },
+  "source_quirks_required_as_named_regressions": [
+    "Request +0.0 and -0.0 produce fully positive-zero ok results only after all earlier validations; no available slot is needed for this exact zero path.",
+    "A positive request <=1e-12 with an available slot bypasses allocation and returns ok zero delivery; without available slots the earlier no_available_wheels fault wins.",
+    "One active slot, request=1.0 and limit=(1.0+1e-12 computed in binary64): threshold equality saturates to a cap above the request; raw status remains ok, while existing allocation_contract_fault/guard must reject candidate_exceeds_request and the composed command is positive zero.",
+    "A remaining positive shortfall between 1e-12 and 1e-9 can yield status ok when all slots are exhausted; source labeling must be retained, not relabeled saturated.",
+    "Ascending saturation removal can create rounding-sensitive remaining values. Mixed-magnitude caps, permutations and ULP-neighbor thresholds must preserve those exact operations.",
+    "Finite DBL_MAX requests and finite extreme caps: compare source outputs/total/status without pre-summing caps; include active counts 1,2,3,4 and invalid-result composition if it occurs.",
+    "DBL_TRUE_MIN/min-normal request and limits, signed zero limits, unavailable slots and exact epsilon/status boundaries remain source-compatible.",
+    "Negative finite requests, malformed flags/vectors, invalid config/unit and NaN/Inf/huge-int requests combine to test actual earliest-fault order and diagnostic request normalization."
+  ],
+  "planned_verification": {
+    "oracle": "Untouched actual allocate_propulsive_torque; direct normalized result signature compares four wheel double bits, delivered double bits, projected requested double bits, exact status and exact fault. Use binary64 hex/bit representations so signed zeros and nonfinite raw totals are representable in strict JSON receipts.",
+    "direct_grid": "18 requests x 16 fixed limit vectors x 16 enable masks =4608 direct cases, with a valid 50ms age policy and current timestamps. Requests: -0,+0,TRUE_MIN,MIN_NORMAL,1e-13,nextafter(1e-12,0),1e-12,nextafter(1e-12,+inf),2e-12,1e-9,nextafter(1e-9,+inf),1,nextafter(1,+inf),40,100,1e100,DBL_MAX/3,DBL_MAX. Limit vectors: all +0, all -0, all TRUE_MIN, all MIN_NORMAL, all 1e-12, all 1, all 20, all DBL_MAX; (4,20,20,20); (1,2,3,4) and reverse; (1e-12,1,1e100,DBL_MAX) and reverse; (1,0,0,0); (DBL_MAX,0,DBL_MAX,0); (DBL_MAX/3,DBL_MAX/3,DBL_MAX/3,0).",
+    "random_finite": "8192 seeded direct cases using seed 2026101508 and positive finite raw binary64 bit patterns for request and four caps, all 16 enable masks, with controlled current/age/future/no-wrap timestamp cases. No load generation beyond this finite comparison budget.",
+    "boundary_and_validation": "Named quirks plus threshold neighbors, all active counts, malformed JSON-style fields, ordinary finite integer normalization, huge-int numeric rejection, every ordered mixed-fault pair, age boundary/future/UINT64_MAX cases and explicit out-of-domain bridge errors for larger timestamp integers. Cases and fixture generator hashes freeze before the first native verification run.",
+    "abi": "All 256 tag values for each record/numeric/vector/time/text tag and enable/interlock flag; malformed/unterminated unit text; all three required NULL pointers; initialized result positive-zero behavior; version/sizeof checks. Malformed enable bytes >1 fault, but 0 is valid disabled and must not be treated as invalid. These C-only API checks are labeled separately from Python result parity.",
+    "full_composition": "New additive five-unit host library: torque_contract.c, torque_clock.c, torque_pedal.c, torque_guard.c, torque_allocator.c. Actual proposed path uses C allocator output directly as the C guard candidate, then existing native pedal, clock and final gate. Existing decoder/adapters may normalize metadata; they must not substitute a Python allocator/guard output in the native path. Python owners supply the independent expected path only. Existing four-/three-unit builders and ARM experiment protocols remain unchanged.",
+    "stateful_streams": "At least 1024 healthy/repeated/slew-limited cycles and 4096 recovery/trust/clock/restart cycles. Compare raw allocator, base/effective guard, clock fault AND full anchor, retained latch, proposed-output history, final gate state/streak/generation/reason and command bits. Assert actual positive accepted commands, held commands, limited accepted output, latch clearance, restart and clock-fault coverage. A coverage failure is a retained failed attempt, not a passing result with empty behavior coverage.",
+    "fail_closed_acceptance": "Every held final vector is exact positive-zero bytes. Every allowed final vector matches the untouched Python pipeline and remains bounded by existing acceptance rules. A contradictory raw producer candidate is retained for direct parity but may never bypass the existing contract/guard/final gate.",
+    "determinism": "Repeat the finite parity run twice on the same built library and compare result/case-count digests. Record exact compiler/version/argv, source and protocol hashes, ABI sizes, library hash, Python/runtime identity, seed, declared domain, denominators, pass/fail details and limits; retain failed attempts.",
+    "host_matrix": "Run appropriate full local reference suite, then GCC/Clang x Python 3.11/3.12/3.13 host parity and Windows/Linux reference CI. Add a separate fifth actual ASAN/UBSan allocator probe in the existing sanitizer step; do not edit prior probe semantics. Actual sanitizer CI must pass before the new draft PR.",
+    "independent_review": "After stable source/test/protocol/actual local parity receipt, independent adversarial review must inspect the producer arithmetic, all-tag/schema/null behavior and real stateful composition before publication. Findings and repairs remain explicit.",
+    "no_target_experiment": "No ARM compiler/version/inspection calls, linking, target emulator/execution or hardware work in this increment. A future object annex needs its own separate protocol if useful. No GPU/model call needed.",
+    "host_common_flags": [
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-fno-fast-math",
+      "-fno-finite-math-only",
+      "-ffp-contract=off",
+      "-fexcess-precision=standard",
+      "-shared"
+    ],
+    "host_platform_flags": {
+      "Windows": [
+        "-static-libgcc",
+        "-Wl,--no-insert-timestamp",
+        "-Wl,--image-base,0x180000000"
+      ],
+      "other_supported_hosts": [
+        "-fPIC"
+      ]
+    },
+    "host_link_order": [
+      "torque_contract.c",
+      "torque_clock.c",
+      "torque_pedal.c",
+      "torque_guard.c",
+      "torque_allocator.c",
+      "-o",
+      "NEW_TEMP_HOST_LIBRARY",
+      "-lm"
+    ],
+    "new_sanitizer_flags": [
+      "-std=c11",
+      "-O1",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-fno-fast-math",
+      "-fno-finite-math-only",
+      "-ffp-contract=off",
+      "-fexcess-precision=standard",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer"
+    ]
+  },
+  "primary_references": [
+    {
+      "url": "https://docs.python.org/3.12/tutorial/floatingpoint.html",
+      "use": "Python documents binary64 approximation and exact hexadecimal float interchange; this supports explicit normalized bit signatures, not a guarantee for arbitrary custom objects/platforms."
+    },
+    {
+      "url": "https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html",
+      "use": "Compiler floating-point options motivate strict no-fast-math, no contraction and standard excess-precision flags; supported builds still require empirical parity."
+    },
+    {
+      "url": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf",
+      "use": "C11 draft is the language reference for fixed types/operations and floating evaluation. C11 alone is not a promise of IEEE nearest/subnormal behavior; the narrower environment is explicit."
+    }
+  ],
+  "limitations": [
+    "A faithful port preserves existing producer quirks; it is not a redesign or proof that every raw candidate is physically meaningful.",
+    "Equal allocation has no vehicle dynamics, traction/slip/yaw objective, weights, regeneration, calibration or physical motor mapping.",
+    "The orchestration remains offline Python and all data provenance remains caller-owned; normalized source fields are not verified sensor ownership.",
+    "No MCU runtime parity, firmware fit, complete-link/library behavior, real-time deadline/WCET, HIL, CAN, independent shutdown authority, vehicle actuation, course acceptance or safety certification.",
+    "No ARM compiler/object/link, GPU or hardware actions in this increment; implementation proceeds only from this separately frozen protocol."
+  ]
+}

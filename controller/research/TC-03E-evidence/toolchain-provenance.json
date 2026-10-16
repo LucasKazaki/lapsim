@@ -1,0 +1,51 @@
+{
+  "schema": "enme408-cortex-m4-toolchain-provenance/v1",
+  "release_tag": "release-22.1.0-ATfE",
+  "release_url": "https://github.com/arm/arm-toolchain/releases/tag/release-22.1.0-ATfE",
+  "published_at": "2026-03-23T11:06:43Z",
+  "selected_asset": {
+    "name": "ATfE-22.1.0-Windows-x86_64.zip",
+    "size": 710565705,
+    "digest": "sha256:9db55e43d5fdb1619692259897bf1e64f61da82a558827aae6928a2ccb39d348",
+    "browser_download_url": "https://github.com/arm/arm-toolchain/releases/download/release-22.1.0-ATfE/ATfE-22.1.0-Windows-x86_64.zip"
+  },
+  "official_metadata_sha256": "3aba3a90d2cdee0e8543c28b5e066a5831954b9625991a6c62be8105da85fb30",
+  "published_checksum_file_sha256": "5b26e494517da1ef726b3bb7634f72fdcb9df7359f4a26e2e970b09e80f2c291",
+  "acquisition_receipt_sha256": "b6e8aba796cc5e07efe69bb86b6fbff976b8074ae4f303dafa37d517a22ce950",
+  "verified_extracted_files": 48211,
+  "precall_verified_tree_manifest_sha256": "e61db4e336f1727579b6a5581d07feaa859c3c472960187ec52fff794aa7aa0a",
+  "tool_hashes": {
+    "clang.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+      "sha256": "b3b1f1a074e4312449c54a058034a4abd4edf8015db88fe35f1f5cf26f975dcd"
+    },
+    "llvm-nm.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+      "sha256": "f161335bfe6d45a49b4517bc190df1f1a2561f16f1d0634ce1dadddc4043667a"
+    },
+    "llvm-readobj.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+      "sha256": "88021c83dd2dd96723316ab351580357ac5ac385fc277364b4bdc331b1f8e674"
+    },
+    "llvm-size.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+      "sha256": "463ba9ff5d2a5dda72a790868382b7e382f3b4e4612774a8d7c2b41096210584"
+    }
+  },
+  "license_files": [
+    {
+      "path": "LICENSE.txt",
+      "sha256": "a9ed3eae930adbc631b83300b78ab5d228c9b1e4560d64ec4b4ea2bcf69f4569"
+    },
+    {
+      "path": "third-party-licenses/picolibc/COPYING.picolibc",
+      "sha256": "df8aecac86a7cce2db23fac812e058aef093f667ff20b95793f7032a4a668a43"
+    }
+  ],
+  "package_version_file": "Arm Toolchain for Embedded \n\nSources:\n* arm-toolchain: https://github.com/arm/arm-toolchain (commit d4f997caa50be1d1e5d351236c5e34d1eb4b6b43)\n* picolibc: https://github.com/picolibc/picolibc.git (commit 0100fd275bfca299ab85239be1dc07472bcab318)\n* llvmlibc: https://github.com/arm/arm-toolchain/tree/arm-software/libc (commit d4f997caa50be1d1e5d351236c5e34d1eb4b6b43)\n\n",
+  "package_version_file_sha256": "499d6e6a15df1ce7f6671c42430ea78316747fccbbed8877899a3bcfd384750e",
+  "license_scope": "LLVM Apache-2.0 with LLVM Exceptions; package lists additional component-specific licenses. Exact notices and all component bytes remain retained with the verified local toolchain. No toolchain distribution in Git.",
+  "archive_size_cap_bytes": 1073741824,
+  "global_install": false,
+  "generated_binary_distribution": false
+}

@@ -1,0 +1,22 @@
+{
+  "status": "frozen before repaired software tests; no actual ARM calls",
+  "files": [
+    {
+      "path": "reference/allocator_cortex_m4_objects.py",
+      "bytes": 28707,
+      "sha256": "132b2fe3ec9d7ffb2b7a8d0efc7b153ce547192c2fea99034ccc855cb8910ce4"
+    },
+    {
+      "path": "reference/test_allocator_cortex_m4_objects.py",
+      "bytes": 29256,
+      "sha256": "126295bfa6e57a5c09e0379dbe049357751ac04a3d02714b2c8ed63c6f9dccef"
+    },
+    {
+      "path": "research/TC-03J-allocator-object-protocol.json",
+      "bytes": 27343,
+      "sha256": "6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912"
+    }
+  ],
+  "previous_unexecuted_head": "8ae9d8ffd491d1baf7909c6faaf8935340719af0",
+  "root_findings_sha256": "37fe88bab2556f5ad9bdd299d2d70b4e9ed0bd7b073aaa94352bce6362ccfac5"
+}

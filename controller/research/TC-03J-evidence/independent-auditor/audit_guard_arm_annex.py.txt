@@ -1,0 +1,194 @@
+"""File-only guard annex review. Never import/run compiler drivers or tools."""
+from pathlib import Path, PurePosixPath
+import hashlib,json,re,struct,time,zipfile
+
+ROOT=Path(__file__).resolve().parent.parent
+RUN=ROOT/'work/enme408-guard-cortex-m4-v1'
+REF=ROOT/'work/repos/enme408-studio/projects/enme408-torque-control/reference'
+OLD=ROOT/'work/enme408-cortex-m4-objects-v1'
+RECEIPT='b03ac8621d127153d4b0b354d00e9d8a3dd673d8735cd86527be89e47077ceb8'
+PROTOCOL='6fd1aa2c1aab66d5fef12ccb46d727e233ecc1d4a531eb21e7148e55ad9b8d20'
+
+def sha(path):
+    h=hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda:stream.read(65536),b''):h.update(chunk)
+    return h.hexdigest()
+def read(p):return json.loads(p.read_text(encoding='utf-8'))
+def elf(path):
+    raw=path.read_bytes();header=struct.unpack_from('<16sHHIIIIIHHHHHH',raw)
+    assert raw[:7]==b'\x7fELF\x01\x01\x01' and header[1:3]==(1,40)
+    offset,stride,count,names_index=header[6],header[11],header[12],header[13]
+    assert stride==40 and names_index<count and offset+count*stride<=len(raw)
+    sections=[struct.unpack_from('<IIIIIIIIII',raw,offset+i*stride) for i in range(count)]
+    def data(s):
+        assert s[1]==8 or s[4]+s[5]<=len(raw)
+        return raw[s[4]:s[4]+s[5]]
+    names=data(sections[names_index])
+    def name(s):return names[s[0]:].split(b'\0',1)[0].decode('ascii')
+    sizes={'text':0,'data':0,'bss':0};undefined=[];attrs=None
+    for s in sections:
+        if s[2]&2:sizes['bss' if s[1]==8 else 'data' if s[2]&1 else 'text']+=s[5]
+        if name(s)=='.ARM.attributes':attrs=data(s)
+        if s[1]==2:
+            assert s[9]==16 and s[5]%16==0
+            strings=data(sections[s[6]])
+            for pos in range(0,s[5],16):
+                n,v,sz,info,other,index=struct.unpack_from('<IIIBBH',data(s),pos)
+                if n and index==0:undefined.append(strings[n:].split(b'\0',1)[0].decode('ascii'))
+    sizes['total']=sum(sizes.values())
+    assert attrs and attrs[0]==65
+    def integer(i,end):
+        n,shift=0,0
+        while i<end:
+            b=attrs[i];i+=1;n|=(b&127)<<shift
+            if b<128:return n,i
+            shift+=7;assert shift<35
+        raise AssertionError('truncated ULEB')
+    def string(i,end):
+        j=attrs.index(0,i,end);return attrs[i:j].decode('ascii'),j+1
+    tags={};pos=1
+    while pos<len(attrs):
+        start=pos;end=start+struct.unpack_from('<I',attrs,pos)[0]
+        assert start+5<=end<=len(attrs)
+        vendor,pos=string(pos+4,end)
+        while pos<end:
+            begin=pos;kind,pos=integer(pos,end);finish=begin+struct.unpack_from('<I',attrs,pos)[0];pos+=4
+            assert pos<=finish<=end
+            if vendor!='aeabi' or kind!=1:pos=finish;continue
+            while pos<finish:
+                tag,pos=integer(pos,finish)
+                if tag in (4,5) or tag>=32 and tag%2:value,pos=string(pos,finish)
+                else:
+                    value,pos=integer(pos,finish)
+                    if tag==32:
+                        text,pos=string(pos,finish);value=[value,text]
+                assert tag not in tags or tags[tag]==value
+                tags[tag]=value
+        pos=end
+    return {'flags':header[7],'sections':[{'name':name(s),'type':s[1],'flags':s[2],'bytes':s[5]} for s in sections],
+            'sizes':sizes,'undefined':sorted(undefined),'tags':tags}
+
+def dependencies(path,snapshot,toolchain):
+    text=path.read_text().replace('\\\n',' ')
+    assert ': ' in text
+    body=text.split(': ',1)[1];items=[];word='';i=0
+    while i<len(body):
+        c=body[i]
+        if c=='\\' and i+1<len(body) and body[i+1] in ' \t#:':word+=body[i+1];i+=2;continue
+        if c.isspace():
+            if word:items.append(word);word=''
+        else:word+=c
+        i+=1
+    if word:items.append(word)
+    result=[]
+    for item in items:
+        p=(snapshot/item).resolve()
+        if p.is_relative_to(snapshot):owner,base='native_snapshot',snapshot
+        else:owner,base='verified_toolchain',toolchain
+        assert p.is_relative_to(base) and p.is_file()
+        result.append({'owner':owner,'path':p.relative_to(base).as_posix(),'sha256':sha(p)})
+    return result
+
+def run():
+    started=time.perf_counter();assert sha(RUN/'receipt.json')==RECEIPT and sha(RUN/'protocol.json')==PROTOCOL
+    receipt,plan=read(RUN/'receipt.json'),read(RUN/'protocol.json')
+    assert receipt['status']=='passed' and receipt['target_execution_calls']==0 and receipt['linked_firmware'] is False
+    assert sha(REF/'guard_cortex_m4_objects.py')==sha(RUN/'executed-guard_cortex_m4_objects.py')==receipt['driver_sha256']
+    assert sha(REF/'cortex_m4_objects.py')==sha(RUN/'executed-shared-helper.py')==receipt['helper_sha256']==plan['shared_helper']['sha256']
+    assert sha(REF.parent/'research/TC-03G-base-guard-object-protocol.json')==PROTOCOL
+    for name,fact in receipt['source_files'].items():
+        p=RUN/'native'/name;assert sha(p)==fact['sha256']==sha(REF/'native'/name)
+        assert p.stat().st_size==fact['bytes']
+        assert hashlib.sha256(p.read_bytes().replace(b'\r\n',b'\n')).hexdigest()==plan['sources'][name]['lf_normalized_sha256']
+    tools=receipt['toolchain']['tools'];toolchain=Path(plan['local_acquisition']['root']).resolve()
+    for t in tools.values():assert sha(Path(t['path']))==t['sha256']
+    expected=[[tools[t]['path'],'--version'] for t in ('clang.exe','llvm-readobj.exe','llvm-size.exe','llvm-nm.exe')]
+    for abi in ('hard','softfp'):expected.append([tools['clang.exe']['path'],*plan['preflight_commands'][-1][1:-2],'-mfloat-abi='+abi,'-print-multi-directory'])
+    objects=[];wanted={}
+    for row in receipt['objects']:
+        assert row['status']=='inspected'
+        obj=RUN/row['path'];assert sha(obj)==row['sha256'] and obj.stat().st_size==row['bytes']
+        expected.append([tools['clang.exe']['path'],*plan['compile_common_flags'],'-mfloat-abi='+row['abi'],'-MD','-MF',str(obj.with_suffix('.d')),'-c','torque_guard.c','-o',str(obj)])
+        for inspect in plan['inspection_commands']:expected.append([tools[inspect[0]]['path'],*inspect[1:-1],str(obj)])
+        parsed=elf(obj)
+        assert parsed['flags']==row['elf']['flags'] and parsed['sections']==row['elf']['sections']
+        assert parsed['sizes']==row['berkeley_size'] and parsed['undefined']==sorted(row['undefined_symbols'])
+        assert {str(k):v for k,v in parsed['tags'].items()}==row['elf']['arm_attribute_tags']
+        tags=parsed['tags'];assert [tags[k] for k in (6,7,9,10,27)]==[13,77,2,6,1]
+        assert tags.get(28,0)==(1 if row['abi']=='hard' else 0)
+        assert 'tc_validate_allocation' in parsed['undefined'] and 'tc_contract_reason' in parsed['undefined']
+        assert '__aeabi_dmul' in parsed['undefined'] and '__aeabi_dadd' in parsed['undefined']
+        stack=[]
+        for line in obj.with_suffix('.su').read_text().splitlines():
+            location,n,qualifier=line.split('\t');stack.append({'location':location,'function':location.rsplit(':',1)[-1],'bytes':int(n),'qualifier':qualifier})
+        assert stack==row['stack_usage']['records'] and sha(obj.with_suffix('.su'))==row['stack_usage']['sha256']
+        assert sha(obj.with_suffix('.d'))==row['dependency_file']['sha256']
+        deps=dependencies(obj.with_suffix('.d'),(RUN/'native').resolve(),toolchain)
+        assert deps==row['dependencies']
+        for d in deps:
+            if d['owner']=='verified_toolchain':wanted[d['path']]=d['sha256']
+        objects.append({'path':row['path'],'sha256':row['sha256'],'bytes':row['bytes'],'sizes':parsed['sizes'],'undefined':parsed['undefined'],
+                        'arm_tags':tags,'local_stack_records':stack,'max_local_frame':max(s['bytes'] for s in stack),'dependencies':len(deps)})
+    assert len(expected)==26 and [c['argv'] for c in receipt['commands']]==expected
+    for command in receipt['commands']:
+        assert command['cwd']=='native snapshot' and command['status']=='completed' and command['exit_code']==0
+        for channel in ('stdout','stderr'):assert sha(RUN/command[channel])==command[channel+'_sha256']
+        assert (RUN/command['stderr']).stat().st_size==0
+    for abi in ('hard','softfp'):
+        pair=[r for r in objects if '/'+abi+'/' in r['path']]
+        assert len(pair)==2 and pair[0]['sha256']==pair[1]['sha256']
+    manifest_path=RUN/'verified-toolchain-files.jsonl'
+    assert sha(manifest_path)==receipt['toolchain']['manifest_sha256']
+    manifest={}
+    with manifest_path.open() as stream:
+        for line in stream:
+            v=json.loads(line);assert v['path'] not in manifest;manifest[v['path']]=v
+    assert len(manifest)==receipt['toolchain']['verified_file_count']==48211
+    archive=Path(plan['local_acquisition']['archive'])
+    assert archive.stat().st_size==plan['toolchain']['archive_bytes'] and sha(archive)==plan['toolchain']['archive_sha256']
+    # Authenticate the entire manifest's names/sizes against the pinned ZIP;
+    # independently hash used executable/header ZIP contents and current files.
+    used={**wanted,**{'bin/'+t:v['sha256'] for t,v in tools.items()}}
+    for license in receipt['toolchain']['license_files']:used[license['path']]=license['sha256']
+    zipped=set();used_zip=0
+    with zipfile.ZipFile(archive) as z:
+        for entry in z.infolist():
+            if entry.is_dir():continue
+            p=PurePosixPath(entry.filename);assert p.parts[0]==toolchain.name and '..' not in p.parts
+            relative=PurePosixPath(*p.parts[1:]).as_posix();assert relative not in zipped;zipped.add(relative)
+            assert manifest[relative]['bytes']==entry.file_size
+            if relative in used:
+                h=hashlib.sha256()
+                with z.open(entry) as stream:
+                    for chunk in iter(lambda:stream.read(65536),b''):h.update(chunk)
+                assert h.hexdigest()==manifest[relative]['sha256']==used[relative]==sha(toolchain/relative)
+                used_zip+=1
+    assert zipped==set(manifest) and used_zip==len(used)
+    assert {p.relative_to(toolchain).as_posix() for p in toolchain.rglob('*') if p.is_file()}==zipped
+    old_review=read(ROOT/'outputs/enme408-cortex-m4-independent-file-review.json')
+    assert sha(ROOT/'outputs/enme408-cortex-m4-independent-file-review.json')=='f16dd19baadeddccf43452398e7a13f69abc7c1ac5840d0c680e97a9b99f1d5d'
+    assert sha(OLD/'receipt.json')==old_review['original_receipt_sha256']
+    assert sha(OLD/'protocol.json')==plan['original_protocol_sha256']
+    assert sha(ROOT/'work/enme408-cortex-m4-reaccount-v1.json')==old_review['reaccount_receipt_sha256']
+    for row in old_review['objects']:assert sha(OLD/row['path'])==row['sha256']
+    old_plan=read(OLD/'protocol.json')
+    for name,fact in old_plan['sources'].items():
+        assert hashlib.sha256((REF/'native'/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest()==fact['lf_normalized_sha256']
+    assert sha(RUN/'receipt.json')==RECEIPT
+    report={'schema':'enme408.guard-arm-annex-independent-file-review.v1','verdict':'No actionable mismatch found in the frozen four-object annex.','receipt_sha256':RECEIPT,'protocol_sha256':PROTOCOL,
+        'driver_sha256':receipt['driver_sha256'],'helper_sha256':receipt['helper_sha256'],'test_source_sha256':sha(REF/'test_guard_cortex_m4_objects.py'),
+        'review_script_sha256':sha(Path(__file__)),'objects':objects,'checks':{'ELF_objects':4,'command_and_log_pairs':26,'identical_repeat_pairs':2,
+            'toolchain_manifest_files':len(manifest),'used_headers':len(wanted),'ZIP_current_and_manifest_bound_files':used_zip,'old_cohort_objects_unchanged':12},
+        'toolchain_manifest_sha256':sha(manifest_path),'archive_sha256':sha(archive),'elapsed_seconds':time.perf_counter()-started,
+        'actual_compiler_version_inspection_or_model_calls':0,'target_calls':0,'linked_firmware':False,
+        'scope':['Read full driver/helper/protocol and nine tests. No source edit or test/tool rerun.',
+            'Independent raw ELF section/symbol/AEABI decoding reconciles all retained row metadata.',
+            'The executed pre-call full-tree verification is source-bound. This independent review reconciles all48211ZIP/tree path sets and ZIP sizes, and rehashes ZIP/current/manifest contents for used tools, headers and licenses; it does not repeat content hashing of unused runtime files.',
+            'All recorded argv/log hashes are reconciled, not treated as authenticated arbitrary external provenance.'],
+        'limitations':plan['limitations']}
+    destination=ROOT/'outputs/enme408-guard-arm-independent-review.json'
+    with destination.open('x',encoding='utf-8') as stream:stream.write(json.dumps(report,indent=2,sort_keys=True)+'\n')
+    print(json.dumps({'verdict':report['verdict'],'checks':report['checks'],'sha256':sha(destination),'seconds':report['elapsed_seconds']}))
+
+if __name__=='__main__':run()

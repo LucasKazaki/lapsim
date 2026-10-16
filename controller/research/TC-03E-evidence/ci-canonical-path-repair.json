@@ -1,0 +1,33 @@
+{
+  "schema": "enme408-cortex-m4-ci-canonical-path-repair/v1",
+  "failed_head": "4224ab658b675546931b74c568f2331698492bb5",
+  "failed_run_url": "https://github.com/LucasKazaki/lucas-agent-studio/actions/runs/38696263884",
+  "failed_cli_log_sha256": "d32b96dc7d8363c377dea3acddf81ee12b9d4deb2a948db1edb74d7927b5c2df",
+  "actual_CI_failure": "Windows TEMP uses RUNNER~1 but resolve returns runneradmin; relative_to used an unresolved owner. A second test incorrectly expected an unresolved output path.",
+  "old_runner_sha256": "d2815f25604f99596ef0cc0cfad5d3f11bc4dd5067299b24757856a854bbfcf9",
+  "repaired_runner_sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090",
+  "repaired_tests_sha256": "b02d58eb7d909552ebe80a388833a319cfce9292320ed9e42137dd2aefd542f7",
+  "production_change": "Canonicalize both dependency roots once before containment and relative path accounting",
+  "test_change": "Expect canonical output and add both-role noncanonical '..' owner regression",
+  "old_regression_outcome": {
+    "error_type": "ValueError",
+    "error": "'C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\tmpr_euok7h\\\\native\\\\unit.c' is not in the subpath of 'C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\tmpr_euok7h\\\\native\\\\nested\\\\..'"
+  },
+  "new_regression_owners": [
+    {
+      "owner": "native_snapshot",
+      "path": "unit.c"
+    },
+    {
+      "owner": "verified_toolchain",
+      "path": "header.h"
+    }
+  ],
+  "observed_software_result": "18 focused tests passed in0.070s",
+  "new_compiler_or_target_calls": 0,
+  "protocol_sha256_unchanged": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a",
+  "original_receipt_sha256_unchanged": "509498f3879202fcb786be715edda00831ad629bd03de18ad9de8b441c17142f",
+  "file_only_reaccount_sha256_unchanged": "c6356c430dcb089f1d1023daac40759285c5386fc0077b8660c9bf6220443fb7",
+  "independent_original_review_sha256_unchanged": "f16dd19baadeddccf43452398e7a13f69abc7c1ac5840d0c680e97a9b99f1d5d",
+  "scope": "Later packaging-path repair only; not a rerun or rewrite of original object/first-accounting evidence"
+}

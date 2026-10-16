@@ -1,0 +1,2934 @@
+{
+  "ARM_relocation_number_reference": "https://github.com/ARM-software/abi-aa/blob/main/aaelf32/aaelf32.rst",
+  "checks": {
+    "ABI_repeat_pairs": 2,
+    "commands": 31,
+    "historical_anchors": 21,
+    "historical_attempt_file_counts": [
+      178,
+      72
+    ],
+    "log_files": 62,
+    "manifest_paths": 48211,
+    "used_ZIP_manifest_current_hashes": 35
+  },
+  "driver_sha256": "132b2fe3ec9d7ffb2b7a8d0efc7b153ce547192c2fea99034ccc855cb8910ce4",
+  "elapsed_seconds": 5.263409999999567,
+  "limitations": [
+    "The exact team STM32 part, ABI, compiler/library/startup configuration, flash/RAM budgets and task/deadline/recovery ownership remain unknown; these candidates do not select them.",
+    "This compiles one producer unit into relocatables. It neither links all five units nor supplies/reset/startup/HAL/interrupt/controller scheduling/physical signals. Unresolved helpers may dominate linked size, numerical behavior or execution cost.",
+    "Clang static assertions and strict flags constrain translation; generated Cortex-M4 code has not been executed. Host bit-parity and sanitizers remain prior host evidence, not target parity or safety certification.",
+    "Binary64 arithmetic, ordinary rounding/subnormal retention and source epsilon quirks remain unchanged. Single-precision FPU metadata and an assembly listing cannot establish correct target runtime behavior of double operations.",
+    "No target/HIL/emulation, firmware image, CAN/transport, flashing, motor mapping/calibration/traction policy, real hardware actuation, whole-stack/resource-fit/deadline/WCET or independent shutdown authority."
+  ],
+  "linked_firmware": false,
+  "new_tool_model_or_target_calls": 0,
+  "objects": [
+    {
+      "arm_tags": {
+        "5": "cortex-m4",
+        "6": 13,
+        "7": 77,
+        "8": 0,
+        "9": 2,
+        "10": 6,
+        "14": 0,
+        "17": 1,
+        "18": 4,
+        "20": 1,
+        "21": 0,
+        "23": 3,
+        "24": 1,
+        "25": 1,
+        "26": 2,
+        "27": 1,
+        "28": 1,
+        "30": 1,
+        "34": 1,
+        "36": 1,
+        "38": 1,
+        "67": "2.09"
+      },
+      "bytes": 6432,
+      "disassembly": {
+        "all_executable_section_bytes_covered": true,
+        "executable_bytes_reconciled": 2614,
+        "executable_relocations_reconciled": 96,
+        "listed_instruction_or_data_lines": 902,
+        "objdump_explicitly_elided_zero_bytes_verified_from_raw_ELF": 8
+      },
+      "exports": [
+        {
+          "binding": 1,
+          "bytes": 4,
+          "name": "tc_allocator_version",
+          "section": 3,
+          "type": 2,
+          "value": 1
+        },
+        {
+          "binding": 1,
+          "bytes": 18,
+          "name": "tc_allocator_abi_sizeof",
+          "section": 6,
+          "type": 2,
+          "value": 1
+        },
+        {
+          "binding": 1,
+          "bytes": 2104,
+          "name": "tc_allocate_propulsive_torque",
+          "section": 9,
+          "type": 2,
+          "value": 1
+        }
+      ],
+      "local_stack": [
+        {
+          "bytes": 0,
+          "function": "tc_allocator_version",
+          "location": "torque_allocator.c:57:tc_allocator_version",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_allocator_abi_sizeof",
+          "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 128,
+          "function": "tc_allocate_propulsive_torque",
+          "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "set_fault",
+          "location": "torque_allocator.c:18:set_fault",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "fault",
+          "location": "torque_allocator.c:44:fault",
+          "qualifier": "static"
+        }
+      ],
+      "max_local_frame": 128,
+      "path": "repeat-1/hard/torque_allocator.o",
+      "relocations": [
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocator_version",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 32,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 80,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 226,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memchr",
+          "type": 10
+        },
+        {
+          "offset": 232,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.18",
+          "type": 47
+        },
+        {
+          "offset": 236,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.18",
+          "type": 48
+        },
+        {
+          "offset": 242,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "strcmp",
+          "type": 10
+        },
+        {
+          "offset": 252,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.3",
+          "type": 47
+        },
+        {
+          "offset": 256,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.3",
+          "type": 48
+        },
+        {
+          "offset": 264,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "fault",
+          "type": 10
+        },
+        {
+          "offset": 290,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 388,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 466,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 500,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 584,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 610,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 616,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.6",
+          "type": 47
+        },
+        {
+          "offset": 620,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.6",
+          "type": 48
+        },
+        {
+          "offset": 626,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.4",
+          "type": 47
+        },
+        {
+          "offset": 630,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.4",
+          "type": 48
+        },
+        {
+          "offset": 636,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.5",
+          "type": 47
+        },
+        {
+          "offset": 640,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.5",
+          "type": 48
+        },
+        {
+          "offset": 694,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.8",
+          "type": 47
+        },
+        {
+          "offset": 698,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.8",
+          "type": 48
+        },
+        {
+          "offset": 704,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.7",
+          "type": 47
+        },
+        {
+          "offset": 708,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.7",
+          "type": 48
+        },
+        {
+          "offset": 722,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.9",
+          "type": 47
+        },
+        {
+          "offset": 726,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.9",
+          "type": 48
+        },
+        {
+          "offset": 744,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 764,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 782,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 800,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 818,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 836,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 854,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 872,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 878,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.10",
+          "type": 47
+        },
+        {
+          "offset": 882,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.10",
+          "type": 48
+        },
+        {
+          "offset": 926,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.13",
+          "type": 47
+        },
+        {
+          "offset": 930,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.13",
+          "type": 48
+        },
+        {
+          "offset": 936,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.12",
+          "type": 47
+        },
+        {
+          "offset": 940,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.12",
+          "type": 48
+        },
+        {
+          "offset": 946,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.11",
+          "type": 47
+        },
+        {
+          "offset": 950,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.11",
+          "type": 48
+        },
+        {
+          "offset": 972,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.14",
+          "type": 47
+        },
+        {
+          "offset": 976,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.14",
+          "type": 48
+        },
+        {
+          "offset": 998,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 1018,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpeq",
+          "type": 10
+        },
+        {
+          "offset": 1046,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1080,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1118,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1156,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1200,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1212,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_ui2d",
+          "type": 10
+        },
+        {
+          "offset": 1228,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_ddiv",
+          "type": 10
+        },
+        {
+          "offset": 1240,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1268,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1276,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1320,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1328,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1366,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1374,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1420,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1428,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1476,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1488,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1508,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1528,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1570,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1582,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1602,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1622,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1664,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1676,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1696,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1716,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1758,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1770,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1790,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1810,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1844,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.15",
+          "type": 47
+        },
+        {
+          "offset": 1848,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.15",
+          "type": 48
+        },
+        {
+          "offset": 1870,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1898,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1926,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1954,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1998,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2006,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2014,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2022,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2054,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 2064,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.16",
+          "type": 47
+        },
+        {
+          "offset": 2068,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.16",
+          "type": 48
+        },
+        {
+          "offset": 2074,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "set_fault",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 26,
+          "section": ".text.set_fault",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.set_fault",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 20,
+          "section": ".text.fault",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 56,
+          "section": ".text.fault",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.fault",
+          "symbol": "",
+          "type": 42
+        }
+      ],
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "sizes": {
+        "bss": 0,
+        "data": 0,
+        "text": 2965,
+        "total": 2965
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ]
+    },
+    {
+      "arm_tags": {
+        "5": "cortex-m4",
+        "6": 13,
+        "7": 77,
+        "8": 0,
+        "9": 2,
+        "10": 6,
+        "14": 0,
+        "17": 1,
+        "18": 4,
+        "20": 1,
+        "21": 0,
+        "23": 3,
+        "24": 1,
+        "25": 1,
+        "26": 2,
+        "27": 1,
+        "30": 1,
+        "34": 1,
+        "36": 1,
+        "38": 1,
+        "67": "2.09"
+      },
+      "bytes": 6456,
+      "disassembly": {
+        "all_executable_section_bytes_covered": true,
+        "executable_bytes_reconciled": 2642,
+        "executable_relocations_reconciled": 96,
+        "listed_instruction_or_data_lines": 908,
+        "objdump_explicitly_elided_zero_bytes_verified_from_raw_ELF": 8
+      },
+      "exports": [
+        {
+          "binding": 1,
+          "bytes": 4,
+          "name": "tc_allocator_version",
+          "section": 3,
+          "type": 2,
+          "value": 1
+        },
+        {
+          "binding": 1,
+          "bytes": 18,
+          "name": "tc_allocator_abi_sizeof",
+          "section": 6,
+          "type": 2,
+          "value": 1
+        },
+        {
+          "binding": 1,
+          "bytes": 2128,
+          "name": "tc_allocate_propulsive_torque",
+          "section": 9,
+          "type": 2,
+          "value": 1
+        }
+      ],
+      "local_stack": [
+        {
+          "bytes": 0,
+          "function": "tc_allocator_version",
+          "location": "torque_allocator.c:57:tc_allocator_version",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_allocator_abi_sizeof",
+          "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 128,
+          "function": "tc_allocate_propulsive_torque",
+          "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "set_fault",
+          "location": "torque_allocator.c:18:set_fault",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "fault",
+          "location": "torque_allocator.c:44:fault",
+          "qualifier": "static"
+        }
+      ],
+      "max_local_frame": 128,
+      "path": "repeat-1/softfp/torque_allocator.o",
+      "relocations": [
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocator_version",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 32,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 80,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 226,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memchr",
+          "type": 10
+        },
+        {
+          "offset": 232,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.18",
+          "type": 47
+        },
+        {
+          "offset": 236,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.18",
+          "type": 48
+        },
+        {
+          "offset": 242,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "strcmp",
+          "type": 10
+        },
+        {
+          "offset": 252,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.3",
+          "type": 47
+        },
+        {
+          "offset": 256,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.3",
+          "type": 48
+        },
+        {
+          "offset": 264,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "fault",
+          "type": 10
+        },
+        {
+          "offset": 290,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 388,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 470,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 504,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 592,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 618,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 624,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.6",
+          "type": 47
+        },
+        {
+          "offset": 628,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.6",
+          "type": 48
+        },
+        {
+          "offset": 634,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.4",
+          "type": 47
+        },
+        {
+          "offset": 638,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.4",
+          "type": 48
+        },
+        {
+          "offset": 644,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.5",
+          "type": 47
+        },
+        {
+          "offset": 648,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.5",
+          "type": 48
+        },
+        {
+          "offset": 702,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.8",
+          "type": 47
+        },
+        {
+          "offset": 706,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.8",
+          "type": 48
+        },
+        {
+          "offset": 712,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.7",
+          "type": 47
+        },
+        {
+          "offset": 716,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.7",
+          "type": 48
+        },
+        {
+          "offset": 730,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.9",
+          "type": 47
+        },
+        {
+          "offset": 734,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.9",
+          "type": 48
+        },
+        {
+          "offset": 756,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 776,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 798,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 816,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 838,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 856,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 878,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 896,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 902,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.10",
+          "type": 47
+        },
+        {
+          "offset": 906,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.10",
+          "type": 48
+        },
+        {
+          "offset": 950,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.13",
+          "type": 47
+        },
+        {
+          "offset": 954,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.13",
+          "type": 48
+        },
+        {
+          "offset": 960,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.12",
+          "type": 47
+        },
+        {
+          "offset": 964,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.12",
+          "type": 48
+        },
+        {
+          "offset": 970,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.11",
+          "type": 47
+        },
+        {
+          "offset": 974,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.11",
+          "type": 48
+        },
+        {
+          "offset": 996,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.14",
+          "type": 47
+        },
+        {
+          "offset": 1000,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.14",
+          "type": 48
+        },
+        {
+          "offset": 1022,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 1042,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpeq",
+          "type": 10
+        },
+        {
+          "offset": 1070,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1104,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1142,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1180,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1224,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1236,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_ui2d",
+          "type": 10
+        },
+        {
+          "offset": 1252,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_ddiv",
+          "type": 10
+        },
+        {
+          "offset": 1264,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1292,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1300,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1344,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1352,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1390,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1398,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1444,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1452,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1500,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1512,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1532,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1552,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1594,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1606,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1626,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1646,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1688,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1700,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1720,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1740,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1782,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1794,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1814,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1834,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1868,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.15",
+          "type": 47
+        },
+        {
+          "offset": 1872,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.15",
+          "type": 48
+        },
+        {
+          "offset": 1894,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1922,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1950,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1978,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2022,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2030,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2038,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2046,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2078,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 2088,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.16",
+          "type": 47
+        },
+        {
+          "offset": 2092,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.16",
+          "type": 48
+        },
+        {
+          "offset": 2098,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "set_fault",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 26,
+          "section": ".text.set_fault",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.set_fault",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 24,
+          "section": ".text.fault",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 60,
+          "section": ".text.fault",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.fault",
+          "symbol": "",
+          "type": 42
+        }
+      ],
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "sizes": {
+        "bss": 0,
+        "data": 0,
+        "text": 2993,
+        "total": 2993
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ]
+    },
+    {
+      "arm_tags": {
+        "5": "cortex-m4",
+        "6": 13,
+        "7": 77,
+        "8": 0,
+        "9": 2,
+        "10": 6,
+        "14": 0,
+        "17": 1,
+        "18": 4,
+        "20": 1,
+        "21": 0,
+        "23": 3,
+        "24": 1,
+        "25": 1,
+        "26": 2,
+        "27": 1,
+        "28": 1,
+        "30": 1,
+        "34": 1,
+        "36": 1,
+        "38": 1,
+        "67": "2.09"
+      },
+      "bytes": 6432,
+      "disassembly": {
+        "all_executable_section_bytes_covered": true,
+        "executable_bytes_reconciled": 2614,
+        "executable_relocations_reconciled": 96,
+        "listed_instruction_or_data_lines": 902,
+        "objdump_explicitly_elided_zero_bytes_verified_from_raw_ELF": 8
+      },
+      "exports": [
+        {
+          "binding": 1,
+          "bytes": 4,
+          "name": "tc_allocator_version",
+          "section": 3,
+          "type": 2,
+          "value": 1
+        },
+        {
+          "binding": 1,
+          "bytes": 18,
+          "name": "tc_allocator_abi_sizeof",
+          "section": 6,
+          "type": 2,
+          "value": 1
+        },
+        {
+          "binding": 1,
+          "bytes": 2104,
+          "name": "tc_allocate_propulsive_torque",
+          "section": 9,
+          "type": 2,
+          "value": 1
+        }
+      ],
+      "local_stack": [
+        {
+          "bytes": 0,
+          "function": "tc_allocator_version",
+          "location": "torque_allocator.c:57:tc_allocator_version",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_allocator_abi_sizeof",
+          "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 128,
+          "function": "tc_allocate_propulsive_torque",
+          "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "set_fault",
+          "location": "torque_allocator.c:18:set_fault",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "fault",
+          "location": "torque_allocator.c:44:fault",
+          "qualifier": "static"
+        }
+      ],
+      "max_local_frame": 128,
+      "path": "repeat-2/hard/torque_allocator.o",
+      "relocations": [
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocator_version",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 32,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 80,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 226,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memchr",
+          "type": 10
+        },
+        {
+          "offset": 232,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.18",
+          "type": 47
+        },
+        {
+          "offset": 236,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.18",
+          "type": 48
+        },
+        {
+          "offset": 242,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "strcmp",
+          "type": 10
+        },
+        {
+          "offset": 252,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.3",
+          "type": 47
+        },
+        {
+          "offset": 256,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.3",
+          "type": 48
+        },
+        {
+          "offset": 264,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "fault",
+          "type": 10
+        },
+        {
+          "offset": 290,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 388,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 466,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 500,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 584,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 610,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 616,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.6",
+          "type": 47
+        },
+        {
+          "offset": 620,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.6",
+          "type": 48
+        },
+        {
+          "offset": 626,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.4",
+          "type": 47
+        },
+        {
+          "offset": 630,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.4",
+          "type": 48
+        },
+        {
+          "offset": 636,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.5",
+          "type": 47
+        },
+        {
+          "offset": 640,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.5",
+          "type": 48
+        },
+        {
+          "offset": 694,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.8",
+          "type": 47
+        },
+        {
+          "offset": 698,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.8",
+          "type": 48
+        },
+        {
+          "offset": 704,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.7",
+          "type": 47
+        },
+        {
+          "offset": 708,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.7",
+          "type": 48
+        },
+        {
+          "offset": 722,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.9",
+          "type": 47
+        },
+        {
+          "offset": 726,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.9",
+          "type": 48
+        },
+        {
+          "offset": 744,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 764,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 782,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 800,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 818,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 836,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 854,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 872,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 878,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.10",
+          "type": 47
+        },
+        {
+          "offset": 882,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.10",
+          "type": 48
+        },
+        {
+          "offset": 926,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.13",
+          "type": 47
+        },
+        {
+          "offset": 930,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.13",
+          "type": 48
+        },
+        {
+          "offset": 936,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.12",
+          "type": 47
+        },
+        {
+          "offset": 940,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.12",
+          "type": 48
+        },
+        {
+          "offset": 946,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.11",
+          "type": 47
+        },
+        {
+          "offset": 950,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.11",
+          "type": 48
+        },
+        {
+          "offset": 972,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.14",
+          "type": 47
+        },
+        {
+          "offset": 976,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.14",
+          "type": 48
+        },
+        {
+          "offset": 998,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 1018,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpeq",
+          "type": 10
+        },
+        {
+          "offset": 1046,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1080,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1118,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1156,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1200,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1212,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_ui2d",
+          "type": 10
+        },
+        {
+          "offset": 1228,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_ddiv",
+          "type": 10
+        },
+        {
+          "offset": 1240,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1268,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1276,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1320,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1328,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1366,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1374,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1420,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1428,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1476,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1488,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1508,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1528,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1570,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1582,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1602,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1622,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1664,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1676,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1696,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1716,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1758,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1770,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1790,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1810,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1844,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.15",
+          "type": 47
+        },
+        {
+          "offset": 1848,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.15",
+          "type": 48
+        },
+        {
+          "offset": 1870,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1898,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1926,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1954,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1998,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2006,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2014,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2022,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2054,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 2064,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.16",
+          "type": 47
+        },
+        {
+          "offset": 2068,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.16",
+          "type": 48
+        },
+        {
+          "offset": 2074,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "set_fault",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 26,
+          "section": ".text.set_fault",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.set_fault",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 20,
+          "section": ".text.fault",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 56,
+          "section": ".text.fault",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.fault",
+          "symbol": "",
+          "type": 42
+        }
+      ],
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "sizes": {
+        "bss": 0,
+        "data": 0,
+        "text": 2965,
+        "total": 2965
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ]
+    },
+    {
+      "arm_tags": {
+        "5": "cortex-m4",
+        "6": 13,
+        "7": 77,
+        "8": 0,
+        "9": 2,
+        "10": 6,
+        "14": 0,
+        "17": 1,
+        "18": 4,
+        "20": 1,
+        "21": 0,
+        "23": 3,
+        "24": 1,
+        "25": 1,
+        "26": 2,
+        "27": 1,
+        "30": 1,
+        "34": 1,
+        "36": 1,
+        "38": 1,
+        "67": "2.09"
+      },
+      "bytes": 6456,
+      "disassembly": {
+        "all_executable_section_bytes_covered": true,
+        "executable_bytes_reconciled": 2642,
+        "executable_relocations_reconciled": 96,
+        "listed_instruction_or_data_lines": 908,
+        "objdump_explicitly_elided_zero_bytes_verified_from_raw_ELF": 8
+      },
+      "exports": [
+        {
+          "binding": 1,
+          "bytes": 4,
+          "name": "tc_allocator_version",
+          "section": 3,
+          "type": 2,
+          "value": 1
+        },
+        {
+          "binding": 1,
+          "bytes": 18,
+          "name": "tc_allocator_abi_sizeof",
+          "section": 6,
+          "type": 2,
+          "value": 1
+        },
+        {
+          "binding": 1,
+          "bytes": 2128,
+          "name": "tc_allocate_propulsive_torque",
+          "section": 9,
+          "type": 2,
+          "value": 1
+        }
+      ],
+      "local_stack": [
+        {
+          "bytes": 0,
+          "function": "tc_allocator_version",
+          "location": "torque_allocator.c:57:tc_allocator_version",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_allocator_abi_sizeof",
+          "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 128,
+          "function": "tc_allocate_propulsive_torque",
+          "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "set_fault",
+          "location": "torque_allocator.c:18:set_fault",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "fault",
+          "location": "torque_allocator.c:44:fault",
+          "qualifier": "static"
+        }
+      ],
+      "max_local_frame": 128,
+      "path": "repeat-2/softfp/torque_allocator.o",
+      "relocations": [
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocator_version",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 32,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 80,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 226,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memchr",
+          "type": 10
+        },
+        {
+          "offset": 232,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.18",
+          "type": 47
+        },
+        {
+          "offset": 236,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.18",
+          "type": 48
+        },
+        {
+          "offset": 242,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "strcmp",
+          "type": 10
+        },
+        {
+          "offset": 252,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.3",
+          "type": 47
+        },
+        {
+          "offset": 256,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.3",
+          "type": 48
+        },
+        {
+          "offset": 264,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "fault",
+          "type": 10
+        },
+        {
+          "offset": 290,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 388,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 470,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 504,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 592,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 618,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 624,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.6",
+          "type": 47
+        },
+        {
+          "offset": 628,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.6",
+          "type": 48
+        },
+        {
+          "offset": 634,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.4",
+          "type": 47
+        },
+        {
+          "offset": 638,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.4",
+          "type": 48
+        },
+        {
+          "offset": 644,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.5",
+          "type": 47
+        },
+        {
+          "offset": 648,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.5",
+          "type": 48
+        },
+        {
+          "offset": 702,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.8",
+          "type": 47
+        },
+        {
+          "offset": 706,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.8",
+          "type": 48
+        },
+        {
+          "offset": 712,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.7",
+          "type": 47
+        },
+        {
+          "offset": 716,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.7",
+          "type": 48
+        },
+        {
+          "offset": 730,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.9",
+          "type": 47
+        },
+        {
+          "offset": 734,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.9",
+          "type": 48
+        },
+        {
+          "offset": 756,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 776,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 798,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 816,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 838,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 856,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 878,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 896,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmplt",
+          "type": 10
+        },
+        {
+          "offset": 902,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.10",
+          "type": 47
+        },
+        {
+          "offset": 906,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.10",
+          "type": 48
+        },
+        {
+          "offset": 950,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.13",
+          "type": 47
+        },
+        {
+          "offset": 954,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.13",
+          "type": 48
+        },
+        {
+          "offset": 960,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.12",
+          "type": 47
+        },
+        {
+          "offset": 964,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.12",
+          "type": 48
+        },
+        {
+          "offset": 970,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.11",
+          "type": 47
+        },
+        {
+          "offset": 974,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.11",
+          "type": 48
+        },
+        {
+          "offset": 996,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.14",
+          "type": 47
+        },
+        {
+          "offset": 1000,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.14",
+          "type": 48
+        },
+        {
+          "offset": 1022,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 1042,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpeq",
+          "type": 10
+        },
+        {
+          "offset": 1070,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1104,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1142,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1180,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1224,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1236,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_ui2d",
+          "type": 10
+        },
+        {
+          "offset": 1252,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_ddiv",
+          "type": 10
+        },
+        {
+          "offset": 1264,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1292,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1300,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1344,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1352,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1390,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1398,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1444,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1452,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmple",
+          "type": 10
+        },
+        {
+          "offset": 1500,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1512,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1532,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1552,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1594,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1606,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1626,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1646,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1688,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1700,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1720,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1740,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1782,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1794,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 1814,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1834,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dsub",
+          "type": 10
+        },
+        {
+          "offset": 1868,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.15",
+          "type": 47
+        },
+        {
+          "offset": 1872,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.15",
+          "type": 48
+        },
+        {
+          "offset": 1894,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1922,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1950,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 1978,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2022,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2030,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2038,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2046,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dadd",
+          "type": 10
+        },
+        {
+          "offset": 2078,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "__aeabi_dcmpgt",
+          "type": 10
+        },
+        {
+          "offset": 2088,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.16",
+          "type": 47
+        },
+        {
+          "offset": 2092,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": ".L.str.16",
+          "type": 48
+        },
+        {
+          "offset": 2098,
+          "section": ".text.tc_allocate_propulsive_torque",
+          "symbol": "set_fault",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 26,
+          "section": ".text.set_fault",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.set_fault",
+          "symbol": "",
+          "type": 42
+        },
+        {
+          "offset": 24,
+          "section": ".text.fault",
+          "symbol": "__finite",
+          "type": 10
+        },
+        {
+          "offset": 60,
+          "section": ".text.fault",
+          "symbol": "memset",
+          "type": 10
+        },
+        {
+          "offset": 0,
+          "section": ".ARM.exidx.text.fault",
+          "symbol": "",
+          "type": 42
+        }
+      ],
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "sizes": {
+        "bss": 0,
+        "data": 0,
+        "text": 2993,
+        "total": 2993
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ]
+    }
+  ],
+  "prior_independent_decoder_sha256": "19add6395a1be6367984363349bee10a60ab0e0dc066368fd34ebd6ddf0026e1",
+  "protocol_sha256": "6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912",
+  "receipt_sha256": "ec187f77bbc2dd45303f78edcf859d1207e91e8469e83627166ec6d9e8a571bd",
+  "review_tool_repairs": [
+    "Retained original parser and failure: explicit objdump zero-byte elision now checked against raw ELF.",
+    "Retained second parser and failure: ARM-defined MOVW/MOVT relocations added to exact numeric/name reconciliation.",
+    "Retained third parser and failure: use this additive protocol toolchain.archive_path instead of historical local_acquisition.archive. Experiment bytes unchanged."
+  ],
+  "schema": "enme408.allocator-arm-root-independent-files.v1",
+  "scope": [
+    "Independent raw ELF/AEABI/symbol/REL decode, actual disassembly bytes and text relocations reconciled.",
+    "All manifest/ZIP/current path sets and ZIP sizes checked; used tools/headers/licenses rehashed from ZIP and current file. Unused runtime content not independently rehashed again.",
+    "All argv/raw logs/status/artifact hashes, local .su/.d and historical file inventories reconciled."
+  ],
+  "script_sha256": "4821f10b7f14e1905f35703675056ff022cfb359af33ed331e51a3ffc31cc292",
+  "verdict": "No actionable mismatch found in retained four-object attempt."
+}

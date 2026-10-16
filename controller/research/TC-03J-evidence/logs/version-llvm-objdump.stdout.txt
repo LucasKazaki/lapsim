@@ -1,0 +1,16 @@
+LLVM (http://llvm.org/):
+  LLVM version 22.1.0
+  Optimized build.
+Arm Toolchain ID: E0075 (44010d72)
+
+
+  Registered Targets:
+    aarch64    - AArch64 (little endian)
+    aarch64_32 - AArch64 (little endian ILP32)
+    aarch64_be - AArch64 (big endian)
+    arm        - ARM
+    arm64      - ARM64 (little endian)
+    arm64_32   - ARM64 (little endian ILP32)
+    armeb      - ARM (big endian)
+    thumb      - Thumb
+    thumbeb    - Thumb (big endian)

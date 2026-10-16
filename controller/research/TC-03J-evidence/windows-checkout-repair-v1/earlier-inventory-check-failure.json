@@ -1,0 +1,12 @@
+{
+  "status": "failed",
+  "head": "bc0970b8605cb4b95617f595ed6f190aa4bde521",
+  "phase": "public Git blob inventory verification",
+  "error_type": "CalledProcessError",
+  "Git_exit_code": 128,
+  "missing_path": "projects/enme408-torque-control/research/TC-03J-evidence/owner-audit.log",
+  "cause": "Global log ignore omitted this one existing manifest-bound file from ordinary staging. Four .o were explicitly force-added.",
+  "wrapper_issue": "The tool wrapper continued to push after the failed verification; no draft was created. Corrected later wrapper must inspect exit before mutation.",
+  "classification": "Publication inventory/check failure, not an ARM experiment failure; actual attempt/source/protocol/reviews unchanged.",
+  "repair": "Exact ignored log added explicitly on fresh repair branch, followed by complete Git/disk byte verification and final-head CI."
+}

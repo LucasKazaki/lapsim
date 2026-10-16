@@ -1,0 +1,10 @@
+{
+  "completed_files": {
+    "run.json": "b96b9cc5e6b27e2d2d4e8a345393a1635ca713dda2a1dfaec7025300cca21d5f",
+    "trace.csv": "cf1008383b1b9a8d0a605a3c21637b7a42580321aa2958d303627425fa423dff",
+    "viewer-receipt.json": "dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8"
+  },
+  "run_sha256": "b96b9cc5e6b27e2d2d4e8a345393a1635ca713dda2a1dfaec7025300cca21d5f",
+  "schema": "enme408-native-bench-export/v1",
+  "status": "completed"
+}

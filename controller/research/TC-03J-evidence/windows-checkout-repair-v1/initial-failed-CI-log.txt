@@ -1,0 +1,193 @@
+reference (windows-latest, 3.12)	Run all torque reference regressions	﻿2026-10-15T10:53:31.4431442Z ##[group]Run python -B -m unittest discover -s projects/enme408-torque-control/reference -p "test_*.py" -q
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:31.4432334Z ^[[36;1mpython -B -m unittest discover -s projects/enme408-torque-control/reference -p "test_*.py" -q^[[0m
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:31.5064339Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:31.5064862Z env:
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:31.5065281Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.12.10\x64
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:31.5065866Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.12.10\x64/lib/pkgconfig
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:31.5066417Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:31.5066888Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:31.5067360Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.12.10\x64
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:31.5067730Z ##[endgroup]
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:58.2434024Z usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:58.2438851Z python.exe -m unittest: error: output must not overwrite a reference source or its hardlink
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:58.2488715Z usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:53:58.2490130Z python.exe -m unittest: error: output must not overwrite a reference source or its hardlink
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:08.5555981Z usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:08.5557406Z python.exe -m unittest: error: output must not overwrite a contributing source or hardlink
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:08.5623541Z usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:08.5624710Z python.exe -m unittest: error: output must not overwrite a contributing source or hardlink
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:08.5731343Z bench replay: scenario, output and CSV paths must be distinct
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:08.5765290Z bench replay: scenario fields must be schema, label, provenance, config, samples
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:08.5817152Z bench replay: scenario, output and CSV paths must be distinct files
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:08.5853179Z bench replay: scenario, output and CSV paths must be distinct files
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:08.5903250Z bench replay: scenario, output and CSV paths must be distinct files
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.1982852Z usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.1984247Z python.exe -m unittest: error: output must not overwrite a contributing source or hardlink
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.2061560Z usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.2062780Z python.exe -m unittest: error: output must not overwrite a contributing source or hardlink
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4549074Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4551476Z ERROR: test_build_pre_call_save_failure_retains_zero_actual_requests_and_all_not_run (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_build_pre_call_save_failure_retains_zero_actual_requests_and_all_not_run)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4553198Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4553819Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4562498Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 413, in test_build_pre_call_save_failure_retains_zero_actual_requests_and_all_not_run
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4565227Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4565923Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4567084Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4568187Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4568609Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4569965Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4574505Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4575157Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4575547Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4575708Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4577041Z ERROR: test_compile_failure_preserves_row_and_skips_only_its_inspections (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_compile_failure_preserves_row_and_skips_only_its_inspections)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4578374Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4578865Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4580205Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 470, in test_compile_failure_preserves_row_and_skips_only_its_inspections
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4581710Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4582343Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4583380Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4584340Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4584707Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4585666Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4586794Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4587406Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4587865Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4588011Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4589542Z ERROR: test_fifth_identity_failure_leaves_all31_slots_and_four_rows_not_run (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_fifth_identity_failure_leaves_all31_slots_and_four_rows_not_run)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4590868Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4591445Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4592782Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 385, in test_fifth_identity_failure_leaves_all31_slots_and_four_rows_not_run
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4594253Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4594873Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4595931Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4597032Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4597393Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4599435Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4600572Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4601180Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4601581Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4601731Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4603074Z ERROR: test_frozen_protocol_sources_baseline_and_public_raw_object_policy (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_frozen_protocol_sources_baseline_and_public_raw_object_policy)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4604439Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4605700Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4607067Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 42, in test_frozen_protocol_sources_baseline_and_public_raw_object_policy
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4608741Z     self.assertEqual(set(annex.source_facts(annex.REFERENCE / "native", plan)), set(annex.SOURCES))
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4609731Z                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4610799Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4611946Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4612581Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4612973Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4613127Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4614467Z ERROR: test_inspection_failure_preserves_unrun_slots_and_continues_other_rows (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_inspection_failure_preserves_unrun_slots_and_continues_other_rows)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4615873Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4616365Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4617733Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 479, in test_inspection_failure_preserves_unrun_slots_and_continues_other_rows
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4619284Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4620018Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4621064Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4622044Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4622412Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4623421Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4624591Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4625202Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4625590Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4625750Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4627041Z ERROR: test_known_return_and_log_failure_are_persisted_separately_by_build (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_known_return_and_log_failure_are_persisted_separately_by_build)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4628463Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4628978Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4630663Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 430, in test_known_return_and_log_failure_are_persisted_separately_by_build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4632431Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4633020Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4633766Z {"allowed_cycles": 2, "cycles": 3, "inhibited_cycles": 0, "recovery_pending_cycles": 1, "zero_command_cycles": 1}
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4640188Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4641675Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4642300Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4643554Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4645378Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4646288Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4646944Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4647324Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4649066Z ERROR: test_known_return_survives_persistent_receipt_failure_in_structured_stderr (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_known_return_survives_persistent_receipt_failure_in_structured_stderr)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4651113Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4651893Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4653703Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 449, in test_known_return_survives_persistent_receipt_failure_in_structured_stderr
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4655739Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4656717Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4658151Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4659545Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4660217Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4661569Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4663163Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4664148Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4664852Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4665240Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4666891Z ERROR: test_metadata_failure_is_separate_from_successful_tool_exit_status (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_metadata_failure_is_separate_from_successful_tool_exit_status)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4668487Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4669254Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4671262Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 487, in test_metadata_failure_is_separate_from_successful_tool_exit_status
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4673270Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4674151Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4675604Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4676992Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4677860Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4679298Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4680910Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4681786Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4682458Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4682758Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4684253Z ERROR: test_preflight_failure_does_not_claim_unrun_rows_or_hide_denominator (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_preflight_failure_does_not_claim_unrun_rows_or_hide_denominator)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4685858Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4686533Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4688200Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 461, in test_preflight_failure_does_not_claim_unrun_rows_or_hide_denominator
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4690422Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4691261Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4692548Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4693835Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4694417Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4695840Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4697349Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4698185Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4698761Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4699069Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4701042Z ERROR: test_snapshot_or_retained_copy_drift_during_verification_rejects_before_any_call (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_snapshot_or_retained_copy_drift_during_verification_rejects_before_any_call) (name='native/torque_allocator.c')
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4703140Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4703836Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4705574Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 398, in test_snapshot_or_retained_copy_drift_during_verification_rejects_before_any_call
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4708250Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / ("drift-attempt-" + str(index)))
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4709316Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4710707Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4711965Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4712557Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4713777Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4715189Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4716018Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4716661Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4716992Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4718976Z ERROR: test_snapshot_or_retained_copy_drift_during_verification_rejects_before_any_call (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_snapshot_or_retained_copy_drift_during_verification_rejects_before_any_call)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4720780Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4721470Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4723210Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 400, in test_snapshot_or_retained_copy_drift_during_verification_rejects_before_any_call
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4724941Z     self.assertEqual(receipt["status"], "failed_retained")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4725595Z                      ^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4726448Z UnboundLocalError: cannot access local variable 'receipt' where it is not associated with a value
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4728657Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4728976Z ======================================================================
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4730728Z ERROR: test_synthetic_success_records31_calls_and_four_rows_without_real_tool_execution (test_allocator_cortex_m4_objects.AllocatorObjectTests.test_synthetic_success_records31_calls_and_four_rows_without_real_tool_execution)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4732535Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4733237Z Traceback (most recent call last):
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4734959Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\test_allocator_cortex_m4_objects.py", line 373, in test_synthetic_success_records31_calls_and_four_rows_without_real_tool_execution
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4736859Z     receipt = annex.build(tools, self.root / "FAKE-archive", self.root / "attempt")
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4737727Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4739008Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 384, in build
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4740307Z     sources = source_facts(native, plan)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4740878Z               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4742107Z   File "D:\a\lucas-agent-studio\lucas-agent-studio\projects\enme408-torque-control\reference\allocator_cortex_m4_objects.py", line 73, in source_facts
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4743491Z     raise ValueError("frozen allocator source changed: " + name)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4744331Z ValueError: frozen allocator source changed: torque_contract.h
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4744911Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4745276Z ----------------------------------------------------------------------
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4745956Z Ran 538 tests in 56.934s
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4746323Z 
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.4746608Z FAILED (errors=12)
+reference (windows-latest, 3.12)	Run all torque reference regressions	2026-10-15T10:54:31.5864615Z ##[error]Process completed with exit code 1.

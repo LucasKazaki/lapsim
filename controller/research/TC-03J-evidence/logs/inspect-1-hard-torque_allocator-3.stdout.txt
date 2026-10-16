@@ -1,0 +1,12 @@
+         U __aeabi_dadd
+         U __aeabi_dcmpeq
+         U __aeabi_dcmpgt
+         U __aeabi_dcmple
+         U __aeabi_dcmplt
+         U __aeabi_ddiv
+         U __aeabi_dsub
+         U __aeabi_ui2d
+         U __finite
+         U memchr
+         U memset
+         U strcmp

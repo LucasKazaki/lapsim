@@ -1,0 +1,21 @@
+{
+  "schema": "enme408-clock-review-repair/v1",
+  "frozen_protocol_commit": "9876391",
+  "finding": "Invalid C period faulted but retained prior anchor, contrary to frozen absent-output contract",
+  "original_case": {
+    "previous_present": 1,
+    "previous_tick": 123,
+    "period_ms": 0,
+    "original_next_present": 1,
+    "original_next_tick": 123,
+    "reason": "invalid_clock_policy"
+  },
+  "initial_source_sha256": "004f390380d40654ac568453bcd0a22121c2ec28cae691527c73aa3c1122c0e4",
+  "initial_receipt_sha256": "e15e1fb75905b83375ff572d353f16f52b7a3e01e99c76d2509365738b3a821f",
+  "failing_regression_log_sha256": "458147babbe25e6ea890c4a184c12d59e7af689d0ddf1e84131f6187b072abbb",
+  "repair": "Validate C period before copying previous state; next anchor and normalized now remain initialized absent/zero on invalid state/policy",
+  "final_source_sha256": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+  "regression": "Compiled period0/60001/UINT32_MAX cases assert fault, absent/zero clock state and exact-zero inhibited gate; standalone probe also checks invalid-policy initialization",
+  "result": "452 full tests pass after repair; clock contract1 and frozen semantics unchanged",
+  "scope": "Host-only contract mismatch; original gate still inhibited, no unsafe positive-command path found"
+}

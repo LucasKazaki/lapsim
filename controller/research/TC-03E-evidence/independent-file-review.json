@@ -1,0 +1,374 @@
+{
+  "schema": "enme408.cortex-m4-independent-file-review.v1",
+  "verdict": "No actionable mismatch in the reviewed frozen source/artifact cohort",
+  "reviewed_source_sha256": {
+    "cortex_m4_objects.py": "d2815f25604f99596ef0cc0cfad5d3f11bc4dd5067299b24757856a854bbfcf9",
+    "cortex_m4_reaccount.py": "6a962b4560d5a59f12bb829944e03dbf8d6a39dcdb016f33ae2891b7d459a53c",
+    "test_cortex_m4_objects.py": "04d3b650ce0a4ca21e474caf366805dc26c8de026087fbb491c477d9bad054c5"
+  },
+  "protocol_sha256": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a",
+  "original_receipt_sha256": "509498f3879202fcb786be715edda00831ad629bd03de18ad9de8b441c17142f",
+  "reaccount_receipt_sha256": "c6356c430dcb089f1d1023daac40759285c5386fc0077b8660c9bf6220443fb7",
+  "original_executed_runner_sha256": "40c299716d1a0a497c0ee0ec74e78faf113dd235237892994e19f93017c22dc8",
+  "compiler_or_external_tool_calls": 0,
+  "target_execution_calls": 0,
+  "linked_firmware": false,
+  "checks": {
+    "objects_independently_parsed": 12,
+    "exact_command_sequences_and_log_pairs": 66,
+    "stderr_logs_empty": 66,
+    "verified_current_tool_binaries": 4,
+    "verified_preexecution_manifest_dependencies": 28,
+    "source_headers_snapshots": 6,
+    "identical_repeated_hash_pairs": 6,
+    "pure_dependency_string_cases": 8,
+    "pure_exact_flag_mutations_rejected": 45,
+    "pure_canonical_command_constructions": 6
+  },
+  "objects": [
+    {
+      "path": "repeat-1/hard/torque_contract.o",
+      "sha256": "8e1197aabad79fd9baeb6a331c3e8b904b6b0b80a60fb7aef59336a7baa00959",
+      "independent_section_sizes": {
+        "text": 3877,
+        "data": 0,
+        "bss": 0,
+        "total": 3877
+      },
+      "undefined_from_binary": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__aeabi_dsub",
+        "__finite",
+        "fabs",
+        "fmax",
+        "frexp",
+        "ldexp",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "local_stack_records": 13,
+      "max_local_frame_bytes": 104,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-1/hard/torque_clock.o",
+      "sha256": "9198220167d52390a83c3ade966f86c3a4f19e99f38ccc8b9f6af5e125be60a5",
+      "independent_section_sizes": {
+        "text": 978,
+        "data": 0,
+        "bss": 0,
+        "total": 978
+      },
+      "undefined_from_binary": [
+        "__aeabi_dcmpgt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_memcpy8",
+        "__aeabi_ui2d",
+        "__finite",
+        "fabs",
+        "memset",
+        "tc_decide"
+      ],
+      "local_stack_records": 5,
+      "max_local_frame_bytes": 432,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-1/hard/torque_pedal.o",
+      "sha256": "ced2c11a37860cf743bc48b8b2c68e44aa7b7290f6b35f0d9a95e1e37bdece2d",
+      "independent_section_sizes": {
+        "text": 1460,
+        "data": 0,
+        "bss": 0,
+        "total": 1460
+      },
+      "undefined_from_binary": [
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_memcpy",
+        "__finite",
+        "memchr",
+        "memset"
+      ],
+      "local_stack_records": 7,
+      "max_local_frame_bytes": 48,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-1/softfp/torque_contract.o",
+      "sha256": "51ca97e829c82916066712337a9399fdec9f428f5cad84ae3ec4ce7f61cec368",
+      "independent_section_sizes": {
+        "text": 3901,
+        "data": 0,
+        "bss": 0,
+        "total": 3901
+      },
+      "undefined_from_binary": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__aeabi_dsub",
+        "__finite",
+        "fabs",
+        "fmax",
+        "frexp",
+        "ldexp",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "local_stack_records": 13,
+      "max_local_frame_bytes": 112,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-1/softfp/torque_clock.o",
+      "sha256": "5310acda8778c40a3281ce85e2e93904005ee33316780343846d1300d5d84f4d",
+      "independent_section_sizes": {
+        "text": 970,
+        "data": 0,
+        "bss": 0,
+        "total": 970
+      },
+      "undefined_from_binary": [
+        "__aeabi_dcmpgt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_memcpy8",
+        "__aeabi_ui2d",
+        "__finite",
+        "fabs",
+        "memset",
+        "tc_decide"
+      ],
+      "local_stack_records": 5,
+      "max_local_frame_bytes": 432,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-1/softfp/torque_pedal.o",
+      "sha256": "5561511107b443323f00aa309fb160a75b0f82d5b773d30926b623016cb86af4",
+      "independent_section_sizes": {
+        "text": 1484,
+        "data": 0,
+        "bss": 0,
+        "total": 1484
+      },
+      "undefined_from_binary": [
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_memcpy",
+        "__finite",
+        "memchr",
+        "memset"
+      ],
+      "local_stack_records": 7,
+      "max_local_frame_bytes": 48,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-2/hard/torque_contract.o",
+      "sha256": "8e1197aabad79fd9baeb6a331c3e8b904b6b0b80a60fb7aef59336a7baa00959",
+      "independent_section_sizes": {
+        "text": 3877,
+        "data": 0,
+        "bss": 0,
+        "total": 3877
+      },
+      "undefined_from_binary": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__aeabi_dsub",
+        "__finite",
+        "fabs",
+        "fmax",
+        "frexp",
+        "ldexp",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "local_stack_records": 13,
+      "max_local_frame_bytes": 104,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-2/hard/torque_clock.o",
+      "sha256": "9198220167d52390a83c3ade966f86c3a4f19e99f38ccc8b9f6af5e125be60a5",
+      "independent_section_sizes": {
+        "text": 978,
+        "data": 0,
+        "bss": 0,
+        "total": 978
+      },
+      "undefined_from_binary": [
+        "__aeabi_dcmpgt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_memcpy8",
+        "__aeabi_ui2d",
+        "__finite",
+        "fabs",
+        "memset",
+        "tc_decide"
+      ],
+      "local_stack_records": 5,
+      "max_local_frame_bytes": 432,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-2/hard/torque_pedal.o",
+      "sha256": "ced2c11a37860cf743bc48b8b2c68e44aa7b7290f6b35f0d9a95e1e37bdece2d",
+      "independent_section_sizes": {
+        "text": 1460,
+        "data": 0,
+        "bss": 0,
+        "total": 1460
+      },
+      "undefined_from_binary": [
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_memcpy",
+        "__finite",
+        "memchr",
+        "memset"
+      ],
+      "local_stack_records": 7,
+      "max_local_frame_bytes": 48,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-2/softfp/torque_contract.o",
+      "sha256": "51ca97e829c82916066712337a9399fdec9f428f5cad84ae3ec4ce7f61cec368",
+      "independent_section_sizes": {
+        "text": 3901,
+        "data": 0,
+        "bss": 0,
+        "total": 3901
+      },
+      "undefined_from_binary": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__aeabi_dsub",
+        "__finite",
+        "fabs",
+        "fmax",
+        "frexp",
+        "ldexp",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "local_stack_records": 13,
+      "max_local_frame_bytes": 112,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-2/softfp/torque_clock.o",
+      "sha256": "5310acda8778c40a3281ce85e2e93904005ee33316780343846d1300d5d84f4d",
+      "independent_section_sizes": {
+        "text": 970,
+        "data": 0,
+        "bss": 0,
+        "total": 970
+      },
+      "undefined_from_binary": [
+        "__aeabi_dcmpgt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_memcpy8",
+        "__aeabi_ui2d",
+        "__finite",
+        "fabs",
+        "memset",
+        "tc_decide"
+      ],
+      "local_stack_records": 5,
+      "max_local_frame_bytes": 432,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    },
+    {
+      "path": "repeat-2/softfp/torque_pedal.o",
+      "sha256": "5561511107b443323f00aa309fb160a75b0f82d5b773d30926b623016cb86af4",
+      "independent_section_sizes": {
+        "text": 1484,
+        "data": 0,
+        "bss": 0,
+        "total": 1484
+      },
+      "undefined_from_binary": [
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_memcpy",
+        "__finite",
+        "memchr",
+        "memset"
+      ],
+      "local_stack_records": 7,
+      "max_local_frame_bytes": 48,
+      "all_stack_qualifiers": [
+        "static"
+      ]
+    }
+  ],
+  "scope": [
+    "Read full current driver, reaccount source and17tests; did not rerun compiler or17tests.",
+    "Independently read ELF headers/sections/symbol tables from12objects and reconciled sizes/undefined names; ARM tag values also matched retained llvm-readobj output bound to exact inspection command/log hashes.",
+    "Checked all66actual command argument vectors in exact frozen order, rather than inferring provenance from row labels.",
+    "Current exact-flag guard is post-run; original executed runner remains separately identified. The failed metadata receipt is preserved; reaccount does not retroactively make that original run pass.",
+    "Reaccount is a retained-cohort auditor, not a general authenticated provenance verifier for arbitrary attacker-supplied receipts.",
+    "Pure compile-argument construction only:45flag additions/removals/adjacent reorderings rejected and6canonical unit/ABI vectors accepted; no subprocess or compiler calls."
+  ],
+  "limitations": [
+    "Unknown exact MCU part, board configuration, team toolchain, ABI, startup and library versions",
+    "Unresolved symbols are not linked library size or helper runtime behavior",
+    "Object section sums are not full-firmware flash/RAM fit; no guessed memory limits",
+    "Per-function local stack data excludes called helpers, caller frames, interrupt/FPU context and scheduling",
+    "No measured target parity, timing, deadline, WCET, CAN/vehicle behavior or safety approval",
+    "Ordinary local checkout work; no Company Runtime task/run/acceptance identity is fabricated"
+  ]
+}
