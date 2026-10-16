@@ -54,6 +54,9 @@ foreach ($relativeExamples in @('examples', 'web/examples')) {
 $paths = @(git -C $repository ls-files) + @('docs/simulator_research.md', 'docs/web_simulator.md')
 foreach ($relative in ($paths | Sort-Object -Unique)) {
     if ($relative -match '^(\.github/|output/|packaging/)' -or $relative -eq 'index.html' -or $relative -eq 'docs/simulator_flowchart/browser_check.cjs') { continue }
+    if ($relative -like 'web/examples/*' -and $relative -cnotin @(
+        'web/examples/enme408-synthetic-replay.json', 'web/examples/enme408-native-c-replay.json'
+    )) { continue }
     $source = [IO.Path]::GetFullPath((Join-Path $repository $relative))
     if (-not $source.StartsWith($repository + [IO.Path]::DirectorySeparatorChar)) { throw 'Source escapes the checkout.' }
     if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { continue }

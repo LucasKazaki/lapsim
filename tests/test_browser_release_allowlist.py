@@ -104,3 +104,27 @@ def test_existing_windows_crlf_checkout_is_accepted_without_content_changes(tmp_
             path = directory / name
             path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
     module.build(output, runtime_only=runtime_only)
+
+
+@pytest.mark.skipif(shutil.which("pwsh") is None, reason="PowerShell is required for the actual site staging adapter")
+def test_site_source_copy_excludes_even_tracked_unreviewed_replays(tmp_path, monkeypatch):
+    module = builder(tmp_path, monkeypatch)
+    source = module.ROOT
+    (source / "scripts").mkdir()
+    original = Path(__file__).resolve().parents[1] / "scripts/stage_team_site.ps1"
+    script = source / "scripts/stage_team_site.ps1"
+    shutil.copy2(original, script)
+    docs = source / "docs"
+    (docs / "simulator_flowchart").mkdir(parents=True)
+    (docs / "simulator_flowchart/index.html").write_text('<a class="repo-link" href="../../README.md">Repository README</a>')
+    (docs / "simulator_research.md").write_text("# Synthetic test report")
+    (docs / "web_simulator.md").write_text("Synthetic test guide")
+    subprocess.run(["git", "init", "--quiet", str(source)], check=True)
+    subprocess.run(["git", "-C", str(source), "add", "."], check=True, capture_output=True)
+    output = tmp_path / "site"
+    module.build(output)
+    result = subprocess.run([shutil.which("pwsh"), "-NoProfile", "-File", str(script),
+                             "-OutputDirectory", str(output)], capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert not (output / "web/examples/private-receipt.json").exists()
+    assert {path.name for path in (output / "web/examples").iterdir()} == set(module.REVIEWED_REPLAY_EXAMPLES)
