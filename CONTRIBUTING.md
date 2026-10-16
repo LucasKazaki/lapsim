@@ -36,16 +36,22 @@ Do not submit a contribution if you cannot make those statements.
 
 ## Commit sign-off
 
-Use a Developer Certificate of Origin sign-off on every commit:
+After this policy is merged into the target branch, every new non-merge commit
+submitted through a later pull request must carry a Developer Certificate of
+Origin sign-off that matches the commit author:
 
 ```text
 Signed-off-by: Your Name <your-email@example.com>
 ```
 
-Add it with `git commit -s`. The sign-off certifies that you have the right to
-submit the contribution under the repository's stated terms. A sign-off is not
-a substitute for obtaining required UMD, team, sponsor, employer, or third-party
-approval.
+Add it with `git commit -s`. The repository-wide **License and provenance
+policy** workflow checks every pull request. The pull request that initially
+adopts this policy is the explicit one-time bootstrap exception because the
+policy does not yet exist on its base commit.
+
+The sign-off certifies that you have the right to submit the contribution under
+the repository's stated terms. It is not a substitute for obtaining required
+UMD, team, sponsor, employer, or third-party approval.
 
 ## Pull-request checklist
 

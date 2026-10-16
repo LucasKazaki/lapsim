@@ -17,8 +17,9 @@ def self_test(report_path: Path) -> dict:
     from matplotlib.figure import Figure
     from .resources import build_identity, documentation_root, repository_root
     from .ui.app import LapSimDesktop
+    from .ui.course_catalog import COURSE_OPTIONS, course_source_metadata, load_course
     from .ui.dynamics_lab import DynamicsLab
-    from .ui.simulation import load_team_endurance_track, run_one_lap
+    from .ui.simulation import run_one_lap
     from .courses.spatial_track import SpatialTrack
     from .courses.track import Curve, Track
     from .events.endurance import EnduranceRunConfig
@@ -45,16 +46,25 @@ def self_test(report_path: Path) -> dict:
         # Child widgets are destroyed by root, allowing their lifecycle hooks to run.
     finally:
         root.destroy()
-    team_track = load_team_endurance_track()
-    checks["bundled_course"] = team_track.cell_count > 0
-    checks["bundled_course_provenance"] = (
-        repository_root() / "analysis/data/track/gnss_imu_endurance_track.json"
-    ).is_file()
+
+    release_spec = COURSE_OPTIONS[0]
+    release_track = load_course(release_spec.course_id)
+    release_metadata = course_source_metadata(release_spec, release_track)
+    checks["bundled_course"] = release_track.cell_count > 0
+    if release_spec.synthetic:
+        checks["bundled_course_provenance"] = (
+            release_metadata.get("source_kind") == "synthetic"
+        )
+    else:
+        artifacts = release_metadata.get("source_artifact_sha256")
+        checks["bundled_course_provenance"] = (
+            isinstance(artifacts, dict) and bool(artifacts)
+        )
     checks["offline_map"] = (repository_root() / "docs/simulator_flowchart/index.html").is_file()
     offline = documentation_root()
     checks["offline_source_links"] = all((offline / name).is_file() for name in (
         "launch_lapsim.cmd", "setup_lapsim.ps1", "packaging/LapSim.spec",
-        "src/vehicle_model/vehicle.py", "output/pdf/LapSim_Engineering_Handoff.pdf",
+        "src/vehicle_model/vehicle.py", "docs/engineering_handoff.md",
     ))
     track = SpatialTrack.from_track(
         Track.from_segments([Curve(25.0, 2.0 * pi)]), maximum_cell_length_m=5.0,
@@ -84,7 +94,10 @@ def self_test(report_path: Path) -> dict:
     report = {
         "status": "passed" if all(checks.values()) else "failed",
         "frozen": bool(getattr(sys, "frozen", False)), "checks": checks,
-        "build": build_identity(), "course_cells": team_track.cell_count,
+        "build": build_identity(),
+        "course_id": release_spec.course_id,
+        "course_synthetic": release_spec.synthetic,
+        "course_cells": release_track.cell_count,
         "synthetic_lap_time_s": result.driving_time_s,
         "telemetry_samples": result.telemetry.sample_count,
         "replay": replay.to_dict(),
