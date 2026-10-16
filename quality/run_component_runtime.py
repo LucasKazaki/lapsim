@@ -49,10 +49,23 @@ def main():
         assert lab.imported and lab.run_button.instate(["disabled"])
         lab.new()
         lab.inputs["outside_b"].set(".03")
+        lab.inputs["force"].set("80")
+        lab.inputs["torque"].set("-15")
+        lab.dimensions.set(False)
         assert lab.record is None and lab.save_button.instate(["disabled"])
         lab.run_button.invoke()
         assert lab.record["geometry_policy"] == "manual_geometry_change"
         lab.save_to(output / "geometry-change.json")
+        lab.inputs["force"].set("10")
+        lab.load_from(output / "geometry-change.json")
+        root.update_idletasks()
+        assert not lab.edit_controls.winfo_ismapped()
+        assert lab.saved_configuration_label.winfo_ismapped()
+        assert "Fy 80 N" in lab.saved_configuration.get()
+        assert "Mx -15 N·m" in lab.saved_configuration.get()
+        assert "OD 0.03 [0.03, 0.03]" in lab.saved_configuration.get()
+        lab.new()
+        assert lab.edit_controls.winfo_manager() == "pack"
         lab.inputs["outside"].set(".01")
         lab.run_button.invoke()
         assert lab.record is None and lab.save_button.instate(["disabled"])
@@ -62,6 +75,7 @@ def main():
             "two_materials": True,
             "saved_record_replayed": True,
             "import_readonly": True,
+            "nondefault_import_shows_stored_geometry_bounds_and_loads": True,
             "geometry_change_recalculates": True,
             "invalid_input_clears_result": True,
             "backend": "analytic_python",

@@ -441,7 +441,7 @@ def load_component_json(path: Path) -> dict:
     with path.open("rb") as stream:
         value = decode_json(stream.read(MAX_BYTES + 1), maximum_bytes=MAX_BYTES)
     if not isinstance(value, dict):
-        raise ValueError("component JSON must be an object")
+        raise TypeError("component JSON must be an object")
     return value
 
 

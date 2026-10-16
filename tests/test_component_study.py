@@ -218,7 +218,7 @@ def test_bounded_file_reader_rejects_large_and_duplicate_inputs(tmp_path):
     with pytest.raises(ValueError):
         load_component_json(path)
     path.write_text("[1,2]", encoding="utf-8")
-    with pytest.raises(ValueError, match="object"):
+    with pytest.raises(TypeError, match="object"):
         load_component_json(path)
 
 
