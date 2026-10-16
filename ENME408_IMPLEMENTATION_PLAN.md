@@ -4,6 +4,32 @@ Updated: **16 October 2026**. Tracking: [issue #19](https://github.com/LucasKaza
 
 **Status: implementation handoff, not a completed feature release.** This document records what the implementation agent should build and how completion must be demonstrated. Its addition does not merge the functional PRs, create an executable release, implement a bicycle model, or establish STM32 execution.
 
+## Overnight implementation window (16 October 2026)
+
+Start: **2026-10-16 00:56:04 America/New_York**. Fixed cutoff:
+**2026-10-16 09:00:00 America/New_York**. Resumes retain this cutoff.
+Issue #19 remains the coordinator. Local restart state is kept in the ignored
+`work/overnight/checkpoint.json`; an OS file lock prevents overlapping writers.
+Check its live owner before reclaiming it. The hourly chat continuation is an
+implementation worker in the same local checkout, conditional on the app and
+computer remaining available. Its first scheduled execution must be observed
+before claiming that the scheduled worker actually ran.
+
+The expanded team scope uses the next unused IDs, after E01–E14:
+
+| ID | Bounded deliverable | Prerequisite / acceptance |
+|---|---|---|
+| E15 | Material/geometry cards and an analytic beam/shaft study | After integrated bicycle/controller baseline; SI units, provenance, uncertainty, boundary conditions, hand calculations, mass/inertia; keep stiffness separate from lap predictions |
+| E16 | Suspension kinematics/compliance slice | Verified geometry and supported interfaces; benchmark a small reproducible case before selecting an optional specialist backend |
+| E17 | Imported aero-map validity slice | Declared axes/reference area/interpolation domain and source permissions; no invented CFD |
+| E18 | Battery/thermal derating slice | Reuse existing power/energy ownership; version thermal assumptions and verify balances; no invented temperature correlation |
+| E19 | Shared subteam examples and technical case study | Shared configuration IDs, solver/source revisions, runnable commands, actual evidence and unavailable-capability labels; held-out correlation follows authorized data |
+
+Evaluate optional Chrono, CalculiX and FMI/OpenModelica routes only against a
+specific ready benchmark, license, Windows/headless support and installation
+burden. Keep heavy tools outside basic startup. Composite studies require
+layup/orientation/core data; an isotropic material selector is insufficient.
+
 ## 1. Project decisions and boundaries
 
 Lucas's requested deliverable is one team-facing repository containing the simulator, portable controller source, synthetic test cases, build instructions, tests, documentation and release assets. A teammate must not need Lucas's desktop, Agent Studio, another project checkout, API keys, an AI subscription, or private team data to run the baseline demonstration.
