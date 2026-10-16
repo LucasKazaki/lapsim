@@ -1,0 +1,159 @@
+name: Build licensing-main integration branch v2
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/integrate-license-main-v2.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: integrate-license-main-v2
+  cancel-in-progress: true
+
+jobs:
+  integrate:
+    name: Merge current main with reviewed licensing tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Build verified signed integration branch
+        shell: bash
+        env:
+          INTEGRATION_BRANCH: integration/license-current-main-v2-${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            main:refs/remotes/origin/main \
+            legal/read-only-inventory-workflow:refs/remotes/origin/legal/read-only-inventory-workflow
+          git switch -c "$INTEGRATION_BRANCH" origin/legal/read-only-inventory-workflow
+
+          main_sha="$(git rev-parse origin/main)"
+          git show origin/main:README.md > /tmp/main-README.md
+          git show origin/main:AGENTS.md > /tmp/main-AGENTS.md
+          git show origin/main:START-HERE.txt > /tmp/main-START-HERE.txt
+
+          set +e
+          git merge --no-commit --no-ff origin/main
+          merge_status=$?
+          set -e
+          if [ "$merge_status" -ne 0 ]; then
+            conflicts="$(git diff --name-only --diff-filter=U | sort)"
+            unexpected="$(printf '%s\n' "$conflicts" | grep -Ev '^(AGENTS\.md|README\.md|START-HERE\.txt)$' || true)"
+            if [ -n "$unexpected" ]; then
+              echo "Unexpected merge conflicts:" >&2
+              printf '%s\n' "$unexpected" >&2
+              exit 1
+            fi
+          fi
+          test "$(git rev-parse MERGE_HEAD)" = "$main_sha"
+
+          python - <<'PY'
+          from pathlib import Path
+
+          readme = Path('/tmp/main-README.md').read_text(encoding='utf-8')
+          heading, separator, remainder = readme.partition('\n')
+          if heading != '# Formula SAE Event Simulator' or not separator:
+              raise SystemExit('Unexpected README heading')
+          notice = '''
+
+          > **License and competition-use notice:** This public repository is
+          > **source-available, not open source**. For material actually covered by
+          > [LSCRL-1.0](LICENSE), recruiter evaluation and specified UMD educational and
+          > Terps Racing uses are permitted, while use by or for another student vehicle
+          > competition program is prohibited. The inherited upstream baseline,
+          > contributor-owned material, third-party content, and engineering data may
+          > have different or unresolved rights. Read [LICENSE_SCOPE.md](LICENSE_SCOPE.md)
+          > and [the licensing guide](docs/licensing.md) before downloading, running,
+          > modifying, or sharing the project. Public visibility does not grant broader
+          > permission.
+          '''.strip('\n')
+          Path('README.md').write_text(
+              heading + '\n\n' + notice + '\n\n' + remainder.lstrip('\n'),
+              encoding='utf-8',
+          )
+
+          agents = Path('/tmp/main-AGENTS.md').read_text(encoding='utf-8')
+          heading, separator, remainder = agents.partition('\n')
+          if heading != '# ENME408 implementation-agent handoff' or not separator:
+              raise SystemExit('Unexpected AGENTS heading')
+          license_block = '''
+
+          ## Licensing and publication gate
+
+          Before inspecting, editing, packaging, or publishing anything, read
+          `LICENSE`, `LICENSE_SCOPE.md`, `NOTICE`, `CONTRIBUTING.md`,
+          `LOCAL-WORKER.md`, and `docs/licensing.md`. LapSim is source-available,
+          not open source. Another student vehicle competition program, or anyone
+          acting for it, may not use Covered Material or generated results for
+          Competition Use.
+
+          Do not broaden or replace LSCRL-1.0, claim the entire inherited repository
+          is uniformly licensed, or publish telemetry, reconstructed track data,
+          calibration, fitted parameters, vehicle-specific configurations, firmware,
+          CAD, PCB files, CAN databases, vendor files, credentials, personal data,
+          sponsor-restricted material, or other competition-sensitive information
+          without file-specific authority. Public visibility, a commit, repository
+          ownership, an issue, or a chat message is not permission.
+
+          Preserve project and third-party notices. Keep public examples synthetic or
+          independently authorized. Record unresolved ownership or publication issues
+          instead of assuming permission. After licensing, provenance, packaging,
+          release, or agent-instruction changes, run
+          `python scripts/check_license_policy.py`. Use signed commits and protected
+          pull requests as required by `CONTRIBUTING.md`.
+          '''.strip('\n')
+          Path('AGENTS.md').write_text(
+              heading + '\n\n' + license_block + '\n\n' + remainder.lstrip('\n'),
+              encoding='utf-8',
+          )
+
+          start = Path('/tmp/main-START-HERE.txt').read_text(encoding='utf-8')
+          heading, separator, remainder = start.partition('\n')
+          if heading != 'LapSim / ENME408 - start here' or not separator:
+              raise SystemExit('Unexpected START-HERE heading')
+          license_start = '''
+
+          LICENSING / PUBLICATION
+          Read LICENSE, LICENSE_SCOPE.md, NOTICE, and docs/licensing.md first.
+          This repository is source-available with a competition-use restriction;
+          it is not open source. Public visibility does not authorize a competing
+          student vehicle program to use Covered Material for vehicle or competition
+          work. The whole inherited repository is not uniformly licensed until the
+          provenance and UMD review gates in LICENSE_SCOPE.md are resolved.
+          Public Windows packages start with a synthetic analytic course and contain
+          no bundled team-derived GNSS/IMU course, telemetry, calibration, historical
+          validation report, or output directory. Read docs/public_demo.md and
+          docs/release.md before building or distributing an artifact.
+          '''.strip('\n')
+          merged = heading + '\n\n' + license_start + '\n\n' + remainder.lstrip('\n')
+          merged = merged.replace(
+              'Public release/site deployment are deferred by the owner during this run.',
+              'Public source is governed by LSCRL-1.0; public packages must pass the synthetic-data-only release gates.',
+          )
+          merged = merged.replace(
+              'portable-self-test.json and verification/ evidence with the package.',
+              'portable-self-test.json with the package.',
+          )
+          Path('START-HERE.txt').write_text(merged, encoding='utf-8')
+          PY
+
+          git add README.md AGENTS.md START-HERE.txt
+          if [ -n "$(git diff --name-only --diff-filter=U)" ]; then
+            echo "Unresolved conflicts remain" >&2
+            git diff --name-only --diff-filter=U >&2
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -s -m "Merge current main into licensing integration"
+          test "$(git rev-list --parents -n 1 HEAD | awk '{print NF-1}')" -eq 2
+          test "$(git rev-parse HEAD^2)" = "$main_sha"
+          git push origin "HEAD:refs/heads/$INTEGRATION_BRANCH"
+          echo "Created $INTEGRATION_BRANCH at $(git rev-parse HEAD) with main parent $main_sha"
