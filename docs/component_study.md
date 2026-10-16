@@ -51,6 +51,8 @@ suspension or composite model. An illustrative yield ratio is not approval.
 python -m lapsim.experiments.component_study --output component.json
 python -m lapsim.experiments.component_study --replay component.json
 python -m lapsim.experiments.component_study --material synthetic_dense_v1 --output dense.json
+python -m lapsim.experiments.component_study --comparison --output comparison.json
+python -m lapsim.experiments.component_study --replay comparison.json
 python -m pytest tests/test_component_study.py -q
 ```
 
@@ -60,7 +62,9 @@ IDs, source/runtime identity, cards, SI frame/boundary, analytic backend and
 version, validity, shape and interval results. The shared decoder rejects
 duplicate keys/nonfinite JSON and imports are capped at 256 KiB. Replay verifies
 both numerical results and model metadata before displaying an imported record;
-source agreement is reported separately. The CLI above operates on one run.
+source agreement is reported separately. The CLI can create a single run or the
+same paired comparison, and its replay command accepts either format. File reads
+are bounded before decoding, including files that grow during the read.
 The Python API exposes `run_component_comparison` and `replay_component_comparison`.
 
 ## Actual optional finite-element benchmark

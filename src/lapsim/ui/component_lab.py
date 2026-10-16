@@ -11,11 +11,10 @@ from uuid import uuid4
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-from lapsim.experiments.basic_dynamics import decode_json
 from lapsim.experiments.component_study import (
-    MAX_BYTES,
     GeometryCard,
     Interval,
+    load_component_json,
     replay_component_comparison,
     run_component_comparison,
 )
@@ -50,6 +49,8 @@ class ComponentLab:
             text="Clamped circular cantilever\nA · light reference, E = 70 GPa\nB · dense reference, E = 200 GPa",
             justify="left",
         ).pack(anchor="w", pady=(0, 12))
+        self.edit_controls = ttk.Frame(controls)
+        self.edit_controls.pack(fill="x")
         self.inputs = {}
         self.entries = []
         for name, label, value in (
@@ -60,26 +61,33 @@ class ComponentLab:
             ("force", "Tip force Fy (N)", "100"),
             ("torque", "Tip torque Mx (N·m)", "20"),
         ):
-            ttk.Label(controls, text=label).pack(anchor="w", pady=(5, 2))
+            ttk.Label(self.edit_controls, text=label).pack(anchor="w", pady=(5, 2))
             variable = tk.StringVar(value=value)
-            entry = ttk.Entry(controls, textvariable=variable, width=27)
+            entry = ttk.Entry(self.edit_controls, textvariable=variable, width=27)
             entry.pack(fill="x")
             variable.trace_add("write", self.invalidate)
             self.inputs[name] = variable
             self.entries.append(entry)
         self.dimensions = tk.BooleanVar(value=True)
         self.bounds_check = ttk.Checkbutton(
-            controls,
+            self.edit_controls,
             text="Include dimension bounds",
             variable=self.dimensions,
             command=self.invalidate,
         )
         self.bounds_check.pack(anchor="w", pady=(12, 2))
         ttk.Label(
-            controls,
+            self.edit_controls,
             text="±1 mm span; ±0.1 mm diameters\nIndependent material bounds always included.",
             wraplength=260,
         ).pack(anchor="w", pady=(0, 12))
+        self.saved_configuration = tk.StringVar()
+        self.saved_configuration_label = ttk.Label(
+            controls,
+            textvariable=self.saved_configuration,
+            wraplength=260,
+            justify="left",
+        )
         self.run_button = ttk.Button(controls, text="Calculate A/B", command=self.run)
         self.run_button.pack(fill="x", pady=3)
         self.save_button = ttk.Button(
@@ -253,12 +261,39 @@ class ComponentLab:
 
     def load_from(self, path: Path):
         self.new()
-        if path.stat().st_size > MAX_BYTES:
-            raise ValueError("component record exceeds 256 KiB")
-        record = decode_json(path.read_bytes(), maximum_bytes=MAX_BYTES)
+        record = load_component_json(path)
         verified = replay_component_comparison(record)
         self.record = record
         self.imported = True
+        lines = [
+            "Saved configuration · read only",
+            "Dimensions in m: nominal [lower, upper]",
+        ]
+        for key, run in record["runs"].items():
+            geometry = run["configuration"]["geometry"]
+            lines.append(key + " · " + geometry["card_id"])
+            for name, label in (
+                ("length_m", "Span"),
+                ("outside_diameter_m", "OD"),
+                ("inside_diameter_m", "ID"),
+            ):
+                value = geometry[name]
+                lines.append(
+                    f"{label} {value['nominal']:.6g} [{value['lower']:.6g}, {value['upper']:.6g}]"
+                )
+        loads = record["runs"]["A"]["configuration"]["loads"]
+        lines.extend(
+            [
+                f"Fy {loads['force_y_n']:.6g} N",
+                f"Mx {loads['torque_x_nm']:.6g} N·m",
+                "Material bounds retained in both records.",
+            ]
+        )
+        self.saved_configuration.set("\n".join(lines))
+        self.edit_controls.pack_forget()
+        self.saved_configuration_label.pack(
+            before=self.run_button, fill="x", pady=(0, 12)
+        )
         for entry in [*self.entries, self.bounds_check, self.run_button]:
             entry.configure(state="disabled")
         self.show()
@@ -271,6 +306,8 @@ class ComponentLab:
 
     def new(self):
         self.imported = False
+        self.saved_configuration_label.pack_forget()
+        self.edit_controls.pack(before=self.run_button, fill="x")
         for entry in [*self.entries, self.bounds_check, self.run_button]:
             entry.configure(state="normal")
         self.invalidate()
