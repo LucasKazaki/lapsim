@@ -5,8 +5,15 @@ Imported 16 October 2026 from
 `73cc2e2bbbf3fdae4a4fed1cc6e7b3df8bbb110e` (reviewed lineage #77 -> #78).
 The exact path mapping is `projects/enme408-torque-control/` -> `controller/`.
 `import-manifest.json` binds all 419 original Git blobs (4,089,087 bytes) by
-original path, size and SHA-256. No original source or historical receipt was
+original path, size and SHA-256. All original blobs remain byte for byte,
+including two preserved copies described below. No historical receipt was
 rewritten. `.gitattributes` preserves those bytes on Windows.
+Two runtime build wrappers have an explicitly recorded relocation patch:
+their original bytes are retained under `integration/upstream-originals/`,
+and `integration/relocation-patches.json` binds both original and current
+hashes. The source guards now derive the LapSim root at the relocated depth.
+The new native-bench generator freeze identifies that changed wrapper and
+retains the original case freeze and numerical owner protocol unchanged.
 
 The dependency audit covers Python local imports, C translation units and
 headers, parity/build adapters, synthetic fixtures, frozen protocols, tests,

@@ -1,7 +1,9 @@
 # Reproduce the controller from LapSim only
 
 `controller/UPSTREAM.md` and `controller/import-manifest.json` identify the
-scoped import. The original source is unchanged. All Python dependencies are
+scoped import. Original blobs are retained, with two build-wrapper relocation
+patches separately hashed in `controller/integration/relocation-patches.json`.
+All Python dependencies are
 standard-library/local modules; the normal simulator environment is sufficient.
 The default desktop demo does not require a native compiler or emulator.
 

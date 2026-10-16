@@ -382,7 +382,7 @@ def build(toolchain, archive, destination):
     baseline = load_baseline(plan)
     native = REFERENCE / "native"
     sources = source_facts(native, plan)
-    protected = [PROJECT.parents[1], native, archive, toolchain,
+    protected = [PROJECT.parent, native, archive, toolchain,
                  *(Path(row["root"]) for row in baseline["historical_attempts"])]
     output = attempt_path(destination, protected)
     toolchain, archive = toolchain.resolve(), archive.resolve()
