@@ -1,0 +1,37 @@
+name: Generate source inventory artifact
+
+on:
+  pull_request:
+    paths:
+      - src/**/*.py
+      - web/*.py
+      - docs/simulator_flowchart/generate_inventory.py
+      - .github/workflows/generate-source-inventory.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-inventory-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    name: Generate exact source inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Generate inventory
+        run: python docs/simulator_flowchart/generate_inventory.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated-source-inventory
+          path: docs/simulator_flowchart/data/source-inventory.js
+          if-no-files-found: error
+          compression-level: 9
