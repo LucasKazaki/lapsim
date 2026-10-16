@@ -32,7 +32,7 @@ from .basic_dynamics import decode_json
 from .controller_backend import PythonController, controller_source_identity
 from .dynamics_record import _canonical_json, _content_id, _runtime_identity
 
-SCHEMA = "lapsim.closed-loop.record.v2"
+SCHEMA = "lapsim.closed-loop.record.v3"
 MODEL_ID = "independent_wheel_planar_v1"
 PROFILE_ID = "synthetic_rear_drive_control_v1"
 ZERO = (0.0, 0.0, 0.0, 0.0)
@@ -512,6 +512,16 @@ def run_closed_loop(
                     measured_driver.accelerator_fraction
                     * scenario.maximum_driver_request_nm
                 )
+                braking_request = (
+                    measured_driver.brake_fraction > 0
+                    and measured_driver.accelerator_fraction <= 0.05
+                )
+                raw_regen = (
+                    -scenario.maximum_regen_request_nm * measured_driver.brake_fraction
+                    if braking_request
+                    else 0.0
+                )
+                raw_regen_candidate = (0.0, 0.0, raw_regen / 2, raw_regen / 2)
                 sample = backend.sample(
                     now // 1000,
                     measured["timestamp_us"] // 1000 if measured else 0,
@@ -534,21 +544,8 @@ def run_closed_loop(
                     # stored magnetic energy; wheel/pack states do not change.
                     state = replace(state, actuator_memory_nm=ZERO)
                 guarded = tuple(latest["command_nm"])
-                if (
-                    latest["command_allowed"]
-                    and measured_driver.brake_fraction > 0
-                    and measured_driver.accelerator_fraction <= 0.05
-                ):
-                    guarded = (
-                        0.0,
-                        0.0,
-                        -scenario.maximum_regen_request_nm
-                        * measured_driver.brake_fraction
-                        / 2,
-                        -scenario.maximum_regen_request_nm
-                        * measured_driver.brake_fraction
-                        / 2,
-                    )
+                if latest["command_allowed"] and braking_request:
+                    guarded = raw_regen_candidate
                 feasible = constrain_actuation(
                     scenario.actuation,
                     guarded,
@@ -564,7 +561,8 @@ def run_closed_loop(
                         "snapshot": measured,
                         "estimated_slips": estimated_slips,
                         "requested_propulsive_nm": request,
-                        "requested_regen_nm": min(0.0, sum(guarded)),
+                        "requested_regen_nm": raw_regen,
+                        "raw_regen_candidate_nm": raw_regen_candidate,
                         "core": latest,
                         "actuator_response_reset": response_reset,
                         "guarded_request_nm": guarded,
@@ -572,6 +570,10 @@ def run_closed_loop(
                         "constraints": feasible.constraints,
                         "unmet_command_torque_nm": request
                         - sum(max(0.0, v) for v in command),
+                        "unmet_regen_torque_nm": max(
+                            0.0,
+                            -raw_regen + sum(min(0.0, v) for v in command),
+                        ),
                     }
                 )
         if now % scenario.logging_period_us == 0 or tick == count:
@@ -691,6 +693,13 @@ def replay_closed_loop(record: Any, backend: Any = None) -> dict:
             "Development record v1 uses solver policy 1; replay with its recorded source. Current brake-stop solver is policy 2."
         )
     if (
+        isinstance(record, dict)
+        and record.get("schema") == "lapsim.closed-loop.record.v2"
+    ):
+        raise ValueError(
+            "Development record v2 requires its recorded source; v3 adds explicit rejected-regeneration and verified native-build provenance."
+        )
+    if (
         not isinstance(record, dict)
         or record.get("schema") != SCHEMA
         or record.get("run_id")
@@ -701,7 +710,12 @@ def replay_closed_loop(record: Any, backend: Any = None) -> dict:
     if _content_id(asdict(scenario)) != record.get("configuration_sha256"):
         raise ValueError("configuration identity mismatch")
     actual = run_closed_loop(scenario, backend)
-    for key in ("binary_sha256", "firmware_build_id", "firmware_elf_sha256"):
+    for key in (
+        "binary_sha256",
+        "native_build",
+        "firmware_build_id",
+        "firmware_elf_sha256",
+    ):
         if record.get("controller_source", {}).get(key) != actual[
             "controller_source"
         ].get(key):

@@ -368,7 +368,8 @@ class ControlLab:
                 ("final_speed_mps", "Final speed (m/s)"),
                 ("peak_observed_rear_slip", "Peak observed rear |slip|"),
                 ("pack_draw_j", "Pack draw (J)"),
-                ("unmet_command_impulse_nm_s", "Unmet command impulse (N·m·s)"),
+                ("unmet_command_impulse_nm_s", "Unmet propulsion impulse (N·m·s)"),
+                ("unmet_regen_impulse_nm_s", "Rejected regeneration (N·m·s)"),
                 (
                     "absolute_contact_force_error_ns",
                     "Raw driver/contact proxy error (N·s)",

@@ -16,7 +16,13 @@ Run the matched comparison. Both strategies share driver inputs, plant,
 sensor realization, clocks and physical limits. Only allocation strategy changes.
 Default launch may produce identical outcomes; traction limiting is not assumed
 to improve every metric. Inspect distance/speed together with slip, energy,
-unmet command and the raw driver/contact-force proxy error.
+unmet command and the raw driver/contact-force proxy error. Unmet propulsion
+and rejected regeneration have separate nonnegative command-stage magnitudes
+and time integrals; rejection is measured before actuator response lag. Actual
+torque, contact forces and pack energy remain separately recorded. Raw eligible
+regeneration is derived from the last causally available measured driver sample
+before enable/validity/freshness supervision, so rejected stale/invalid/disabled
+requests remain inspectable while guarded and limited commands stay zero.
 
 Desktop and browser can save comparison JSON and open it for checked replay.
 Both stored runs execute again before the imported result appears. Imported
@@ -81,7 +87,8 @@ an explicit <=1e-9 rad/s stop event and separately recorded remaining kinetic
 energy. The controller/sensor/logging clocks do not advance during trials.
 The exact accepted launch from source `85076f1` remains a regression fixture;
 the repaired near-stop counterexample has an energy-refinement test. Current
-closed-loop records use v2. Earlier unreleased development v1 records explicitly
+closed-loop records use v3, which adds separate rejected-regeneration accounting
+and verified native build/toolchain identity. Earlier unreleased development v1/v2 records explicitly
 require their recorded source; the separate legacy lap/bicycle schemas retain
 their existing replay paths.
 
@@ -100,7 +107,12 @@ python -m lapsim.experiments.closed_loop --replay native-launch.json --native-li
 The library suffix is `.dll` on Windows and `.so` on other supported hosts.
 Use the builder's actual returned filename. Native results come from C owners;
 Python does not supply their numeric outputs. Artifact identity is checked on
-replay. A missing compiler/library fails explicitly. The ordinary desktop and
+replay. Keep the builder's adjacent `build.json` with the library when copying
+it. Loading verifies its binary hash, complete current C/header hashes and frozen
+numeric/compiler recipe before native execution. Compiler invocation/version,
+arguments and source hashes are bound into the recorded native build identity.
+This receipt is reproducibility evidence, not a signed attestation. A missing
+compiler/library/receipt fails explicitly. The ordinary desktop and
 browser demo does not require a native compiler.
 
 ## Virtual STM32F405
