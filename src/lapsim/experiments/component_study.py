@@ -134,7 +134,7 @@ def _evaluate(*values: float) -> dict[str, Any]:
     bending = abs(force) * length * outside / (2 * inertia)
     torsion = abs(torque) * outside / (2 * polar)
     equivalent = hypot(bending, 3**0.5 * torsion)
-    return {
+    result = {
         "area_m2": area,
         "second_moment_m4": inertia,
         "polar_moment_m4": polar,
@@ -156,6 +156,10 @@ def _evaluate(*values: float) -> dict[str, Any]:
         "slenderness": length / outside,
         "deflection_over_length": abs(displacement) / length,
     }
+    for name, value in result.items():
+        if value is not None:
+            _finite(value, "derived component " + name)
+    return result
 
 
 def calculate(
@@ -342,9 +346,13 @@ def replay_component_study(record: dict) -> dict:
         if type(expected) is int:
             return type(observed) is int and expected == observed
         if type(expected) is float:
-            return type(observed) in (int, float) and isclose(
-                expected, observed, rel_tol=1e-10, abs_tol=0.0
-            )
+            if type(observed) not in (int, float):
+                return False
+            try:
+                _finite(observed, "replayed component value")
+            except ValueError:
+                return False
+            return isclose(expected, observed, rel_tol=1e-10, abs_tol=0.0)
         return type(expected) is type(observed) and expected == observed
 
     if set(record) != set(actual) or any(
@@ -466,22 +474,25 @@ def main():
         )
     ):
         parser.error("output must not overwrite the replay input or its aliases")
-    if args.replay:
-        record = load_component_json(args.replay)
-        value = (
-            replay_component_comparison(record)
-            if record.get("schema") == "lapsim.component-comparison.v1"
-            else replay_component_study(record)
-        )
-    elif args.comparison:
-        value = run_component_comparison()
-    else:
-        value = run_component_study(MATERIALS[args.material])
-    text = _canonical_json(value) + "\n"
-    if args.output:
-        args.output.write_text(text, encoding="utf-8")
-    else:
-        print(text)
+    try:
+        if args.replay:
+            record = load_component_json(args.replay)
+            value = (
+                replay_component_comparison(record)
+                if record.get("schema") == "lapsim.component-comparison.v1"
+                else replay_component_study(record)
+            )
+        elif args.comparison:
+            value = run_component_comparison()
+        else:
+            value = run_component_study(MATERIALS[args.material])
+        text = _canonical_json(value) + "\n"
+        if args.output:
+            args.output.write_text(text, encoding="utf-8")
+        else:
+            print(text)
+    except (OSError, ValueError, TypeError, OverflowError) as error:
+        parser.exit(2, "component study: " + str(error) + "\n")
 
 
 if __name__ == "__main__":

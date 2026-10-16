@@ -2,6 +2,7 @@
 
 import json
 import os
+from copy import deepcopy
 from pathlib import Path
 
 from lapsim.ui._tk_runtime import configure_tk_libraries
@@ -14,6 +15,7 @@ def main():
     from PIL import ImageGrab
 
     from lapsim.experiments.component_study import replay_component_comparison
+    from lapsim.experiments.dynamics_record import _canonical_json, _content_id
     from lapsim.ui.dynamics_lab import DynamicsLab
 
     output = Path("audit/component-study")
@@ -64,6 +66,26 @@ def main():
         assert "Fy 80 N" in lab.saved_configuration.get()
         assert "Mx -15 N·m" in lab.saved_configuration.get()
         assert "OD 0.03 [0.03, 0.03]" in lab.saved_configuration.get()
+        malformed = deepcopy(lab.record)
+        malformed["runs"]["A"]["result"]["nominal"]["mass_kg"] = 10**400
+        for item in (malformed["runs"]["A"], malformed):
+            item["run_id"] = _content_id(
+                {key: value for key, value in item.items() if key != "run_id"}
+            )
+        malformed_path = output / "oversized-result.json"
+        malformed_path.write_text(_canonical_json(malformed) + "\n", encoding="utf-8")
+        from lapsim.ui import component_lab
+
+        original_picker = component_lab.filedialog.askopenfilename
+        try:
+            component_lab.filedialog.askopenfilename = lambda **kwargs: str(
+                malformed_path
+            )
+            lab.load()
+        finally:
+            component_lab.filedialog.askopenfilename = original_picker
+        assert lab.record is None and "Could not replay:" in lab.status.get()
+        assert lab.save_button.instate(["disabled"])
         lab.new()
         assert lab.edit_controls.winfo_manager() == "pack"
         lab.inputs["outside"].set(".01")
@@ -75,6 +97,7 @@ def main():
             "two_materials": True,
             "saved_record_replayed": True,
             "import_readonly": True,
+            "oversized_integer_import_rejected_cleanly": True,
             "nondefault_import_shows_stored_geometry_bounds_and_loads": True,
             "geometry_change_recalculates": True,
             "invalid_input_clears_result": True,

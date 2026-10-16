@@ -70,6 +70,10 @@ zero values and integers match exactly. This prevents small section moments
 or tiny load responses from being replaced by zero during checked replay.
 CLI replay output must be a separate file; resolved-path and hard-link aliases
 of the input are rejected before writing so the saved evidence is preserved.
+Malformed numeric results, including integers outside the floating range, are
+rejected before comparison. Derived quantities must also remain finite; loads
+so small that an illustrative yield ratio overflows fail explicitly. CLI failures
+return an error without a traceback or a partial verification file.
 The Python API exposes `run_component_comparison` and `replay_component_comparison`.
 
 ## Actual optional finite-element benchmark

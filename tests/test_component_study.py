@@ -363,3 +363,45 @@ def test_actual_cli_replay_writes_separate_verification_output(tmp_path):
     )
     assert json.loads(target.read_text(encoding="utf-8"))["model_agreement"]
     assert source.read_bytes() == before
+
+
+def test_oversized_integer_result_is_rejected_before_float_conversion(tmp_path):
+    import subprocess
+    import sys
+
+    from lapsim.experiments.dynamics_record import _canonical_json
+
+    record = run_component_study()
+    record["result"]["nominal"]["mass_kg"] = 10**400
+    record["run_id"] = _content_id({k: v for k, v in record.items() if k != "run_id"})
+    with pytest.raises(ValueError, match="replay disagrees"):
+        replay_component_study(record)
+    path = tmp_path / "oversized-result.json"
+    path.write_text(_canonical_json(record) + "\n", encoding="utf-8")
+    before = path.read_bytes()
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "lapsim.experiments.component_study",
+            "--replay",
+            str(path),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert result.returncode == 2 and "component study:" in result.stderr
+    assert "Traceback" not in result.stderr
+    assert path.read_bytes() == before
+
+
+def test_derived_ratio_overflow_is_an_explicit_numerical_domain_failure():
+    with pytest.raises(ValueError, match="derived component"):
+        calculate(
+            MATERIALS["synthetic_light_v1"],
+            GeometryCard(),
+            force_y_n=1e-320,
+            torque_x_nm=0.0,
+        )
