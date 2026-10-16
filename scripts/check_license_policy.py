@@ -79,7 +79,8 @@ def main() -> int:
     require(contributing, "Section 9.2 rights", "CONTRIBUTING.md")
     require(contributing, "publish, distribute, and sublicense", "CONTRIBUTING.md")
     require(contributing, "every new non-merge commit", "CONTRIBUTING.md")
-    require(contributing, "explicit one-time bootstrap exception", "CONTRIBUTING.md")
+    require(contributing, "explicit one-time bootstrap adoption series", "CONTRIBUTING.md")
+    require(contributing, "exception ends immediately", "CONTRIBUTING.md")
     require(contributing, "License and provenance policy", "CONTRIBUTING.md")
 
     readme = documents["README.md"]
@@ -99,7 +100,7 @@ def main() -> int:
     forbid(release, "does not declare a project license", "docs/release.md")
     require(release, "source-available, not open source", "docs/release.md")
     require(release, "public executable starts", "docs/release.md")
-    require(release, "does not contain", "docs/release.md")
+    require(release, "does **not** contain", "docs/release.md")
     require(release, "every directory named `output` or `outputs`", "docs/release.md")
     require(release, "selected course as synthetic", "docs/release.md")
 
@@ -140,10 +141,11 @@ def main() -> int:
     forbid(desktop, "load_team_endurance_track", "src/lapsim/desktop.py")
 
     dco = documents["scripts/check_dco.py"]
-    require(dco, "bootstrap PR exempt", "scripts/check_dco.py")
+    require(dco, "bootstrap adoption series exempt", "scripts/check_dco.py")
     require(dco, "Signed-off-by", "scripts/check_dco.py")
     require(dco, "--no-merges", "scripts/check_dco.py")
     require(dco, "author_email", "scripts/check_dco.py")
+    require(dco, "--policy-ref", "scripts/check_dco.py")
 
     workflow = documents[".github/workflows/license-policy.yml"]
     require(workflow, "pull_request:", ".github/workflows/license-policy.yml")
@@ -151,6 +153,8 @@ def main() -> int:
     require(workflow, "scripts/check_dco.py", ".github/workflows/license-policy.yml")
     require(workflow, "github.event.pull_request.base.sha", ".github/workflows/license-policy.yml")
     require(workflow, "github.event.pull_request.head.sha", ".github/workflows/license-policy.yml")
+    require(workflow, "github.event.repository.default_branch", ".github/workflows/license-policy.yml")
+    require(workflow, "--policy-ref", ".github/workflows/license-policy.yml")
 
     print("License and public-release policy checks passed.")
     return 0

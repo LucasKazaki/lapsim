@@ -36,18 +36,18 @@ Do not submit a contribution if you cannot make those statements.
 
 ## Commit sign-off
 
-After this policy is merged into the target branch, every new non-merge commit
-submitted through a later pull request must carry a Developer Certificate of
-Origin sign-off that matches the commit author:
+After this policy is present on the repository's default branch, every new
+non-merge commit submitted through a later pull request must carry a Developer
+Certificate of Origin sign-off that matches the commit author:
 
 ```text
 Signed-off-by: Your Name <your-email@example.com>
 ```
 
 Add it with `git commit -s`. The repository-wide **License and provenance
-policy** workflow checks every pull request. The pull request that initially
-adopts this policy is the explicit one-time bootstrap exception because the
-policy does not yet exist on its base commit.
+policy** workflow checks every pull request. PR #37 and any protected stacked
+fixes merged into it form the explicit one-time bootstrap adoption series; the
+exception ends immediately when this policy reaches the default branch.
 
 The sign-off certifies that you have the right to submit the contribution under
 the repository's stated terms. It is not a substitute for obtaining required

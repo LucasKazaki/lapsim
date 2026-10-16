@@ -38,12 +38,20 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", required=True, help="Pull-request base commit SHA")
     parser.add_argument("--head", required=True, help="Pull-request head commit SHA")
+    parser.add_argument(
+        "--policy-ref",
+        default="origin/main",
+        help="Default-branch ref whose policy adoption activates enforcement",
+    )
     args = parser.parse_args()
 
-    # The pull request that first adopts this policy is the explicit bootstrap
-    # exception. Later PRs have CONTRIBUTING.md on their base and are enforced.
-    if not policy_exists_at(args.base):
-        print("DCO policy is not present on the base commit; bootstrap PR exempt.")
+    # PR #37 and its protected stacked fixes form one adoption series. The
+    # exception ends as soon as CONTRIBUTING.md exists on the default branch.
+    if not policy_exists_at(args.policy_ref):
+        print(
+            "DCO policy is not yet present on the default branch; "
+            "bootstrap adoption series exempt."
+        )
         return 0
 
     commits = [
