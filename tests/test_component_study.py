@@ -299,3 +299,67 @@ def test_rehashed_fractional_corner_count_is_rejected():
     record["run_id"] = _content_id({k: v for k, v in record.items() if k != "run_id"})
     with pytest.raises(ValueError, match="replay disagrees"):
         replay_component_study(record)
+
+
+@pytest.mark.parametrize("alias", [False, True])
+def test_actual_cli_replay_cannot_destroy_input_through_same_path_or_hardlink(
+    tmp_path, alias
+):
+    import subprocess
+    import sys
+
+    from lapsim.experiments.dynamics_record import _canonical_json
+
+    source = tmp_path / "saved.json"
+    source.write_text(_canonical_json(run_component_study()) + "\n", encoding="utf-8")
+    target = source
+    if alias:
+        target = tmp_path / "same-record-alias.json"
+        target.hardlink_to(source)
+    before = (source.read_bytes(), source.stat().st_mtime_ns)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "lapsim.experiments.component_study",
+            "--replay",
+            str(source),
+            "--output",
+            str(target),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    assert result.returncode == 2 and "must not overwrite" in result.stderr
+    assert (source.read_bytes(), source.stat().st_mtime_ns) == before
+    assert target.read_bytes() == before[0]
+
+
+def test_actual_cli_replay_writes_separate_verification_output(tmp_path):
+    import json
+    import subprocess
+    import sys
+
+    from lapsim.experiments.dynamics_record import _canonical_json
+
+    source = tmp_path / "saved.json"
+    target = tmp_path / "verification.json"
+    source.write_text(_canonical_json(run_component_study()) + "\n", encoding="utf-8")
+    before = source.read_bytes()
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "lapsim.experiments.component_study",
+            "--replay",
+            str(source),
+            "--output",
+            str(target),
+        ],
+        check=True,
+        timeout=30,
+    )
+    assert json.loads(target.read_text(encoding="utf-8"))["model_agreement"]
+    assert source.read_bytes() == before

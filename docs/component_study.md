@@ -68,6 +68,8 @@ are bounded before decoding, including files that grow during the read.
 Nonzero replayed values use relative tolerance 1e-10 with no absolute floor;
 zero values and integers match exactly. This prevents small section moments
 or tiny load responses from being replaced by zero during checked replay.
+CLI replay output must be a separate file; resolved-path and hard-link aliases
+of the input are rejected before writing so the saved evidence is preserved.
 The Python API exposes `run_component_comparison` and `replay_component_comparison`.
 
 ## Actual optional finite-element benchmark

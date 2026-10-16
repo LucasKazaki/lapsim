@@ -457,6 +457,15 @@ def main():
         "--material", choices=tuple(MATERIALS), default="synthetic_light_v1"
     )
     args = parser.parse_args()
+    if (
+        args.replay
+        and args.output
+        and (
+            args.replay.resolve() == args.output.resolve()
+            or (args.output.exists() and args.output.samefile(args.replay))
+        )
+    ):
+        parser.error("output must not overwrite the replay input or its aliases")
     if args.replay:
         record = load_component_json(args.replay)
         value = (
