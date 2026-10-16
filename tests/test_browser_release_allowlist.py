@@ -92,3 +92,15 @@ def test_site_staging_rejects_post_build_private_replays(tmp_path, monkeypatch, 
     assert result.returncode != 0
     assert "Unreviewed staged replay" in result.stderr
     assert target.read_bytes() == b"post-build private sentinel"
+
+
+@pytest.mark.parametrize("runtime_only", [False, True])
+def test_existing_windows_crlf_checkout_is_accepted_without_content_changes(tmp_path, monkeypatch, runtime_only):
+    module = builder(tmp_path, monkeypatch)
+    output = tmp_path / "site"
+    module.build(output)
+    for name in module.REVIEWED_REPLAY_EXAMPLES:
+        for directory in (module.ROOT / "web/examples", output / "examples"):
+            path = directory / name
+            path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+    module.build(output, runtime_only=runtime_only)

@@ -21,10 +21,19 @@ $reviewedExamples = $runtimeManifest.reviewedReplaySha256
 if ($null -eq $reviewedExamples -or @($reviewedExamples.PSObject.Properties).Count -ne 2) {
     throw 'Rebuild the browser runtime with the reviewed replay manifest.'
 }
+if ($runtimeManifest.reviewedReplayHashScope -ne 'UTF-8 file bytes with CRLF normalized to LF only') {
+    throw 'Unknown reviewed replay hash scope; rebuild the runtime.'
+}
+function Get-ReviewedReplayHash([string]$Path) {
+    if ((Get-Item -LiteralPath $Path).Length -gt 20000000) { throw 'Unreviewed replay size.' }
+    $utf8 = [Text.UTF8Encoding]::new($false, $true)
+    $text = $utf8.GetString([IO.File]::ReadAllBytes($Path)).Replace("`r`n", "`n")
+    return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($utf8.GetBytes($text))).ToLowerInvariant()
+}
 foreach ($entry in $reviewedExamples.PSObject.Properties) {
     if ($entry.Name -notin @('enme408-synthetic-replay.json', 'enme408-native-c-replay.json')) { throw 'Unreviewed replay manifest entry.' }
     $sourceExample = Join-Path $repository ('web/examples/' + $entry.Name)
-    if ((Get-FileHash -LiteralPath $sourceExample -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry.Value) {
+    if ((Get-ReviewedReplayHash $sourceExample) -ne $entry.Value) {
         throw 'Unreviewed replay source contents; rebuild only from reviewed fixtures.'
     }
 }
@@ -34,7 +43,7 @@ foreach ($relativeExamples in @('examples', 'web/examples')) {
         foreach ($file in Get-ChildItem -LiteralPath $exampleDirectory -Force) {
             $expected = $reviewedExamples.PSObject.Properties[$file.Name]
             if ($file.PSIsContainer -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
-                $null -eq $expected -or (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected.Value) {
+                $null -eq $expected -or (Get-ReviewedReplayHash $file.FullName) -ne $expected.Value) {
                 throw 'Unreviewed staged replay; choose a fresh output directory.'
             }
         }

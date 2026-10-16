@@ -94,8 +94,10 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
         source = ROOT / "web/examples" / name
         if source.is_symlink():
             raise ValueError("refusing an aliased replay source")
+        if source.stat().st_size > 20_000_000:
+            raise ValueError("unreviewed replay source size")
         raw = source.read_bytes()
-        if sha256(raw).hexdigest() != expected:
+        if sha256(raw.replace(b"\r\n", b"\n")).hexdigest() != expected:
             raise ValueError(f"unreviewed replay source contents: {name}")
         reviewed[name] = raw
     examples = output / "examples"
@@ -105,7 +107,8 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
         for path in examples.iterdir():
             expected = REVIEWED_REPLAY_EXAMPLES.get(path.name)
             if (expected is None or path.is_symlink() or not path.is_file()
-                    or path.stat().st_nlink != 1 or sha256(path.read_bytes()).hexdigest() != expected):
+                    or path.stat().st_nlink != 1 or path.stat().st_size > 20_000_000
+                    or sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest() != expected):
                 raise ValueError("output contains unreviewed examples; choose a fresh output directory")
     assets = output / "assets"
     assets.mkdir(parents=True, exist_ok=True)
@@ -141,6 +144,7 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
         "sourceIdentity": identity,
         "sourceFiles": len(files),
         "reviewedReplaySha256": REVIEWED_REPLAY_EXAMPLES,
+        "reviewedReplayHashScope": "UTF-8 file bytes with CRLF normalized to LF only",
         "runtimeRequirements": "HTTPS or localhost; module Web Worker; WebAssembly; access to the pinned Pyodide CDN",
     }
     (assets / "runtime-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
