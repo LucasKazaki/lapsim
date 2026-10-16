@@ -160,7 +160,7 @@ def main():
             stopped = decode_json(stop_path.read_bytes(), maximum_bytes=40_000_000)
             assert replay_control_comparison(stopped)["model_agreement"]
             for run in stopped["runs"].values():
-                assert run["schema"] == "lapsim.closed-loop.record.v2"
+                assert run["schema"] == "lapsim.closed-loop.record.v3"
                 assert run["result"]["final_state"]["wheel_stop_events"] >= 4
                 assert run["result"]["pack_draw_j"] == 0
                 assert all(
