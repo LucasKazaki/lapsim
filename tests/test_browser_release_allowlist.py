@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import shutil
+import subprocess
 
 import pytest
 
@@ -73,3 +74,21 @@ def test_reviewed_examples_survive_repeated_full_and_runtime_only_builds(tmp_pat
         assert manifest["reviewedReplaySha256"] == module.REVIEWED_REPLAY_EXAMPLES
         for name in module.REVIEWED_REPLAY_EXAMPLES:
             assert (output / "examples" / name).read_bytes() == (module.ROOT / "web/examples" / name).read_bytes()
+
+
+@pytest.mark.skipif(shutil.which("pwsh") is None, reason="PowerShell is required for the actual site staging adapter")
+@pytest.mark.parametrize("directory", ["examples", "web/examples"])
+@pytest.mark.parametrize("name", ["private-extra.json", "enme408-native-c-replay.json"])
+def test_site_staging_rejects_post_build_private_replays(tmp_path, monkeypatch, directory, name):
+    module = builder(tmp_path, monkeypatch)
+    output = tmp_path / "site"
+    module.build(output)
+    target = output / directory / name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b"post-build private sentinel")
+    script = Path(__file__).resolve().parents[1] / "scripts/stage_team_site.ps1"
+    result = subprocess.run([shutil.which("pwsh"), "-NoProfile", "-File", str(script),
+                             "-OutputDirectory", str(output)], capture_output=True, text=True, timeout=30)
+    assert result.returncode != 0
+    assert "Unreviewed staged replay" in result.stderr
+    assert target.read_bytes() == b"post-build private sentinel"
