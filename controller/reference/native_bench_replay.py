@@ -35,7 +35,7 @@ from guard_parity import decoded as decoded_guard, signature as guard_signature
 ROOT = Path(__file__).resolve().parent
 PROTOCOL = ROOT / '../research/TC-03I-native-bench-replay-protocol.json'
 PROTOCOL_SHA256 = '474f0a2928b169e13bd41779b45fa73f4806ab03cc7d88817fc231c1c0f83733'
-CASE_FREEZE = ROOT / '../research/TC-03I-native-bench-case-generator.json'
+CASE_FREEZE = ROOT / '../integration/relocated-native-bench-case-generator.json'
 MAX_SAFE = 2**53 - 1
 ZERO = (0.,) * 4
 LABEL_PREFIX = 'Native C replay: '
@@ -71,7 +71,9 @@ def source_files():
                  for name in p['source_bindings'] if name.startswith('studio/')) + (
                      'native_bench_replay.py', 'test_native_bench_replay.py',
                      '../research/TC-03I-native-bench-replay-protocol.json',
-                     '../research/TC-03I-native-bench-case-generator.json')
+                     '../research/TC-03I-native-bench-case-generator.json',
+                     '../integration/relocated-native-bench-case-generator.json',
+                     '../integration/relocation-patches.json')
 
 
 def freeze_sources():
@@ -340,7 +342,7 @@ def reserve_directory(output):
     if output.exists() or output.is_symlink():
         raise ValueError('output directory must be new')
     resolved = output.resolve()
-    if resolved.is_relative_to(ROOT.parents[2]):
+    if resolved.is_relative_to(ROOT.parents[1]):
         raise ValueError('attempt directory must be outside the source checkout')
     for parent in resolved.parents:
         if (parent / 'attempt.json').exists() or (parent / 'run.json').exists():

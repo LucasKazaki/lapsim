@@ -1,0 +1,20 @@
+{
+  "schema": "lapsim.controller-relocation-patches.v1",
+  "patches": {
+    "reference/native_bench_replay.py": {
+      "retained_original_path": "integration/upstream-originals/reference/native_bench_replay.py",
+      "original_sha256": "a58950870eee9b848417c3ed6ed5b818cd3018c73d0d757920bf48a8a2a42fb9",
+      "current_sha256": "53fb497447d81ec442c9760132a1b7bf30d3d147f7b35e36ef803bf680543bf9",
+      "reason": "Derive LapSim checkout root after one-level shallower subtree relocation; preserve output/source guards."
+    },
+    "reference/allocator_cortex_m4_objects.py": {
+      "retained_original_path": "integration/upstream-originals/reference/allocator_cortex_m4_objects.py",
+      "original_sha256": "132b2fe3ec9d7ffb2b7a8d0efc7b153ce547192c2fea99034ccc855cb8910ce4",
+      "current_sha256": "fd76beb781b98e22cc444d5eeb4b41ccbeadb839196d2b64171967e400c3987a",
+      "reason": "Derive LapSim checkout root after one-level shallower subtree relocation; preserve output/source guards."
+    }
+  },
+  "integration_files_sha256": {
+    "integration/relocated-native-bench-case-generator.json": "64a442877ed1c3b4944a0d906dff7e476ea4f104a79585d972dcf0a2b7ca0c98"
+  }
+}
