@@ -29,7 +29,8 @@ def test_only_two_reviewed_examples_are_staged(tmp_path, monkeypatch):
         assert (output / "examples" / name).read_bytes() == (module.ROOT / "web/examples" / name).read_bytes()
 
 
-def test_stale_unreviewed_output_is_preserved_and_build_fails(tmp_path, monkeypatch):
+@pytest.mark.parametrize("runtime_only", [False, True])
+def test_stale_unreviewed_output_is_preserved_and_build_fails(tmp_path, monkeypatch, runtime_only):
     module = builder(tmp_path, monkeypatch)
     output = tmp_path / "site"
     examples = output / "examples"
@@ -37,5 +38,5 @@ def test_stale_unreviewed_output_is_preserved_and_build_fails(tmp_path, monkeypa
     private = examples / "previous-private.json"
     private.write_bytes(b"retain but do not publish")
     with pytest.raises(ValueError, match="unreviewed"):
-        module.build(output)
+        module.build(output, runtime_only=runtime_only)
     assert private.read_bytes() == b"retain but do not publish"

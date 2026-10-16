@@ -90,6 +90,14 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
     output = output.resolve()
     if output == ROOT or output in {ROOT / "src", ROOT / "web"}:
         raise ValueError("choose a separate output folder")
+    examples = output / "examples"
+    if examples.is_symlink():
+        raise ValueError("refusing an aliased example output directory")
+    if examples.exists() and any(
+        path.name not in REVIEWED_REPLAY_EXAMPLES or path.is_symlink() or not path.is_file()
+        for path in examples.iterdir()
+    ):
+        raise ValueError("output contains unreviewed examples; choose a fresh output directory")
     assets = output / "assets"
     assets.mkdir(parents=True, exist_ok=True)
     if not runtime_only:
@@ -99,14 +107,6 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
             if not source.is_file():
                 raise FileNotFoundError(f"Frontend file is missing: {source}")
             shutil.copy2(source, output / name)
-        examples = output / "examples"
-        if examples.is_symlink():
-            raise ValueError("refusing an aliased example output directory")
-        if examples.exists() and any(
-            path.name not in REVIEWED_REPLAY_EXAMPLES or path.is_symlink() or not path.is_file()
-            for path in examples.iterdir()
-        ):
-            raise ValueError("output contains unreviewed examples; choose a fresh output directory")
         examples.mkdir(exist_ok=True)
         for name in REVIEWED_REPLAY_EXAMPLES:
             source = ROOT / "web/examples" / name
