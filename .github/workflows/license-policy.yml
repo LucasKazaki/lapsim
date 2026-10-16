@@ -7,6 +7,7 @@ on:
       - LICENSE_SCOPE.md
       - NOTICE
       - CONTRIBUTING.md
+      - README.md
       - START-HERE.txt
       - docs/licensing.md
       - docs/release.md
@@ -20,6 +21,7 @@ on:
       - LICENSE_SCOPE.md
       - NOTICE
       - CONTRIBUTING.md
+      - README.md
       - START-HERE.txt
       - docs/licensing.md
       - docs/release.md

@@ -45,6 +45,25 @@ def stage_assets() -> Path:
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",
     ))
+
+    required_legal_files = (
+        "LICENSE",
+        "LICENSE_SCOPE.md",
+        "NOTICE",
+        "CONTRIBUTING.md",
+        "docs/licensing.md",
+    )
+    missing_legal_files = [name for name in required_legal_files if not (ROOT / name).is_file()]
+    if missing_legal_files:
+        raise RuntimeError(
+            "Refusing to build a distributable archive without legal notices: "
+            + ", ".join(missing_legal_files)
+        )
+    # Include the legal files explicitly rather than relying on Git's tracked
+    # file list. A dirty checkout may contain a required notice that is not in
+    # the index, and the archive must either contain every notice or fail.
+    paths.extend(ROOT / name for name in required_legal_files)
+
     if (ROOT / ".git").exists():
         tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT).decode("utf-8").split("\0")
         paths.extend(ROOT / name for name in tracked if name and (ROOT / name).is_file())
@@ -69,19 +88,6 @@ def stage_assets() -> Path:
             )
             if (ROOT / name).is_file()
         )
-    required_legal_files = (
-        "LICENSE",
-        "LICENSE_SCOPE.md",
-        "NOTICE",
-        "CONTRIBUTING.md",
-        "docs/licensing.md",
-    )
-    missing_legal_files = [name for name in required_legal_files if not (ROOT / name).is_file()]
-    if missing_legal_files:
-        raise RuntimeError(
-            "Refusing to build a distributable archive without legal notices: "
-            + ", ".join(missing_legal_files)
-        )
 
     checksums = {}
     for source in sorted(set(paths)):
@@ -92,6 +98,16 @@ def stage_assets() -> Path:
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
         checksums[relative.as_posix()] = sha256(source.read_bytes()).hexdigest()
+
+    missing_staged_legal_files = [
+        name for name in required_legal_files if not (assets / name).is_file()
+    ]
+    if missing_staged_legal_files:
+        raise RuntimeError(
+            "Refusing to build a distributable archive because legal notices "
+            "were not staged: " + ", ".join(missing_staged_legal_files)
+        )
+
     identity = {
         "code_commit": source_commit,
         "dirty_worktree": source_dirty,
@@ -157,6 +173,7 @@ def main() -> int:
         os.environ[variable] = "1"
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
+    run(sys.executable, str(ROOT / "scripts/check_license_policy.py"))
     if not args.skip_tests:
         run(sys.executable, str(ROOT / "scripts/check_all.py"))
     generator = ROOT / "docs/simulator_flowchart/generate_inventory.py"

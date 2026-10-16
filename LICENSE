@@ -85,6 +85,10 @@ recipient and bears that Licensor's manual or legally effective electronic
 signature. A repository issue, pull request, comment, commit, email, chat
 message, or oral statement is not a Signed Writing merely because it exists.
 
+1.14 "Repository Maintainer" means the Repository owner and any person or
+entity that the Repository owner expressly authorizes to accept contributions
+or publish Repository releases.
+
 2. ACCEPTANCE AND RELATION TO PUBLIC ACCESS
 
 2.1 This License is an offer by each Licensor for that Licensor's Covered
@@ -181,9 +185,10 @@ grant. No permission is granted for an act that violates them.
 
 7. REDISTRIBUTION, HOSTING, AND NOTICE CONDITIONS
 
-7.1 Except for internal sharing expressly allowed by Sections 3, 4, and 5, You
-may not Distribute Covered Material or any modified version without a separate
-Signed Writing from every applicable Licensor.
+7.1 Except for internal sharing expressly allowed by Sections 3, 4, and 5 and
+Repository Maintainer publication expressly allowed by Section 9.2, You may not
+Distribute Covered Material or any modified version without a separate Signed
+Writing from every applicable Licensor.
 
 7.2 You may not offer Covered Material or a modified version as a hosted,
 managed, consulting, analysis, simulation, or software-as-a-service offering.
@@ -232,11 +237,29 @@ submitting a contribution for inclusion in the Repository after this License
 has been adopted, You represent that You have the authority to submit it and
 expressly apply this License to the copyrightable portion of Your contribution.
 
-9.2 You must not submit confidential information, restricted team data,
+9.2 By that intentional submission, You also grant each Repository Maintainer
+a perpetual, worldwide, nonexclusive, royalty-free, irrevocable copyright
+license to reproduce, modify, prepare derivative works from, publicly display,
+publicly perform, Distribute, and sublicense Your contribution, but only:
+
+(a) as part of or in support of the Repository and its releases;
+
+(b) under this License, including making the contribution available to the
+public and to the Authorized UMD Team under the applicable Sections; and
+
+(c) with no authority to relicense Your contribution under different terms
+without a separate Signed Writing from You.
+
+The grant in this Section is effective through intentional submission, does
+not require a separate Signed Writing, survives withdrawal of the submission
+or contribution, and controls over Sections 7.1 and 14.1 only to the extent
+necessary for the stated Repository publication and sublicensing.
+
+9.3 You must not submit confidential information, restricted team data,
 third-party material without adequate permission, or material whose license is
 incompatible with this License.
 
-9.3 Repository acceptance of a contribution is not a representation that the
+9.4 Repository acceptance of a contribution is not a representation that the
 contribution is legally clear, safe, accurate, or suitable for vehicle use.
 
 10. TERMINATION
@@ -294,10 +317,11 @@ SUCH DAMAGES.
 
 14. GENERAL TERMS
 
-14.1 This License is nonexclusive, worldwide, royalty-free, revocable only as
-provided in Section 10, and nontransferable. You may not sublicense or assign
-Your permissions, including by merger, acquisition, or change of control,
-without a Signed Writing from every applicable Licensor.
+14.1 Except for the limited Repository Maintainer sublicensing authority in
+Section 9.2, this License is nonexclusive, worldwide, royalty-free, revocable
+only as provided in Section 10, and nontransferable. You may not sublicense or
+assign Your permissions, including by merger, acquisition, or change of
+control, without a Signed Writing from every applicable Licensor.
 
 14.2 The competition restriction, limits on Distribution, and coverage limits
 are essential conditions. If a court finds a provision unenforceable, it must
@@ -317,10 +341,10 @@ Signed Writing and applies only to the specific instance stated.
 
 14.5 This License and the incorporated Scope Notice are the complete terms
 for the permissions granted here. A separate Signed Writing may grant
-additional rights. A repository issue, pull request, comment, commit, email,
-chat message, or oral statement does not modify this License unless it
-satisfies the definition of a Signed Writing and is made by every affected
-Licensor.
+additional rights. Except for the contribution grant expressly created by
+Section 9.2, a repository issue, pull request, comment, commit, email, chat
+message, or oral statement does not modify this License unless it satisfies
+the definition of a Signed Writing and is made by every affected Licensor.
 
 14.6 A later version of this License applies only when the applicable Licensor
 expressly adopts it for specified Covered Material. Public availability of a

@@ -35,6 +35,7 @@ def main() -> int:
         "LICENSE_SCOPE.md",
         "NOTICE",
         "CONTRIBUTING.md",
+        "README.md",
         "docs/licensing.md",
         "docs/release.md",
         "START-HERE.txt",
@@ -47,8 +48,12 @@ def main() -> int:
     require(license_text, "NOT AN OPEN-SOURCE LICENSE", "LICENSE")
     require(license_text, '"Competition Use"', "LICENSE")
     require(license_text, '"Authorized UMD Team"', "LICENSE")
+    require(license_text, '"Repository Maintainer"', "LICENSE")
     require(license_text, "material conditions of every license grant", "LICENSE")
     require(license_text, "artificial-intelligence or machine-learning system", "LICENSE")
+    require(license_text, "grant each Repository Maintainer", "LICENSE")
+    require(license_text, "publicly display, publicly perform, Distribute", "LICENSE")
+    require(license_text, "does not require a separate Signed Writing", "LICENSE")
     require(license_text, "No patent, trademark, trade-secret", "LICENSE")
     require(license_text, "automatically and immediately", "LICENSE")
     require(license_text, "injunctive or other equitable relief", "LICENSE")
@@ -62,6 +67,15 @@ def main() -> int:
     notice = documents["NOTICE"]
     require(notice, "respective copyright holders", "NOTICE")
     require(notice, "No trademark license is granted", "NOTICE")
+
+    contributing = documents["CONTRIBUTING.md"]
+    require(contributing, "Section 9.2 rights", "CONTRIBUTING.md")
+    require(contributing, "publish, distribute, and sublicense", "CONTRIBUTING.md")
+
+    readme = documents["README.md"]
+    require(readme, "source-available, not open source", "README.md")
+    require(readme, "use by or for another student vehicle competition program is prohibited", "README.md")
+    require(readme, "LICENSE_SCOPE.md", "README.md")
 
     guide = documents["docs/licensing.md"]
     require(guide, "source-available, not open source", "docs/licensing.md")
@@ -87,7 +101,10 @@ def main() -> int:
         '"docs/licensing.md"',
     ):
         require(builder, required_name, "scripts/build_windows.py")
+    require(builder, "paths.extend(ROOT / name for name in required_legal_files)", "scripts/build_windows.py")
+    require(builder, "missing_staged_legal_files", "scripts/build_windows.py")
     require(builder, "Refusing to build a distributable archive without legal notices", "scripts/build_windows.py")
+    require(builder, "scripts/check_license_policy.py", "scripts/build_windows.py")
 
     print("License policy checks passed.")
     return 0

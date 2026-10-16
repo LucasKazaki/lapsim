@@ -22,11 +22,14 @@ contribution for inclusion means that:
 
 1. you represent that you created it or otherwise have authority to submit it;
 2. you apply LSCRL-1.0 to the copyrightable portion you own or control;
-3. you understand that the contribution may be used by the Authorized UMD Team
+3. you grant Repository Maintainers the Section 9.2 rights needed to review,
+   modify, publish, distribute, and sublicense the contribution as part of the
+   repository and its releases under LSCRL-1.0;
+4. you understand that the contribution may be used by the Authorized UMD Team
    under Section 5 of LSCRL-1.0;
-4. you do not grant the repository maintainers rights in third-party material
+5. you do not grant the repository maintainers rights in third-party material
    beyond what its actual license permits; and
-5. you understand that a contribution cannot authorize publication or use of
+6. you understand that a contribution cannot authorize publication or use of
    UMD-, team-, sponsor-, employer-, or third-party-owned material.
 
 Do not submit a contribution if you cannot make those statements.
