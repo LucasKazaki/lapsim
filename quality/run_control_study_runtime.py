@@ -50,6 +50,8 @@ def main():
             )
             page.get_by_role("link", name="Torque control", exact=True).click()
             page.wait_for_url("**/control.html")
+            assert page.title() == "LapSim · Torque control study"
+            assert "N·m" in page.locator("body").text_content()
             assert page.locator("#control-case").input_value() == "launch"
             page.locator("#control-run").click()
             page.locator("#control-cancel").click()

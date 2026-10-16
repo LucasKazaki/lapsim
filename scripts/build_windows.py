@@ -53,7 +53,7 @@ def stage_assets() -> Path:
             paths.extend((ROOT / folder).rglob(pattern))
     paths.extend(ROOT / name for name in (
         "README.md", "START-HERE.txt", "AGENTS.md", "ENME408_IMPLEMENTATION_PLAN.md",
-        "pyproject.toml", "requirements-build.lock", "build_lapsim.cmd",
+        "pyproject.toml", "setup.py", "requirements-build.lock", "build_lapsim.cmd",
         "setup_lapsim.cmd", "setup_lapsim.ps1", "launch_lapsim.cmd", "packaging/LapSim.spec",
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",

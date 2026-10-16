@@ -190,27 +190,28 @@ flowchart LR
 
 ## LapSim desktop app
 
-On Windows, install **64-bit Python 3.11 or newer** with Tkinter, then from this
-checkout run the one-time setup. It creates `.venv`, installs the required
-packages, and checks that the app can import and load its bundled course:
+Install **64-bit Python 3.11 or newer** with Tkinter. From this checkout, one
+command creates/checks a project-local environment, verifies offline bicycle
+and controller replay, checks the desktop and launches it:
 
 ```powershell
-./setup_lapsim.cmd
-./launch_lapsim.cmd
+python scripts/bootstrap.py --launch
 ```
 
-You can also double-click those two files in that order. For a terminal-only
-setup without the batch file's final pause, run:
+Use the script's absolute path from another working directory. Initial setup
+may need internet; after setup, this read-only check works offline:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup_lapsim.ps1
-.venv\Scripts\python.exe -m lapsim.ui
+python scripts/bootstrap.py --check --desktop
 ```
+
+See [setup and package diagnostics](docs/setup.md) for environment recovery,
+development dependencies and verified wheel/source-distribution execution.
 
 Run the complete repository checks with
 `.venv\Scripts\python.exe scripts\check_all.py`. It runs each test module in
 a fresh process and writes the aggregate report to `work/test-results.xml`.
-Setup installs pytest. See [verification](docs/verification.md) to save the
+Install test tools with `python scripts/bootstrap.py --dev` first. See [verification](docs/verification.md) to save the
 full log and interpret skips. The older PowerShell checker also remains available.
 
 The launcher checks Python, Tk, app imports, and the bundled course before

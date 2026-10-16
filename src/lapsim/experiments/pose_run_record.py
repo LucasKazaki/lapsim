@@ -112,6 +112,9 @@ def _source_identity() -> dict[str, Any]:
             "dirty_worktree": identity.get("dirty_worktree"),
             "source_files_sha256": source_files_sha256,
         }
+    if not (root / ".git").exists():
+        return {"code_commit": None, "dirty_worktree": None,
+                "source_files_sha256": source_files_sha256}
     try:
         commit = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, check=True,

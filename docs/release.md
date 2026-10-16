@@ -1,5 +1,10 @@
 # Windows release and reproducible build
 
+16 October 2026: public release/site deployment are deferred by the owner.
+The commands below build internal review artifacts. The current source startup
+is [the one-command bootstrap](setup.md); wheels/sdists now contain the declared
+resource/controller closure. The existing hosted site is a separate older build.
+
 The team distribution is `LapSim-Windows-x64.zip`. Its main application is
 `LapSim.exe`, a single-file Windows x64 PyInstaller build. The executable
 contains the Python runtime, Tk/Tcl, Matplotlib resources, simulator modules,
@@ -67,7 +72,9 @@ smoke workflow are described in [verification](verification.md).
 ## Rebuild from this checkout
 
 For the locked reproducible build, use **Windows x64 Python 3.12+** with
-Tkinter; this release was tested with **Python 3.12.2**. The source project
+Tkinter. **Python 3.12.2** identifies the earlier build; current local internal
+qualification uses **Python 3.13.15**, and each new report records its actual
+interpreter/dependency/source identities. The source project
 supports Python 3.11+, but pinned NumPy 2.5.3 and SciPy 1.18.1 in the build lock
 require Python 3.12+. If an existing `.venv` uses 3.11, preserve/rename it and
 create the build environment with 3.12+ before installing the lock.
@@ -101,6 +108,10 @@ of the same final checkout:
 
 Frozen read-only resources resolve through `lapsim.resources.repository_root()`
 to the extraction root's `bundle` directory. Source runs resolve to the checkout.
+Installed wheels resolve to `lapsim/_resources` and use captured identity;
+unversioned source snapshots never inherit an unrelated ancestor Git identity.
+The durable help copy supports long retained evidence names without changing
+global Windows settings.
 The mandatory course remains `analysis/data/track/gnss_imu_endurance_track.csv`
 inside that resource tree, with its bundled JSON metadata. Per-user writable
 data resolves independently. Do not save user records into `_MEIPASS` or rely

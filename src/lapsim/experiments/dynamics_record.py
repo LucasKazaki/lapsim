@@ -57,6 +57,8 @@ def _code_identity() -> dict[str, str | bool | None]:
     if identity is not None:
         return {key: identity.get(key) for key in ("code_commit", "dirty_worktree")}
     root = repository_root()
+    if not (root / ".git").exists():
+        return {"code_commit": None, "dirty_worktree": None}
     try:
         commit = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, check=True,

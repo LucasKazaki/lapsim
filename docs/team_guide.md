@@ -54,15 +54,15 @@ distribution contents, verification, and frozen-runtime command options.
 ## Run from a source checkout
 
 Use Windows with 64-bit Python 3.11 or newer, including Tkinter. Open the
-repository folder and run `setup_lapsim.cmd` once, then `launch_lapsim.cmd`.
+repository folder and run `python scripts/bootstrap.py --launch`.
 Setup needs internet access to install the dependencies. After installation,
 the built-in courses and ordinary simulation run locally.
 
 The equivalent developer commands, from the repository root, are:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup_lapsim.ps1
-.\.venv\Scripts\python.exe -m lapsim.ui
+python scripts/bootstrap.py --launch
+python scripts/bootstrap.py --check --desktop
 ```
 
 The window starts at 1380 × 900 and permits resizing to 1080 × 720. The input
