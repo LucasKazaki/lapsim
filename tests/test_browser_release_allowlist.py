@@ -155,3 +155,21 @@ def test_mutable_manifest_cannot_redefine_reviewed_private_contents(tmp_path, mo
     assert result.returncode != 0
     assert "Reviewed replay digest mismatch" in result.stderr
     assert not (output / "web/examples" / name).exists()
+
+
+@pytest.mark.skipif(shutil.which("pwsh") is None, reason="PowerShell is required for the actual site staging adapter")
+@pytest.mark.parametrize("missing", ["enme408-synthetic-replay.json", "enme408-native-c-replay.json", "directory"])
+def test_site_staging_requires_complete_browser_fixture_set(tmp_path, monkeypatch, missing):
+    module = builder(tmp_path, monkeypatch)
+    output = tmp_path / "site"
+    module.build(output)
+    examples = output / "examples"
+    if missing == "directory":
+        shutil.rmtree(examples)
+    else:
+        (examples / missing).unlink()
+    script = Path(__file__).resolve().parents[1] / "scripts/stage_team_site.ps1"
+    result = subprocess.run([shutil.which("pwsh"), "-NoProfile", "-File", str(script),
+                             "-OutputDirectory", str(output)], capture_output=True, text=True, timeout=30)
+    assert result.returncode != 0
+    assert "Incomplete reviewed replay set" in result.stderr

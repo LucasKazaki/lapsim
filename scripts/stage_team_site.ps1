@@ -48,12 +48,23 @@ foreach ($entry in $reviewedExamples.PSObject.Properties) {
 }
 foreach ($relativeExamples in @('examples', 'web/examples')) {
     $exampleDirectory = Join-Path $destination $relativeExamples
+    if ($relativeExamples -eq 'examples' -and -not (Test-Path -LiteralPath $exampleDirectory -PathType Container)) {
+        throw 'Incomplete reviewed replay set; rebuild the browser runtime.'
+    }
     if (Test-Path -LiteralPath $exampleDirectory) {
+        if ((Get-Item -LiteralPath $exampleDirectory -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Unreviewed staged replay directory; choose a fresh output directory.'
+        }
         foreach ($file in Get-ChildItem -LiteralPath $exampleDirectory -Force) {
             $expected = $reviewedExamples.PSObject.Properties[$file.Name]
             if ($file.PSIsContainer -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
                 $null -eq $expected -or (Get-ReviewedReplayHash $file.FullName) -ne $expected.Value) {
                 throw 'Unreviewed staged replay; choose a fresh output directory.'
+            }
+        }
+        foreach ($entry in $reviewedExamples.PSObject.Properties) {
+            if (-not (Test-Path -LiteralPath (Join-Path $exampleDirectory $entry.Name) -PathType Leaf)) {
+                throw 'Incomplete reviewed replay set; rebuild the browser runtime.'
             }
         }
     }
