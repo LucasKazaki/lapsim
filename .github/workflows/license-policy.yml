@@ -1,33 +1,9 @@
-name: License policy
+name: License and provenance policy
 
 on:
   pull_request:
-    paths:
-      - LICENSE
-      - LICENSE_SCOPE.md
-      - NOTICE
-      - CONTRIBUTING.md
-      - README.md
-      - START-HERE.txt
-      - docs/licensing.md
-      - docs/release.md
-      - scripts/build_windows.py
-      - scripts/check_license_policy.py
-      - .github/workflows/license-policy.yml
   push:
     branches: [main]
-    paths:
-      - LICENSE
-      - LICENSE_SCOPE.md
-      - NOTICE
-      - CONTRIBUTING.md
-      - README.md
-      - START-HERE.txt
-      - docs/licensing.md
-      - docs/release.md
-      - scripts/build_windows.py
-      - scripts/check_license_policy.py
-      - .github/workflows/license-policy.yml
   workflow_dispatch:
 
 permissions:
@@ -39,14 +15,22 @@ concurrency:
 
 jobs:
   validate:
-    name: Validate license scope and packaging
+    name: Validate license, release scope, and DCO
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - run: python scripts/check_license_policy.py
+      - name: Validate license and public-release policy
+        run: python scripts/check_license_policy.py
+      - name: Enforce Developer Certificate of Origin
+        if: github.event_name == 'pull_request'
+        env:
+          DCO_BASE: ${{ github.event.pull_request.base.sha }}
+          DCO_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: python scripts/check_dco.py --base "$DCO_BASE" --head "$DCO_HEAD"

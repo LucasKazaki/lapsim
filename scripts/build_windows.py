@@ -1,4 +1,4 @@
-"""Build and integration-test a standalone Windows x64 team distribution."""
+"""Build and integration-test a standalone Windows x64 public distribution."""
 from __future__ import annotations
 
 import argparse
@@ -17,9 +17,35 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# These paths are intentionally omitted from every public archive until their
+# applicable rights holders provide file-specific publication authority.
+EXCLUDED_RELEASE_PATHS = frozenset({
+    Path("analysis/data/track/gnss_imu_endurance_track.csv"),
+    Path("analysis/data/track/gnss_imu_endurance_track.json"),
+})
+EXCLUDED_RELEASE_PREFIXES = (
+    ("analysis", "data"),
+)
+EXCLUDED_RELEASE_DIRECTORY_NAMES = frozenset({"output", "outputs"})
+
 
 def run(*args: str, **kwargs) -> None:
     subprocess.run(args, cwd=ROOT, check=True, **kwargs)
+
+
+def release_path_is_excluded(relative: Path) -> bool:
+    """Return whether a repository-relative path is private/publication-pending."""
+
+    if relative.is_absolute() or ".." in relative.parts:
+        raise ValueError(f"Expected a safe repository-relative path: {relative}")
+    if relative in EXCLUDED_RELEASE_PATHS:
+        return True
+    if any(
+        relative.parts[:len(prefix)] == prefix
+        for prefix in EXCLUDED_RELEASE_PREFIXES
+    ):
+        return True
+    return any(part in EXCLUDED_RELEASE_DIRECTORY_NAMES for part in relative.parts)
 
 
 def stage_assets() -> Path:
@@ -35,15 +61,12 @@ def stage_assets() -> Path:
         ("src", ("*.py",)), ("scripts", ("*.py", "*.ps1")),
         ("tests", ("*.py",)), ("docs", ("*.md", "*.html", "*.css", "*.js", "*.py", "*.cjs")),
         ("data", ("*.tir",)), ("analysis", ("README.md",)),
-        ("output/pdf", ("*.pdf",)),
     ):
         for pattern in patterns:
             paths.extend((ROOT / folder).rglob(pattern))
     paths.extend(ROOT / name for name in (
         "README.md", "START-HERE.txt", "pyproject.toml", "requirements-build.lock", "build_lapsim.cmd",
         "setup_lapsim.cmd", "setup_lapsim.ps1", "launch_lapsim.cmd", "packaging/LapSim.spec",
-        "analysis/data/track/gnss_imu_endurance_track.csv",
-        "analysis/data/track/gnss_imu_endurance_track.json",
     ))
 
     required_legal_files = (
@@ -75,7 +98,7 @@ def stage_assets() -> Path:
         identity = json.loads(previous.read_text(encoding="utf-8")) if previous.is_file() else {}
         source_commit = identity.get("code_commit")
         source_dirty = True  # This snapshot has no live clean-worktree guarantee.
-        for folder in ("src", "scripts", "tests", "docs", "data", "analysis", "output", "packaging", ".vscode"):
+        for folder in ("src", "scripts", "tests", "docs", "data", "analysis", "packaging", ".vscode"):
             paths.extend(path for path in (ROOT / folder).rglob("*") if path.is_file())
         paths.extend(path for path in ROOT.glob("LICENSE*") if path.is_file())
         paths.extend(
@@ -91,9 +114,11 @@ def stage_assets() -> Path:
 
     checksums = {}
     for source in sorted(set(paths)):
-        if any(part in {"__pycache__", ".venv", "build", "work"} for part in source.relative_to(ROOT).parts):
-            continue
         relative = source.relative_to(ROOT)
+        if release_path_is_excluded(relative):
+            continue
+        if any(part in {"__pycache__", ".venv", "build", "work"} for part in relative.parts):
+            continue
         destination = assets / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
@@ -107,6 +132,16 @@ def stage_assets() -> Path:
             "Refusing to build a distributable archive because legal notices "
             "were not staged: " + ", ".join(missing_staged_legal_files)
         )
+    excluded_staged_paths = [
+        path.relative_to(assets).as_posix()
+        for path in assets.rglob("*")
+        if path.is_file() and release_path_is_excluded(path.relative_to(assets))
+    ]
+    if excluded_staged_paths:
+        raise RuntimeError(
+            "Refusing to build a public archive containing excluded material: "
+            + ", ".join(sorted(excluded_staged_paths))
+        )
 
     identity = {
         "code_commit": source_commit,
@@ -115,7 +150,13 @@ def stage_assets() -> Path:
         "files_sha256": checksums,
         "python": platform.python_version(), "architecture": platform.machine(),
         "dependencies": {name: version(name) for name in ("numpy", "scipy", "matplotlib", "openpyxl", "pyinstaller")},
-        "artifact": "Windows x64 internal team demonstration; unsigned",
+        "artifact": "Windows x64 public synthetic demonstration; unsigned",
+        "excluded_release_material": {
+            "exact_paths": sorted(path.as_posix() for path in EXCLUDED_RELEASE_PATHS),
+            "prefixes": ["/".join(prefix) + "/" for prefix in EXCLUDED_RELEASE_PREFIXES],
+            "directory_names": sorted(EXCLUDED_RELEASE_DIRECTORY_NAMES),
+            "reason": "publication authority unresolved; see LICENSE_SCOPE.md",
+        },
     }
     # Preserve the license texts shipped by the interpreter and bundled runtime
     # dependencies alongside the build's own source snapshot.
@@ -185,7 +226,7 @@ def main() -> int:
     report_path = output / "portable-self-test.json"
     # Launch a copy outside the checkout, with no Python/Git on PATH and no
     # optional engineering evidence or existing user data.
-    with TemporaryDirectory(prefix="LapSim team test ") as temporary:
+    with TemporaryDirectory(prefix="LapSim public test ") as temporary:
         sandbox = Path(temporary)
         copied_exe = sandbox / "LapSim.exe"
         sandbox_report = sandbox / "portable-self-test.json"
@@ -206,8 +247,12 @@ def main() -> int:
         if result.returncode or not sandbox_report.is_file():
             raise RuntimeError(f"Portable self-test failed; inspect {report_path}")
         report = json.loads(report_path.read_text(encoding="utf-8"))
-        if report.get("status") != "passed" or not report.get("frozen"):
-            raise RuntimeError(f"Portable self-test did not pass: {report_path}")
+        if (
+            report.get("status") != "passed"
+            or not report.get("frozen")
+            or not report.get("course_synthetic")
+        ):
+            raise RuntimeError(f"Portable public self-test did not pass: {report_path}")
     checksums = {"LapSim.exe": sha256(executable.read_bytes()).hexdigest()}
     (output / "checksums.json").write_text(json.dumps(checksums, indent=2) + "\n", encoding="utf-8")
     archive = output / "LapSim-Windows-x64.zip"

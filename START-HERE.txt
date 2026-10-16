@@ -1,28 +1,31 @@
-LapSim team demonstration - Windows x64
+LapSim public demonstration - Windows x64
 
 1. Read LICENSE, LICENSE_SCOPE.md, NOTICE, and docs/licensing.md before using,
    modifying, or sharing the software. This is source-available software with
    a competition-use restriction; it is not open source.
 2. Extract the ZIP, then double-click LapSim.exe. Python is bundled.
-3. Choose "Synthetic loop · AI demo" from Course and run a centerline lap.
+3. The public executable starts with "Synthetic loop · AI demo". Run a
+   centerline lap before trying the experimental AI path.
 4. Click Simulator map to explore the flowchart, physics equations and
    individual variables. Search and click the child buttons to drill down.
 5. Read docs/team_guide.md for the demo, units, saved records and model limits.
-   The full engineering handoff is output/pdf/LapSim_Engineering_Handoff.pdf.
+   The source engineering handoff is docs/engineering_handoff.md.
 6. portable-self-test.json and verification/ contain the release check evidence.
-   checksums.json identifies the executable; build-info.json identifies sources.
+   checksums.json identifies the executable; build-info.json identifies sources
+   and the material intentionally excluded from the public archive.
 
-The executable also runs by itself. The ZIP keeps the documentation, map,
-source snapshot, project and dependency notices, and verification evidence
+The executable also runs by itself. The ZIP keeps the public documentation,
+map, source snapshot, project and dependency notices, and verification evidence
 together. Public availability does not authorize another student vehicle
 competition program to use the covered software for its vehicle or competition
 work.
 
-The fused GNSS/IMU course has a documented geometry mismatch and is excluded
-from the software license unless separately authorized. Use the synthetic
-course for coherent path demonstrations. AI racing line and the separate
-four-wheel pose preview are experimental. Test agreement does not establish
-real-car predictive accuracy.
+The team-derived GNSS/IMU course and publication-pending analysis/output data
+are not included in this public release. A separately authorized UMD checkout
+may expose those resources for internal work. The public executable offers only
+analytic synthetic courses. AI racing line and the separate four-wheel pose
+preview are experimental. Test agreement does not establish real-car
+predictive accuracy.
 
 This is an unsigned educational/research build. See docs/release.md for
 rebuilding, source identity, licensing, distribution details, and
