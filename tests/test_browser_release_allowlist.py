@@ -1,5 +1,7 @@
 """Private/unreviewed replay files must never enter a staged browser site."""
 import importlib.util
+from hashlib import sha256
+import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -128,3 +130,28 @@ def test_site_source_copy_excludes_even_tracked_unreviewed_replays(tmp_path, mon
     assert result.returncode == 0, result.stdout + result.stderr
     assert not (output / "web/examples/private-receipt.json").exists()
     assert {path.name for path in (output / "web/examples").iterdir()} == set(module.REVIEWED_REPLAY_EXAMPLES)
+
+
+@pytest.mark.skipif(shutil.which("pwsh") is None, reason="PowerShell is required for the actual site staging adapter")
+def test_mutable_manifest_cannot_redefine_reviewed_private_contents(tmp_path, monkeypatch):
+    module = builder(tmp_path, monkeypatch)
+    source = module.ROOT
+    (source / "scripts").mkdir()
+    original = Path(__file__).resolve().parents[1] / "scripts/stage_team_site.ps1"
+    script = source / "scripts/stage_team_site.ps1"
+    shutil.copy2(original, script)
+    output = tmp_path / "site"
+    module.build(output)
+    name = "enme408-native-c-replay.json"
+    private = b'"private receipt substituted together with mutable metadata"'
+    (source / "web/examples" / name).write_bytes(private)
+    (output / "examples" / name).write_bytes(private)
+    manifest_path = output / "assets/runtime-manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["reviewedReplaySha256"][name] = sha256(private).hexdigest()
+    manifest_path.write_text(json.dumps(manifest))
+    result = subprocess.run([shutil.which("pwsh"), "-NoProfile", "-File", str(script),
+                             "-OutputDirectory", str(output)], capture_output=True, text=True, timeout=30)
+    assert result.returncode != 0
+    assert "Reviewed replay digest mismatch" in result.stderr
+    assert not (output / "web/examples" / name).exists()

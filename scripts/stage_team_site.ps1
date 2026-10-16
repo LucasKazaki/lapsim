@@ -17,9 +17,18 @@ if (-not (Test-Path -LiteralPath (Join-Path $destination 'assets/runtime-manifes
 
 # Recheck immutable fixture contents at the publication staging boundary too.
 $runtimeManifest = Get-Content -LiteralPath (Join-Path $destination 'assets/runtime-manifest.json') -Raw | ConvertFrom-Json
-$reviewedExamples = $runtimeManifest.reviewedReplaySha256
-if ($null -eq $reviewedExamples -or @($reviewedExamples.PSObject.Properties).Count -ne 2) {
+$claimedExamples = $runtimeManifest.reviewedReplaySha256
+$reviewedExamples = [pscustomobject]@{
+    'enme408-synthetic-replay.json' = '3c77722726b4ef7e43e172df4adee75d312ed89a8c5a648b79f314d485996bec'
+    'enme408-native-c-replay.json' = 'dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8'
+}
+if ($null -eq $claimedExamples -or @($claimedExamples.PSObject.Properties).Count -ne 2) {
     throw 'Rebuild the browser runtime with the reviewed replay manifest.'
+}
+foreach ($entry in $reviewedExamples.PSObject.Properties) {
+    if ($claimedExamples.PSObject.Properties[$entry.Name].Value -cne $entry.Value) {
+        throw 'Reviewed replay digest mismatch; the staged manifest is not a trust anchor.'
+    }
 }
 if ($runtimeManifest.reviewedReplayHashScope -ne 'UTF-8 file bytes with CRLF normalized to LF only') {
     throw 'Unknown reviewed replay hash scope; rebuild the runtime.'
