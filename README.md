@@ -82,6 +82,23 @@ They never silently fall back to Python. See the [control lab guide](docs/closed
 for commands, source identities, physics/transport contracts and the separate
 limits of host execution, emulation and physical testing.
 
+## Component materials study
+
+Open **Four-wheel lab → Component materials** on desktop. Compare two versioned
+synthetic isotropic material cards under identical bending/torsion loads. Edit
+tube geometry, inspect deflection/twist, component stiffness, stress, uncertainty
+bounds and recalculated mass/inertia; save and reopen a checked JSON comparison.
+An edited B geometry is a manual change, not an optimized design. This standalone
+component study has no chassis, joint or vehicle coupling and no browser UI.
+
+```text
+python -m lapsim.experiments.component_study --output component.json
+python -m lapsim.experiments.component_study --replay component.json
+```
+
+See the [component study guide](docs/component_study.md) for equations, assumptions,
+actual optional CalculiX refinement evidence and reusable tool decisions.
+
 ## Build the Windows app for internal review
 
 The build produces **`LapSim-Windows-x64.zip`**. No new public release is being

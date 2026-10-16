@@ -25,9 +25,16 @@ independent rear actuators are an explicit synthetic assumption.
 | Native C | Optional explicit five-owner host backend; no Python fallback |
 | Linked firmware / QEMU F405 | Bench-only software binary64 core, generic USART adapter and common PC plant |
 | Physical PIL / custom PCB | Unavailable; no physical connection or validation performed |
+| Component materials | Desktop/CLI circular beam and shaft, versioned synthetic cards, interval bounds, checked A/B replay and recomputed mass/inertia; standalone, no vehicle coupling |
 | Public EXE / updated hosted site | Deferred by owner; use reviewed source or an identified internal build |
 
 ## Run an identified internal Windows build
+
+For the first materials demonstration, open **Four-wheel lab → Component
+materials**, calculate with unchanged geometry, then compare the two curves and
+equal load-controlled stresses. Increase B outside diameter and calculate again
+to see its mass, inertia and stiffness recomputed. Save JSON, reopen it and show
+the checked, read-only comparison. See [component study details](component_study.md).
 
 When supplied with the reviewed internal `LapSim-Windows-x64.zip`, extract it and double-click
 `LapSim.exe`. This is a single-file Windows x64 application with Python,

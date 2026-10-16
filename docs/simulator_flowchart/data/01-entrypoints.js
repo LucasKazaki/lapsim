@@ -31,6 +31,7 @@
         N("desktop-compare","Two-car comparison","optional","optional","Runs frozen vehicles on the same course, driver request, and feasible rolling-start convention for an A/B comparison.",{s:["src/lapsim/ui/comparison.py","src/lapsim/ui/app.py"]}),
         N("desktop-ai-mode","AI racing-line mode","experimental","experimental","Builds bounded candidate paths, audits them, and times admitted paths with the same lap physics.",{s:["src/lapsim/optimization/racing_line.py"],r:["racing-line"]}),
         N("desktop-four-wheel","Four-wheel dynamics lab","experimental","experimental","Runs paired short time-domain maneuvers with independent wheel torques, wind, and local road grip.",{s:["src/lapsim/ui/dynamics_lab.py"],r:["planar-model"]}),
+        N("desktop-component-study","Component materials study","entry","implemented","Four-wheel lab opens an independent structural comparison: synthetic material and geometry cards, fixed tip loads, plots, explicit validity and saved read-only replay. It does not alter vehicle stiffness or lap time.",{s:["src/lapsim/ui/dynamics_lab.py","src/lapsim/ui/component_lab.py"],r:["component-study","component-study-record"]}),
         N("desktop-pose-preview","WIP pose-driver preview","experimental","experimental","Uses the separate planar model and a simple closed-loop driver to test short synthetic path-following traces.",{s:["src/lapsim/ui/pose_driver_playback.py","src/lapsim/optimization/pose_driver.py"],r:["pose-driver"]})
       ]),
       N("programmatic-api","Programmatic event API","entry","implemented","Shared Python boundary for endurance, acceleration, and skidpad studies.",{i:["Vehicle","SpatialTrack","ControlsProfile or torque profile"],o:["EventResult with points, time, energy, status, telemetry"],s:["src/lapsim/events/api.py","docs/event_simulation.md"]},[
@@ -39,7 +40,8 @@
         N("api-acceleration","simulate_acceleration","entry","implemented","Runs an open straight course, including an optional rollout distance before the scoring line.",{s:[["src/lapsim/events/api.py","simulate_acceleration"]]}),
         N("api-skidpad","simulate_skidpad","entry","implemented","Runs the prescribed skidpad path and applies timed-event scoring to the selected laps.",{s:[["src/lapsim/events/api.py","simulate_skidpad"]]})
       ]),
-      N("analysis-entrypoints","Analysis scripts and focused studies","entry","implemented","Repository scripts run event studies, validation replays, sweeps, and report generation using the same model APIs.",{s:["analysis/events/","analysis/endurance/","analysis/accel/"]})
+      N("analysis-entrypoints","Analysis scripts and focused studies","entry","implemented","Repository scripts run event studies, validation replays, sweeps, and report generation using the same model APIs.",{s:["analysis/events/","analysis/endurance/","analysis/accel/"]}),
+      N("component-study-cli","Component study CLI / Python API","entry","implemented","python -m lapsim.experiments.component_study calculates a bounded record or paired comparison, writes JSON atomically, and verifies saved input without replacing it.",{s:[["src/lapsim/experiments/component_study.py","main"]],r:["component-study","component-study-record"]})
     ])
   );
 })();

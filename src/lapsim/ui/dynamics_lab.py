@@ -218,6 +218,11 @@ class DynamicsLab:
             font=FONT, padx=8, pady=4,
         )
         self.control_study_button.pack(side="right", padx=10)
+        self.component_study_button = tk.Button(
+            header, text="Component materials", command=self._open_component_study,
+            font=FONT, padx=8, pady=4,
+        )
+        self.component_study_button.pack(side="right", padx=4)
 
         body = tk.Frame(self.window, padx=10, pady=4)
         body.pack(fill="both", expand=True)
@@ -322,6 +327,11 @@ class DynamicsLab:
         from .control_lab import ControlLab
         self.latest_control_study = ControlLab(self.window, dark=self.is_dark.get())
         return self.latest_control_study
+
+    def _open_component_study(self):
+        from .component_lab import ComponentLab
+        self.latest_component_study = ComponentLab(self.window)
+        return self.latest_component_study
 
     def _cancel_canvas_callbacks(self, _event=None):
         if self.canvas is None:

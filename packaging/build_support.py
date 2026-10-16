@@ -80,6 +80,8 @@ def resource_files() -> list[Path]:
         "tests/fixtures/closed-loop-v1-accepted-launch.json",
         "data/tires/hoosier_16x7p5-10_r20_upc.tir",
         "output/pdf/LapSim_Engineering_Handoff.pdf",
+        "docs/evidence/e15-calculix-refinement.json",
+        "docs/evidence/e15-calculix-process-outcomes.json",
     ):
         paths.add(ROOT / name)
     paths.update(ROOT.glob("LICENSE*"))
