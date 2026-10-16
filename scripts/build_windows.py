@@ -16,6 +16,17 @@ from tempfile import TemporaryDirectory
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
+WEB_SOURCE_FILES = (
+    "index.html", "app.js", "styles.css", "worker.js", "bridge.py",
+    "bench.html", "bench.css", "bench.js", "bench-data.js",
+    "basic.html", "basic.css", "basic.js",
+)
+# Independently pinned like the site staging script; a mutable recipient
+# manifest cannot authorize new replay data in a source package.
+REVIEWED_WEB_REPLAYS = {
+    "enme408-synthetic-replay.json": "3c77722726b4ef7e43e172df4adee75d312ed89a8c5a648b79f314d485996bec",
+    "enme408-native-c-replay.json": "dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8",
+}
 
 
 def run(*args: str, **kwargs) -> None:
@@ -62,10 +73,25 @@ def stage_assets() -> Path:
         paths.extend(path for path in ROOT.glob("LICENSE*") if path.is_file())
         paths.extend(ROOT / name for name in (".gitignore", ".gitattributes") if (ROOT / name).is_file())
     checksums = {}
+    allowed_web = {"web/" + name for name in WEB_SOURCE_FILES}
+    allowed_web.update("web/examples/" + name for name in REVIEWED_WEB_REPLAYS)
+    if (ROOT / "web").exists():
+        for name, expected in REVIEWED_WEB_REPLAYS.items():
+            source = ROOT / "web/examples" / name
+            if (not source.is_file() or source.is_symlink()
+                    or source.resolve() != ROOT.resolve() / "web/examples" / name
+                    or source.stat().st_nlink != 1 or source.stat().st_size > 20_000_000
+                    or sha256(source.read_bytes().replace(b"\r\n", b"\n")).hexdigest() != expected):
+                raise ValueError("unreviewed or missing source-package replay: " + name)
     for source in sorted(set(paths)):
         if any(part in {"__pycache__", ".venv", "build", "work"} for part in source.relative_to(ROOT).parts):
             continue
         relative = source.relative_to(ROOT)
+        if relative.parts[0] == "web":
+            if relative.as_posix() not in allowed_web:
+                continue
+            if source.is_symlink() or source.resolve() != ROOT.resolve() / relative or source.stat().st_nlink != 1:
+                raise ValueError("refusing aliased browser source")
         destination = assets / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
