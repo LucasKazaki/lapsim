@@ -33,9 +33,15 @@ folder. Replacing the app does not replace those user files.
 The EXE is unsigned and has no established publisher reputation. A Windows or
 organization security prompt can therefore occur. Verify artifact identity and
 use the team's approved distribution process; an organization may require code
-signing before deployment. The repository does not declare a project license.
-This package is prepared for the requested internal team review; external
-redistribution and source licensing remain repository-owner decisions.
+signing before deployment.
+
+The source snapshot is **source-available, not open source**. Before viewing,
+copying, running, modifying, or sharing it, read the root `LICENSE`,
+`LICENSE_SCOPE.md`, and `NOTICE`, plus [the licensing guide](licensing.md).
+The competition-use restriction and the limits on redistribution apply only to
+material actually covered by the stated license. Upstream, contributor-owned,
+third-party, and engineering-data material may have different or unresolved
+rights. The bundle's presence does not grant permission beyond those files.
 
 ## Frozen application options
 
@@ -109,7 +115,9 @@ on the current working directory for bundled files.
 ## Release acceptance
 
 Run a complete software sweep after source changes and build the final artifact.
-Then test that exact EXE from an unrelated current directory and a clean test
+Confirm that `LICENSE`, `LICENSE_SCOPE.md`, `NOTICE`, `CONTRIBUTING.md`, and
+`docs/licensing.md` are present in the ZIP before distributing it. Then test
+that exact EXE from an unrelated current directory and a clean test
 user-data location. Verify the frozen self-test report, an ordinary desktop
 launch, a synthetic lap and replay, the offline map and source links, and the
 other required flows in the verification guide. Preserve skipped-test reasons,

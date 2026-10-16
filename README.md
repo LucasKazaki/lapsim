@@ -1,5 +1,16 @@
 # Formula SAE Event Simulator
 
+> **License and competition-use notice:** This public repository is
+> **source-available, not open source**. For material actually covered by
+> [LSCRL-1.0](LICENSE), recruiter evaluation and specified UMD educational and
+> Terps Racing uses are permitted, while use by or for another student vehicle
+> competition program is prohibited. The inherited upstream baseline,
+> contributor-owned material, third-party content, and engineering data may
+> have different or unresolved rights. Read [LICENSE_SCOPE.md](LICENSE_SCOPE.md)
+> and [the licensing guide](docs/licensing.md) before downloading, running,
+> modifying, or sharing the project. Public visibility does not grant broader
+> permission.
+
 Simulate endurance, acceleration, and skidpad from a distance-indexed controls
 profile and track. Every event returns estimated points, timing, energy,
 completion status, and aligned component telemetry through one result type.
@@ -224,8 +235,8 @@ For Python studies, `PathConstraintSolver.solve`, `prepare_one_lap_constraints`,
 `cell_road_grip_multiplier` tuple with one **absolute**, finite, positive tire
 grip multiplier per solver cell. The same cell value is used for its corner
 limit, braking-envelope calculation, and distance-cell force update; the
-vehicle's configured grip is restored afterward. An omitted schedule keeps
-the original uniform calculation. This API input is a numerical road-grip
+vehicle's configured grip is restored afterward. An omitted schedule keeps the
+original uniform calculation. This API input is a numerical road-grip
 sensitivity, distinct from the desktop's uniform percentage control and the
 four-wheel preview's separate pose model. A completed scheduled API lap can
 now be captured in a v2 lap record and checked by `replay_lap_record`, which
