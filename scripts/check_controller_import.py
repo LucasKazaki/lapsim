@@ -18,7 +18,19 @@ def verify(root: Path) -> dict:
     if (manifest.get("upstream_commit") != EXPECTED_UPSTREAM_COMMIT
             or sha256(canonical).hexdigest() != EXPECTED_MANIFEST_SHA256):
         raise ValueError("reviewed controller inventory identity mismatch")
-    local = {path.stem for path in (controller / "reference").glob("*.py")}
+    expected = set(manifest["files"])
+    integration_files = {"import-manifest.json", "UPSTREAM.md"}
+    for path in controller.rglob("*"):
+        relative = path.relative_to(controller).as_posix()
+        if path.is_symlink() or not path.resolve().is_relative_to(controller.resolve()):
+            raise ValueError(f"linked controller path: {relative}")
+        if path.is_file() and relative not in expected | integration_files:
+            # Normal reference execution creates bytecode caches. These are
+            # generated files, never source inventory or dependency owners.
+            if path.parent.name == "__pycache__" and path.suffix == ".pyc":
+                continue
+            raise ValueError(f"unmanifested controller file: {relative}")
+    local = {Path(name).stem for name in expected if name.startswith("reference/") and name.endswith(".py")}
     dependencies = set()
     for relative, facts in manifest["files"].items():
         path = controller / relative

@@ -44,3 +44,10 @@ def test_modified_source_and_coordinated_manifest_hash_cannot_pass(tmp_path):
     path.write_text(json.dumps(manifest))
     with pytest.raises(ValueError, match="inventory identity"):
         verifier().verify(tmp_path)
+
+
+def test_extra_local_module_cannot_shadow_standard_library_and_pass_inventory(tmp_path):
+    shutil.copytree(ROOT / "controller", tmp_path / "controller")
+    (tmp_path / "controller/reference/json.py").write_text("raise RuntimeError('unreviewed shadow')\n")
+    with pytest.raises(ValueError, match="unmanifested controller"):
+        verifier().verify(tmp_path)
