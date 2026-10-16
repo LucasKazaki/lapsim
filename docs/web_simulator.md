@@ -8,6 +8,42 @@ it does not substitute an approximate physics engine.
 
 ## Use and share
 
+### ENME408 torque review
+
+The **Torque review** navigation item opens `bench.html`, a separate receipt
+viewer for the ENME408 host reference. It plots the total request and final
+proposed command as discrete steps, shows inhibited intervals, and exposes each
+cycle's wheel-slot vector, guard reason, pedal latch, and recovery state. Select
+an event or use the keyboard cycle slider to inspect exact values. Source hashes
+and synthetic policy settings are available on demand. The receipt renderer does
+not run the lap solver or send commands.
+
+Use **Load synthetic example** for the 18-cycle demo (9 command-allowed cycles,
+9 held cycles, 5 recovery-pending cycles), or **Choose replay file** to open a
+local `enme408-bench-replay/v1` JSON receipt from
+[the reference implementation, draft PR 68](https://github.com/LucasKazaki/lucas-agent-studio/pull/68).
+The viewer checks structure, nonnegative finite vectors, and agreement between
+the recorded final command and inhibit/recovery gate. It recomputes the counts
+from the events. These checks do not authenticate source hashes or reproduce
+the controller; rerun the matching Python scenario for that evidence.
+
+For an easily shared offline review, export one HTML file with the exact
+frontend and demo embedded:
+
+```powershell
+python scripts/export_bench_viewer.py --output enme408-bench-review.html
+```
+
+Double-click the exported file, load the embedded example, or choose another
+receipt. No server, Python installation, CDN, or model runtime is required by
+that exported viewer. Its simulator/map links point to the existing hosted lab.
+The ordinary multi-file viewer also supports file selection under `file:`;
+its example fetch needs an HTTP server. No part of this viewer proves vehicle
+behavior, safety-system independence, firmware timing, or HIL readiness. The
+four abstract slots are not asserted to be physical wheels on the current car.
+
+### Lap simulator
+
 Open the hosted simulator in a current Chrome, Edge, Firefox, or Safari browser.
 The first launch downloads a pinned Python scientific runtime and may take
 longer than later visits. A Python installation is unnecessary. The page needs

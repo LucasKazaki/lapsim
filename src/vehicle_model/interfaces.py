@@ -8,6 +8,7 @@ model or changing the solver.
 
 from __future__ import annotations
 
+from contextlib import AbstractContextManager
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
@@ -44,6 +45,25 @@ class BatteryModel(ComponentModel, Protocol):
     def limit_charge_power_w(self, requested_power_w: float) -> float: ...
 
     def update_state(self, power_w: float, timestep_s: float) -> None: ...
+
+
+@runtime_checkable
+class BatteryUpdatePreflight(Protocol):
+    """Optional pure interval check before a vehicle commits component state.
+
+    Implementations raise on an unsupported power/duration without mutation.
+    This remains separate from BatteryModel so existing replacements retain
+    their structural interface. All built-in battery models implement it.
+    """
+
+    def validate_state_update(self, power_w: float, timestep_s: float) -> None: ...
+
+
+@runtime_checkable
+class SpeculativeComponent(Protocol):
+    """Optional rollback of query staging when a vehicle trial fails."""
+
+    def speculative_state(self) -> AbstractContextManager[None]: ...
 
 
 class MotorModel(ComponentModel, Protocol):

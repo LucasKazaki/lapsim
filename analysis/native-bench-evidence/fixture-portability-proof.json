@@ -1,0 +1,41 @@
+{
+  "schema": "lapsim-native-bench-fixture-portability-proof/v1",
+  "python": "3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]",
+  "observed": [
+    {
+      "decoder": "local default",
+      "case": "original_balanced_valid",
+      "result": "RecursionError"
+    },
+    {
+      "decoder": "local default",
+      "case": "repair_missing_closer",
+      "result": "RecursionError"
+    },
+    {
+      "decoder": "stdlib pure-Python fallback, workspace syntax audit only",
+      "case": "original_balanced_valid",
+      "result": "accepted"
+    },
+    {
+      "decoder": "stdlib pure-Python fallback, workspace syntax audit only",
+      "case": "repair_missing_closer",
+      "result": "JSONDecodeError",
+      "message": "Expecting ',' delimiter: line 1 column 4001 (char 4000)"
+    }
+  ],
+  "fixture_sizes": {
+    "original": 4001,
+    "repair": 4000
+  },
+  "repair_diff_sha256": "9bb82eb57e46f45b9db39a6bf9b294e6287fc6b71ab77355a3dc9e068f715321",
+  "actual_CI_counterexample": {
+    "head": "2dd4615e651cf74b2720b0db7432e9232ec07c8e",
+    "run": 38715215671,
+    "job": 116356189867,
+    "Python3.13": "Actual job accepted and encoded the balanced valid fixture; test incorrectly expected an exception."
+  },
+  "retained_probe_assumption_failure": "An earlier local probe raised sys recursion limit to10000 but the default3.12 decoder still raised RecursionError for the valid fixture. It did not prove syntax invalidity; the workspace-only stdlib fallback demonstrates balanced versus missing-closer syntax.",
+  "production_unchanged": true,
+  "limits": "No decoder/scanner/recursion-limit change in product or tests. Correct only one malformed-data fixture and explanatory comment."
+}
