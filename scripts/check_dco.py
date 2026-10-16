@@ -1,4 +1,4 @@
-"""Enforce Developer Certificate of Origin trailers on post-adoption PR commits."""
+"""Enforce author-matching Developer Certificate of Origin trailers."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+POLICY_MARKER = "scripts/check_dco.py"
 SIGN_OFF = re.compile(
     r"^Signed-off-by:\s*(?P<name>.+?)\s*<(?P<email>[^<>\s]+)>\s*$",
     re.IGNORECASE | re.MULTILINE,
@@ -27,11 +28,13 @@ def git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
 
 
 def policy_exists_at(ref: str) -> bool:
+    """Return whether the DCO policy itself exists at a trusted ref."""
+
     return (
         git(
             "cat-file",
             "-e",
-            f"{ref}:CONTRIBUTING.md",
+            f"{ref}:{POLICY_MARKER}",
             check=False,
         ).returncode
         == 0
@@ -56,11 +59,11 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    # The PR that first adopts this policy is the explicit bootstrap exception.
-    # Every later PR has CONTRIBUTING.md on its base and is enforced.
+    # The PR that first introduces this script is the one-time bootstrap
+    # exception. A pre-existing CONTRIBUTING.md is not an adoption marker.
     if not policy_exists_at(args.base):
         print(
-            "DCO policy is not present on the base commit; "
+            "DCO policy marker is absent from the base commit; "
             "bootstrap PR exempt."
         )
         return 0
@@ -70,6 +73,7 @@ def main() -> int:
         for sha in git(
             "rev-list",
             "--reverse",
+            "--no-merges",
             f"{args.base}..{args.head}",
         ).stdout.splitlines()
         if sha

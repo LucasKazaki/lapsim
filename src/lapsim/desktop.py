@@ -76,11 +76,11 @@ def self_test(report_path: Path) -> dict:
     checks["offline_source_links"] = all(
         (offline / name).is_file()
         for name in (
-            "launch_lapsim.cmd",
-            "setup_lapsim.ps1",
+            "LICENSE",
+            "LICENSE_SCOPE.md",
+            "docs/public_demo.md",
             "packaging/LapSim.spec",
             "src/vehicle_model/vehicle.py",
-            "docs/engineering_handoff.md",
         )
     )
 
