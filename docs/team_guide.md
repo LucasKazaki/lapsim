@@ -7,9 +7,29 @@ has a documented mismatch between plotted coordinates and physics curvature.
 Its ordinary lap calculation can run, but the picture is not evidence that a
 car followed that path or cleared cones.
 
-## Run the shared Windows app
+## Choose the experiment
 
-Download the team's `LapSim-Windows-x64.zip`, extract it, and double-click
+**Basic dynamics** opens the synthetic dynamic bicycle. **Four-wheel lab →
+Controlled A/B study** executes matched equal-split and traction-limited loops.
+The locally built browser exposes **Torque control**. Both comparison UIs save
+JSON and rerun both stored scenarios before displaying an imported comparison.
+See [the control lab guide](closed_loop_lab.md) for presets, equations, native C
+and virtual STM32 commands and limits. The car remains RWD; the study's two
+independent rear actuators are an explicit synthetic assumption.
+
+| Capability | Scope |
+| --- | --- |
+| Dynamic bicycle | Actual synthetic six-state plant; new basic-session default |
+| Prescribed-path lap / four-wheel experiments | Separate retained model families and saved identities |
+| Constrained closed loop | Actual driver/sensor/controller/actuator/plant integration and signed energy ledger |
+| Native C | Optional explicit five-owner host backend; no Python fallback |
+| Linked firmware / QEMU F405 | Bench-only software binary64 core, generic USART adapter and common PC plant |
+| Physical PIL / custom PCB | Unavailable; no physical connection or validation performed |
+| Public EXE / updated hosted site | Deferred by owner; use reviewed source or an identified internal build |
+
+## Run an identified internal Windows build
+
+When supplied with the reviewed internal `LapSim-Windows-x64.zip`, extract it and double-click
 `LapSim.exe`. This is a single-file Windows x64 application with Python,
 Tkinter, Matplotlib, and mandatory course data bundled. Recipients do not
 need to install Python. The first launch extracts its runtime into a temporary
@@ -34,15 +54,15 @@ distribution contents, verification, and frozen-runtime command options.
 ## Run from a source checkout
 
 Use Windows with 64-bit Python 3.11 or newer, including Tkinter. Open the
-repository folder and run `setup_lapsim.cmd` once, then `launch_lapsim.cmd`.
+repository folder and run `python scripts/bootstrap.py --launch`.
 Setup needs internet access to install the dependencies. After installation,
 the built-in courses and ordinary simulation run locally.
 
 The equivalent developer commands, from the repository root, are:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup_lapsim.ps1
-.\.venv\Scripts\python.exe -m lapsim.ui
+python scripts/bootstrap.py --launch
+python scripts/bootstrap.py --check --desktop
 ```
 
 The window starts at 1380 × 900 and permits resizing to 1080 × 720. The input

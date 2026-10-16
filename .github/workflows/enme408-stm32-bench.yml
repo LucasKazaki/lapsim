@@ -1,0 +1,58 @@
+name: ENME408 virtual STM32 bench
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - 'firmware/**'
+      - 'controller/**'
+      - 'src/lapsim/experiments/**'
+      - 'src/lapsim/dynamics/**'
+      - 'scripts/build_stm32_bench.py'
+      - 'quality/run_stm32_bench.py'
+      - '.github/workflows/enme408-stm32-bench.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  virtual-target:
+    name: Linked F405 firmware and actual QEMU plant loop
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install optional virtual-bench dependencies
+        run: |
+          python -m pip install -e '.[dev]'
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends 'qemu-system-arm=1:8.2.2+ds-0ubuntu1.18'
+          qemu-system-arm --version
+          qemu-system-arm -machine help | grep netduinoplus2
+          mkdir -p work/toolchains
+          curl --fail --location --retry 2 'https://developer.arm.com/-/media/Files/downloads/gnu/12.3.rel1/binrel/arm-gnu-toolchain-12.3.rel1-x86_64-arm-none-eabi.tar.xz' -o work/toolchains/arm.tar.xz
+          echo '12a2815644318ebcceaf84beabb665d0924b6e79e21048452c5331a56332b309  work/toolchains/arm.tar.xz' | sha256sum --check
+          tar -xf work/toolchains/arm.tar.xz -C work/toolchains
+      - name: Link binary64 controller firmware
+        run: python scripts/build_stm32_bench.py --toolchain-dir work/toolchains/arm-gnu-toolchain-12.3.rel1-x86_64-arm-none-eabi --output-dir audit/firmware
+      - name: Boot target, compare known vectors, run common PC plant and inject protocol faults
+        run: python quality/run_stm32_bench.py --qemu /usr/bin/qemu-system-arm --elf audit/firmware/lapsim-f405-bench.elf --output-dir audit/virtual-stm32
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: virtual-stm32-bench-evidence
+          path: |
+            audit/firmware/
+            audit/virtual-stm32/
+          if-no-files-found: error

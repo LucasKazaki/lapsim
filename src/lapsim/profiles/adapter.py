@@ -122,6 +122,8 @@ def _code_identity() -> tuple[str | None, bool | None]:
     if identity is not None:
         return identity.get("code_commit"), identity.get("dirty_worktree")
     root = repository_root()
+    if not (root / ".git").exists():
+        return None, None
     try:
         head = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True,

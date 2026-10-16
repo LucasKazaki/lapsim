@@ -17,7 +17,7 @@ def test_no_git_rebuild_preserves_handoff_and_hashes(tmp_path, monkeypatch):
     snapshot.mkdir()
     names = (
         "README.md", "START-HERE.txt", "AGENTS.md", "ENME408_IMPLEMENTATION_PLAN.md",
-        "pyproject.toml", "requirements-build.lock", "build_lapsim.cmd",
+        "pyproject.toml", "setup.py", "requirements-build.lock", "build_lapsim.cmd",
         "setup_lapsim.cmd", "setup_lapsim.ps1", "launch_lapsim.cmd", "packaging/LapSim.spec",
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",
@@ -25,6 +25,8 @@ def test_no_git_rebuild_preserves_handoff_and_hashes(tmp_path, monkeypatch):
         "controller/reference/native/torque_allocator.c", "controller/import-manifest.json",
         "web/index.html", "web/basic.html", "web/basic.js", "web/worker.js",
         "web/examples/enme408-synthetic-replay.json", "web/examples/enme408-native-c-replay.json",
+        "web/control.html", "web/control.css", "web/control.js",
+        "firmware/bench/main.c", "firmware/bench/startup.c", "firmware/bench/f405-qemu.ld",
     )
     for name in names:
         target = snapshot / name

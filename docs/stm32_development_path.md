@@ -1,6 +1,12 @@
 # STM32F405 development, digital target and processor-in-the-loop
 
-16 October 2026. **Proposed path for E10–E12, not an implemented or hardware-validated feature.** [Work plan](../ENME408_IMPLEMENTATION_PLAN.md) · [controller contract](controller_testing_contract.md) · [issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
+16 October 2026. **Generic virtual bench implemented; physical E11–E12 work remains unvalidated.** [Work plan](../ENME408_IMPLEMENTATION_PLAN.md) · [controller contract](controller_testing_contract.md) · [issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
+
+A generic F405 bench image, startup, linker script, bounded USART protocol and
+QEMU host backend now execute the same five C owners against known vectors and
+the common PC plant. See [the executable lab guide](closed_loop_lab.md) and
+[wire contract](stm32_bench_protocol_v1.md). The remaining path below retains
+the distinction between virtual execution, custom-board work and physical PIL.
 
 ## 1. Recommendation
 

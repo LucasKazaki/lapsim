@@ -20,6 +20,7 @@ def self_test(report_path: Path) -> dict:
     from .ui.dynamics_lab import DynamicsLab
     from .ui.basic_dynamics import BasicDynamicsLab
     from .experiments.basic_dynamics import decode_json, replay_bicycle_record
+    from .experiments.control_study import replay_control_comparison
     from .ui.simulation import load_team_endurance_track, run_one_lap
     from .courses.spatial_track import SpatialTrack
     from .courses.track import Curve, Track
@@ -63,6 +64,24 @@ def self_test(report_path: Path) -> dict:
             and len(basic.path_axes.lines) == 1
         )
         basic.close()
+        lab.control_study_button.invoke()
+        control = lab.latest_control_study
+        control.inputs["duration_s"].set(".1")
+        control.run_button.invoke()
+        deadline = time.monotonic() + 30
+        while control.busy and time.monotonic() < deadline:
+            root.update()
+            time.sleep(0.01)
+        if control.record is None:
+            raise RuntimeError("Control study desktop execution failed: " + control.status.get())
+        control_record = control.record
+        checks["control_study_ui_run"] = (
+            all(run["scenario"]["controller_backend_id"] == "python_reference"
+                for run in control_record["runs"].values())
+            and all(len(axis.lines) == 2 for axis in control.axes.flat)
+        )
+        control.close()
+        lab.close()
         # Child widgets are destroyed by root, allowing their lifecycle hooks to run.
     finally:
         root.destroy()
@@ -107,6 +126,11 @@ def self_test(report_path: Path) -> dict:
         checks["basic_bicycle_record_replay"] = replay_bicycle_record(
             decode_json(bicycle_path.read_bytes())
         )["model_agreement"]
+        control_path = Path(temporary) / "control.json"
+        control_path.write_text(json.dumps(control_record, allow_nan=False), encoding="utf-8")
+        checks["control_study_record_replay"] = replay_control_comparison(
+            decode_json(control_path.read_bytes(), maximum_bytes=40_000_000)
+        )["model_agreement"]
     report = {
         "status": "passed" if all(checks.values()) else "failed",
         "frozen": bool(getattr(sys, "frozen", False)), "checks": checks,
@@ -117,6 +141,8 @@ def self_test(report_path: Path) -> dict:
         "basic_bicycle": {"run_id": bicycle_record["run_id"],
                           "model_id": bicycle_record["scenario"]["model_id"],
                           "plant_ticks": bicycle_record["result"]["plant_ticks"]},
+        "control_study": {"run_id": control_record["run_id"],
+                          "runs_replayed": 2, "backend_id": "python_reference"},
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

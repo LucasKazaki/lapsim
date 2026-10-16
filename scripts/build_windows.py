@@ -12,7 +12,7 @@ import shutil
 import subprocess
 import sys
 import sysconfig
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, gettempdir
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +20,7 @@ WEB_SOURCE_FILES = (
     "index.html", "app.js", "styles.css", "worker.js", "bridge.py",
     "bench.html", "bench.css", "bench.js", "bench-data.js",
     "basic.html", "basic.css", "basic.js",
+    "control.html", "control.css", "control.js",
 )
 # Independently pinned like the site staging script; a mutable recipient
 # manifest cannot authorize new replay data in a source package.
@@ -52,7 +53,7 @@ def stage_assets() -> Path:
             paths.extend((ROOT / folder).rglob(pattern))
     paths.extend(ROOT / name for name in (
         "README.md", "START-HERE.txt", "AGENTS.md", "ENME408_IMPLEMENTATION_PLAN.md",
-        "pyproject.toml", "requirements-build.lock", "build_lapsim.cmd",
+        "pyproject.toml", "setup.py", "requirements-build.lock", "build_lapsim.cmd",
         "setup_lapsim.cmd", "setup_lapsim.ps1", "launch_lapsim.cmd", "packaging/LapSim.spec",
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",
@@ -68,7 +69,7 @@ def stage_assets() -> Path:
         identity = json.loads(previous.read_text(encoding="utf-8")) if previous.is_file() else {}
         source_commit = identity.get("code_commit")
         source_dirty = True  # This snapshot has no live clean-worktree guarantee.
-        for folder in ("src", "controller", "web", "scripts", "tests", "docs", "data", "analysis", "output", "packaging", ".vscode"):
+        for folder in ("src", "controller", "firmware", "web", "scripts", "tests", "docs", "data", "analysis", "output", "packaging", ".vscode"):
             paths.extend(path for path in (ROOT / folder).rglob("*") if path.is_file())
         paths.extend(path for path in ROOT.glob("LICENSE*") if path.is_file())
         paths.extend(ROOT / name for name in (".gitignore", ".gitattributes") if (ROOT / name).is_file())
@@ -174,7 +175,13 @@ def main() -> int:
     report_path = output / "portable-self-test.json"
     # Launch a copy outside the checkout, with no Python/Git on PATH and no
     # optional engineering evidence or existing user data.
-    with TemporaryDirectory(prefix="LapSim team test ") as temporary:
+    # Keep the owned directory's cleanup on the same extended-path route as
+    # the frozen help copy; ordinary Win32 cleanup cannot unlink long names.
+    temporary_parent = gettempdir()
+    if os.name == "nt" and not temporary_parent.startswith("\\\\?\\"):
+        temporary_parent = ("\\\\?\\UNC\\" + temporary_parent[2:]
+                            if temporary_parent.startswith("\\\\") else "\\\\?\\" + temporary_parent)
+    with TemporaryDirectory(prefix="LapSim team test ", dir=temporary_parent) as temporary:
         sandbox = Path(temporary)
         copied_exe = sandbox / "LapSim.exe"
         sandbox_report = sandbox / "portable-self-test.json"

@@ -1,0 +1,4 @@
+#control-results svg{min-width:0;width:100%}
+#control-run{width:100%;margin-top:24px;background:var(--accent);color:var(--panel);border-color:var(--accent)}#control-cancel{width:100%;margin-top:8px}#control-error{color:var(--error)}
+#control-results table{min-width:0;table-layout:fixed}#control-results th:first-child{width:48%}#control-results th,#control-results td{padding:10px 6px;font-size:13px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+#control-results .stage-scroll{overflow:auto;max-height:440px}#control-results .stage-scroll table{min-width:900px;table-layout:auto}#control-results .stage-scroll th:first-child{width:auto}

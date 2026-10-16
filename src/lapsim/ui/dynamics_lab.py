@@ -192,7 +192,12 @@ class DynamicsLab:
         self.canvas: FigureCanvasTkAgg | None = None
         self._build_window()
         self._apply_theme()
-        self.window.after(100, self._poll_result)
+        self._closed = False
+        self._poll_id = self.window.after(100, self._poll_result)
+        self.window.protocol("WM_DELETE_WINDOW", self.close)
+        self.window.bind("<Destroy>", self._on_destroy, add="+")
+        if self.canvas is not None:
+            self.canvas.get_tk_widget().bind("<Destroy>", self._cancel_canvas_callbacks, add="+")
 
     def _build_window(self) -> None:
         header = tk.Frame(self.window, padx=10, pady=8)
@@ -208,6 +213,11 @@ class DynamicsLab:
             header, text="Dark mode", variable=self.is_dark,
             command=self._apply_theme, font=FONT,
         ).pack(side="right")
+        self.control_study_button = tk.Button(
+            header, text="Controlled A/B study", command=self._open_control_study,
+            font=FONT, padx=8, pady=4,
+        )
+        self.control_study_button.pack(side="right", padx=10)
 
         body = tk.Frame(self.window, padx=10, pady=4)
         body.pack(fill="both", expand=True)
@@ -307,6 +317,38 @@ class DynamicsLab:
             textvariable=self.status,
             anchor="w", padx=10, pady=5, font=("Segoe UI", 9),
         ).pack(fill="x")
+
+    def _open_control_study(self):
+        from .control_lab import ControlLab
+        self.latest_control_study = ControlLab(self.window, dark=self.is_dark.get())
+        return self.latest_control_study
+
+    def _cancel_canvas_callbacks(self, _event=None):
+        if self.canvas is None:
+            return
+        widget = self.canvas.get_tk_widget()
+        for attribute in ("_idle_draw_id", "_event_loop_id"):
+            identifier = getattr(self.canvas, attribute, None)
+            if identifier is not None:
+                widget.after_cancel(identifier)
+                setattr(self.canvas, attribute, None)
+        # Tk images must be released on their owning thread, including when
+        # root.destroy() closes the window without using its close button.
+        photo = getattr(self.canvas, "_tkphoto", None)
+        if photo is not None and photo.name:
+            photo.tk.call("image", "delete", photo.name)
+            photo.name = None
+
+    def _on_destroy(self, event):
+        if event.widget is self.window:
+            self._closed = True
+            self.window.after_cancel(self._poll_id)
+
+    def close(self):
+        if self._closed:
+            return
+        self._cancel_canvas_callbacks()
+        self.window.destroy()
 
     def _build_inputs(self, parent: tk.Widget) -> None:
         maneuver = tk.LabelFrame(
@@ -530,7 +572,7 @@ class DynamicsLab:
         try:
             settings, runs, record_id, error = self.result_queue.get_nowait()
         except queue.Empty:
-            self.window.after(100, self._poll_result)
+            self._poll_id = self.window.after(100, self._poll_result)
             return
         self.run_button.configure(state="normal")
         if error is not None:
@@ -560,7 +602,7 @@ class DynamicsLab:
                     f"B − A {yaw_b - yaw_a:+.2f}°/s · "
                     f"max equation residual {residual:.2e} W · saved {record_id[:12]}"
                 )
-        self.window.after(100, self._poll_result)
+        self._poll_id = self.window.after(100, self._poll_result)
 
     def _theme_colors(self) -> tuple[str, str]:
         return ("#000000", "#ffffff") if self.is_dark.get() else ("#ffffff", "#000000")

@@ -4,11 +4,16 @@ TEAM MEMBERS
 Read docs/team_guide.md for the existing synthetic demo, units and model limits.
 Read docs/team_review_and_data_request.md for the review agenda and data request.
 The current architecture is documented in docs/engineering_handoff.md.
+For executable matched torque-control studies, read docs/closed_loop_lab.md.
+Desktop: Four-wheel lab -> Controlled A/B study. Browser: Torque control.
+Basic dynamics opens the separate synthetic dynamic bicycle by default.
+Public release/site deployment are deferred by the owner during this run.
 
 SOURCE CHECKOUT - existing Windows route
 Install a supported 64-bit Python with Tk as described in the README, then run:
-  setup_lapsim.cmd
-  launch_lapsim.cmd
+  python scripts/bootstrap.py --launch
+Read-only repeat check: python scripts/bootstrap.py --check --desktop
+The script finds its own checkout, even when called from another directory.
 Setup may need internet access to install dependencies. The public synthetic
 example must not require private team data, an AI account or hardware.
 
@@ -27,9 +32,10 @@ Start with ENME408_IMPLEMENTATION_PLAN.md and AGENTS.md.
 Tracking: https://github.com/LucasKazaki/lapsim/issues/19
 Detailed contracts: docs/team_release_contract.md,
 docs/controller_testing_contract.md, docs/stm32_development_path.md.
-These describe remaining work, including PR integration, a true bicycle
-baseline, one-command bootstrap, same-repo controller source and STM32 testing.
-They do not mean those features were implemented by this documentation update.
+The contracts distinguish implemented source from remaining gates. Actual code
+now includes a dynamic bicycle, same-repo controller, constrained closed loop,
+native C and a generic virtual F405 bench. Physical PIL remains unavailable.
+Consult exact PR/check evidence; documentation alone is not completion proof.
 
 The fused course has a documented geometry mismatch; use synthetic geometry
 for coherent demonstrations. The lap model, four-wheel experiment and torque

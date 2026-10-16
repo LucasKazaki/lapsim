@@ -37,6 +37,19 @@ def runtime_files() -> dict[str, bytes]:
         if "__pycache__" not in path.parts
     }
     files["bundle/web/bridge.py"] = (ROOT / "web/bridge.py").read_bytes()
+    # Explicit reviewed source-only subset for browser Python execution. No
+    # native library, historical receipt, toolchain or private scenario enters
+    # this runtime. The complete canonical import remains in the repository.
+    from lapsim.experiments.controller_backend import BROWSER_PYTHON_OWNERS, controller_source_identity
+    identity = controller_source_identity()
+    for name in BROWSER_PYTHON_OWNERS:
+        relative = "controller/reference/"+name+".py"
+        raw = (ROOT / relative).read_bytes()
+        if sha256(raw).hexdigest() != identity["source_files_sha256"][relative]:
+            raise ValueError("browser controller source drift")
+        files["bundle/"+relative] = raw
+    for relative in ("controller/import-manifest.json", "controller/integration/relocation-patches.json"):
+        files["bundle/"+relative] = (ROOT / relative).read_bytes()
     data = ROOT / "analysis/data/track"
     for path in sorted(data.iterdir()):
         if path.is_file() and path.suffix.lower() in {".csv", ".json"}:
@@ -115,7 +128,7 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
     if not runtime_only:
         for name in ("index.html", "app.js", "styles.css", "worker.js",
                      "bench.html", "bench.css", "bench.js", "bench-data.js",
-                     "basic.html", "basic.css", "basic.js"):
+                     "basic.html", "basic.css", "basic.js", "control.html", "control.css", "control.js"):
             source = ROOT / "web" / name
             if not source.is_file():
                 raise FileNotFoundError(f"Frontend file is missing: {source}")
