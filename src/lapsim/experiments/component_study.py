@@ -436,18 +436,33 @@ def replay_component_comparison(record: dict) -> dict:
     }
 
 
+def load_component_json(path: Path) -> dict:
+    """Bound the actual read, including a file growing after an earlier stat."""
+    with path.open("rb") as stream:
+        value = decode_json(stream.read(MAX_BYTES + 1), maximum_bytes=MAX_BYTES)
+    if not isinstance(value, dict):
+        raise ValueError("component JSON must be an object")
+    return value
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--replay", type=Path)
+    parser.add_argument("--comparison", action="store_true")
     parser.add_argument(
         "--material", choices=tuple(MATERIALS), default="synthetic_light_v1"
     )
     args = parser.parse_args()
     if args.replay:
-        value = replay_component_study(
-            decode_json(args.replay.read_bytes(), maximum_bytes=MAX_BYTES)
+        record = load_component_json(args.replay)
+        value = (
+            replay_component_comparison(record)
+            if record.get("schema") == "lapsim.component-comparison.v1"
+            else replay_component_study(record)
         )
+    elif args.comparison:
+        value = run_component_comparison()
     else:
         value = run_component_study(MATERIALS[args.material])
     text = _canonical_json(value) + "\n"

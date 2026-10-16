@@ -11,11 +11,10 @@ from uuid import uuid4
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-from lapsim.experiments.basic_dynamics import decode_json
 from lapsim.experiments.component_study import (
-    MAX_BYTES,
     GeometryCard,
     Interval,
+    load_component_json,
     replay_component_comparison,
     run_component_comparison,
 )
@@ -253,9 +252,7 @@ class ComponentLab:
 
     def load_from(self, path: Path):
         self.new()
-        if path.stat().st_size > MAX_BYTES:
-            raise ValueError("component record exceeds 256 KiB")
-        record = decode_json(path.read_bytes(), maximum_bytes=MAX_BYTES)
+        record = load_component_json(path)
         verified = replay_component_comparison(record)
         self.record = record
         self.imported = True

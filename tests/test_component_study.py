@@ -205,3 +205,53 @@ def test_replay_results_cards_unknowns_and_comparison_policy():
     pair["run_id"] = _content_id({k: v for k, v in pair.items() if k != "run_id"})
     with pytest.raises(ValueError):
         replay_component_comparison(pair)
+
+
+def test_bounded_file_reader_rejects_large_and_duplicate_inputs(tmp_path):
+    from lapsim.experiments.component_study import MAX_BYTES, load_component_json
+
+    path = tmp_path / "record.json"
+    path.write_bytes(b" " * (MAX_BYTES + 1))
+    with pytest.raises(ValueError, match="size limit"):
+        load_component_json(path)
+    path.write_text('{"schema":1,"schema":2}', encoding="utf-8")
+    with pytest.raises(ValueError):
+        load_component_json(path)
+    path.write_text("[1,2]", encoding="utf-8")
+    with pytest.raises(ValueError, match="object"):
+        load_component_json(path)
+
+
+def test_actual_cli_comparison_round_trip(tmp_path):
+    import subprocess
+    import sys
+
+    path = tmp_path / "comparison.json"
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "lapsim.experiments.component_study",
+            "--comparison",
+            "--output",
+            str(path),
+        ],
+        check=True,
+        timeout=30,
+    )
+    outcome = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "lapsim.experiments.component_study",
+            "--replay",
+            str(path),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    import json
+
+    assert json.loads(outcome.stdout)["runs_replayed"] == 2
