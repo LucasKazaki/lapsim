@@ -62,6 +62,9 @@ def main() -> int:
     require(scope, "4b55928cffbc8a5a3dbf8f489dec791f7d791269", "LICENSE_SCOPE.md")
     require(scope, "not presently covered", "LICENSE_SCOPE.md")
     require(scope, "Public visibility is not permission", "LICENSE_SCOPE.md")
+    require(scope, "not a Competition Program or Competing Team solely because", "LICENSE_SCOPE.md")
+    require(scope, "Unrelated recruiting", "LICENSE_SCOPE.md")
+    require(scope, "This specific interpretation controls", "LICENSE_SCOPE.md")
     require(scope, "qualified counsel", "LICENSE_SCOPE.md")
 
     notice = documents["NOTICE"]
@@ -81,6 +84,8 @@ def main() -> int:
     guide = documents["docs/licensing.md"]
     require(guide, "source-available, not open source", "docs/licensing.md")
     require(guide, "What a public license cannot do", "docs/licensing.md")
+    require(guide, "employer separately sponsors or supplies", "docs/licensing.md")
+    require(guide, "Engineers at that sponsor", "docs/licensing.md")
     require(guide, "Another Formula SAE team runs the simulator", "docs/licensing.md")
 
     release = documents["docs/release.md"]

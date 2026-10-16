@@ -93,7 +93,29 @@ control for that dependency.
 | Engineering data and evidence described in Section 4 | Excluded unless expressly licensed file by file |
 | Third-party material | Governed by its own terms |
 
-## 7. Required review before representing the whole repository as licensed
+## 7. Interpretation for unrelated sponsors, suppliers, and employers
+
+For purposes of Sections 1.6, 1.7, and 3 of LSCRL-1.0, a person or entity is
+not a Competition Program or Competing Team solely because it sponsors,
+supplies, employs someone affiliated with, or has another relationship with a
+Competition Program.
+
+A sponsor, contractor, consultant, vendor, service provider, employer, or its
+personnel are treated as part of a Competing Team only with respect to an act
+performed on behalf of, at the direction of, or for the benefit of that
+Competition Program in connection with Competition Use. Unrelated recruiting,
+hiring review, academic review, security review, or technical due diligence may
+qualify as Evaluation Use under Section 3 even when the evaluator's employer
+separately sponsors or supplies a Competition Program.
+
+For example, a recruiter at a company that sponsors another Formula SAE team
+may evaluate a contributor under Section 3 when the evaluation is independent
+of that sponsorship. The same company may not route Covered Material to its
+engineers, consultants, or sponsored team for Competition Use. This specific
+interpretation controls over any broader reading of the lists in Sections 1.6
+and 1.7.
+
+## 8. Required review before representing the whole repository as licensed
 
 Do not state that the entire repository is licensed under LSCRL-1.0 until all
 of the following are documented:
