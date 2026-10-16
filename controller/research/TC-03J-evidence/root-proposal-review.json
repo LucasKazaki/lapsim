@@ -1,0 +1,22 @@
+{
+  "schema": "enme408.allocator-arm.root-proposal-review.v1",
+  "utc": "2026-10-15T10:21:18.415146+00:00",
+  "proposal_sha256": "fd7a1154581d27ddbdbaf4a94f9d34b8c20b891027063e8fc9b26e748aa55bac",
+  "verdict": "FULL_PROPOSAL_REVIEW_CLEAR_FOR_PROTOCOL_FIRST_IMPLEMENTATION_ONLY",
+  "base": "17715fc698a4bc7b3a7807d0d6f869045fdab5a4",
+  "scope": "Four allocator-only Cortex-M4 objects, hard/softfp twice.31plannedcalls including separately freshly verified fifth objdump tool.",
+  "source_sha256": {
+    "torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+    "torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+    "torque_contract.h": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+  },
+  "conditions": [
+    "Final protocol first commit before new driver/tests. Exact old helper/builders/cohorts/C/policy unchanged.",
+    "Fresh full archive/tree verification and fifth tool manifest/currentfile/ZIPmember verification before any executable.",
+    "Clarify final protocol binary retention language: toolchain executables stay local; whether four generated candidate objects are public evidence or private hashes must be explicit.",
+    "Separate source/test review and explicit root executionGO before any actual toolchain executable; no compile authorized by this receipt.",
+    "Actual object/raw-log/31call accounting independent file-only artifact review before any publication."
+  ],
+  "new_toolchain_executable_calls": 0,
+  "target_execution_authorized": false
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "enme408-clock-owner-protocol/v1",
+  "frozen_before_native_clock_edits": true,
+  "base_commit": "9baeb61468df40a35d541322fd64401af9000b68",
+  "source_owner": "reference/control_pipeline.py: replay_control_pipeline fixed-period clock block",
+  "source_owner_sha256": "edc001a204e4bcf163af23a8b66192ba35b2fc42c37435a68a2af3886aa3370f",
+  "clock_contract_version": 1,
+  "numeric_contract_version": 2,
+  "scope": "Portable host C fixed-period normalized millisecond clock owner, plus composition before the existing final gate. Not a target timer or full controller.",
+  "semantics": [
+    "Configured period is an ordinary integer from 1 through 60000 milliseconds.",
+    "Python timestamp is an ordinary nonnegative integer; bool, float, negative and nonnumeric values are invalid_cycle_timestamp. Python retains its unbounded integer domain.",
+    "C timestamp/previous state domain is uint64 milliseconds with an explicit exact-valid tag. Decoder rejects rather than wraps values outside this domain. This is an explicit representability restriction, not a Python policy change.",
+    "First valid timestamp establishes the anchor at any nonnegative value, even if dt is invalid.",
+    "Duplicate/backward timestamps are nonmonotonic_cycle_timestamp and do not advance the prior anchor.",
+    "A forward gap unequal to the period is cycle_period_mismatch and does advance the anchor to that timestamp.",
+    "Ordinary finite dt must be within absolute 1e-12 seconds of period_ms/1000, with zero relative tolerance. Invalid dt is guard_period_mismatch unless a timestamp fault already owns precedence.",
+    "Valid forward timestamps advance the anchor even when the dt check fails. Restart does not reset the clock anchor.",
+    "Normalized now is the valid source timestamp even for backward/gapped samples; malformed timestamps normalize to absent.",
+    "No timestamp wrapping, clamping, float conversion, wall clock, allocation, IO or scheduler is introduced.",
+    "Invalid C state/policy and null required inputs produce a nonempty fault and zero-initialized outputs. New C clock layout/contract version is explicit; old torque ABI layout is preserved.",
+    "Clock composition replaces the precomputed cycle clock_fault with its own result before the existing final gate; allocation/guard validation retains existing priority. Every held final command must be exact zero."
+  ],
+  "planned_validation": {
+    "seed": 409,
+    "periods_ms": [1, 7, 50, 999, 1000, 60000],
+    "clock_cases": "Cartesian timestamp/previous/period/dt edges, including uint64 extrema, >2^53 exact millisecond values, malformed Python types and nextafter tolerance boundaries; seeded stateful sequences with gaps/backward/restarts/invalid dt.",
+    "oracle": "Extract the Python source clock block without changing behavior; retain a frozen legacy implementation in tests and compare both. Compare C fault, normalized now and exact next clock state in the representable domain.",
+    "gate_composition": "Compare C clock-plus-existing-gate against Python source-pipeline records, including original latch/clock regression sequences; clock faults must inhibit exact-zero final output.",
+    "abi_edges": "All byte tags, invalid period bounds/state, UINT64_MAX subtraction, null pointers, no unsigned wrap, initialized outputs and explicit out-of-domain adapter rejection.",
+    "determinism": "Repeat source-hashed finite compiled experiment with identical results; preserve prior receipts and PR heads.",
+    "review": "Independent practical source review and bounded adversarial probes before draft PR.",
+    "ci": "Run reference regressions and compiled parity on supported Python versions and GCC/Clang, including standalone ASAN/UBSan probe."
+  },
+  "excluded_claims": [
+    "No native allocator, pedal trust/latch, slew policy or complete pipeline port.",
+    "No raw MCU counter wrap normalization, target oscillator drift, scheduler jitter, input freshness/capture provenance or calibrated signal mapping.",
+    "No firmware flash, CAN, motor enable, HIL, WCET/memory budget, controls-team approval or safety certification."
+  ]
+}

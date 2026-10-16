@@ -19,6 +19,7 @@ def test_no_git_rebuild_preserves_handoff_and_hashes(tmp_path, monkeypatch):
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",
         "docs/controller_testing_contract.md", "docs/team_release_contract.md",
+        "controller/reference/native/torque_allocator.c", "controller/import-manifest.json",
     )
     for name in names:
         target = snapshot / name

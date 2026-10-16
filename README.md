@@ -646,3 +646,11 @@ segments and export its complete telemetry, metrics, and dashboard with:
 
 Use `--distance-m`, `--segment-length-m`, and `--output-dir` to change the
 experiment without editing the script.
+
+## Portable controller source
+
+The scoped ENME408 Python/C controller now lives under `controller/`, with
+original Git-blob hashes and immutable historical receipts. Follow
+[the one-repository controller commands](docs/controller_source.md) to verify
+the source import, run reference tests and execute the five-owner native C
+replay. This host replay is separate from a closed-loop plant or STM32 target.

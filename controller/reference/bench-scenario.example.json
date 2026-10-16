@@ -1,0 +1,561 @@
+{
+  "schema": "enme408-control-scenario/v1",
+  "label": "Startup, limits and fault recovery",
+  "provenance": "Synthetic 18-cycle review fixture. No vehicle, CAN, MCU, or sensor capture. Values are scenario assumptions for the proposed 2027-28 car.",
+  "config": {
+    "allocator": {
+      "max_input_age_ms": 50
+    },
+    "guard": {
+      "max_rise_nm_per_s": 100.0,
+      "pedal_overlap_trip_fraction": 0.6,
+      "pedal_clear_fraction": 0.2
+    },
+    "fault": {
+      "valid_samples_to_recover": 2
+    },
+    "period_ms": 50
+  },
+  "samples": [
+    {
+      "allocation": {
+        "now_ms": 0,
+        "input_timestamp_ms": 0,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 50,
+        "input_timestamp_ms": 50,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 100,
+        "input_timestamp_ms": 100,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 150,
+        "input_timestamp_ms": 150,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 200,
+        "input_timestamp_ms": 200,
+        "request_nm": 200.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 250,
+        "input_timestamp_ms": 250,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 300,
+        "input_timestamp_ms": 300,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.8,
+        "brake_active": true,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 350,
+        "input_timestamp_ms": 350,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.1,
+        "brake_active": false,
+        "critical_comms_ok": false,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 400,
+        "input_timestamp_ms": 400,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.1,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 450,
+        "input_timestamp_ms": 450,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 500,
+        "input_timestamp_ms": 500,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 550,
+        "input_timestamp_ms": 550,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": true
+    },
+    {
+      "allocation": {
+        "now_ms": 600,
+        "input_timestamp_ms": 600,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 650,
+        "input_timestamp_ms": 500,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 700,
+        "input_timestamp_ms": 700,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 750,
+        "input_timestamp_ms": 750,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 800,
+        "input_timestamp_ms": 800,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": false
+      },
+      "restart_requested": false
+    },
+    {
+      "allocation": {
+        "now_ms": 850,
+        "input_timestamp_ms": 850,
+        "request_nm": 80.0,
+        "wheel_limits_nm": [
+          30.0,
+          30.0,
+          30.0,
+          30.0
+        ],
+        "wheel_enabled": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "external_interlock": true,
+        "torque_unit": "N*m"
+      },
+      "guard": {
+        "dt_s": 0.05,
+        "accelerator_fraction": 0.3,
+        "brake_active": false,
+        "critical_comms_ok": true,
+        "sensor_agreement_ok": true,
+        "external_interlock": true
+      },
+      "restart_requested": false
+    }
+  ]
+}

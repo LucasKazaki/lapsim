@@ -1,0 +1,25 @@
+{
+  "schema": "enme408.allocator-case-generator-freeze.v1",
+  "status": "repaired_caller_generator_frozen_before_second_native_verification",
+  "seed": 2026101508,
+  "protocol_sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+  "generator_files": {
+    "allocator_parity.py": "3e4140fbadec599a35f39b0c64767be34b9beccc55b9ea8ab59497386416ef6b",
+    "test_allocator_parity.py": "c4fe72ea7cb501d0aeca84565dec6fe07a4d6084a57e16bb6361761d420bd887",
+    "native/torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+    "native/torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+    "native/allocator_sanitizer_probe.c": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495"
+  },
+  "direct_grid_cases": 4608,
+  "random_finite_cases": 8192,
+  "healthy_composed_cycles": 1024,
+  "recovery_composed_cycles": 4096,
+  "notes": [
+    "Whole source bytes freeze generator, ABI, tests and native implementation before first compiled comparison.",
+    "All source-defined epsilon/status quirks remain unchanged; no result-driven tuning.",
+    "Independent review uses separate seed and retained source.",
+    "First native attempt retained exact-zero held output but caught incorrect caller fault-reason precedence. Only the new driver now mirrors control_pipeline.py effective-fault substitution; allocator/native policy and fixture cases unchanged."
+  ],
+  "previous_freeze_commit": "484348124d05a8e180eabfb942e29bef7764dd44",
+  "retained_failed_receipt_sha256": "8e7c29d0dfc06e11622958db4954f6f951c65aabbb924ed425970d43a7c2da50"
+}

@@ -1,0 +1,386 @@
+{
+  "actual_compiler_version_inspection_or_model_calls": 0,
+  "archive_sha256": "9db55e43d5fdb1619692259897bf1e64f61da82a558827aae6928a2ccb39d348",
+  "checks": {
+    "ELF_objects": 4,
+    "ZIP_current_and_manifest_bound_files": 34,
+    "command_and_log_pairs": 26,
+    "identical_repeat_pairs": 2,
+    "old_cohort_objects_unchanged": 12,
+    "toolchain_manifest_files": 48211,
+    "used_headers": 28
+  },
+  "driver_sha256": "64f51787e0c8bfcff20bf423316480414d941df51f603235df1636053c4781b4",
+  "elapsed_seconds": 6.8318689000007,
+  "helper_sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090",
+  "limitations": [
+    "Exact STM32 part, team ABI/toolchain/library/startup, signal mapping and approved resource budgets remain unknown.",
+    "Object sections exclude linked helpers/libraries/startup/layout/runtime storage; unresolved symbols do not establish successful linkage or their runtime/numerical behavior.",
+    "Clang local stack frames exclude caller/callee/helper frames, interrupts/FPU context, scheduler and whole-program bounds.",
+    "Original three-unit experiment remains historical and separately identified; this annex does not silently add a fourth object to it.",
+    "No target runtime parity, continuous-time behavior, timing/deadline/WCET, firmware fit, HIL, CAN, vehicle actuation or safety approval."
+  ],
+  "linked_firmware": false,
+  "objects": [
+    {
+      "arm_tags": {
+        "5": "cortex-m4",
+        "6": 13,
+        "7": 77,
+        "8": 0,
+        "9": 2,
+        "10": 6,
+        "14": 0,
+        "17": 1,
+        "18": 4,
+        "20": 1,
+        "21": 0,
+        "23": 3,
+        "24": 1,
+        "25": 1,
+        "26": 2,
+        "27": 1,
+        "28": 1,
+        "30": 1,
+        "34": 1,
+        "36": 1,
+        "38": 1,
+        "67": "2.09"
+      },
+      "bytes": 6572,
+      "dependencies": 31,
+      "local_stack_records": [
+        {
+          "bytes": 8,
+          "function": "tc_init_command_guard_state",
+          "location": "torque_guard.c:28:tc_init_command_guard_state",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_command_guard_version",
+          "location": "torque_guard.c:52:tc_command_guard_version",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_command_guard_abi_sizeof",
+          "location": "torque_guard.c:53:tc_command_guard_abi_sizeof",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 72,
+          "function": "tc_apply_command_guard",
+          "location": "torque_guard.c:63:tc_apply_command_guard",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "inhibit",
+          "location": "torque_guard.c:47:inhibit",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "set_reason",
+          "location": "torque_guard.c:18:set_reason",
+          "qualifier": "static"
+        }
+      ],
+      "max_local_frame": 72,
+      "path": "repeat-1/hard/torque_guard.o",
+      "sha256": "125aed6d4048d37dbdfc2531c02d77af061b8e65e9acaaf8c79b0f4dd8ceae0f",
+      "sizes": {
+        "bss": 0,
+        "data": 0,
+        "text": 2677,
+        "total": 2677
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__finite",
+        "memset",
+        "tc_contract_reason",
+        "tc_validate_allocation"
+      ]
+    },
+    {
+      "arm_tags": {
+        "5": "cortex-m4",
+        "6": 13,
+        "7": 77,
+        "8": 0,
+        "9": 2,
+        "10": 6,
+        "14": 0,
+        "17": 1,
+        "18": 4,
+        "20": 1,
+        "21": 0,
+        "23": 3,
+        "24": 1,
+        "25": 1,
+        "26": 2,
+        "27": 1,
+        "30": 1,
+        "34": 1,
+        "36": 1,
+        "38": 1,
+        "67": "2.09"
+      },
+      "bytes": 6604,
+      "dependencies": 31,
+      "local_stack_records": [
+        {
+          "bytes": 8,
+          "function": "tc_init_command_guard_state",
+          "location": "torque_guard.c:28:tc_init_command_guard_state",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_command_guard_version",
+          "location": "torque_guard.c:52:tc_command_guard_version",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_command_guard_abi_sizeof",
+          "location": "torque_guard.c:53:tc_command_guard_abi_sizeof",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 72,
+          "function": "tc_apply_command_guard",
+          "location": "torque_guard.c:63:tc_apply_command_guard",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "inhibit",
+          "location": "torque_guard.c:47:inhibit",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "set_reason",
+          "location": "torque_guard.c:18:set_reason",
+          "qualifier": "static"
+        }
+      ],
+      "max_local_frame": 72,
+      "path": "repeat-1/softfp/torque_guard.o",
+      "sha256": "de0c6e8b457f50e1658e8e540200734e9c5c9b8df75695ca701c56f2d8b90bb4",
+      "sizes": {
+        "bss": 0,
+        "data": 0,
+        "text": 2709,
+        "total": 2709
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__finite",
+        "memset",
+        "tc_contract_reason",
+        "tc_validate_allocation"
+      ]
+    },
+    {
+      "arm_tags": {
+        "5": "cortex-m4",
+        "6": 13,
+        "7": 77,
+        "8": 0,
+        "9": 2,
+        "10": 6,
+        "14": 0,
+        "17": 1,
+        "18": 4,
+        "20": 1,
+        "21": 0,
+        "23": 3,
+        "24": 1,
+        "25": 1,
+        "26": 2,
+        "27": 1,
+        "28": 1,
+        "30": 1,
+        "34": 1,
+        "36": 1,
+        "38": 1,
+        "67": "2.09"
+      },
+      "bytes": 6572,
+      "dependencies": 31,
+      "local_stack_records": [
+        {
+          "bytes": 8,
+          "function": "tc_init_command_guard_state",
+          "location": "torque_guard.c:28:tc_init_command_guard_state",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_command_guard_version",
+          "location": "torque_guard.c:52:tc_command_guard_version",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_command_guard_abi_sizeof",
+          "location": "torque_guard.c:53:tc_command_guard_abi_sizeof",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 72,
+          "function": "tc_apply_command_guard",
+          "location": "torque_guard.c:63:tc_apply_command_guard",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "inhibit",
+          "location": "torque_guard.c:47:inhibit",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "set_reason",
+          "location": "torque_guard.c:18:set_reason",
+          "qualifier": "static"
+        }
+      ],
+      "max_local_frame": 72,
+      "path": "repeat-2/hard/torque_guard.o",
+      "sha256": "125aed6d4048d37dbdfc2531c02d77af061b8e65e9acaaf8c79b0f4dd8ceae0f",
+      "sizes": {
+        "bss": 0,
+        "data": 0,
+        "text": 2677,
+        "total": 2677
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__finite",
+        "memset",
+        "tc_contract_reason",
+        "tc_validate_allocation"
+      ]
+    },
+    {
+      "arm_tags": {
+        "5": "cortex-m4",
+        "6": 13,
+        "7": 77,
+        "8": 0,
+        "9": 2,
+        "10": 6,
+        "14": 0,
+        "17": 1,
+        "18": 4,
+        "20": 1,
+        "21": 0,
+        "23": 3,
+        "24": 1,
+        "25": 1,
+        "26": 2,
+        "27": 1,
+        "30": 1,
+        "34": 1,
+        "36": 1,
+        "38": 1,
+        "67": "2.09"
+      },
+      "bytes": 6604,
+      "dependencies": 31,
+      "local_stack_records": [
+        {
+          "bytes": 8,
+          "function": "tc_init_command_guard_state",
+          "location": "torque_guard.c:28:tc_init_command_guard_state",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_command_guard_version",
+          "location": "torque_guard.c:52:tc_command_guard_version",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 0,
+          "function": "tc_command_guard_abi_sizeof",
+          "location": "torque_guard.c:53:tc_command_guard_abi_sizeof",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 72,
+          "function": "tc_apply_command_guard",
+          "location": "torque_guard.c:63:tc_apply_command_guard",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "inhibit",
+          "location": "torque_guard.c:47:inhibit",
+          "qualifier": "static"
+        },
+        {
+          "bytes": 16,
+          "function": "set_reason",
+          "location": "torque_guard.c:18:set_reason",
+          "qualifier": "static"
+        }
+      ],
+      "max_local_frame": 72,
+      "path": "repeat-2/softfp/torque_guard.o",
+      "sha256": "de0c6e8b457f50e1658e8e540200734e9c5c9b8df75695ca701c56f2d8b90bb4",
+      "sizes": {
+        "bss": 0,
+        "data": 0,
+        "text": 2709,
+        "total": 2709
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__finite",
+        "memset",
+        "tc_contract_reason",
+        "tc_validate_allocation"
+      ]
+    }
+  ],
+  "protocol_sha256": "6fd1aa2c1aab66d5fef12ccb46d727e233ecc1d4a531eb21e7148e55ad9b8d20",
+  "receipt_sha256": "b03ac8621d127153d4b0b354d00e9d8a3dd673d8735cd86527be89e47077ceb8",
+  "review_script_sha256": "19add6395a1be6367984363349bee10a60ab0e0dc066368fd34ebd6ddf0026e1",
+  "schema": "enme408.guard-arm-annex-independent-file-review.v1",
+  "scope": [
+    "Read full driver/helper/protocol and nine tests. No source edit or test/tool rerun.",
+    "Independent raw ELF section/symbol/AEABI decoding reconciles all retained row metadata.",
+    "The executed pre-call full-tree verification is source-bound. This independent review reconciles all48211ZIP/tree path sets and ZIP sizes, and rehashes ZIP/current/manifest contents for used tools, headers and licenses; it does not repeat content hashing of unused runtime files.",
+    "All recorded argv/log hashes are reconciled, not treated as authenticated arbitrary external provenance."
+  ],
+  "target_calls": 0,
+  "test_source_sha256": "1825ddf908aafadd6fa4efa78bb750fb41edc74a204da5c21b136ed625c14940",
+  "toolchain_manifest_sha256": "e61db4e336f1727579b6a5581d07feaa859c3c472960187ec52fff794aa7aa0a",
+  "verdict": "No actionable mismatch found in the frozen four-object annex."
+}

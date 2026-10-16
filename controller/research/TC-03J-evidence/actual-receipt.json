@@ -1,0 +1,3865 @@
+{
+  "schema": "enme408-allocator-cortex-m4-annex/v1",
+  "status": "passed",
+  "protocol_sha256": "6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912",
+  "driver_sha256": "132b2fe3ec9d7ffb2b7a8d0efc7b153ce547192c2fea99034ccc855cb8910ce4",
+  "helper_sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090",
+  "baseline_sha256": "beb053e98a5410381bd0b02a8c96d59e39f4ff9c9419f1b7622de79d60806e21",
+  "source_files": {
+    "torque_allocator.c": {
+      "sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+      "bytes": 6677
+    },
+    "torque_allocator.h": {
+      "sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+      "bytes": 1823
+    },
+    "torque_contract.h": {
+      "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "bytes": 3938
+    }
+  },
+  "planned_objects": 4,
+  "planned_commands": 31,
+  "command_slots": [
+    {
+      "slot": 0,
+      "label": "version-clang",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 235,
+      "stdout_observed_sha256": "5253bf2711948e8d49ce32b64fe1946a39bf0fc05e576618ec95f5ad3e4276cc",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-clang.stdout.txt",
+      "stdout_sha256": "5253bf2711948e8d49ce32b64fe1946a39bf0fc05e576618ec95f5ad3e4276cc",
+      "stderr": "logs/version-clang.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 1,
+      "label": "version-llvm-readobj",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0319999999992433,
+      "stdout_observed_bytes": 101,
+      "stdout_observed_sha256": "3f8af3c3b94795d47dcf6db50ee24cc7c87445be73e53af38459599fe07c8271",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-llvm-readobj.stdout.txt",
+      "stdout_sha256": "3f8af3c3b94795d47dcf6db50ee24cc7c87445be73e53af38459599fe07c8271",
+      "stderr": "logs/version-llvm-readobj.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 2,
+      "label": "version-llvm-size",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.031000000002677552,
+      "stdout_observed_bytes": 226,
+      "stdout_observed_sha256": "c5ca086372ff5f6022e36968047bec07534d6a606cad8f924a40a881fa916180",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-llvm-size.stdout.txt",
+      "stdout_sha256": "c5ca086372ff5f6022e36968047bec07534d6a606cad8f924a40a881fa916180",
+      "stderr": "logs/version-llvm-size.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 3,
+      "label": "version-llvm-nm",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 133,
+      "stdout_observed_sha256": "828d1bd5e3fe0e0c87afc32ed08a85e4b2f64032cb3a7c6e789b61a4da10afa6",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-llvm-nm.stdout.txt",
+      "stdout_sha256": "828d1bd5e3fe0e0c87afc32ed08a85e4b2f64032cb3a7c6e789b61a4da10afa6",
+      "stderr": "logs/version-llvm-nm.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 4,
+      "label": "version-llvm-objdump",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.030999999995401595,
+      "stdout_observed_bytes": 449,
+      "stdout_observed_sha256": "e080ab287e5a9ef1d874477b78c0d77c7d05c0e8ce15c4f874d6ef93b48bcde8",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-llvm-objdump.stdout.txt",
+      "stdout_sha256": "e080ab287e5a9ef1d874477b78c0d77c7d05c0e8ce15c4f874d6ef93b48bcde8",
+      "stderr": "logs/version-llvm-objdump.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 5,
+      "label": "multilib-hard",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-print-multi-directory"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 62,
+      "stdout_observed_sha256": "3eef8e35c2edf63d53216f3f13beef6325ddc2b6ec4158435e7374309215c974",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/multilib-hard.stdout.txt",
+      "stdout_sha256": "3eef8e35c2edf63d53216f3f13beef6325ddc2b6ec4158435e7374309215c974",
+      "stderr": "logs/multilib-hard.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 6,
+      "label": "multilib-softfp",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=softfp",
+        "-print-multi-directory"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 62,
+      "stdout_observed_sha256": "7eccd009f7d3a027c6477094c17ec2c90858ee8c2f994aa88379964c7b2f0261",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/multilib-softfp.stdout.txt",
+      "stdout_sha256": "7eccd009f7d3a027c6477094c17ec2c90858ee8c2f994aa88379964c7b2f0261",
+      "stderr": "logs/multilib-softfp.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 7,
+      "label": "compile-1-hard-torque_allocator",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.d",
+        "-c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.09399999999732245,
+      "stdout_observed_bytes": 0,
+      "stdout_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/compile-1-hard-torque_allocator.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-hard-torque_allocator.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 8,
+      "label": "inspect-1-hard-torque_allocator-0",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 18797,
+      "stdout_observed_sha256": "b3baa4b4a4baeb598b2c772043b9c44691f7add707e41ab5b6f699d8dbd233a6",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-0.stdout.txt",
+      "stdout_sha256": "b3baa4b4a4baeb598b2c772043b9c44691f7add707e41ab5b6f699d8dbd233a6",
+      "stderr": "logs/inspect-1-hard-torque_allocator-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 9,
+      "label": "inspect-1-hard-torque_allocator-1",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 203,
+      "stdout_observed_sha256": "1fa51de781c61cb3fe1179b3fd4ca64eaa5d130d03e209e5dcedd9b6adf25783",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-1.stdout.txt",
+      "stdout_sha256": "1fa51de781c61cb3fe1179b3fd4ca64eaa5d130d03e209e5dcedd9b6adf25783",
+      "stderr": "logs/inspect-1-hard-torque_allocator-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 10,
+      "label": "inspect-1-hard-torque_allocator-2",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 1228,
+      "stdout_observed_sha256": "160bc07596ff737e4239e8df849b2dbde5e73bf3f5d770bd6a2ca9551f48f85a",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-2.stdout.txt",
+      "stdout_sha256": "160bc07596ff737e4239e8df849b2dbde5e73bf3f5d770bd6a2ca9551f48f85a",
+      "stderr": "logs/inspect-1-hard-torque_allocator-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 11,
+      "label": "inspect-1-hard-torque_allocator-3",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 274,
+      "stdout_observed_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-3.stdout.txt",
+      "stdout_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr": "logs/inspect-1-hard-torque_allocator-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 12,
+      "label": "inspect-1-hard-torque_allocator-4",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--disassemble",
+        "--reloc",
+        "--triple=thumbv7em-none-eabi",
+        "--mcpu=cortex-m4",
+        "--no-debuginfod",
+        "--disassembler-color=off",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 49810,
+      "stdout_observed_sha256": "116126741ea89bc2c439b3a57f47524ee59a39d7a04618ac3d1e67072a0fe005",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-4.stdout.txt",
+      "stdout_sha256": "116126741ea89bc2c439b3a57f47524ee59a39d7a04618ac3d1e67072a0fe005",
+      "stderr": "logs/inspect-1-hard-torque_allocator-4.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 13,
+      "label": "compile-1-softfp-torque_allocator",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.d",
+        "-c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.07800000000133878,
+      "stdout_observed_bytes": 0,
+      "stdout_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/compile-1-softfp-torque_allocator.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-softfp-torque_allocator.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 14,
+      "label": "inspect-1-softfp-torque_allocator-0",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 18679,
+      "stdout_observed_sha256": "558cb395ce4d9b8921925d796511077fab5226af8010410b545173d51c49f733",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-0.stdout.txt",
+      "stdout_sha256": "558cb395ce4d9b8921925d796511077fab5226af8010410b545173d51c49f733",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 15,
+      "label": "inspect-1-softfp-torque_allocator-1",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 205,
+      "stdout_observed_sha256": "034350e94b66364f75905c91ee14e6be65d5ef90d0a3898ca4e8b6b30afe537e",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-1.stdout.txt",
+      "stdout_sha256": "034350e94b66364f75905c91ee14e6be65d5ef90d0a3898ca4e8b6b30afe537e",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 16,
+      "label": "inspect-1-softfp-torque_allocator-2",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 1230,
+      "stdout_observed_sha256": "026221f906a9ad42fbacc1bbd9df5d9105a626c28e5732ac9f8d9aa3d5b1ca88",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-2.stdout.txt",
+      "stdout_sha256": "026221f906a9ad42fbacc1bbd9df5d9105a626c28e5732ac9f8d9aa3d5b1ca88",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 17,
+      "label": "inspect-1-softfp-torque_allocator-3",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 274,
+      "stdout_observed_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-3.stdout.txt",
+      "stdout_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 18,
+      "label": "inspect-1-softfp-torque_allocator-4",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--disassemble",
+        "--reloc",
+        "--triple=thumbv7em-none-eabi",
+        "--mcpu=cortex-m4",
+        "--no-debuginfod",
+        "--disassembler-color=off",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 50066,
+      "stdout_observed_sha256": "7e51fc0f2b3319545e0423521ae7302d30b425a2d53a8826fee10ee1cb163a4e",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-4.stdout.txt",
+      "stdout_sha256": "7e51fc0f2b3319545e0423521ae7302d30b425a2d53a8826fee10ee1cb163a4e",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-4.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 19,
+      "label": "compile-2-hard-torque_allocator",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.d",
+        "-c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.07800000000133878,
+      "stdout_observed_bytes": 0,
+      "stdout_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/compile-2-hard-torque_allocator.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-hard-torque_allocator.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 20,
+      "label": "inspect-2-hard-torque_allocator-0",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 18797,
+      "stdout_observed_sha256": "d554958990cf1012168f1ae4b28b883dc4f3443c208abdd33464bbe7ad55bfc8",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-0.stdout.txt",
+      "stdout_sha256": "d554958990cf1012168f1ae4b28b883dc4f3443c208abdd33464bbe7ad55bfc8",
+      "stderr": "logs/inspect-2-hard-torque_allocator-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 21,
+      "label": "inspect-2-hard-torque_allocator-1",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 203,
+      "stdout_observed_sha256": "d70ea0ad63950390aaeb6ea04e1b5ac213a6265d2f56f1fdcf0d912b68816cc3",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-1.stdout.txt",
+      "stdout_sha256": "d70ea0ad63950390aaeb6ea04e1b5ac213a6265d2f56f1fdcf0d912b68816cc3",
+      "stderr": "logs/inspect-2-hard-torque_allocator-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 22,
+      "label": "inspect-2-hard-torque_allocator-2",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 1228,
+      "stdout_observed_sha256": "40920f0990f4946860bfec421c64e87e47e7978c523393a63f617f2b88bef31d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-2.stdout.txt",
+      "stdout_sha256": "40920f0990f4946860bfec421c64e87e47e7978c523393a63f617f2b88bef31d",
+      "stderr": "logs/inspect-2-hard-torque_allocator-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 23,
+      "label": "inspect-2-hard-torque_allocator-3",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 274,
+      "stdout_observed_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-3.stdout.txt",
+      "stdout_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr": "logs/inspect-2-hard-torque_allocator-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 24,
+      "label": "inspect-2-hard-torque_allocator-4",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--disassemble",
+        "--reloc",
+        "--triple=thumbv7em-none-eabi",
+        "--mcpu=cortex-m4",
+        "--no-debuginfod",
+        "--disassembler-color=off",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 49810,
+      "stdout_observed_sha256": "4a213285cf9070456dfb964774263b0dd232f32235d6e3b952b678dba747a5d5",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-4.stdout.txt",
+      "stdout_sha256": "4a213285cf9070456dfb964774263b0dd232f32235d6e3b952b678dba747a5d5",
+      "stderr": "logs/inspect-2-hard-torque_allocator-4.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 25,
+      "label": "compile-2-softfp-torque_allocator",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.d",
+        "-c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0940000000045984,
+      "stdout_observed_bytes": 0,
+      "stdout_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/compile-2-softfp-torque_allocator.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-softfp-torque_allocator.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 26,
+      "label": "inspect-2-softfp-torque_allocator-0",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 18679,
+      "stdout_observed_sha256": "a1b64df43c7f51d3fbd14ab4acd04ecbd7391e4e6b2f569b89075615de0e9431",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-0.stdout.txt",
+      "stdout_sha256": "a1b64df43c7f51d3fbd14ab4acd04ecbd7391e4e6b2f569b89075615de0e9431",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 27,
+      "label": "inspect-2-softfp-torque_allocator-1",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 205,
+      "stdout_observed_sha256": "91050ad1e667ef732d59fab98354ef3b5175c1d6d374ced782819d43dc25bd31",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-1.stdout.txt",
+      "stdout_sha256": "91050ad1e667ef732d59fab98354ef3b5175c1d6d374ced782819d43dc25bd31",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 28,
+      "label": "inspect-2-softfp-torque_allocator-2",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 1230,
+      "stdout_observed_sha256": "359a00302e5026335ec03a44201cbf8dab342b63a93fbcd5ce654e87c379827a",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-2.stdout.txt",
+      "stdout_sha256": "359a00302e5026335ec03a44201cbf8dab342b63a93fbcd5ce654e87c379827a",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 29,
+      "label": "inspect-2-softfp-torque_allocator-3",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 274,
+      "stdout_observed_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-3.stdout.txt",
+      "stdout_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 30,
+      "label": "inspect-2-softfp-torque_allocator-4",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--disassemble",
+        "--reloc",
+        "--triple=thumbv7em-none-eabi",
+        "--mcpu=cortex-m4",
+        "--no-debuginfod",
+        "--disassembler-color=off",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 50066,
+      "stdout_observed_sha256": "6940ffc953e0d676a1e423987c3ae7cd872ebc0ac15519b452c5eac2756b5e40",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-4.stdout.txt",
+      "stdout_sha256": "6940ffc953e0d676a1e423987c3ae7cd872ebc0ac15519b452c5eac2756b5e40",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-4.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "commands": [
+    {
+      "slot": 0,
+      "label": "version-clang",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 235,
+      "stdout_observed_sha256": "5253bf2711948e8d49ce32b64fe1946a39bf0fc05e576618ec95f5ad3e4276cc",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-clang.stdout.txt",
+      "stdout_sha256": "5253bf2711948e8d49ce32b64fe1946a39bf0fc05e576618ec95f5ad3e4276cc",
+      "stderr": "logs/version-clang.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 1,
+      "label": "version-llvm-readobj",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0319999999992433,
+      "stdout_observed_bytes": 101,
+      "stdout_observed_sha256": "3f8af3c3b94795d47dcf6db50ee24cc7c87445be73e53af38459599fe07c8271",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-llvm-readobj.stdout.txt",
+      "stdout_sha256": "3f8af3c3b94795d47dcf6db50ee24cc7c87445be73e53af38459599fe07c8271",
+      "stderr": "logs/version-llvm-readobj.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 2,
+      "label": "version-llvm-size",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.031000000002677552,
+      "stdout_observed_bytes": 226,
+      "stdout_observed_sha256": "c5ca086372ff5f6022e36968047bec07534d6a606cad8f924a40a881fa916180",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-llvm-size.stdout.txt",
+      "stdout_sha256": "c5ca086372ff5f6022e36968047bec07534d6a606cad8f924a40a881fa916180",
+      "stderr": "logs/version-llvm-size.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 3,
+      "label": "version-llvm-nm",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 133,
+      "stdout_observed_sha256": "828d1bd5e3fe0e0c87afc32ed08a85e4b2f64032cb3a7c6e789b61a4da10afa6",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-llvm-nm.stdout.txt",
+      "stdout_sha256": "828d1bd5e3fe0e0c87afc32ed08a85e4b2f64032cb3a7c6e789b61a4da10afa6",
+      "stderr": "logs/version-llvm-nm.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 4,
+      "label": "version-llvm-objdump",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.030999999995401595,
+      "stdout_observed_bytes": 449,
+      "stdout_observed_sha256": "e080ab287e5a9ef1d874477b78c0d77c7d05c0e8ce15c4f874d6ef93b48bcde8",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/version-llvm-objdump.stdout.txt",
+      "stdout_sha256": "e080ab287e5a9ef1d874477b78c0d77c7d05c0e8ce15c4f874d6ef93b48bcde8",
+      "stderr": "logs/version-llvm-objdump.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 5,
+      "label": "multilib-hard",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-print-multi-directory"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 62,
+      "stdout_observed_sha256": "3eef8e35c2edf63d53216f3f13beef6325ddc2b6ec4158435e7374309215c974",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/multilib-hard.stdout.txt",
+      "stdout_sha256": "3eef8e35c2edf63d53216f3f13beef6325ddc2b6ec4158435e7374309215c974",
+      "stderr": "logs/multilib-hard.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 6,
+      "label": "multilib-softfp",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=softfp",
+        "-print-multi-directory"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 62,
+      "stdout_observed_sha256": "7eccd009f7d3a027c6477094c17ec2c90858ee8c2f994aa88379964c7b2f0261",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/multilib-softfp.stdout.txt",
+      "stdout_sha256": "7eccd009f7d3a027c6477094c17ec2c90858ee8c2f994aa88379964c7b2f0261",
+      "stderr": "logs/multilib-softfp.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 7,
+      "label": "compile-1-hard-torque_allocator",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.d",
+        "-c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.09399999999732245,
+      "stdout_observed_bytes": 0,
+      "stdout_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/compile-1-hard-torque_allocator.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-hard-torque_allocator.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 8,
+      "label": "inspect-1-hard-torque_allocator-0",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 18797,
+      "stdout_observed_sha256": "b3baa4b4a4baeb598b2c772043b9c44691f7add707e41ab5b6f699d8dbd233a6",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-0.stdout.txt",
+      "stdout_sha256": "b3baa4b4a4baeb598b2c772043b9c44691f7add707e41ab5b6f699d8dbd233a6",
+      "stderr": "logs/inspect-1-hard-torque_allocator-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 9,
+      "label": "inspect-1-hard-torque_allocator-1",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 203,
+      "stdout_observed_sha256": "1fa51de781c61cb3fe1179b3fd4ca64eaa5d130d03e209e5dcedd9b6adf25783",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-1.stdout.txt",
+      "stdout_sha256": "1fa51de781c61cb3fe1179b3fd4ca64eaa5d130d03e209e5dcedd9b6adf25783",
+      "stderr": "logs/inspect-1-hard-torque_allocator-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 10,
+      "label": "inspect-1-hard-torque_allocator-2",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 1228,
+      "stdout_observed_sha256": "160bc07596ff737e4239e8df849b2dbde5e73bf3f5d770bd6a2ca9551f48f85a",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-2.stdout.txt",
+      "stdout_sha256": "160bc07596ff737e4239e8df849b2dbde5e73bf3f5d770bd6a2ca9551f48f85a",
+      "stderr": "logs/inspect-1-hard-torque_allocator-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 11,
+      "label": "inspect-1-hard-torque_allocator-3",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 274,
+      "stdout_observed_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-3.stdout.txt",
+      "stdout_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr": "logs/inspect-1-hard-torque_allocator-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 12,
+      "label": "inspect-1-hard-torque_allocator-4",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--disassemble",
+        "--reloc",
+        "--triple=thumbv7em-none-eabi",
+        "--mcpu=cortex-m4",
+        "--no-debuginfod",
+        "--disassembler-color=off",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 49810,
+      "stdout_observed_sha256": "116126741ea89bc2c439b3a57f47524ee59a39d7a04618ac3d1e67072a0fe005",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-hard-torque_allocator-4.stdout.txt",
+      "stdout_sha256": "116126741ea89bc2c439b3a57f47524ee59a39d7a04618ac3d1e67072a0fe005",
+      "stderr": "logs/inspect-1-hard-torque_allocator-4.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 13,
+      "label": "compile-1-softfp-torque_allocator",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.d",
+        "-c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.07800000000133878,
+      "stdout_observed_bytes": 0,
+      "stdout_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/compile-1-softfp-torque_allocator.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-softfp-torque_allocator.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 14,
+      "label": "inspect-1-softfp-torque_allocator-0",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 18679,
+      "stdout_observed_sha256": "558cb395ce4d9b8921925d796511077fab5226af8010410b545173d51c49f733",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-0.stdout.txt",
+      "stdout_sha256": "558cb395ce4d9b8921925d796511077fab5226af8010410b545173d51c49f733",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 15,
+      "label": "inspect-1-softfp-torque_allocator-1",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 205,
+      "stdout_observed_sha256": "034350e94b66364f75905c91ee14e6be65d5ef90d0a3898ca4e8b6b30afe537e",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-1.stdout.txt",
+      "stdout_sha256": "034350e94b66364f75905c91ee14e6be65d5ef90d0a3898ca4e8b6b30afe537e",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 16,
+      "label": "inspect-1-softfp-torque_allocator-2",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 1230,
+      "stdout_observed_sha256": "026221f906a9ad42fbacc1bbd9df5d9105a626c28e5732ac9f8d9aa3d5b1ca88",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-2.stdout.txt",
+      "stdout_sha256": "026221f906a9ad42fbacc1bbd9df5d9105a626c28e5732ac9f8d9aa3d5b1ca88",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 17,
+      "label": "inspect-1-softfp-torque_allocator-3",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 274,
+      "stdout_observed_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-3.stdout.txt",
+      "stdout_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 18,
+      "label": "inspect-1-softfp-torque_allocator-4",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--disassemble",
+        "--reloc",
+        "--triple=thumbv7em-none-eabi",
+        "--mcpu=cortex-m4",
+        "--no-debuginfod",
+        "--disassembler-color=off",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-1\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 50066,
+      "stdout_observed_sha256": "7e51fc0f2b3319545e0423521ae7302d30b425a2d53a8826fee10ee1cb163a4e",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-1-softfp-torque_allocator-4.stdout.txt",
+      "stdout_sha256": "7e51fc0f2b3319545e0423521ae7302d30b425a2d53a8826fee10ee1cb163a4e",
+      "stderr": "logs/inspect-1-softfp-torque_allocator-4.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 19,
+      "label": "compile-2-hard-torque_allocator",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.d",
+        "-c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.07800000000133878,
+      "stdout_observed_bytes": 0,
+      "stdout_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/compile-2-hard-torque_allocator.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-hard-torque_allocator.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 20,
+      "label": "inspect-2-hard-torque_allocator-0",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 18797,
+      "stdout_observed_sha256": "d554958990cf1012168f1ae4b28b883dc4f3443c208abdd33464bbe7ad55bfc8",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-0.stdout.txt",
+      "stdout_sha256": "d554958990cf1012168f1ae4b28b883dc4f3443c208abdd33464bbe7ad55bfc8",
+      "stderr": "logs/inspect-2-hard-torque_allocator-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 21,
+      "label": "inspect-2-hard-torque_allocator-1",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 203,
+      "stdout_observed_sha256": "d70ea0ad63950390aaeb6ea04e1b5ac213a6265d2f56f1fdcf0d912b68816cc3",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-1.stdout.txt",
+      "stdout_sha256": "d70ea0ad63950390aaeb6ea04e1b5ac213a6265d2f56f1fdcf0d912b68816cc3",
+      "stderr": "logs/inspect-2-hard-torque_allocator-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 22,
+      "label": "inspect-2-hard-torque_allocator-2",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 1228,
+      "stdout_observed_sha256": "40920f0990f4946860bfec421c64e87e47e7978c523393a63f617f2b88bef31d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-2.stdout.txt",
+      "stdout_sha256": "40920f0990f4946860bfec421c64e87e47e7978c523393a63f617f2b88bef31d",
+      "stderr": "logs/inspect-2-hard-torque_allocator-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 23,
+      "label": "inspect-2-hard-torque_allocator-3",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 274,
+      "stdout_observed_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-3.stdout.txt",
+      "stdout_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr": "logs/inspect-2-hard-torque_allocator-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 24,
+      "label": "inspect-2-hard-torque_allocator-4",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--disassemble",
+        "--reloc",
+        "--triple=thumbv7em-none-eabi",
+        "--mcpu=cortex-m4",
+        "--no-debuginfod",
+        "--disassembler-color=off",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\hard\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 49810,
+      "stdout_observed_sha256": "4a213285cf9070456dfb964774263b0dd232f32235d6e3b952b678dba747a5d5",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-hard-torque_allocator-4.stdout.txt",
+      "stdout_sha256": "4a213285cf9070456dfb964774263b0dd232f32235d6e3b952b678dba747a5d5",
+      "stderr": "logs/inspect-2-hard-torque_allocator-4.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 25,
+      "label": "compile-2-softfp-torque_allocator",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.d",
+        "-c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0940000000045984,
+      "stdout_observed_bytes": 0,
+      "stdout_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/compile-2-softfp-torque_allocator.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-softfp-torque_allocator.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 26,
+      "label": "inspect-2-softfp-torque_allocator-0",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 18679,
+      "stdout_observed_sha256": "a1b64df43c7f51d3fbd14ab4acd04ecbd7391e4e6b2f569b89075615de0e9431",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-0.stdout.txt",
+      "stdout_sha256": "a1b64df43c7f51d3fbd14ab4acd04ecbd7391e4e6b2f569b89075615de0e9431",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 27,
+      "label": "inspect-2-softfp-torque_allocator-1",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout_observed_bytes": 205,
+      "stdout_observed_sha256": "91050ad1e667ef732d59fab98354ef3b5175c1d6d374ced782819d43dc25bd31",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-1.stdout.txt",
+      "stdout_sha256": "91050ad1e667ef732d59fab98354ef3b5175c1d6d374ced782819d43dc25bd31",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 28,
+      "label": "inspect-2-softfp-torque_allocator-2",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout_observed_bytes": 1230,
+      "stdout_observed_sha256": "359a00302e5026335ec03a44201cbf8dab342b63a93fbcd5ce654e87c379827a",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-2.stdout.txt",
+      "stdout_sha256": "359a00302e5026335ec03a44201cbf8dab342b63a93fbcd5ce654e87c379827a",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 29,
+      "label": "inspect-2-softfp-torque_allocator-3",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout_observed_bytes": 274,
+      "stdout_observed_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-3.stdout.txt",
+      "stdout_sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "slot": 30,
+      "label": "inspect-2-softfp-torque_allocator-4",
+      "status": "completed",
+      "launch_state": "confirmed_return",
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+        "--disassemble",
+        "--reloc",
+        "--triple=thumbv7em-none-eabi",
+        "--mcpu=cortex-m4",
+        "--no-debuginfod",
+        "--disassembler-color=off",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\repeat-2\\softfp\\torque_allocator.o"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-allocator-cortex-m4-v1\\native",
+      "artifact_status": "written",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout_observed_bytes": 50066,
+      "stdout_observed_sha256": "6940ffc953e0d676a1e423987c3ae7cd872ebc0ac15519b452c5eac2756b5e40",
+      "stderr_observed_bytes": 0,
+      "stderr_observed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "logs/inspect-2-softfp-torque_allocator-4.stdout.txt",
+      "stdout_sha256": "6940ffc953e0d676a1e423987c3ae7cd872ebc0ac15519b452c5eac2756b5e40",
+      "stderr": "logs/inspect-2-softfp-torque_allocator-4.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "objects": [
+    {
+      "repeat": 1,
+      "abi": "hard",
+      "unit": "torque_allocator",
+      "status": "inspected",
+      "path": "repeat-1/hard/torque_allocator.o",
+      "compile_slot": 7,
+      "inspection_slots": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "bytes": 6432,
+      "public_definitions": [
+        "tc_allocator_version",
+        "tc_allocator_abi_sizeof",
+        "tc_allocate_propulsive_torque"
+      ],
+      "berkeley_size": {
+        "text": 2965,
+        "data": 0,
+        "bss": 0,
+        "total": 2965
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "disassembly": {
+        "public_labels": [
+          "tc_allocator_version",
+          "tc_allocator_abi_sizeof",
+          "tc_allocate_propulsive_torque"
+        ],
+        "unknown_instructions": false,
+        "scope": "Unexecuted executable-section listing/relocations; no cycle/WCET or runtime-parity inference"
+      },
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 670
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_allocator_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocator_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocate_propulsive_torque",
+            "type": 1,
+            "flags": 6,
+            "bytes": 2104
+          },
+          {
+            "name": ".rel.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 744
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 260
+          },
+          {
+            "name": ".rel.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 311
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 752
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/hard/torque_allocator.d",
+        "sha256": "f05a9be7a5b783352e92edee685819d1042bce2f17d30e0b8b36d3d68e8ab6a4"
+      },
+      "dependencies": [
+        {
+          "owner": "native_snapshot",
+          "path": "torque_allocator.c",
+          "sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_allocator.h",
+          "sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_contract.h",
+          "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stddef.h",
+          "sha256": "9245af60f3017ee5b637ea78471020bd312d5cbe33ebdb75ab2d1aee3c8645aa"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_header_macro.h",
+          "sha256": "382ca526b3c02543ef14bc7d5e66dff4d7d5ed6c7a8bdfe41c074b7b2c679054"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_ptrdiff_t.h",
+          "sha256": "081e8da51380e3b0052c665fa384add46326249669b535f0b1b638f925f6ff66"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_size_t.h",
+          "sha256": "48229bf33855a1972ca1b344d9900ceff2384c8811c4a294b85afb2fa7c20067"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wchar_t.h",
+          "sha256": "a4c5be18087bf273f60e40189c3386b0c63ead39c1bb56080e20ada5cc9a8aa6"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_null.h",
+          "sha256": "d26f5a5c37e9de305374094d696351e49e36b0373ded4bebffd1ab17efdabb7c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_max_align_t.h",
+          "sha256": "56e3736aac61bd5d23eabf09792623866f8b350039cd65932b8f66a901709f2c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_offsetof.h",
+          "sha256": "48c1114831de8119d6cf28319cf5f7c16178fa841f1a929a181b50ace0282a98"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stdint.h",
+          "sha256": "fbc158f94b53cc98e6c6d566b6751c26e59385dab4e3d45520677bf0847a8653"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+          "sha256": "fcd98cee81331da6aea2cc193c783e7cb8c99113bba9f6f5c13e5eb903c2421c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/float.h",
+          "sha256": "cf41e012eebe6c12ade76a0a888207675cfd38796c47a69821d44bbb90a530ca"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_header_macro.h",
+          "sha256": "05902d174e83391194969d4adc4edb36678fae092e305f7024f5c095bc74b6e8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_float.h",
+          "sha256": "79ed3248742ce32bad1051acd38db5ce9edef70cb8b76e8231e802d09773e6c3"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/math.h",
+          "sha256": "ef5703641e440639526935783c779822844f623c512f94ceecb23e72362aa328"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+          "sha256": "440cf4da4aea5622411567fc9ded390eb271bc14a9769edc741e945847f356ac"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+          "sha256": "b1df7e11edc2015cd4ed56665fef61ee8058114f76e6d71572b4dc989aa51135"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+          "sha256": "b8bf6f34e14dbb59b1e10ec0844f5be7a6346261f0baab9372ad9ae6e3a6b1c7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+          "sha256": "3505698cda939c5d472af4cd3b020061321c55f4e18fae4e61acc91accf9aabb"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+          "sha256": "3a8e303eabc24154259b49ec2e9a9f484df3f52af589bb265c9a975769c90a3d"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+          "sha256": "3cf06859b619eb64d2d57088e25f73a8883457ae01cb46181b61d5440db8b5b8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+          "sha256": "8f2dd84ae10f1a471a895a0ee571f6e9f3d77595f91bcb0385b9719dfc800bd8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/string.h",
+          "sha256": "14b8991af70a368eb3e57ab897999f33ff9134c3838c659ecbce129e1d8f9ba5"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+          "sha256": "ddf8dfcb860f53719732d5e954af185757985d489a20df8d202f272a1c8fee41"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/strings.h",
+          "sha256": "c7c53dea6165f1b3ec938c56e10a3fa5d52631e442d88a08c39c7915d2393324"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+          "sha256": "0851fd0453c47e96ac051652df82148e05afafbfb4d2c97bf7d11924a3224202"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wint_t.h",
+          "sha256": "c11551356296bf075f5c28595fa064db4a4fe748e1b42e3316a994d39bfa857b"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+          "sha256": "c56ad9a6339e8580a3d4e1fe5ac527a18bfb7d18d7d88bb64666db935d8427fd"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+          "sha256": "449bfbcd321cc07e1806dfe3bb9e923d4e97a5d07f1fb07d12e8224ae97542e7"
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "abi": "softfp",
+      "unit": "torque_allocator",
+      "status": "inspected",
+      "path": "repeat-1/softfp/torque_allocator.o",
+      "compile_slot": 13,
+      "inspection_slots": [
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "bytes": 6456,
+      "public_definitions": [
+        "tc_allocator_version",
+        "tc_allocator_abi_sizeof",
+        "tc_allocate_propulsive_torque"
+      ],
+      "berkeley_size": {
+        "text": 2993,
+        "data": 0,
+        "bss": 0,
+        "total": 2993
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "disassembly": {
+        "public_labels": [
+          "tc_allocator_version",
+          "tc_allocator_abi_sizeof",
+          "tc_allocate_propulsive_torque"
+        ],
+        "unknown_instructions": false,
+        "scope": "Unexecuted executable-section listing/relocations; no cycle/WCET or runtime-parity inference"
+      },
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 670
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_allocator_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocator_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocate_propulsive_torque",
+            "type": 1,
+            "flags": 6,
+            "bytes": 2128
+          },
+          {
+            "name": ".rel.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 744
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 264
+          },
+          {
+            "name": ".rel.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 311
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 752
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/softfp/torque_allocator.d",
+        "sha256": "45c57627419a1034daf1cfa8b7b787d025fa663f132fd4fef10967e59dc15bfc"
+      },
+      "dependencies": [
+        {
+          "owner": "native_snapshot",
+          "path": "torque_allocator.c",
+          "sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_allocator.h",
+          "sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_contract.h",
+          "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stddef.h",
+          "sha256": "9245af60f3017ee5b637ea78471020bd312d5cbe33ebdb75ab2d1aee3c8645aa"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_header_macro.h",
+          "sha256": "382ca526b3c02543ef14bc7d5e66dff4d7d5ed6c7a8bdfe41c074b7b2c679054"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_ptrdiff_t.h",
+          "sha256": "081e8da51380e3b0052c665fa384add46326249669b535f0b1b638f925f6ff66"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_size_t.h",
+          "sha256": "48229bf33855a1972ca1b344d9900ceff2384c8811c4a294b85afb2fa7c20067"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wchar_t.h",
+          "sha256": "a4c5be18087bf273f60e40189c3386b0c63ead39c1bb56080e20ada5cc9a8aa6"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_null.h",
+          "sha256": "d26f5a5c37e9de305374094d696351e49e36b0373ded4bebffd1ab17efdabb7c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_max_align_t.h",
+          "sha256": "56e3736aac61bd5d23eabf09792623866f8b350039cd65932b8f66a901709f2c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_offsetof.h",
+          "sha256": "48c1114831de8119d6cf28319cf5f7c16178fa841f1a929a181b50ace0282a98"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stdint.h",
+          "sha256": "fbc158f94b53cc98e6c6d566b6751c26e59385dab4e3d45520677bf0847a8653"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+          "sha256": "fcd98cee81331da6aea2cc193c783e7cb8c99113bba9f6f5c13e5eb903c2421c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/float.h",
+          "sha256": "cf41e012eebe6c12ade76a0a888207675cfd38796c47a69821d44bbb90a530ca"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_header_macro.h",
+          "sha256": "05902d174e83391194969d4adc4edb36678fae092e305f7024f5c095bc74b6e8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_float.h",
+          "sha256": "79ed3248742ce32bad1051acd38db5ce9edef70cb8b76e8231e802d09773e6c3"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/math.h",
+          "sha256": "ef5703641e440639526935783c779822844f623c512f94ceecb23e72362aa328"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+          "sha256": "440cf4da4aea5622411567fc9ded390eb271bc14a9769edc741e945847f356ac"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+          "sha256": "b1df7e11edc2015cd4ed56665fef61ee8058114f76e6d71572b4dc989aa51135"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+          "sha256": "b8bf6f34e14dbb59b1e10ec0844f5be7a6346261f0baab9372ad9ae6e3a6b1c7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+          "sha256": "3505698cda939c5d472af4cd3b020061321c55f4e18fae4e61acc91accf9aabb"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+          "sha256": "3a8e303eabc24154259b49ec2e9a9f484df3f52af589bb265c9a975769c90a3d"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+          "sha256": "3cf06859b619eb64d2d57088e25f73a8883457ae01cb46181b61d5440db8b5b8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+          "sha256": "8f2dd84ae10f1a471a895a0ee571f6e9f3d77595f91bcb0385b9719dfc800bd8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/string.h",
+          "sha256": "14b8991af70a368eb3e57ab897999f33ff9134c3838c659ecbce129e1d8f9ba5"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+          "sha256": "ddf8dfcb860f53719732d5e954af185757985d489a20df8d202f272a1c8fee41"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/strings.h",
+          "sha256": "c7c53dea6165f1b3ec938c56e10a3fa5d52631e442d88a08c39c7915d2393324"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+          "sha256": "0851fd0453c47e96ac051652df82148e05afafbfb4d2c97bf7d11924a3224202"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wint_t.h",
+          "sha256": "c11551356296bf075f5c28595fa064db4a4fe748e1b42e3316a994d39bfa857b"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+          "sha256": "c56ad9a6339e8580a3d4e1fe5ac527a18bfb7d18d7d88bb64666db935d8427fd"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+          "sha256": "449bfbcd321cc07e1806dfe3bb9e923d4e97a5d07f1fb07d12e8224ae97542e7"
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "abi": "hard",
+      "unit": "torque_allocator",
+      "status": "inspected",
+      "path": "repeat-2/hard/torque_allocator.o",
+      "compile_slot": 19,
+      "inspection_slots": [
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "bytes": 6432,
+      "public_definitions": [
+        "tc_allocator_version",
+        "tc_allocator_abi_sizeof",
+        "tc_allocate_propulsive_torque"
+      ],
+      "berkeley_size": {
+        "text": 2965,
+        "data": 0,
+        "bss": 0,
+        "total": 2965
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "disassembly": {
+        "public_labels": [
+          "tc_allocator_version",
+          "tc_allocator_abi_sizeof",
+          "tc_allocate_propulsive_torque"
+        ],
+        "unknown_instructions": false,
+        "scope": "Unexecuted executable-section listing/relocations; no cycle/WCET or runtime-parity inference"
+      },
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 670
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_allocator_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocator_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocate_propulsive_torque",
+            "type": 1,
+            "flags": 6,
+            "bytes": 2104
+          },
+          {
+            "name": ".rel.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 744
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 260
+          },
+          {
+            "name": ".rel.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 311
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 752
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/hard/torque_allocator.d",
+        "sha256": "0c0fd1318549574aab840c45263b768fd522978777cf895997846aec1f515b69"
+      },
+      "dependencies": [
+        {
+          "owner": "native_snapshot",
+          "path": "torque_allocator.c",
+          "sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_allocator.h",
+          "sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_contract.h",
+          "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stddef.h",
+          "sha256": "9245af60f3017ee5b637ea78471020bd312d5cbe33ebdb75ab2d1aee3c8645aa"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_header_macro.h",
+          "sha256": "382ca526b3c02543ef14bc7d5e66dff4d7d5ed6c7a8bdfe41c074b7b2c679054"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_ptrdiff_t.h",
+          "sha256": "081e8da51380e3b0052c665fa384add46326249669b535f0b1b638f925f6ff66"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_size_t.h",
+          "sha256": "48229bf33855a1972ca1b344d9900ceff2384c8811c4a294b85afb2fa7c20067"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wchar_t.h",
+          "sha256": "a4c5be18087bf273f60e40189c3386b0c63ead39c1bb56080e20ada5cc9a8aa6"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_null.h",
+          "sha256": "d26f5a5c37e9de305374094d696351e49e36b0373ded4bebffd1ab17efdabb7c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_max_align_t.h",
+          "sha256": "56e3736aac61bd5d23eabf09792623866f8b350039cd65932b8f66a901709f2c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_offsetof.h",
+          "sha256": "48c1114831de8119d6cf28319cf5f7c16178fa841f1a929a181b50ace0282a98"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stdint.h",
+          "sha256": "fbc158f94b53cc98e6c6d566b6751c26e59385dab4e3d45520677bf0847a8653"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+          "sha256": "fcd98cee81331da6aea2cc193c783e7cb8c99113bba9f6f5c13e5eb903c2421c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/float.h",
+          "sha256": "cf41e012eebe6c12ade76a0a888207675cfd38796c47a69821d44bbb90a530ca"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_header_macro.h",
+          "sha256": "05902d174e83391194969d4adc4edb36678fae092e305f7024f5c095bc74b6e8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_float.h",
+          "sha256": "79ed3248742ce32bad1051acd38db5ce9edef70cb8b76e8231e802d09773e6c3"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/math.h",
+          "sha256": "ef5703641e440639526935783c779822844f623c512f94ceecb23e72362aa328"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+          "sha256": "440cf4da4aea5622411567fc9ded390eb271bc14a9769edc741e945847f356ac"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+          "sha256": "b1df7e11edc2015cd4ed56665fef61ee8058114f76e6d71572b4dc989aa51135"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+          "sha256": "b8bf6f34e14dbb59b1e10ec0844f5be7a6346261f0baab9372ad9ae6e3a6b1c7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+          "sha256": "3505698cda939c5d472af4cd3b020061321c55f4e18fae4e61acc91accf9aabb"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+          "sha256": "3a8e303eabc24154259b49ec2e9a9f484df3f52af589bb265c9a975769c90a3d"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+          "sha256": "3cf06859b619eb64d2d57088e25f73a8883457ae01cb46181b61d5440db8b5b8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+          "sha256": "8f2dd84ae10f1a471a895a0ee571f6e9f3d77595f91bcb0385b9719dfc800bd8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/string.h",
+          "sha256": "14b8991af70a368eb3e57ab897999f33ff9134c3838c659ecbce129e1d8f9ba5"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+          "sha256": "ddf8dfcb860f53719732d5e954af185757985d489a20df8d202f272a1c8fee41"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/strings.h",
+          "sha256": "c7c53dea6165f1b3ec938c56e10a3fa5d52631e442d88a08c39c7915d2393324"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+          "sha256": "0851fd0453c47e96ac051652df82148e05afafbfb4d2c97bf7d11924a3224202"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wint_t.h",
+          "sha256": "c11551356296bf075f5c28595fa064db4a4fe748e1b42e3316a994d39bfa857b"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+          "sha256": "c56ad9a6339e8580a3d4e1fe5ac527a18bfb7d18d7d88bb64666db935d8427fd"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+          "sha256": "449bfbcd321cc07e1806dfe3bb9e923d4e97a5d07f1fb07d12e8224ae97542e7"
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "abi": "softfp",
+      "unit": "torque_allocator",
+      "status": "inspected",
+      "path": "repeat-2/softfp/torque_allocator.o",
+      "compile_slot": 25,
+      "inspection_slots": [
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "bytes": 6456,
+      "public_definitions": [
+        "tc_allocator_version",
+        "tc_allocator_abi_sizeof",
+        "tc_allocate_propulsive_torque"
+      ],
+      "berkeley_size": {
+        "text": 2993,
+        "data": 0,
+        "bss": 0,
+        "total": 2993
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "disassembly": {
+        "public_labels": [
+          "tc_allocator_version",
+          "tc_allocator_abi_sizeof",
+          "tc_allocate_propulsive_torque"
+        ],
+        "unknown_instructions": false,
+        "scope": "Unexecuted executable-section listing/relocations; no cycle/WCET or runtime-parity inference"
+      },
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 670
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_allocator_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocator_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocator_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_allocate_propulsive_torque",
+            "type": 1,
+            "flags": 6,
+            "bytes": 2128
+          },
+          {
+            "name": ".rel.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 744
+          },
+          {
+            "name": ".ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_allocate_propulsive_torque",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.set_fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 228
+          },
+          {
+            "name": ".rel.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.set_fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.set_fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fault",
+            "type": 1,
+            "flags": 6,
+            "bytes": 264
+          },
+          {
+            "name": ".rel.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.fault",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fault",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 311
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 752
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/softfp/torque_allocator.d",
+        "sha256": "0d0c445175e6f9fa49782b06766310feafa1132baa29ae62208dfa36ff3d0b79"
+      },
+      "dependencies": [
+        {
+          "owner": "native_snapshot",
+          "path": "torque_allocator.c",
+          "sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_allocator.h",
+          "sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee"
+        },
+        {
+          "owner": "native_snapshot",
+          "path": "torque_contract.h",
+          "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stddef.h",
+          "sha256": "9245af60f3017ee5b637ea78471020bd312d5cbe33ebdb75ab2d1aee3c8645aa"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_header_macro.h",
+          "sha256": "382ca526b3c02543ef14bc7d5e66dff4d7d5ed6c7a8bdfe41c074b7b2c679054"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_ptrdiff_t.h",
+          "sha256": "081e8da51380e3b0052c665fa384add46326249669b535f0b1b638f925f6ff66"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_size_t.h",
+          "sha256": "48229bf33855a1972ca1b344d9900ceff2384c8811c4a294b85afb2fa7c20067"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wchar_t.h",
+          "sha256": "a4c5be18087bf273f60e40189c3386b0c63ead39c1bb56080e20ada5cc9a8aa6"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_null.h",
+          "sha256": "d26f5a5c37e9de305374094d696351e49e36b0373ded4bebffd1ab17efdabb7c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_max_align_t.h",
+          "sha256": "56e3736aac61bd5d23eabf09792623866f8b350039cd65932b8f66a901709f2c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_offsetof.h",
+          "sha256": "48c1114831de8119d6cf28319cf5f7c16178fa841f1a929a181b50ace0282a98"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/stdint.h",
+          "sha256": "fbc158f94b53cc98e6c6d566b6751c26e59385dab4e3d45520677bf0847a8653"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/stdint.h",
+          "sha256": "fcd98cee81331da6aea2cc193c783e7cb8c99113bba9f6f5c13e5eb903c2421c"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/float.h",
+          "sha256": "cf41e012eebe6c12ade76a0a888207675cfd38796c47a69821d44bbb90a530ca"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_header_macro.h",
+          "sha256": "05902d174e83391194969d4adc4edb36678fae092e305f7024f5c095bc74b6e8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__float_float.h",
+          "sha256": "79ed3248742ce32bad1051acd38db5ce9edef70cb8b76e8231e802d09773e6c3"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/math.h",
+          "sha256": "ef5703641e440639526935783c779822844f623c512f94ceecb23e72362aa328"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/cdefs.h",
+          "sha256": "440cf4da4aea5622411567fc9ded390eb271bc14a9769edc741e945847f356ac"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/config.h",
+          "sha256": "b1df7e11edc2015cd4ed56665fef61ee8058114f76e6d71572b4dc989aa51135"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/ieeefp.h",
+          "sha256": "b8bf6f34e14dbb59b1e10ec0844f5be7a6346261f0baab9372ad9ae6e3a6b1c7"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/features.h",
+          "sha256": "3505698cda939c5d472af4cd3b020061321c55f4e18fae4e61acc91accf9aabb"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/picolibc.h",
+          "sha256": "3a8e303eabc24154259b49ec2e9a9f484df3f52af589bb265c9a975769c90a3d"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_default_types.h",
+          "sha256": "3cf06859b619eb64d2d57088e25f73a8883457ae01cb46181b61d5440db8b5b8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/math.h",
+          "sha256": "8f2dd84ae10f1a471a895a0ee571f6e9f3d77595f91bcb0385b9719dfc800bd8"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/string.h",
+          "sha256": "14b8991af70a368eb3e57ab897999f33ff9134c3838c659ecbce129e1d8f9ba5"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_locale.h",
+          "sha256": "ddf8dfcb860f53719732d5e954af185757985d489a20df8d202f272a1c8fee41"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/strings.h",
+          "sha256": "c7c53dea6165f1b3ec938c56e10a3fa5d52631e442d88a08c39c7915d2393324"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/_types.h",
+          "sha256": "0851fd0453c47e96ac051652df82148e05afafbfb4d2c97bf7d11924a3224202"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang/22/include/__stddef_wint_t.h",
+          "sha256": "c11551356296bf075f5c28595fa064db4a4fe748e1b42e3316a994d39bfa857b"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/machine/_types.h",
+          "sha256": "c56ad9a6339e8580a3d4e1fe5ac527a18bfb7d18d7d88bb64666db935d8427fd"
+        },
+        {
+          "owner": "verified_toolchain",
+          "path": "lib/clang-runtimes/arm-none-eabi/include/sys/string.h",
+          "sha256": "449bfbcd321cc07e1806dfe3bb9e923d4e97a5d07f1fb07d12e8224ae97542e7"
+        }
+      ]
+    }
+  ],
+  "tool_status": "passed",
+  "metadata_status": "passed",
+  "repeat_status": "passed",
+  "integrity_status": "passed",
+  "independent_artifact_review": "pending_separate_receipt",
+  "linked_firmware": false,
+  "target_execution_calls": 0,
+  "limitations": [
+    "The exact team STM32 part, ABI, compiler/library/startup configuration, flash/RAM budgets and task/deadline/recovery ownership remain unknown; these candidates do not select them.",
+    "This compiles one producer unit into relocatables. It neither links all five units nor supplies/reset/startup/HAL/interrupt/controller scheduling/physical signals. Unresolved helpers may dominate linked size, numerical behavior or execution cost.",
+    "Clang static assertions and strict flags constrain translation; generated Cortex-M4 code has not been executed. Host bit-parity and sanitizers remain prior host evidence, not target parity or safety certification.",
+    "Binary64 arithmetic, ordinary rounding/subnormal retention and source epsilon quirks remain unchanged. Single-precision FPU metadata and an assembly listing cannot establish correct target runtime behavior of double operations.",
+    "No target/HIL/emulation, firmware image, CAN/transport, flashing, motor mapping/calibration/traction policy, real hardware actuation, whole-stack/resource-fit/deadline/WCET or independent shutdown authority."
+  ],
+  "historical_before": {
+    "anchors": [
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\cortex_m4_objects.py",
+        "bytes": 21282,
+        "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\cortex_m4_reaccount.py",
+        "bytes": 7339,
+        "sha256": "6a962b4560d5a59f12bb829944e03dbf8d6a39dcdb016f33ae2891b7d459a53c"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\guard_cortex_m4_objects.py",
+        "bytes": 11997,
+        "sha256": "64f51787e0c8bfcff20bf423316480414d941df51f603235df1636053c4781b4"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03E-cortex-m4-object-protocol.json",
+        "bytes": 10392,
+        "sha256": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-base-guard-object-protocol.json",
+        "bytes": 12220,
+        "sha256": "6fd1aa2c1aab66d5fef12ccb46d727e233ecc1d4a531eb21e7148e55ad9b8d20"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03H-portable-allocator-protocol.json",
+        "bytes": 25905,
+        "sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-reaccount-v1.json",
+        "bytes": 206405,
+        "sha256": "c6356c430dcb089f1d1023daac40759285c5386fc0077b8660c9bf6220443fb7"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03E-evidence\\summary.json",
+        "bytes": 21535,
+        "sha256": "122e9375823ea50a5b27f7066f7618425c890aff3f96bc73125185be748615cb"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03E-evidence\\manifest.json",
+        "bytes": 4093,
+        "sha256": "cee8f35dd5a65f256e82fe923e0fefe96a16be253d5eeef63583fa4d191c783f"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\summary.json",
+        "bytes": 19799,
+        "sha256": "22c1ff4d4140a320511709c270bcc59e93dc1c02ef03ca92de44609e68402a33"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\manifest.json",
+        "bytes": 1407,
+        "sha256": "757616858b43527d8a3ecbabf200e169500664322ddbd894402306ee84d032f6"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\retained-artifact-manifest.json",
+        "bytes": 12499,
+        "sha256": "b4c6d9377c665de82e9e43cf51dc5a70170c0adf263af319d19c0b5044600749"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\independent-artifact-review.json",
+        "bytes": 11659,
+        "sha256": "97a80a90464ac841cd5916b5a603a5319021fc6c7fe38e0e562c00007c6fe0bc"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_contract.c",
+        "bytes": 10424,
+        "sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_contract.h",
+        "bytes": 3938,
+        "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_clock.c",
+        "bytes": 4077,
+        "sha256": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_clock.h",
+        "bytes": 2287,
+        "sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_pedal.c",
+        "bytes": 4566,
+        "sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_pedal.h",
+        "bytes": 2010,
+        "sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_guard.c",
+        "bytes": 6920,
+        "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_guard.h",
+        "bytes": 1972,
+        "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+      }
+    ],
+    "attempts": [
+      {
+        "root": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1",
+        "file_count": 178,
+        "sorted_file_records_sha256": "2aa7c761279969188acadcf2036ca30512ed099cefe8d35468e645744fa18d48"
+      },
+      {
+        "root": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1",
+        "file_count": 72,
+        "sorted_file_records_sha256": "1a5dad691611162b6dd46c20d727aca980ff66c1c49c2f9e30e62be44a38f9f1"
+      }
+    ]
+  },
+  "toolchain": {
+    "archive_sha256": "9db55e43d5fdb1619692259897bf1e64f61da82a558827aae6928a2ccb39d348",
+    "archive_bytes": 710565705,
+    "verified_file_count": 48211,
+    "tools": {
+      "clang.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "sha256": "b3b1f1a074e4312449c54a058034a4abd4edf8015db88fe35f1f5cf26f975dcd"
+      },
+      "llvm-nm.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "sha256": "f161335bfe6d45a49b4517bc190df1f1a2561f16f1d0634ce1dadddc4043667a"
+      },
+      "llvm-readobj.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "sha256": "88021c83dd2dd96723316ab351580357ac5ac385fc277364b4bdc331b1f8e674"
+      },
+      "llvm-size.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "sha256": "463ba9ff5d2a5dda72a790868382b7e382f3b4e4612774a8d7c2b41096210584"
+      }
+    },
+    "manifest_sha256": "e61db4e336f1727579b6a5581d07feaa859c3c472960187ec52fff794aa7aa0a",
+    "license_files": [
+      {
+        "path": "LICENSE.txt",
+        "sha256": "a9ed3eae930adbc631b83300b78ab5d228c9b1e4560d64ec4b4ea2bcf69f4569"
+      },
+      {
+        "path": "third-party-licenses/picolibc/COPYING.picolibc",
+        "sha256": "df8aecac86a7cce2db23fac812e058aef093f667ff20b95793f7032a4a668a43"
+      }
+    ],
+    "verification_seconds": 112.875
+  },
+  "verified_five_tools": {
+    "clang.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+      "bytes": 83728152,
+      "sha256": "b3b1f1a074e4312449c54a058034a4abd4edf8015db88fe35f1f5cf26f975dcd"
+    },
+    "llvm-readobj.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+      "bytes": 7562520,
+      "sha256": "88021c83dd2dd96723316ab351580357ac5ac385fc277364b4bdc331b1f8e674"
+    },
+    "llvm-size.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+      "bytes": 4219672,
+      "sha256": "463ba9ff5d2a5dda72a790868382b7e382f3b4e4612774a8d7c2b41096210584"
+    },
+    "llvm-nm.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+      "bytes": 11251480,
+      "sha256": "f161335bfe6d45a49b4517bc190df1f1a2561f16f1d0634ce1dadddc4043667a"
+    },
+    "llvm-objdump.exe": {
+      "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-objdump.exe",
+      "bytes": 11219224,
+      "sha256": "4e4e2d082eb8974f420f316b4d7f054ebe81ba81107adc9d87585e8725e8886f"
+    }
+  },
+  "pre_call_frozen_copy_check": "passed",
+  "prepared_commands": 31,
+  "actual_commands": 31,
+  "uncertain_command_slots": [],
+  "not_run_command_slots": [],
+  "actual_commands_is_confirmed_lower_bound": false,
+  "command_count_scope": "Confirmed subprocess API requests, not spawned children. Prepared/unconfirmed intent is separate; interruption can leave launch uncertainty.",
+  "repeat_comparisons": [
+    {
+      "abi": "hard",
+      "equal_object_sha256": true
+    },
+    {
+      "abi": "softfp",
+      "equal_object_sha256": true
+    }
+  ],
+  "historical_after": {
+    "anchors": [
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\cortex_m4_objects.py",
+        "bytes": 21282,
+        "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\cortex_m4_reaccount.py",
+        "bytes": 7339,
+        "sha256": "6a962b4560d5a59f12bb829944e03dbf8d6a39dcdb016f33ae2891b7d459a53c"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\guard_cortex_m4_objects.py",
+        "bytes": 11997,
+        "sha256": "64f51787e0c8bfcff20bf423316480414d941df51f603235df1636053c4781b4"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03E-cortex-m4-object-protocol.json",
+        "bytes": 10392,
+        "sha256": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-base-guard-object-protocol.json",
+        "bytes": 12220,
+        "sha256": "6fd1aa2c1aab66d5fef12ccb46d727e233ecc1d4a531eb21e7148e55ad9b8d20"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03H-portable-allocator-protocol.json",
+        "bytes": 25905,
+        "sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-reaccount-v1.json",
+        "bytes": 206405,
+        "sha256": "c6356c430dcb089f1d1023daac40759285c5386fc0077b8660c9bf6220443fb7"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03E-evidence\\summary.json",
+        "bytes": 21535,
+        "sha256": "122e9375823ea50a5b27f7066f7618425c890aff3f96bc73125185be748615cb"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03E-evidence\\manifest.json",
+        "bytes": 4093,
+        "sha256": "cee8f35dd5a65f256e82fe923e0fefe96a16be253d5eeef63583fa4d191c783f"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\summary.json",
+        "bytes": 19799,
+        "sha256": "22c1ff4d4140a320511709c270bcc59e93dc1c02ef03ca92de44609e68402a33"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\manifest.json",
+        "bytes": 1407,
+        "sha256": "757616858b43527d8a3ecbabf200e169500664322ddbd894402306ee84d032f6"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\retained-artifact-manifest.json",
+        "bytes": 12499,
+        "sha256": "b4c6d9377c665de82e9e43cf51dc5a70170c0adf263af319d19c0b5044600749"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\research\\TC-03G-evidence\\independent-artifact-review.json",
+        "bytes": 11659,
+        "sha256": "97a80a90464ac841cd5916b5a603a5319021fc6c7fe38e0e562c00007c6fe0bc"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_contract.c",
+        "bytes": 10424,
+        "sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_contract.h",
+        "bytes": 3938,
+        "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_clock.c",
+        "bytes": 4077,
+        "sha256": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_clock.h",
+        "bytes": 2287,
+        "sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_pedal.c",
+        "bytes": 4566,
+        "sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_pedal.h",
+        "bytes": 2010,
+        "sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_guard.c",
+        "bytes": 6920,
+        "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+      },
+      {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native\\torque_guard.h",
+        "bytes": 1972,
+        "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+      }
+    ],
+    "attempts": [
+      {
+        "root": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1",
+        "file_count": 178,
+        "sorted_file_records_sha256": "2aa7c761279969188acadcf2036ca30512ed099cefe8d35468e645744fa18d48"
+      },
+      {
+        "root": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-guard-cortex-m4-v1",
+        "file_count": 72,
+        "sorted_file_records_sha256": "1a5dad691611162b6dd46c20d727aca980ff66c1c49c2f9e30e62be44a38f9f1"
+      }
+    ]
+  },
+  "elapsed_seconds": 115.78199999999924,
+  "final_receipt_persisted": true
+}

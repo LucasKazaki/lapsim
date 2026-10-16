@@ -1,0 +1,5 @@
+torque_allocator.c:57:tc_allocator_version	0	static
+torque_allocator.c:59:tc_allocator_abi_sizeof	0	static
+torque_allocator.c:67:tc_allocate_propulsive_torque	128	static
+torque_allocator.c:18:set_fault	16	static
+torque_allocator.c:44:fault	16	static

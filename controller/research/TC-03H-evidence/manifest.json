@@ -1,0 +1,81 @@
+{
+  "schema": "enme408-allocator-curated-evidence-manifest/v1",
+  "scope": "Exact packaged bytes, excluding this manifest itself",
+  "files": [
+    {
+      "path": "attempt-1-failed.json",
+      "bytes": 6853,
+      "sha256": "8e7c29d0dfc06e11622958db4954f6f951c65aabbb924ed425970d43a7c2da50"
+    },
+    {
+      "path": "attempt-2-failed.json",
+      "bytes": 6842,
+      "sha256": "fb5105e3ede28748be939cfe214c8d6586ed1240e95a61b0e3560afb298a1a54"
+    },
+    {
+      "path": "attempt-3-passed.json",
+      "bytes": 10015,
+      "sha256": "9a9ccd559dcffa27d359ff07dc2b1087bc5c88a25b2d4c79d47ec4618d2b2aa5"
+    },
+    {
+      "path": "caller-repair-2.diff",
+      "bytes": 5776,
+      "sha256": "c074ffe86ccfe2921cc9e1ea46d1082a1d3f884e2c4b85e11624ac8bd3d56c9e"
+    },
+    {
+      "path": "caller-repair-3.diff",
+      "bytes": 2852,
+      "sha256": "9e7d9130ffbef4c23d329b0c175a7fa6aa51aaa8ddf66295a6b35ca4af4b1daa"
+    },
+    {
+      "path": "executed-driver-1.py.txt",
+      "bytes": 28192,
+      "sha256": "6a3ee416b6aa375c93a7daff5c015356897243130168383c527b028206208966"
+    },
+    {
+      "path": "executed-driver-2.py.txt",
+      "bytes": 29048,
+      "sha256": "3e4140fbadec599a35f39b0c64767be34b9beccc55b9ea8ab59497386416ef6b"
+    },
+    {
+      "path": "full-reference-tests.txt",
+      "bytes": 1513,
+      "sha256": "93ceb69296586d9770c8544a4308b4b38b4b7a033e61ac89d7ba73d555c7c567"
+    },
+    {
+      "path": "generator-freeze-1.json",
+      "bytes": 1181,
+      "sha256": "7bc831952cf697843204555e46ac159ddd7501c1c2e8a784564a126964c90105"
+    },
+    {
+      "path": "generator-freeze-2.json",
+      "bytes": 1632,
+      "sha256": "e906a4cd41c5df361a11b65c818607f3f27fbdaa111b2e21a554e3da4d83af29"
+    },
+    {
+      "path": "independent-review.json",
+      "bytes": 40616,
+      "sha256": "29b685981d7c9713ce89d685ffaf72e7ce781aa17bd6530692b0e2c50f750c6a"
+    },
+    {
+      "path": "local-plain-probe.json",
+      "bytes": 790,
+      "sha256": "6ef7e4bfa17e7616b88f5008e2b21d886504885cdcde13519f0d521a03561518"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2431,
+      "sha256": "12338997d3860d6e9f5b37efd594368997193ca65e77f2eb7c4b1a00e041d553"
+    },
+    {
+      "path": "review-handoff.json",
+      "bytes": 4859,
+      "sha256": "49a006a5a8249e1a809496f2d58d1b19b0671c0f7fa5739a415aca0073bd3b54"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 6828,
+      "sha256": "f2a1097db37d1d314b070964fe69f86a4b4c64b5dedf542871e10400e82c63d7"
+    }
+  ]
+}

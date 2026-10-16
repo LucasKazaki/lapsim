@@ -1,0 +1,30 @@
+{
+  "schema": "enme408-native-bench-browser-review/v1",
+  "url": "http://127.0.0.1:8879/enme408-native-bench-review.html",
+  "route_limit": "Actual loopback browser review; no direct-file UI navigation claim.",
+  "desktop": [
+    "Compiled C identity and unverified synthetic caller declaration visible",
+    "18 cycles / 9 allowed / 9 held / 5 recovering",
+    "Keyboard Right from cycle 0 selects cycle 1 with 5 Nm per abstract slot",
+    "Event 6 selects brake/accelerator overlap, a latched pedal and four zero commands"
+  ],
+  "mobile": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "rendered_document_width": 375,
+    "checks": [
+      "Native identity/provenance wraps without horizontal overflow",
+      "Keyboard and event selection reproduce desktop outputs"
+    ],
+    "override_reset": true
+  },
+  "console_warning_error_entries": [],
+  "retained_capture_failure": "Full-page CDP capture timed out after 5000 ms; ordinary viewport screenshots succeeded. No source changes or retry compilation.",
+  "sources": "Exact exported HTML and paired receipt hashes in the external bundle manifest.",
+  "limits": [
+    "Presentation/UI evidence only; JS does not authenticate or rerun the controller.",
+    "No GPU, target or hardware calls."
+  ]
+}

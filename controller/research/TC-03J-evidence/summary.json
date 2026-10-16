@@ -1,0 +1,302 @@
+{
+  "schema": "enme408.allocator-arm-curated-summary.v1",
+  "status": "object_attempt_and_independent_review_passed_host_CI_pending",
+  "source_head": "2ae0c158aa7d36d9705ce986920d7832f17da6df",
+  "actual_receipt_sha256": "ec187f77bbc2dd45303f78edcf859d1207e91e8469e83627166ec6d9e8a571bd",
+  "independent_review_sha256": "541f42ef1d2b113d9842fabc54a43cbad3274869636e5208a1a3cc1237ef8f13",
+  "matrix": {
+    "objects": 4,
+    "toolchain_commands": 31,
+    "uncertain": 0,
+    "not_run": 0,
+    "target_execution": 0
+  },
+  "objects": [
+    {
+      "path": "repeat-1/hard/torque_allocator.o",
+      "abi": "hard",
+      "repeat": 1,
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "bytes": 6432,
+      "size": {
+        "text": 2965,
+        "data": 0,
+        "bss": 0,
+        "total": 2965
+      },
+      "local_stack": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ]
+    },
+    {
+      "path": "repeat-1/softfp/torque_allocator.o",
+      "abi": "softfp",
+      "repeat": 1,
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "bytes": 6456,
+      "size": {
+        "text": 2993,
+        "data": 0,
+        "bss": 0,
+        "total": 2993
+      },
+      "local_stack": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ]
+    },
+    {
+      "path": "repeat-2/hard/torque_allocator.o",
+      "abi": "hard",
+      "repeat": 2,
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "bytes": 6432,
+      "size": {
+        "text": 2965,
+        "data": 0,
+        "bss": 0,
+        "total": 2965
+      },
+      "local_stack": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ]
+    },
+    {
+      "path": "repeat-2/softfp/torque_allocator.o",
+      "abi": "softfp",
+      "repeat": 2,
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "bytes": 6456,
+      "size": {
+        "text": 2993,
+        "data": 0,
+        "bss": 0,
+        "total": 2993
+      },
+      "local_stack": {
+        "status": "emitted",
+        "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+        "records": [
+          {
+            "location": "torque_allocator.c:57:tc_allocator_version",
+            "function": "tc_allocator_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:59:tc_allocator_abi_sizeof",
+            "function": "tc_allocator_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:67:tc_allocate_propulsive_torque",
+            "function": "tc_allocate_propulsive_torque",
+            "bytes": 128,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:18:set_fault",
+            "function": "set_fault",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_allocator.c:44:fault",
+            "function": "fault",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "undefined": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_ui2d",
+        "__finite",
+        "memchr",
+        "memset",
+        "strcmp"
+      ]
+    }
+  ],
+  "repeat_comparisons": [
+    {
+      "abi": "hard",
+      "equal_object_sha256": true
+    },
+    {
+      "abi": "softfp",
+      "equal_object_sha256": true
+    }
+  ],
+  "fresh_manifest_sha256": "e61db4e336f1727579b6a5581d07feaa859c3c472960187ec52fff794aa7aa0a",
+  "verified_files": 48211,
+  "actual_seconds": 115.78199999999924,
+  "auditor_failures_are_not_experiment_failures": [
+    "Original independent decoder failed on explicit zero elision, then MOVW/MOVT relocation names, then this new protocol archive-path key. All three scripts/logs preserved; final decoder independently reconciled raw bytes, without changing the experiment or making tool calls."
+  ],
+  "limitations": [
+    "The exact team STM32 part, ABI, compiler/library/startup configuration, flash/RAM budgets and task/deadline/recovery ownership remain unknown; these candidates do not select them.",
+    "This compiles one producer unit into relocatables. It neither links all five units nor supplies/reset/startup/HAL/interrupt/controller scheduling/physical signals. Unresolved helpers may dominate linked size, numerical behavior or execution cost.",
+    "Clang static assertions and strict flags constrain translation; generated Cortex-M4 code has not been executed. Host bit-parity and sanitizers remain prior host evidence, not target parity or safety certification.",
+    "Binary64 arithmetic, ordinary rounding/subnormal retention and source epsilon quirks remain unchanged. Single-precision FPU metadata and an assembly listing cannot establish correct target runtime behavior of double operations.",
+    "No target/HIL/emulation, firmware image, CAN/transport, flashing, motor mapping/calibration/traction policy, real hardware actuation, whole-stack/resource-fit/deadline/WCET or independent shutdown authority."
+  ],
+  "local_host_tests": {
+    "tests": 538,
+    "seconds": 26.407,
+    "exit_code": 0,
+    "path": "full-host-tests.txt",
+    "sha256": "76367a323de5916e9a308fed2592d8bc6d50683fc18ac6eb56578d96fa494360"
+  }
+}

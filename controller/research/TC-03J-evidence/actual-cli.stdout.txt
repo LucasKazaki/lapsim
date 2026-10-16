@@ -1,0 +1,1 @@
+{"status": "passed", "planned_objects": 4, "planned_commands": 31, "actual_commands": 31, "not_run_command_slots": [], "target_execution_calls": 0}

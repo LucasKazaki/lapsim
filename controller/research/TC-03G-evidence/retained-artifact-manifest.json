@@ -1,0 +1,365 @@
+{
+  "scope": "Hashes of retained original files; generated objects, archive and full toolchain manifest are not committed.",
+  "files": [
+    {
+      "path": "executed-guard_cortex_m4_objects.py",
+      "bytes": 11997,
+      "sha256": "64f51787e0c8bfcff20bf423316480414d941df51f603235df1636053c4781b4"
+    },
+    {
+      "path": "executed-shared-helper.py",
+      "bytes": 21282,
+      "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090"
+    },
+    {
+      "path": "logs/compile-1-hard-torque_guard.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-1-hard-torque_guard.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-1-softfp-torque_guard.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-1-softfp-torque_guard.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-2-hard-torque_guard.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-2-hard-torque_guard.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-2-softfp-torque_guard.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/compile-2-softfp-torque_guard.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_guard-0.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_guard-0.stdout.txt",
+      "bytes": 20988,
+      "sha256": "88c8b31940d75d5df7664d9f9c510c578a7e99ceb9a5b2fc6516dcd4f18d0df9"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_guard-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_guard-1.stdout.txt",
+      "bytes": 195,
+      "sha256": "13c88bae3d569c43be7586566ba2b519f6268b4c26045f658ef1b745b8102164"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_guard-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_guard-2.stdout.txt",
+      "bytes": 1364,
+      "sha256": "6ea7a81b3d92b5be2c4056b70ca4fb1ae9416e30e3118e63b93556faf292f95e"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_guard-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-hard-torque_guard-3.stdout.txt",
+      "bytes": 254,
+      "sha256": "0fd04a045c310ecaa38e7a903b935d6e17dda2a1e78b4d1b60bc30b0216c41b5"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_guard-0.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_guard-0.stdout.txt",
+      "bytes": 20870,
+      "sha256": "dca6278de91c4a1d7d6724ec4763897d0ebc51a302e70d2c234a68c7c72e4444"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_guard-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_guard-1.stdout.txt",
+      "bytes": 197,
+      "sha256": "1c743f2f58b0818a5ed2ee9b57af593fb5d2a6d10d38041f6dad7806add7d5fa"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_guard-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_guard-2.stdout.txt",
+      "bytes": 1366,
+      "sha256": "650758f593fef1dd5fa63ac411190dea5f7a0bbbd6fafe82cdbfee58681445f0"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_guard-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-1-softfp-torque_guard-3.stdout.txt",
+      "bytes": 254,
+      "sha256": "0fd04a045c310ecaa38e7a903b935d6e17dda2a1e78b4d1b60bc30b0216c41b5"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_guard-0.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_guard-0.stdout.txt",
+      "bytes": 20988,
+      "sha256": "901d2b545a1fa4a820f1b092d9d82c7a6725f119c4d9eec13990f6ab52287354"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_guard-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_guard-1.stdout.txt",
+      "bytes": 195,
+      "sha256": "030b3200004bc8d349e36520899517250338f3a24e7f5d6f8c6e521baade4167"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_guard-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_guard-2.stdout.txt",
+      "bytes": 1364,
+      "sha256": "5df72d8e83f6f0d5925ee0023bf5380719249ab1e6337ae3a3900e7383125b95"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_guard-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-hard-torque_guard-3.stdout.txt",
+      "bytes": 254,
+      "sha256": "0fd04a045c310ecaa38e7a903b935d6e17dda2a1e78b4d1b60bc30b0216c41b5"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_guard-0.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_guard-0.stdout.txt",
+      "bytes": 20870,
+      "sha256": "78be113a3193a05360e8d36f375e8b8a7badfc4c7a9cd783498fea93c3269088"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_guard-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_guard-1.stdout.txt",
+      "bytes": 197,
+      "sha256": "2610a566a208da84cd6b86e9157166ec691ae1073c9335c6b4d44fe5e11d9133"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_guard-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_guard-2.stdout.txt",
+      "bytes": 1366,
+      "sha256": "2fed45ebdd20559d49a5c615caefda166a44362cc420449dbe7a724489dccbff"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_guard-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/inspect-2-softfp-torque_guard-3.stdout.txt",
+      "bytes": 254,
+      "sha256": "0fd04a045c310ecaa38e7a903b935d6e17dda2a1e78b4d1b60bc30b0216c41b5"
+    },
+    {
+      "path": "logs/multilib-hard.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/multilib-hard.stdout.txt",
+      "bytes": 62,
+      "sha256": "3eef8e35c2edf63d53216f3f13beef6325ddc2b6ec4158435e7374309215c974"
+    },
+    {
+      "path": "logs/multilib-softfp.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/multilib-softfp.stdout.txt",
+      "bytes": 62,
+      "sha256": "7eccd009f7d3a027c6477094c17ec2c90858ee8c2f994aa88379964c7b2f0261"
+    },
+    {
+      "path": "logs/version-clang.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/version-clang.stdout.txt",
+      "bytes": 235,
+      "sha256": "5253bf2711948e8d49ce32b64fe1946a39bf0fc05e576618ec95f5ad3e4276cc"
+    },
+    {
+      "path": "logs/version-llvm-nm.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/version-llvm-nm.stdout.txt",
+      "bytes": 133,
+      "sha256": "828d1bd5e3fe0e0c87afc32ed08a85e4b2f64032cb3a7c6e789b61a4da10afa6"
+    },
+    {
+      "path": "logs/version-llvm-readobj.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/version-llvm-readobj.stdout.txt",
+      "bytes": 101,
+      "sha256": "3f8af3c3b94795d47dcf6db50ee24cc7c87445be73e53af38459599fe07c8271"
+    },
+    {
+      "path": "logs/version-llvm-size.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "logs/version-llvm-size.stdout.txt",
+      "bytes": 226,
+      "sha256": "c5ca086372ff5f6022e36968047bec07534d6a606cad8f924a40a881fa916180"
+    },
+    {
+      "path": "native/torque_contract.h",
+      "bytes": 3938,
+      "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+    },
+    {
+      "path": "native/torque_guard.c",
+      "bytes": 6920,
+      "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+    },
+    {
+      "path": "native/torque_guard.h",
+      "bytes": 1972,
+      "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+    },
+    {
+      "path": "protocol.json",
+      "bytes": 12220,
+      "sha256": "6fd1aa2c1aab66d5fef12ccb46d727e233ecc1d4a531eb21e7148e55ad9b8d20"
+    },
+    {
+      "path": "receipt.json",
+      "bytes": 87051,
+      "sha256": "b03ac8621d127153d4b0b354d00e9d8a3dd673d8735cd86527be89e47077ceb8"
+    },
+    {
+      "path": "repeat-1/hard/torque_guard.d",
+      "bytes": 4714,
+      "sha256": "40242202a0446744b4285b1a22124cb1da239b2b9b2342ee1119c173f14ebce2"
+    },
+    {
+      "path": "repeat-1/hard/torque_guard.o",
+      "bytes": 6572,
+      "sha256": "125aed6d4048d37dbdfc2531c02d77af061b8e65e9acaaf8c79b0f4dd8ceae0f"
+    },
+    {
+      "path": "repeat-1/hard/torque_guard.su",
+      "bytes": 288,
+      "sha256": "4764df6c3e95434d68dcc00d886b42d2047451e65cfe0a4975c4b33875f13c71"
+    },
+    {
+      "path": "repeat-1/softfp/torque_guard.d",
+      "bytes": 4716,
+      "sha256": "04c88dd688f9fa1fe1f35f861efa04b3c49e31f851bb27845a4bbb9bb76f2b4c"
+    },
+    {
+      "path": "repeat-1/softfp/torque_guard.o",
+      "bytes": 6604,
+      "sha256": "de0c6e8b457f50e1658e8e540200734e9c5c9b8df75695ca701c56f2d8b90bb4"
+    },
+    {
+      "path": "repeat-1/softfp/torque_guard.su",
+      "bytes": 288,
+      "sha256": "4764df6c3e95434d68dcc00d886b42d2047451e65cfe0a4975c4b33875f13c71"
+    },
+    {
+      "path": "repeat-2/hard/torque_guard.d",
+      "bytes": 4714,
+      "sha256": "9506ab1611ec8e6a3086d395d9a7de27268e6e1ca1537e19992ad2a9e412946c"
+    },
+    {
+      "path": "repeat-2/hard/torque_guard.o",
+      "bytes": 6572,
+      "sha256": "125aed6d4048d37dbdfc2531c02d77af061b8e65e9acaaf8c79b0f4dd8ceae0f"
+    },
+    {
+      "path": "repeat-2/hard/torque_guard.su",
+      "bytes": 288,
+      "sha256": "4764df6c3e95434d68dcc00d886b42d2047451e65cfe0a4975c4b33875f13c71"
+    },
+    {
+      "path": "repeat-2/softfp/torque_guard.d",
+      "bytes": 4716,
+      "sha256": "aed99feea892be4595c7fe5af9bde2a6419354b405c89155eb3db3c720fba771"
+    },
+    {
+      "path": "repeat-2/softfp/torque_guard.o",
+      "bytes": 6604,
+      "sha256": "de0c6e8b457f50e1658e8e540200734e9c5c9b8df75695ca701c56f2d8b90bb4"
+    },
+    {
+      "path": "repeat-2/softfp/torque_guard.su",
+      "bytes": 288,
+      "sha256": "4764df6c3e95434d68dcc00d886b42d2047451e65cfe0a4975c4b33875f13c71"
+    },
+    {
+      "path": "verified-toolchain-files.jsonl",
+      "bytes": 9860723,
+      "sha256": "e61db4e336f1727579b6a5581d07feaa859c3c472960187ec52fff794aa7aa0a"
+    }
+  ]
+}

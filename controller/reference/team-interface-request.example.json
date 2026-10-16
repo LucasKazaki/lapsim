@@ -1,0 +1,36 @@
+{
+  "schema": "enme408-tc00b-team-interface-request/v1",
+  "target_car": "2027-28",
+  "interfaces": [
+    {"signal_id": "driver_request", "direction": "input", "status": "unknown"},
+    {"signal_id": "brake_signal", "direction": "input", "status": "unknown"},
+    {"signal_id": "wheel_speed", "direction": "input", "status": "unknown"},
+    {"signal_id": "steering_angle", "direction": "input", "status": "unknown"},
+    {"signal_id": "imu", "direction": "input", "status": "unknown"},
+    {"signal_id": "torque_command", "direction": "output", "status": "unknown"}
+  ],
+  "required_fields_per_numeric_signal": [
+    "producer",
+    "consumer",
+    "transport",
+    "transport_identifier_or_message_map_reference",
+    "quantity",
+    "unit",
+    "sign_convention",
+    "scale",
+    "offset",
+    "raw_range",
+    "physical_range",
+    "producer_sample_period",
+    "consumer_timeout",
+    "timestamp_domain",
+    "source_reference",
+    "car_year"
+  ],
+  "claims": {
+    "can_ids_verified": false,
+    "sample_rates_verified": false,
+    "vehicle_limits_verified": false,
+    "vehicle_interface_ready": false
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "enme408-native-bench-ci-extension/v1",
+  "status": "frozen_before_workflow_edit_after_root_GO",
+  "reviewed_runtime_head": "ba75ddc3cbc3fa0169ec5d785c23811f70759607",
+  "runtime_protocol_sha256": "474f0a2928b169e13bd41779b45fa73f4806ab03cc7d88817fc231c1c0f83733",
+  "workflow_before_sha256": "1ff4753b1f7bb5a4fc8e6dbaf33f6985ac1bfde3f5ab4e52bff76fb55acb60ac",
+  "change": "Add one actual native --example CLI step in the existing Windows/Linux reference matrix. Each attempt uses a new runner.temp directory outside checkout; exit 0 required, no native skip or tool acquisition.",
+  "directory": "${{ runner.temp }}/enme408-native-replay-${{ github.run_id }}-${{ github.run_attempt }}",
+  "upload": {
+    "if": "always()",
+    "explicit_files": [
+      "run.json",
+      "viewer-receipt.json",
+      "trace.csv",
+      "export-status.json",
+      "command-*-stdout.txt",
+      "command-*-stderr.txt"
+    ],
+    "exclude": "No binary, source snapshot folder or full attempt-directory upload."
+  },
+  "unchanged": "Existing runtime/test/case/protocol hashes, five-probe sanitizer matrix, numerical owners, old source example and original ARM cohorts remain unchanged."
+}

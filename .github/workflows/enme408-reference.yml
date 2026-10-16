@@ -1,0 +1,55 @@
+name: ENME408 reference contracts
+
+on:
+  push:
+    paths:
+      - 'controller/**'
+      - 'scripts/check_controller_import.py'
+      - '.github/workflows/enme408-reference.yml'
+  pull_request:
+    paths:
+      - 'controller/**'
+      - 'scripts/check_controller_import.py'
+      - '.github/workflows/enme408-reference.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  reference:
+    timeout-minutes: 15
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify scoped source import
+        run: python scripts/check_controller_import.py
+      - name: Run all torque reference regressions
+        run: python -B -m unittest discover -s controller/reference -p "test_*.py" -q
+      - name: Exercise the actual file replay interface
+        run: python -B controller/reference/bench_replay.py controller/reference/bench-scenario.example.json --output enme408-bench-replay.json --csv enme408-bench-trace.csv
+      - name: Exercise actual five-unit native scenario replay
+        run: python -B controller/reference/native_bench_replay.py --example --output-dir "${{ runner.temp }}/enme408-native-replay-${{ github.run_id }}-${{ github.run_attempt }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: enme408-native-${{ matrix.os }}-py${{ matrix.python }}
+          path: |
+            ${{ runner.temp }}/enme408-native-replay-${{ github.run_id }}-${{ github.run_attempt }}/run.json
+            ${{ runner.temp }}/enme408-native-replay-${{ github.run_id }}-${{ github.run_attempt }}/viewer-receipt.json
+            ${{ runner.temp }}/enme408-native-replay-${{ github.run_id }}-${{ github.run_attempt }}/trace.csv
+            ${{ runner.temp }}/enme408-native-replay-${{ github.run_id }}-${{ github.run_attempt }}/export-status.json
+            ${{ runner.temp }}/enme408-native-replay-${{ github.run_id }}-${{ github.run_attempt }}/command-*-stdout.txt
+            ${{ runner.temp }}/enme408-native-replay-${{ github.run_id }}-${{ github.run_attempt }}/command-*-stderr.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: enme408-${{ matrix.os }}-py${{ matrix.python }}
+          path: |
+            enme408-bench-replay.json
+            enme408-bench-trace.csv

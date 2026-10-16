@@ -1,0 +1,69 @@
+test_path_reservation_preserves_sources_and_previous_attempt (test_native_bench_replay.InputAndArtifactBoundaries.test_path_reservation_preserves_sources_and_previous_attempt) ... ok
+test_preflight_failures_make_zero_builder_calls (test_native_bench_replay.InputAndArtifactBoundaries.test_preflight_failures_make_zero_builder_calls) ... ok
+test_real_build_failure_has_actual_command_accounting (test_native_bench_replay.InputAndArtifactBoundaries.test_real_build_failure_has_actual_command_accounting) ... ok
+test_sealed_run_survives_actual_export_io_failure (test_native_bench_replay.InputAndArtifactBoundaries.test_sealed_run_survives_actual_export_io_failure) ... ERROR
+test_utf16_prefix_and_surrogate_boundaries (test_native_bench_replay.InputAndArtifactBoundaries.test_utf16_prefix_and_surrogate_boundaries) ... ok
+test_builtin_actual_rows_and_positive_coverage (test_native_bench_replay.NativeBenchConsumer.test_builtin_actual_rows_and_positive_coverage) ... ok
+test_contract_rejection_and_nonfinite_raw_trace (test_native_bench_replay.NativeBenchConsumer.test_contract_rejection_and_nonfinite_raw_trace) ... ok
+test_nul_and_safe_integer_boundary (test_native_bench_replay.NativeBenchConsumer.test_nul_and_safe_integer_boundary) ... ok
+test_startup_clock_fault_and_history (test_native_bench_replay.NativeBenchConsumer.test_startup_clock_fault_and_history) ... ok
+tearDownClass (test_native_bench_replay.NativeBenchConsumer) ... ERROR
+
+======================================================================
+ERROR: test_sealed_run_survives_actual_export_io_failure (test_native_bench_replay.InputAndArtifactBoundaries.test_sealed_run_survives_actual_export_io_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\shutil.py", line 646, in _rmtree_unsafe
+    os.unlink(fullname)
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\lucas\\AppData\\Local\\Temp\\tmp5h4sj4z7\\torque_allocator.dll'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas\Documents\Codex\2026-10-15\go\work\repos\enme408-studio\projects\enme408-torque-control\reference\test_native_bench_replay.py", line 149, in test_sealed_run_survives_actual_export_io_failure
+    with tempfile.TemporaryDirectory() as folder:
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\tempfile.py", line 946, in __exit__
+    self.cleanup()
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\tempfile.py", line 950, in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\tempfile.py", line 930, in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\shutil.py", line 820, in rmtree
+    return _rmtree_unsafe(path, onexc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\shutil.py", line 648, in _rmtree_unsafe
+    onexc(os.unlink, fullname, err)
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\tempfile.py", line 905, in onexc
+    _os.unlink(path)
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\lucas\\AppData\\Local\\Temp\\tmp5h4sj4z7\\torque_allocator.dll'
+
+======================================================================
+ERROR: tearDownClass (test_native_bench_replay.NativeBenchConsumer)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\shutil.py", line 646, in _rmtree_unsafe
+    os.unlink(fullname)
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\lucas\\AppData\\Local\\Temp\\enme408-native-consumer-3k2vsy0l\\torque_allocator.dll'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas\Documents\Codex\2026-10-15\go\work\repos\enme408-studio\projects\enme408-torque-control\reference\test_native_bench_replay.py", line 35, in tearDownClass
+    cls.temp.cleanup()
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\tempfile.py", line 950, in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\tempfile.py", line 930, in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\shutil.py", line 820, in rmtree
+    return _rmtree_unsafe(path, onexc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\shutil.py", line 648, in _rmtree_unsafe
+    onexc(os.unlink, fullname, err)
+  File "C:\Users\lucas\AppData\Local\Programs\Python\Python312\Lib\tempfile.py", line 905, in onexc
+    _os.unlink(path)
+PermissionError: [WinError 5] Access is denied: 'C:\\Users\\lucas\\AppData\\Local\\Temp\\enme408-native-consumer-3k2vsy0l\\torque_allocator.dll'
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.295s
+
+FAILED (errors=2)

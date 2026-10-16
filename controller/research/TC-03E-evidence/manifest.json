@@ -1,0 +1,98 @@
+{
+  "schema": "enme408-cortex-m4-curated-evidence-manifest/v2",
+  "bound_files": 17,
+  "files": [
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/ci-canonical-path-independent-review.json",
+      "bytes": 2484,
+      "sha256": "631c69cdfc024a8a01f96cf04381b60cdd58d5a4f4818d3a357d2e284bb18f64"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/ci-canonical-path-repair.json",
+      "bytes": 2146,
+      "sha256": "cd8152821657af13fe5bb9021df88438e8b07d38da0dff16f2193bc0a0f2c065"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/executed-cortex_m4_objects.py.txt",
+      "bytes": 20544,
+      "sha256": "40c299716d1a0a497c0ee0ec74e78faf113dd235237892994e19f93017c22dc8"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/file-only-reaccount.json",
+      "bytes": 206405,
+      "sha256": "c6356c430dcb089f1d1023daac40759285c5386fc0077b8660c9bf6220443fb7"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/independent-file-review.json",
+      "bytes": 11328,
+      "sha256": "f16dd19baadeddccf43452398e7a13f69abc7c1ac5840d0c680e97a9b99f1d5d"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/initial-pr72-manifest.json",
+      "bytes": 2839,
+      "sha256": "aa25cbab35643613950e37ab29590841a08306009f23cb41ea3a78c8ee8fdb68"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/initial-reviewed-cortex_m4_objects.py.txt",
+      "bytes": 21216,
+      "sha256": "d2815f25604f99596ef0cc0cfad5d3f11bc4dd5067299b24757856a854bbfcf9"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/initial-reviewed-test_cortex_m4_objects.py.txt",
+      "bytes": 9590,
+      "sha256": "04d3b650ce0a4ca21e474caf366805dc26c8de026087fbb491c477d9bad054c5"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/original-receipt.json",
+      "bytes": 186931,
+      "sha256": "509498f3879202fcb786be715edda00831ad629bd03de18ad9de8b441c17142f"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/README.md",
+      "bytes": 2012,
+      "sha256": "b891690f21249342e8db5b141726adabbc18fbcb713b9f1f5438c952bb97700b"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/software-checks.json",
+      "bytes": 565,
+      "sha256": "ce8b192a7a9f64aacbaee9658b23e15453687c39a78b606774cc56729afee2c4"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/summary.json",
+      "bytes": 21535,
+      "sha256": "122e9375823ea50a5b27f7066f7618425c890aff3f96bc73125185be748615cb"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-evidence/toolchain-provenance.json",
+      "bytes": 3250,
+      "sha256": "b01e46524b653553d483dac2bce75800b36470d4a050493438b80ab2faf0f3d2"
+    },
+    {
+      "path": "projects/enme408-torque-control/reference/cortex_m4_objects.py",
+      "bytes": 21282,
+      "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090"
+    },
+    {
+      "path": "projects/enme408-torque-control/reference/cortex_m4_reaccount.py",
+      "bytes": 7339,
+      "sha256": "6a962b4560d5a59f12bb829944e03dbf8d6a39dcdb016f33ae2891b7d459a53c"
+    },
+    {
+      "path": "projects/enme408-torque-control/reference/test_cortex_m4_objects.py",
+      "bytes": 10506,
+      "sha256": "b02d58eb7d909552ebe80a388833a319cfce9292320ed9e42137dd2aefd542f7"
+    },
+    {
+      "path": "projects/enme408-torque-control/research/TC-03E-cortex-m4-object-protocol.json",
+      "bytes": 10392,
+      "sha256": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a"
+    }
+  ],
+  "historical_initial_head": "4224ab658b675546931b74c568f2331698492bb5",
+  "original_attempt_and_protocol_preserved": true,
+  "later_change": "Canonicalize dependency owners and correct canonical-output test; no compiler or target calls",
+  "excluded": [
+    "Toolchain archive/tree",
+    "Generated ARM objects"
+  ]
+}

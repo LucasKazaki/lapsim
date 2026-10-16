@@ -1,0 +1,171 @@
+{
+  "schema": "enme408-clock-local-model-assessment/v1",
+  "model_alias": "qwen3.8-27b-local-q2k:latest",
+  "model_details": {
+    "parent_model": "",
+    "format": "gguf",
+    "family": "qwen35",
+    "families": [
+      "qwen35"
+    ],
+    "parameter_size": "27.3B",
+    "quantization_level": "Q2_K"
+  },
+  "elapsed_seconds": 10.316239400002814,
+  "prompt_sha256": "4614cbcee1aa88eb356f4106f2fefd90fb26ec4d7cb1148307c251fede5a2b56",
+  "raw_receipt_sha256": "cd31102e384ed853ea689afe68539663b1022d611c45ea8565e951830a691202",
+  "source_snapshots": [
+    {
+      "file": "native\\torque_clock.h",
+      "sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088"
+    },
+    {
+      "file": "native\\torque_clock.c",
+      "sha256": "83a3b98c458bcfd74d2b6e29689586ed62de9a8925168876baccf708df38151e"
+    },
+    {
+      "file": "cycle_clock.py",
+      "sha256": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5"
+    }
+  ],
+  "raw_response": "{\n  \"cases\": [\n    {\n      \"case\": \"Forward gap with valid dt\",\n      \"expected\": \"Fault 'cycle_period_mismatch' is raised. The anchor advances to the new tick, and the result is faulted, not a clean success.\"\n    },\n    {\n      \"case\": \"Invalid dt with valid forward tick\",\n      \"expected\": \"Fault 'guard_period_mismatch' is raised. The anchor advances to the new tick, and the result is faulted.\"\n    }\n  ],\"limitation\":\"Fault precedence is not fully specified; the C code's fault precedence is ambiguous.\"}",
+  "propositions": [
+    {
+      "proposal": "Forward gap with valid dt advances anchor and faults",
+      "disposition": "confirmed existing behavior, not a defect",
+      "concrete_case": "previous=0, tick=100, dt=.05, period=50",
+      "expected_fault": "cycle_period_mismatch"
+    },
+    {
+      "proposal": "Invalid dt with valid forward tick advances anchor and faults",
+      "disposition": "confirmed when concrete forward interval matches period; not a defect",
+      "concrete_case": "previous=0, tick=50, dt=100, period=50",
+      "expected_fault": "guard_period_mismatch"
+    },
+    {
+      "proposal": "Fault precedence is unspecified or ambiguous",
+      "disposition": "rejected",
+      "evidence": "Frozen protocol predates C edits and explicitly prioritizes timestamp faults. Compiled gap+bad-dt, invalid-tick+bad-dt and duplicate+bad-dt tests confirm that precedence."
+    }
+  ],
+  "deterministic_verification": [
+    {
+      "actual": {
+        "fault": "cycle_period_mismatch",
+        "now_ms": 100,
+        "previous_tick": 100
+      },
+      "dt_s": 0.05,
+      "final_command": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "label": "model_forward_gap",
+      "period_ms": 50,
+      "previous_tick": 0,
+      "tick": 100
+    },
+    {
+      "actual": {
+        "fault": "guard_period_mismatch",
+        "now_ms": 50,
+        "previous_tick": 50
+      },
+      "dt_s": 100.0,
+      "final_command": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "label": "model_invalid_dt",
+      "period_ms": 50,
+      "previous_tick": 0,
+      "tick": 50
+    },
+    {
+      "actual": {
+        "fault": "cycle_period_mismatch",
+        "now_ms": 100,
+        "previous_tick": 100
+      },
+      "dt_s": 100.0,
+      "final_command": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "label": "precedence_gap_and_invalid_dt",
+      "period_ms": 50,
+      "previous_tick": 0,
+      "tick": 100
+    },
+    {
+      "actual": {
+        "fault": "invalid_cycle_timestamp",
+        "now_ms": null,
+        "previous_tick": 0
+      },
+      "dt_s": 100.0,
+      "final_command": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "label": "precedence_invalid_tick_and_dt",
+      "period_ms": 50,
+      "previous_tick": 0,
+      "tick": null
+    },
+    {
+      "actual": {
+        "fault": "nonmonotonic_cycle_timestamp",
+        "now_ms": 0,
+        "previous_tick": 0
+      },
+      "dt_s": 100.0,
+      "final_command": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "label": "precedence_duplicate_and_invalid_dt",
+      "period_ms": 50,
+      "previous_tick": 0,
+      "tick": 0
+    }
+  ],
+  "verified_source_sha256": {
+    "../research/TC-03C-clock-protocol.json": "93230dd090bc13da17158e07d1ca02e24f24abd3e90c3dbe0789f66060e9e068",
+    "allocation_contract.py": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
+    "allocator.py": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
+    "bench-scenario.example.json": "5af0071216b03e781ee1e9cd89d74b870dc0e2f090fd75a5ff15800fcb686bcc",
+    "bench_replay.py": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc",
+    "c_parity.py": "c2e6932c582cfa145e889413ffe385416192ea54af34bd2dc83df09bacbd415b",
+    "clock_parity.py": "0a8e161de374a181adf98f344f2b34f10233d3fb53e929b9d334de4aa36fbfaf",
+    "command_guard.py": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+    "control_pipeline.py": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531",
+    "cycle_clock.py": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5",
+    "fault_state.py": "1abe78b642ca381257f1b7e26eb8ac5b125e98d33a91c97f9808ab9a5690d9d3",
+    "guard_overlap_observation.py": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+    "guard_request_contract.py": "e2e900515d76aa19a2226b5d4f5a4620708043c91b1180dd386be5c1d536837b",
+    "guard_trusted_clear.py": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+    "native/clock_sanitizer_probe.c": "4fc043b38bf473fc06ae93d5b02dd5f160bc765dbabb0d81497859f88c2f7d7d",
+    "native/torque_clock.c": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+    "native/torque_clock.h": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+    "native/torque_contract.c": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+    "native/torque_contract.h": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+    "torque_numeric.py": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
+  },
+  "model_review_delta": "The model saw the clock logic before strict-math compile guards and the independent invalid-policy initialization repair. Its proposed semantic examples remain unchanged; exact current source hashes are retained.",
+  "limits": [
+    "Local inference is assistance, not source authority or acceptance.",
+    "No correctness, safety, target timing, hardware or HIL verdict is established by model output.",
+    "GPU inference was scheduled by the root agent and unloaded before subsequent training. This receipt has inference backend/timing, not an independent utilization measurement."
+  ]
+}

@@ -1,0 +1,200 @@
+"""Independent retained-file audit; imports no build driver and executes no tools."""
+from pathlib import Path, PurePosixPath
+import hashlib, importlib.util, json, re, struct, time, zipfile
+
+ROOT=Path(__file__).resolve().parent.parent
+RUN=ROOT/'work/enme408-allocator-cortex-m4-v1'
+REF=ROOT/'work/repos/enme408-studio/projects/enme408-torque-control/reference'
+PIN='ec187f77bbc2dd45303f78edcf859d1207e91e8469e83627166ec6d9e8a571bd'
+spec=importlib.util.spec_from_file_location('prior_root_file_decoder',ROOT/'work/audit_guard_arm_annex.py')
+decoder=importlib.util.module_from_spec(spec);spec.loader.exec_module(decoder)
+sha,read=decoder.sha,decoder.read
+PUBLIC={'tc_allocator_version','tc_allocator_abi_sizeof','tc_allocate_propulsive_torque'}
+
+def raw_tables(path):
+    raw=path.read_bytes();h=struct.unpack_from('<16sHHIIIIIHHHHHH',raw)
+    sections=[struct.unpack_from('<IIIIIIIIII',raw,h[6]+i*h[11]) for i in range(h[12])]
+    def data(s):return raw[s[4]:s[4]+s[5]]
+    names=data(sections[h[13]])
+    def string(table,n):return table[n:].split(b'\0',1)[0].decode('ascii')
+    names=[string(names,s[0]) for s in sections]
+    symbols={}
+    for index,s in enumerate(sections):
+        if s[1]!=2:continue
+        table=data(sections[s[6]]);items=[]
+        for offset in range(0,s[5],16):
+            n,v,z,info,other,owner=struct.unpack_from('<IIIBBH',data(s),offset)
+            items.append({'name':string(table,n),'value':v,'bytes':z,'binding':info>>4,
+                          'type':info&15,'section':owner})
+        symbols[index]=items
+    relocations=[]
+    for index,s in enumerate(sections):
+        if s[1]!=9:continue
+        assert s[9]==8 and s[5]%8==0
+        for offset in range(0,s[5],8):
+            position,info=struct.unpack_from('<II',data(s),offset)
+            relocations.append({'section':names[s[7]],'offset':position,'type':info&255,
+                                'symbol':symbols[s[6]][info>>8]['name']})
+    exports=[v for table in symbols.values() for v in table if v['name'] in PUBLIC]
+    assert {v['name'] for v in exports}==PUBLIC and len(exports)==3
+    assert all(v['binding']==1 and v['type']==2 and v['section']>0 for v in exports)
+    executable={names[i]:data(s) for i,s in enumerate(sections) if s[2]&4 and s[5]}
+    return exports,relocations,executable
+
+def disassembly_bytes(path,sections,relocations):
+    text=path.read_text(encoding='utf-8');assert '<unknown>' not in text.lower()
+    current=None;covered={name:set() for name in sections};listed=[];instructions=0
+    last_end=0;elision_start=None;elided_zero_bytes=0
+    for line in text.splitlines():
+        section=re.fullmatch(r'Disassembly of section (.+):',line)
+        if section:
+            assert elision_start is None
+            current=section[1];assert current in sections;last_end=0;continue
+        if line.strip()=='...':
+            assert current in sections and elision_start is None
+            elision_start=last_end;continue
+        rel=re.fullmatch(r'\s*([0-9a-f]+):\s+(R_ARM_[A-Z0-9_]+)\s+(\S+)\s*',line)
+        if rel:
+            types={'R_ARM_THM_CALL':10,'R_ARM_THM_MOVW_ABS_NC':47,'R_ARM_THM_MOVT_ABS':48}
+            listed.append({'section':current,'offset':int(rel[1],16),'type':types[rel[2]],'symbol':rel[3]});continue
+        prefix=line.split('\t',1)[0]
+        match=re.fullmatch(r'\s*([0-9a-f]+):\s+((?:[0-9a-f]{2}|[0-9a-f]{4}|[0-9a-f]{8})(?:\s+(?:[0-9a-f]{2}|[0-9a-f]{4}|[0-9a-f]{8}))*)\s*',prefix)
+        if not match:continue
+        assert current in sections
+        offset=int(match[1],16)
+        if elision_start is not None:
+            assert offset>elision_start and not any(sections[current][elision_start:offset])
+            covered[current].update(range(elision_start,offset));elided_zero_bytes+=offset-elision_start
+            elision_start=None
+        encoded=b''.join(int(word,16).to_bytes(len(word)//2,'little') for word in match[2].split())
+        assert sections[current][offset:offset+len(encoded)]==encoded
+        positions=set(range(offset,offset+len(encoded)))
+        assert not positions.intersection(covered[current]);covered[current].update(positions);instructions+=1
+        last_end=offset+len(encoded)
+    assert elision_start is None
+    assert all(covered[name]==set(range(len(raw))) for name,raw in sections.items())
+    expected=[v for v in relocations if v['section'] in sections]
+    assert sorted(listed,key=str)==sorted(expected,key=str)
+    return {'listed_instruction_or_data_lines':instructions,'executable_bytes_reconciled':sum(map(len,sections.values())),
+            'executable_relocations_reconciled':len(listed),'all_executable_section_bytes_covered':True,
+            'objdump_explicitly_elided_zero_bytes_verified_from_raw_ELF':elided_zero_bytes}
+
+def run():
+    started=time.perf_counter();assert sha(RUN/'receipt.json')==PIN
+    receipt,plan=read(RUN/'receipt.json'),read(RUN/'protocol.json')
+    assert receipt['status']=='passed' and receipt['actual_commands']==receipt['planned_commands']==31
+    assert receipt['prepared_commands']==31 and not receipt['uncertain_command_slots'] and not receipt['not_run_command_slots']
+    assert receipt['pre_call_frozen_copy_check']=='passed' and receipt['final_receipt_persisted'] is True
+    assert receipt['target_execution_calls']==0 and receipt['linked_firmware'] is False
+    assert sha(RUN/'protocol.json')==receipt['protocol_sha256']=='6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912'
+    for retained,live,key in [('executed-allocator_cortex_m4_objects.py','allocator_cortex_m4_objects.py','driver_sha256'),
+                              ('executed-shared-helper.py','cortex_m4_objects.py','helper_sha256')]:
+        assert sha(RUN/retained)==sha(REF/live)==receipt[key]
+    assert sha(RUN/'historical-baseline.json')==receipt['baseline_sha256']==plan['frozen_research_baseline']['sha256']
+    for name,fact in receipt['source_files'].items():
+        raw=(RUN/'native'/name).read_bytes()
+        assert len(raw)==fact['bytes'] and sha(RUN/'native'/name)==sha(REF/'native'/name)==fact['sha256']
+        assert hashlib.sha256(raw.replace(b'\r\n',b'\n')).hexdigest()==plan['sources'][name]['lf_normalized_sha256']
+    tools=receipt['verified_five_tools'];toolchain=Path(tools['clang.exe']['path']).parent.parent
+    assert set(tools)=={'clang.exe','llvm-readobj.exe','llvm-size.exe','llvm-nm.exe','llvm-objdump.exe'}
+    expected=[]
+    for argv in plan['version_commands_in_order']+plan['multilib_preflights_in_order']:
+        expected.append([tools[argv[0]]['path'],*argv[1:]])
+    objects=[];used={}
+    for row in receipt['objects']:
+        assert row['status']=='inspected'
+        obj=RUN/row['path'];assert obj.stat().st_size==row['bytes'] and sha(obj)==row['sha256']
+        expected.append([tools['clang.exe']['path'],*plan['compile_common_flags'],'-mfloat-abi='+row['abi'],
+                         '-MD','-MF',str(obj.with_suffix('.d')),'-c','torque_allocator.c','-o',str(obj)])
+        for argv in plan['per_object_inspections_in_order']:
+            expected.append([tools[argv[0]]['path'],*argv[1:-1],str(obj)])
+        parsed=decoder.elf(obj)
+        assert parsed['flags']==row['elf']['flags'] and parsed['sections']==row['elf']['sections']
+        assert parsed['sizes']==row['berkeley_size'] and parsed['undefined']==sorted(row['undefined_symbols'])
+        assert {str(k):v for k,v in parsed['tags'].items()}==row['elf']['arm_attribute_tags']
+        tags=parsed['tags'];assert [tags[k] for k in (6,7,9,10,27)]==[13,77,2,6,1]
+        assert tags.get(28,0)==(1 if row['abi']=='hard' else 0)
+        assert not any(v.startswith('tc_') for v in parsed['undefined'])
+        exports,relocations,executable=raw_tables(obj)
+        assert set(row['public_definitions'])==PUBLIC
+        dis=receipt['command_slots'][row['inspection_slots'][4]]
+        listing=disassembly_bytes(RUN/dis['stdout'],executable,relocations)
+        stack=[]
+        for line in obj.with_suffix('.su').read_text().splitlines():
+            location,n,qualifier=line.split('\t')
+            stack.append({'location':location,'function':location.rsplit(':',1)[-1],'bytes':int(n),'qualifier':qualifier})
+        assert stack==row['stack_usage']['records'] and sha(obj.with_suffix('.su'))==row['stack_usage']['sha256']
+        assert sha(obj.with_suffix('.d'))==row['dependency_file']['sha256']
+        deps=decoder.dependencies(obj.with_suffix('.d'),(RUN/'native').resolve(),toolchain)
+        assert deps==row['dependencies']
+        for d in deps:
+            if d['owner']=='verified_toolchain':used[d['path']]=d['sha256']
+        objects.append({'path':row['path'],'sha256':row['sha256'],'bytes':row['bytes'],'sizes':parsed['sizes'],
+                        'undefined':parsed['undefined'],'arm_tags':tags,'exports':exports,
+                        'relocations':relocations,'disassembly':listing,'local_stack':stack,'max_local_frame':max(s['bytes'] for s in stack)})
+    assert len(expected)==31 and [c['argv'] for c in receipt['command_slots']]==expected
+    assert receipt['commands']==receipt['command_slots']
+    for command in receipt['commands']:
+        assert command['cwd']==str((RUN/'native').resolve()) and command['status']=='completed'
+        assert command['exit_code']==0 and command['launch_state']=='confirmed_return' and command['artifact_status']=='written'
+        for channel in ('stdout','stderr'):
+            p=RUN/command[channel]
+            assert sha(p)==command[channel+'_sha256']==command[channel+'_observed_sha256']
+            assert p.stat().st_size==command[channel+'_observed_bytes']
+        assert (RUN/command['stderr']).stat().st_size==0
+    for abi in ('hard','softfp'):
+        rows=[v for v in objects if '/'+abi+'/' in v['path']]
+        assert len(rows)==2 and rows[0]['sha256']==rows[1]['sha256']
+    manifest_path=RUN/'verified-toolchain-files.jsonl'
+    assert sha(manifest_path)==receipt['toolchain']['manifest_sha256']
+    manifest={}
+    for line in manifest_path.read_text().splitlines():
+        v=json.loads(line);assert v['path'] not in manifest;manifest[v['path']]=v
+    assert len(manifest)==receipt['toolchain']['verified_file_count']==48211
+    for tool,v in tools.items():used['bin/'+tool]=v['sha256']
+    for license in receipt['toolchain']['license_files']:used[license['path']]=license['sha256']
+    archive=Path(plan['local_acquisition']['archive'])
+    assert archive.stat().st_size==plan['toolchain']['archive_bytes'] and sha(archive)==plan['toolchain']['archive_sha256']
+    zipped=set();verified=0
+    with zipfile.ZipFile(archive) as z:
+        for entry in z.infolist():
+            if entry.is_dir():continue
+            p=PurePosixPath(entry.filename);assert p.parts[0]==toolchain.name and '..' not in p.parts
+            relative=PurePosixPath(*p.parts[1:]).as_posix();assert relative not in zipped;zipped.add(relative)
+            assert manifest[relative]['bytes']==entry.file_size
+            if relative in used:
+                h=hashlib.sha256()
+                with z.open(entry) as stream:
+                    for block in iter(lambda:stream.read(65536),b''):h.update(block)
+                assert h.hexdigest()==used[relative]==manifest[relative]['sha256']==sha(toolchain/relative);verified+=1
+    assert zipped==set(manifest)=={p.relative_to(toolchain).as_posix() for p in toolchain.rglob('*') if p.is_file()}
+    assert verified==len(used)
+    baseline=read(RUN/'historical-baseline.json')
+    for record in baseline['historical_anchors']:
+        p=Path(record['path']);assert p.stat().st_size==record['bytes'] and sha(p)==record['sha256']
+    old_counts=[]
+    for attempt in baseline['historical_attempts']:
+        root=Path(attempt['root']);actual=[]
+        for p in sorted(root.rglob('*'),key=lambda p:p.relative_to(root).as_posix()):
+            assert not p.is_symlink()
+            if p.is_file():actual.append({'path':p.relative_to(root).as_posix(),'bytes':p.stat().st_size,'sha256':sha(p)})
+        assert actual==attempt['files'];old_counts.append(len(actual))
+    assert sha(RUN/'receipt.json')==PIN
+    report={'schema':'enme408.allocator-arm-root-independent-files.v1','verdict':'No actionable mismatch found in retained four-object attempt.',
+            'receipt_sha256':PIN,'protocol_sha256':receipt['protocol_sha256'],'driver_sha256':receipt['driver_sha256'],
+            'script_sha256':sha(Path(__file__)),'prior_independent_decoder_sha256':sha(ROOT/'work/audit_guard_arm_annex.py'),
+            'objects':objects,'checks':{'commands':31,'log_files':62,'ABI_repeat_pairs':2,'manifest_paths':48211,
+                'used_ZIP_manifest_current_hashes':verified,'historical_attempt_file_counts':old_counts,'historical_anchors':len(baseline['historical_anchors'])},
+            'scope':['Independent raw ELF/AEABI/symbol/REL decode, actual disassembly bytes and text relocations reconciled.',
+                'All manifest/ZIP/current path sets and ZIP sizes checked; used tools/headers/licenses rehashed from ZIP and current file. Unused runtime content not independently rehashed again.',
+                'All argv/raw logs/status/artifact hashes, local .su/.d and historical file inventories reconciled.'],
+            'new_tool_model_or_target_calls':0,'linked_firmware':False,'limitations':plan['limitations'],
+            'ARM_relocation_number_reference':'https://github.com/ARM-software/abi-aa/blob/main/aaelf32/aaelf32.rst',
+            'review_tool_repairs':['Retained original parser and failure: explicit objdump zero-byte elision now checked against raw ELF.',
+                'Retained second parser and failure: ARM-defined MOVW/MOVT relocations added to exact numeric/name reconciliation. Experiment bytes unchanged.'],
+            'elapsed_seconds':time.perf_counter()-started}
+    output=ROOT/'outputs/enme408-allocator-arm-root-independent-review.json'
+    with output.open('x',encoding='utf-8') as stream:stream.write(json.dumps(report,indent=2,sort_keys=True)+'\n')
+    print(json.dumps({'verdict':report['verdict'],'sha256':sha(output),'checks':report['checks'],'seconds':report['elapsed_seconds']}))
+
+if __name__=='__main__':run()

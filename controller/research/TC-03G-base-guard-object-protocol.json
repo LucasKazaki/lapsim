@@ -1,0 +1,249 @@
+{
+  "schema": "enme408.base-guard-cortex-m4-annex-protocol.v1",
+  "status": "frozen_before_annex_driver_implementation_and_any_new_tool_calls",
+  "base_commit": "611dfe43c60140465169fed3ca9b9558b3360a0e",
+  "base_pr": 74,
+  "question": "Does the new unchanged base guard unit compile as strict binary64 Cortex-M4 objects under both candidate ABIs, and what actual sections, local frames and unresolved dependencies result?",
+  "scope": "Separate minimal object-only annex for torque_guard.c; no amendment to original TC-03E three-unit protocol/cohort/attempts/receipts. No linking or target execution.",
+  "sources": {
+    "torque_guard.c": {
+      "exact_local_sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+      "lf_normalized_sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514"
+    },
+    "torque_guard.h": {
+      "exact_local_sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+      "lf_normalized_sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2"
+    },
+    "torque_contract.h": {
+      "exact_local_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "lf_normalized_sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7"
+    }
+  },
+  "shared_helper": {
+    "path": "reference/cortex_m4_objects.py",
+    "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090",
+    "use": "Only reviewed pure identity/archive/tree, environment, ELF/ARM-tag, stack and canonical dependency helpers. Do not call original fixed-three-unit compile_args/build or alter original protocol."
+  },
+  "original_protocol_sha256": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a",
+  "new_files": [
+    "reference/guard_cortex_m4_objects.py",
+    "reference/test_guard_cortex_m4_objects.py",
+    "research/TC-03G-base-guard-object-protocol.json",
+    "research/TC-03G-base-guard-object-annex.md",
+    "research/TC-03G-evidence/"
+  ],
+  "toolchain": {
+    "name": "Arm Toolchain for Embedded",
+    "version": "22.1.0",
+    "host": "Windows-x86_64",
+    "official_release": "https://github.com/arm/arm-toolchain/releases/tag/release-22.1.0-ATfE",
+    "release_metadata_url": "https://api.github.com/repos/arm/arm-toolchain/releases/tags/release-22.1.0-ATfE",
+    "retained_metadata_sha256": "3aba3a90d2cdee0e8543c28b5e066a5831954b9625991a6c62be8105da85fb30",
+    "archive_url": "https://github.com/arm/arm-toolchain/releases/download/release-22.1.0-ATfE/ATfE-22.1.0-Windows-x86_64.zip",
+    "archive_bytes": 710565705,
+    "archive_sha256": "9db55e43d5fdb1619692259897bf1e64f61da82a558827aae6928a2ccb39d348",
+    "checksum_url": "https://github.com/arm/arm-toolchain/releases/download/release-22.1.0-ATfE/ATfE-22.1.0-Windows-x86_64.zip.sha256",
+    "checksum_file_bytes": 97,
+    "checksum_file_sha256": "5b26e494517da1ef726b3bb7634f72fdcb9df7359f4a26e2e970b09e80f2c291",
+    "archive_size_cap_bytes": 1073741824,
+    "portable_location": "workspace work/tools only; never globally installed",
+    "verification": "Verify retained archive size/SHA and the entire existing extracted tree against that ZIP with a fresh JSONL manifest before any executable. Reuse in place; no re-extraction, download or installation.",
+    "license": "Retain package licenses/notices and provenance; component licenses vary. No toolchain redistribution or binaries committed.",
+    "original_acquisition_available_disk_bytes": 588071800832,
+    "original_GNU_preference_attempt": "Official GNU installation guide read by ordinary HTTPS; official downloads page returned Access Denied. Earlier owner attempt encountered GitLab bot control. No bypass or guessed asset links; use this official fallback."
+  },
+  "local_acquisition": {
+    "policy": "Reuse existing local official pinned archive/tree; no new download, install or global environment change",
+    "archive": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\downloads\\ATfE-22.1.0-Windows-x86_64.zip",
+    "root": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64",
+    "preexecution": "Reverify entire extracted tree against the pinned archive before ANY new executable, with a fresh per-file JSONL manifest and exact helper/driver/source/protocol hashes."
+  },
+  "matrix": {
+    "units": [
+      "torque_guard.c"
+    ],
+    "abis": [
+      "hard",
+      "softfp"
+    ],
+    "repetitions": 2,
+    "planned_objects": 4,
+    "concurrency": 1,
+    "planned_commands": 26,
+    "command_breakdown": {
+      "tool_versions": 4,
+      "multilib_preflights": 2,
+      "object_compiles": 4,
+      "object_inspections": 16
+    }
+  },
+  "compile_common_flags": [
+    "--no-default-config",
+    "--target=armv7em-none-eabi",
+    "-mcpu=cortex-m4",
+    "-mthumb",
+    "-mfpu=fpv4-sp-d16",
+    "-mlittle-endian",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pedantic",
+    "-ffreestanding",
+    "-fno-fast-math",
+    "-fno-finite-math-only",
+    "-ffp-contract=off",
+    "-fexcess-precision=standard",
+    "-fstack-usage",
+    "-ffunction-sections",
+    "-fdata-sections"
+  ],
+  "compile_command_template": [
+    "<verified-clang>",
+    "--no-default-config",
+    "--target=armv7em-none-eabi",
+    "-mcpu=cortex-m4",
+    "-mthumb",
+    "-mfpu=fpv4-sp-d16",
+    "-mlittle-endian",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pedantic",
+    "-ffreestanding",
+    "-fno-fast-math",
+    "-fno-finite-math-only",
+    "-ffp-contract=off",
+    "-fexcess-precision=standard",
+    "-fstack-usage",
+    "-ffunction-sections",
+    "-fdata-sections",
+    "-mfloat-abi=<hard|softfp>",
+    "-MD",
+    "-MF",
+    "<new-attempt>/<repeat>/<abi>/torque_guard.d",
+    "-c",
+    "torque_guard.c",
+    "-o",
+    "<new-attempt>/<repeat>/<abi>/torque_guard.o"
+  ],
+  "preflight_commands": [
+    [
+      "clang.exe",
+      "--version"
+    ],
+    [
+      "llvm-readobj.exe",
+      "--version"
+    ],
+    [
+      "llvm-size.exe",
+      "--version"
+    ],
+    [
+      "llvm-nm.exe",
+      "--version"
+    ],
+    [
+      "clang.exe",
+      "--no-default-config",
+      "--target=armv7em-none-eabi",
+      "-mcpu=cortex-m4",
+      "-mthumb",
+      "-mfpu=fpv4-sp-d16",
+      "-mfloat-abi=<hard|softfp>",
+      "-print-multi-directory"
+    ]
+  ],
+  "inspection_commands": [
+    [
+      "llvm-readobj.exe",
+      "--file-headers",
+      "--sections",
+      "--symbols",
+      "--arch-specific",
+      "<unit>.o"
+    ],
+    [
+      "llvm-size.exe",
+      "--format=berkeley",
+      "--radix=10",
+      "<unit>.o"
+    ],
+    [
+      "llvm-size.exe",
+      "--format=sysv",
+      "--radix=10",
+      "<unit>.o"
+    ],
+    [
+      "llvm-nm.exe",
+      "--undefined-only",
+      "<unit>.o"
+    ]
+  ],
+  "retained_outputs": [
+    "Create-only new attempt outside source roots; exact three-file native snapshot, executed driver/helper and committed protocol copies.",
+    "Pre-call verified archive/tree manifest and tool/license identities; every command argv/cwd recorded before launching, stdout/stderr hashes/exit/timing retained.",
+    "Four little-endian ELF32 ARM relocatables with ARMv7E-M/M-profile/Thumb-2, VFPv4-D16/single-precision tags and actual hard/base calling-convention tag values.",
+    "Complete sections, Berkeley and SysV size reports, raw undefined symbol names, every emitted .su local stack record and qualifier, .d hashes and all source/toolchain dependency hashes.",
+    "Two same-condition repeat hash comparisons (one per ABI); source/header identities rechecked after completion. No guessed object sizes, helper cost, linked-memory budget or whole-stack bound."
+  ],
+  "driver_contract": [
+    "Separate additive driver with this exact protocol/hash/source cohort. Original driver/protocol/build matrix remain untouched.",
+    "Reject existing output, source/header overlap, changed source/protocol/helper, unverified archive/tree/tools, any extra/reordered/removed flag, unknown unit/ABI and non-object commands.",
+    "Snapshot only torque_guard.c, torque_guard.h, torque_contract.h. tc_validate_allocation/tc_contract_reason remain unresolved external symbols as appropriate; do NOT compile/link their implementation for this annex.",
+    "Use explicit relative input filename in the snapshot and canonical dependency roots; preserve literal Windows drive backslashes, escaped spaces and continuations.",
+    "Strict binary64 guards/math flags unchanged. Ordinary floating environment assumptions do not become measured target behavior.",
+    "Run all four frozen rows; retain compile/inspection/metadata failures and denominator. Stop unexpected verification/launch failure conservatively. No source/math-policy adjustment after observing results without a separately frozen amendment.",
+    "Software-only tests cover frozen identity/cohort, exact flags/order, create-only/containment and matrix/metadata guards. Actual object calls remain a distinct receipt.",
+    "Independent practical source/artifact review and relevant host CI before scoped draft; no merges/deployment."
+  ],
+  "stop_rules": [
+    "No compiler/inspection/version executable before root approves this annex plan and v1 is committed on new scoped branch from exact PR74.",
+    "Archive size/hash, extracted-file/tool, source/helper/protocol, unsafe path or command-contract mismatch stops before tool execution.",
+    "No linker, target emulator, startup/HAL, flash/CAN/hardware interaction or target numeric/timing test."
+  ],
+  "limitations": [
+    "Exact STM32 part, team ABI/toolchain/library/startup, signal mapping and approved resource budgets remain unknown.",
+    "Object sections exclude linked helpers/libraries/startup/layout/runtime storage; unresolved symbols do not establish successful linkage or their runtime/numerical behavior.",
+    "Clang local stack frames exclude caller/callee/helper frames, interrupts/FPU context, scheduler and whole-program bounds.",
+    "Original three-unit experiment remains historical and separately identified; this annex does not silently add a fourth object to it.",
+    "No target runtime parity, continuous-time behavior, timing/deadline/WCET, firmware fit, HIL, CAN, vehicle actuation or safety approval."
+  ],
+  "primary_sources": [
+    {
+      "url": "https://www.st.com/resource/en/datasheet/dm00037051.pdf",
+      "support": "STM32F405/407 DS8626 Rev12, section2/3.1: Cortex-M4 and single-precision FPU; no exact-part budget selected"
+    },
+    {
+      "url": "https://www.st.com/resource/en/application_note/dm00047230-floating-point-unit-demonstration-on-stm32-microcontrollers-stmicroelectronics.pdf",
+      "support": "AN4044 Rev2 section3/Table6: Cortex-M4 FPv4-SP only"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/arm/arm-toolchain/release-22.1.0-ATfE/arm-software/embedded/README.md",
+      "support": "Official portable extraction, target/FPU multilib selection, package licenses; Omax enables fast-math and is excluded"
+    },
+    {
+      "url": "https://clang.llvm.org/docs/ClangCommandLineReference.html",
+      "support": "Clang float-ABI, contraction, freestanding, default-config and stack-usage flags; installed22.1.0 diagnostics are retained"
+    },
+    {
+      "url": "https://llvm.org/docs/CommandGuide/llvm-readobj.html",
+      "support": "--arch-specific displays ARM attributes; file/section/symbol metadata"
+    },
+    {
+      "url": "https://llvm.org/docs/CommandGuide/llvm-size.html",
+      "support": "Berkeley text/data/bss versus SysV section accounting"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ARM-software/abi-aa/2025Q4/addenda32/addenda32.rst",
+      "support": "Tag_ABI_VFP_args=0 base/1 VFP convention; no presumed team ABI"
+    }
+  ],
+  "research_attribution": "Reuses the already reviewed primary-source target/ABI/strict-math/stack interpretation and actual pinned toolchain from TC-03E; new question/source cohort and acceptance denominator are separately frozen. No unmeasured resource number inferred.",
+  "root_review": "Approved separate4-object/26-command annex; driver/tests require independent source review and a final root GO before actual executable calls."
+}

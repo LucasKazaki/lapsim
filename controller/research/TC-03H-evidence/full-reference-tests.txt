@@ -1,0 +1,22 @@
+usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+python.exe -m unittest: error: output must not overwrite a reference source or its hardlink
+usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+python.exe -m unittest: error: output must not overwrite a reference source or its hardlink
+usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+python.exe -m unittest: error: output must not overwrite a contributing source or hardlink
+usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+python.exe -m unittest: error: output must not overwrite a contributing source or hardlink
+bench replay: scenario, output and CSV paths must be distinct
+bench replay: maximum recursion depth exceeded while decoding a JSON array from a unicode string
+bench replay: scenario, output and CSV paths must be distinct files
+bench replay: scenario, output and CSV paths must be distinct files
+bench replay: scenario, output and CSV paths must be distinct files
+usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+python.exe -m unittest: error: output must not overwrite a contributing source or hardlink
+usage: python.exe -m unittest [-h] [--cc CC] --output OUTPUT
+python.exe -m unittest: error: output must not overwrite a contributing source or hardlink
+----------------------------------------------------------------------
+Ran 500 tests in 22.531s
+
+OK
+{"allowed_cycles": 2, "cycles": 3, "inhibited_cycles": 0, "recovery_pending_cycles": 1, "zero_command_cycles": 1}

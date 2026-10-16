@@ -1,0 +1,50 @@
+{
+  "schema": "enme408-native-bench-bundle/v1",
+  "binding_order": "sealed run -> viewer metadata run SHA -> this external file manifest; no backwards hash references",
+  "files": {
+    "enme408-native-bench-run.json": {
+      "bytes": 177310,
+      "sha256": "b96b9cc5e6b27e2d2d4e8a345393a1635ca713dda2a1dfaec7025300cca21d5f"
+    },
+    "enme408-native-bench-receipt.json": {
+      "bytes": 28688,
+      "sha256": "dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8"
+    },
+    "enme408-native-bench-trace.csv": {
+      "bytes": 2042,
+      "sha256": "cf1008383b1b9a8d0a605a3c21637b7a42580321aa2958d303627425fa423dff"
+    },
+    "enme408-native-bench-export-status.json": {
+      "bytes": 449,
+      "sha256": "c6c37633692690c0bb361e78154a92a3fb0f0cb4ba69050cb6eefb2439b47900"
+    },
+    "enme408-native-bench-overflow-run.json": {
+      "bytes": 58380,
+      "sha256": "db230f7c83543a295642982d7fcb23c3653fb52ab1e85d7be8566931501854c1"
+    },
+    "enme408-native-bench-review.html": {
+      "bytes": 51638,
+      "sha256": "13902b579a7dc26a4397ee0f4977cf8ae013bb9239992ca908c6dd51e4e26d50"
+    },
+    "enme408-native-bench-overview.jpg": {
+      "bytes": 118559,
+      "sha256": "8697553287ca6a6201e143b85e77893689694836b8a0b91a43fe5295b1407e31"
+    },
+    "enme408-native-bench-desktop.jpg": {
+      "bytes": 105902,
+      "sha256": "cdf531e9cca37410ce184047223edd745299530a709a8ce705a6b6691b07233d"
+    },
+    "enme408-native-bench-mobile.jpg": {
+      "bytes": 36477,
+      "sha256": "a9b8f47a3dad0f876adb1d0b3d87c91cb9e83552f91867de23d65742743367d1"
+    },
+    "enme408-native-bench-browser-review.json": {
+      "bytes": 2195,
+      "sha256": "0f598ae749475711e7d7a7891f6310706e0f1e017f4f2546cb34b289f77024d8"
+    }
+  },
+  "run_sha256": "b96b9cc5e6b27e2d2d4e8a345393a1635ca713dda2a1dfaec7025300cca21d5f",
+  "current_native_attempt": "enme408-native-bench-example-v3 after narrow export IO diagnostics repair",
+  "overflow_evidence": "Historical actual overflow-v2 receipt retained unchanged; numerical functions are unchanged by the IO-only repair.",
+  "scope": "Synthetic compiled-host review bundle; no target/vehicle/transport/hardware authority."
+}

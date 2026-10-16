@@ -1,0 +1,1954 @@
+{
+  "actual_invocations": {
+    "compile": 1,
+    "version": 1
+  },
+  "build": {
+    "argv": [
+      "C:\\msys64\\mingw64\\bin\\gcc.exe",
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-fno-fast-math",
+      "-fno-finite-math-only",
+      "-ffp-contract=off",
+      "-fexcess-precision=standard",
+      "-shared",
+      "-static-libgcc",
+      "-Wl,--no-insert-timestamp",
+      "-Wl,--image-base,0x180000000",
+      "torque_contract.c",
+      "torque_clock.c",
+      "torque_pedal.c",
+      "torque_guard.c",
+      "torque_allocator.c",
+      "-o",
+      "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-native-bench-overflow-v2\\torque_allocator.dll",
+      "-lm"
+    ],
+    "binary_sha256": "9879f46feec0efb943625ebf5c62925fcbe28dcbaefb15d46538113ac02adb53",
+    "build_diagnostics": "",
+    "compiler": "C:\\msys64\\mingw64\\bin\\gcc.exe",
+    "flags": [
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-fno-fast-math",
+      "-fno-finite-math-only",
+      "-ffp-contract=off",
+      "-fexcess-precision=standard",
+      "-shared",
+      "-static-libgcc",
+      "-Wl,--no-insert-timestamp",
+      "-Wl,--image-base,0x180000000"
+    ],
+    "version": "gcc.exe (Rev2, Built by MSYS2 project) 12.1.0"
+  },
+  "build_status": "completed",
+  "commands": [
+    {
+      "argv": [
+        "C:\\msys64\\mingw64\\bin\\gcc.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go",
+      "kind": "version",
+      "returncode": 0,
+      "status": "completed",
+      "stderr": {
+        "bytes": 0,
+        "file": "command-01-stderr.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 248,
+        "file": "command-01-stdout.txt",
+        "sha256": "d870defbc8dad583cff66a34b8f2e3247bc7cd6d77d301aefded73c4f7b483da"
+      }
+    },
+    {
+      "argv": [
+        "C:\\msys64\\mingw64\\bin\\gcc.exe",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-shared",
+        "-static-libgcc",
+        "-Wl,--no-insert-timestamp",
+        "-Wl,--image-base,0x180000000",
+        "torque_contract.c",
+        "torque_clock.c",
+        "torque_pedal.c",
+        "torque_guard.c",
+        "torque_allocator.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-native-bench-overflow-v2\\torque_allocator.dll",
+        "-lm"
+      ],
+      "cwd": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\repos\\enme408-studio\\projects\\enme408-torque-control\\reference\\native",
+      "kind": "compile",
+      "returncode": 0,
+      "status": "completed",
+      "stderr": {
+        "bytes": 0,
+        "file": "command-02-stderr.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "file": "command-02-stdout.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "execution_status": "completed",
+  "failure": {
+    "message": "nonfinite viewer field: receipt.records[2].allocator.delivered_nm",
+    "stage": "representation",
+    "type": "ValueError"
+  },
+  "input_status": "accepted",
+  "limits": [
+    "Offline synthetic/normalized host evidence only; no hardware IO, CAN, target or vehicle authority.",
+    "Viewer checks presentation consistency, not authentication or controller reproduction.",
+    "Abstract four-slot mapping; no physical motor calibration or safety certification."
+  ],
+  "native_child": {
+    "alive_after_cleanup": false,
+    "cycles_per_run_completed": 5,
+    "cycles_per_run_requested": 5,
+    "elapsed_seconds": 0.14100000000325963,
+    "exitcode": 0,
+    "pid": 41444,
+    "replay_runs_completed": 2,
+    "replay_runs_requested": 2,
+    "status": "completed"
+  },
+  "owner_versions": {
+    "abi": 1,
+    "allocator": 1,
+    "clock": 1,
+    "guard": 1,
+    "numeric": 2,
+    "pedal": 1
+  },
+  "parity_status": "passed",
+  "repeat_agreement": true,
+  "representation_status": "failed",
+  "scenario": {
+    "config": {
+      "allocator": {
+        "max_input_age_ms": 50
+      },
+      "fault": {
+        "valid_samples_to_recover": 2
+      },
+      "guard": {
+        "max_rise_nm_per_s": 100.0,
+        "pedal_clear_fraction": 0.2,
+        "pedal_overlap_trip_fraction": 0.6
+      },
+      "period_ms": 50
+    },
+    "label": "Finite synthetic raw total overflow, then recovery",
+    "provenance": "Synthetic five-cycle boundary case; no vehicle measurements.",
+    "samples": [
+      {
+        "allocation": {
+          "external_interlock": true,
+          "input_timestamp_ms": 0,
+          "now_ms": 0,
+          "request_nm": 40.0,
+          "torque_unit": "N*m",
+          "wheel_enabled": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "wheel_limits_nm": [
+            100.0,
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "guard": {
+          "accelerator_fraction": 0.3,
+          "brake_active": false,
+          "critical_comms_ok": true,
+          "dt_s": 0.05,
+          "external_interlock": true,
+          "sensor_agreement_ok": true
+        },
+        "restart_requested": false
+      },
+      {
+        "allocation": {
+          "external_interlock": true,
+          "input_timestamp_ms": 50,
+          "now_ms": 50,
+          "request_nm": 40.0,
+          "torque_unit": "N*m",
+          "wheel_enabled": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "wheel_limits_nm": [
+            100.0,
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "guard": {
+          "accelerator_fraction": 0.3,
+          "brake_active": false,
+          "critical_comms_ok": true,
+          "dt_s": 0.05,
+          "external_interlock": true,
+          "sensor_agreement_ok": true
+        },
+        "restart_requested": false
+      },
+      {
+        "allocation": {
+          "external_interlock": true,
+          "input_timestamp_ms": 100,
+          "now_ms": 100,
+          "request_nm": 1.7976931348623157e+308,
+          "torque_unit": "N*m",
+          "wheel_enabled": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "wheel_limits_nm": [
+            1.7976931348623157e+308,
+            1.7976931348623157e+308,
+            1.7976931348623157e+308,
+            0.0
+          ]
+        },
+        "guard": {
+          "accelerator_fraction": 0.3,
+          "brake_active": false,
+          "critical_comms_ok": true,
+          "dt_s": 0.05,
+          "external_interlock": true,
+          "sensor_agreement_ok": true
+        },
+        "restart_requested": false
+      },
+      {
+        "allocation": {
+          "external_interlock": true,
+          "input_timestamp_ms": 150,
+          "now_ms": 150,
+          "request_nm": 40.0,
+          "torque_unit": "N*m",
+          "wheel_enabled": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "wheel_limits_nm": [
+            100.0,
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "guard": {
+          "accelerator_fraction": 0.3,
+          "brake_active": false,
+          "critical_comms_ok": true,
+          "dt_s": 0.05,
+          "external_interlock": true,
+          "sensor_agreement_ok": true
+        },
+        "restart_requested": false
+      },
+      {
+        "allocation": {
+          "external_interlock": true,
+          "input_timestamp_ms": 200,
+          "now_ms": 200,
+          "request_nm": 40.0,
+          "torque_unit": "N*m",
+          "wheel_enabled": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "wheel_limits_nm": [
+            100.0,
+            100.0,
+            100.0,
+            100.0
+          ]
+        },
+        "guard": {
+          "accelerator_fraction": 0.3,
+          "brake_active": false,
+          "critical_comms_ok": true,
+          "dt_s": 0.05,
+          "external_interlock": true,
+          "sensor_agreement_ok": true
+        },
+        "restart_requested": false
+      }
+    ],
+    "schema": "enme408-control-scenario/v1"
+  },
+  "scenario_sha256": "a436931a7a76ee9cdef9024c9da7603e46e9bd80a97256f043cd4a7c9c5cd803",
+  "scenario_sha256_after": "a436931a7a76ee9cdef9024c9da7603e46e9bd80a97256f043cd4a7c9c5cd803",
+  "schema": "enme408-native-bench-run/v1",
+  "source_sha256_after": {
+    "../research/TC-03H-allocator-case-generator.json": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
+    "../research/TC-03H-portable-allocator-protocol.json": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+    "../research/TC-03I-native-bench-case-generator.json": "b858e004bc2053305f77e2a75679f82c0e22ec6b924b8e06ea9ac9857504d90c",
+    "../research/TC-03I-native-bench-replay-protocol.json": "474f0a2928b169e13bd41779b45fa73f4806ab03cc7d88817fc231c1c0f83733",
+    "allocation_contract.py": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
+    "allocator.py": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
+    "allocator_parity.py": "7e13e91fb097795ddddd595f05b09299428a4caf62a3869d0f4621be013c4fea",
+    "bench-scenario.example.json": "5af0071216b03e781ee1e9cd89d74b870dc0e2f090fd75a5ff15800fcb686bcc",
+    "bench_replay.py": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc",
+    "c_parity.py": "eca7539e503dfb96b5106d3ec2af6feffb8955f83b4de036dd4d47d78e70a04a",
+    "clock_parity.py": "0a8e161de374a181adf98f344f2b34f10233d3fb53e929b9d334de4aa36fbfaf",
+    "command_guard.py": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+    "control_pipeline.py": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531",
+    "cycle_clock.py": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5",
+    "fault_state.py": "1abe78b642ca381257f1b7e26eb8ac5b125e98d33a91c97f9808ab9a5690d9d3",
+    "guard_overlap_observation.py": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+    "guard_parity.py": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854",
+    "guard_request_contract.py": "e2e900515d76aa19a2226b5d4f5a4620708043c91b1180dd386be5c1d536837b",
+    "guard_trusted_clear.py": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+    "native/allocator_sanitizer_probe.c": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495",
+    "native/torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+    "native/torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+    "native/torque_clock.c": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+    "native/torque_clock.h": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+    "native/torque_contract.c": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+    "native/torque_contract.h": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+    "native/torque_guard.c": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+    "native/torque_guard.h": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+    "native/torque_pedal.c": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
+    "native/torque_pedal.h": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
+    "native_bench_replay.py": "1f14c1828c6d33c33520b192273a3828dd1e92a5807546691f6b9a1d8638be8f",
+    "pedal_parity.py": "e044d6f2dcf91211ec6b1fb7f046dcb3a20ef2e967194052246363a436daaa7c",
+    "test_allocator_parity.py": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336",
+    "test_native_bench_replay.py": "02f9001f06e358adc18d36621f9a07678272039c0baeaba2a4aaccb4e7cfdecd",
+    "torque_numeric.py": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
+  },
+  "source_sha256_before": {
+    "../research/TC-03H-allocator-case-generator.json": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
+    "../research/TC-03H-portable-allocator-protocol.json": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+    "../research/TC-03I-native-bench-case-generator.json": "b858e004bc2053305f77e2a75679f82c0e22ec6b924b8e06ea9ac9857504d90c",
+    "../research/TC-03I-native-bench-replay-protocol.json": "474f0a2928b169e13bd41779b45fa73f4806ab03cc7d88817fc231c1c0f83733",
+    "allocation_contract.py": "3a24f6c86e4d44d8fd1d1c09cb7280756ab5f2fce7d766b0df9f357cb41d6415",
+    "allocator.py": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
+    "allocator_parity.py": "7e13e91fb097795ddddd595f05b09299428a4caf62a3869d0f4621be013c4fea",
+    "bench-scenario.example.json": "5af0071216b03e781ee1e9cd89d74b870dc0e2f090fd75a5ff15800fcb686bcc",
+    "bench_replay.py": "2ca4e5ba6c23375fa9f0f289d6847021dbb9a57b77b2fb577037b1a37eb716cc",
+    "c_parity.py": "eca7539e503dfb96b5106d3ec2af6feffb8955f83b4de036dd4d47d78e70a04a",
+    "clock_parity.py": "0a8e161de374a181adf98f344f2b34f10233d3fb53e929b9d334de4aa36fbfaf",
+    "command_guard.py": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+    "control_pipeline.py": "23ca6d1e3a1b77517ec38e76092d6287b44dfe1258cbe08de8d0391ea5411531",
+    "cycle_clock.py": "049c6a965f6c72e911833105cc90551cd3a91e86f5c508f93f648a05c763edc5",
+    "fault_state.py": "1abe78b642ca381257f1b7e26eb8ac5b125e98d33a91c97f9808ab9a5690d9d3",
+    "guard_overlap_observation.py": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+    "guard_parity.py": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854",
+    "guard_request_contract.py": "e2e900515d76aa19a2226b5d4f5a4620708043c91b1180dd386be5c1d536837b",
+    "guard_trusted_clear.py": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+    "native/allocator_sanitizer_probe.c": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495",
+    "native/torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+    "native/torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+    "native/torque_clock.c": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+    "native/torque_clock.h": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+    "native/torque_contract.c": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+    "native/torque_contract.h": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+    "native/torque_guard.c": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+    "native/torque_guard.h": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+    "native/torque_pedal.c": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
+    "native/torque_pedal.h": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
+    "native_bench_replay.py": "1f14c1828c6d33c33520b192273a3828dd1e92a5807546691f6b9a1d8638be8f",
+    "pedal_parity.py": "e044d6f2dcf91211ec6b1fb7f046dcb3a20ef2e967194052246363a436daaa7c",
+    "test_allocator_parity.py": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336",
+    "test_native_bench_replay.py": "02f9001f06e358adc18d36621f9a07678272039c0baeaba2a4aaccb4e7cfdecd",
+    "torque_numeric.py": "b4cb825eefae38a035feaa7eb85f907a91522c6ccaaf2a26a1d4e700e7067a26"
+  },
+  "status": "failed_retained",
+  "trace": [
+    {
+      "agreement": true,
+      "checks": {
+        "allocator": {
+          "delivered_bits": "4044000000000000",
+          "fault": null,
+          "requested_bits": "4044000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 0,
+          "previous_tick": 0
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": false,
+          "command_nm": [
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            }
+          ],
+          "command_reason": "recovery_valid_sample",
+          "fault": {
+            "allocator_fault": null,
+            "allocator_status": "ok",
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "generation": 0,
+            "next_state": "recovery_pending",
+            "previous_state": "inhibited",
+            "reason": "recovery_valid_sample",
+            "recovery_streak": 1,
+            "reference_gate_allowed": false,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "restart_requested": false,
+            "sequence": 0,
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "rise_rate_limit",
+            "status": "limited"
+          },
+          "now_ms": 0,
+          "restart_requested": false,
+          "sequence": 0
+        }
+      },
+      "previous_proposed_bits": [
+        "0000000000000000",
+        "0000000000000000",
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "python_checks": {
+        "allocator": {
+          "delivered_bits": "4044000000000000",
+          "fault": null,
+          "requested_bits": "4044000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 0,
+          "previous_tick": 0
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": false,
+          "command_nm": [
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            }
+          ],
+          "command_reason": "recovery_valid_sample",
+          "fault": {
+            "allocator_fault": null,
+            "allocator_status": "ok",
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "generation": 0,
+            "next_state": "recovery_pending",
+            "previous_state": "inhibited",
+            "reason": "recovery_valid_sample",
+            "recovery_streak": 1,
+            "reference_gate_allowed": false,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "restart_requested": false,
+            "sequence": 0,
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "rise_rate_limit",
+            "status": "limited"
+          },
+          "now_ms": 0,
+          "restart_requested": false,
+          "sequence": 0
+        }
+      },
+      "sequence": 0
+    },
+    {
+      "agreement": true,
+      "checks": {
+        "allocator": {
+          "delivered_bits": "4044000000000000",
+          "fault": null,
+          "requested_bits": "4044000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 50,
+          "previous_tick": 50
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": true,
+          "command_nm": [
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            }
+          ],
+          "command_reason": "rise_rate_limit",
+          "fault": {
+            "allocator_fault": null,
+            "allocator_status": "ok",
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "generation": 0,
+            "next_state": "ready",
+            "previous_state": "recovery_pending",
+            "reason": "recovery_criteria_met",
+            "recovery_streak": 2,
+            "reference_gate_allowed": true,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "restart_requested": false,
+            "sequence": 1,
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "rise_rate_limit",
+            "status": "limited"
+          },
+          "now_ms": 50,
+          "restart_requested": false,
+          "sequence": 1
+        }
+      },
+      "previous_proposed_bits": [
+        "0000000000000000",
+        "0000000000000000",
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "python_checks": {
+        "allocator": {
+          "delivered_bits": "4044000000000000",
+          "fault": null,
+          "requested_bits": "4044000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 50,
+          "previous_tick": 50
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": true,
+          "command_nm": [
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            }
+          ],
+          "command_reason": "rise_rate_limit",
+          "fault": {
+            "allocator_fault": null,
+            "allocator_status": "ok",
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "generation": 0,
+            "next_state": "ready",
+            "previous_state": "recovery_pending",
+            "reason": "recovery_criteria_met",
+            "recovery_streak": 2,
+            "reference_gate_allowed": true,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "restart_requested": false,
+            "sequence": 1,
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "rise_rate_limit",
+            "status": "limited"
+          },
+          "now_ms": 50,
+          "restart_requested": false,
+          "sequence": 1
+        }
+      },
+      "sequence": 1
+    },
+    {
+      "agreement": true,
+      "checks": {
+        "allocator": {
+          "delivered_bits": "7ff0000000000000",
+          "fault": null,
+          "requested_bits": "7fefffffffffffff",
+          "status": "ok",
+          "wheel_bits": [
+            "7fd5555555555555",
+            "7fd5555555555555",
+            "7fd5555555555555",
+            "0000000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0"
+          ],
+          "previous_hex": [
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0"
+          ],
+          "reason": "invalid_candidate_delivered",
+          "status": "inhibited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 100,
+          "previous_tick": 100
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0"
+          ],
+          "previous_hex": [
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0"
+          ],
+          "reason": "invalid_candidate_delivered",
+          "status": "inhibited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "7ff0000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "7fefffffffffffff"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "0000000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": false,
+          "command_nm": [
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            }
+          ],
+          "command_reason": "invalid_candidate_delivered",
+          "fault": {
+            "allocator_fault": "invalid_candidate_delivered",
+            "allocator_status": "fault",
+            "delivered_nm": {
+              "binary64": "0000000000000000"
+            },
+            "generation": 0,
+            "next_state": "inhibited",
+            "previous_state": "ready",
+            "reason": "invalid_candidate_delivered",
+            "recovery_streak": 0,
+            "reference_gate_allowed": false,
+            "requested_nm": {
+              "binary64": "7fefffffffffffff"
+            },
+            "restart_requested": false,
+            "sequence": 2,
+            "wheel_torque_nm": [
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "invalid_candidate_delivered",
+            "status": "inhibited"
+          },
+          "now_ms": 100,
+          "restart_requested": false,
+          "sequence": 2
+        }
+      },
+      "previous_proposed_bits": [
+        "4014000000000000",
+        "4014000000000000",
+        "4014000000000000",
+        "4014000000000000"
+      ],
+      "python_checks": {
+        "allocator": {
+          "delivered_bits": "7ff0000000000000",
+          "fault": null,
+          "requested_bits": "7fefffffffffffff",
+          "status": "ok",
+          "wheel_bits": [
+            "7fd5555555555555",
+            "7fd5555555555555",
+            "7fd5555555555555",
+            "0000000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0"
+          ],
+          "previous_hex": [
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0"
+          ],
+          "reason": "invalid_candidate_delivered",
+          "status": "inhibited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 100,
+          "previous_tick": 100
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0"
+          ],
+          "previous_hex": [
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0",
+            "0x0.0p+0"
+          ],
+          "reason": "invalid_candidate_delivered",
+          "status": "inhibited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "7ff0000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "7fefffffffffffff"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "7fd5555555555555"
+              },
+              {
+                "binary64": "0000000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": false,
+          "command_nm": [
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            }
+          ],
+          "command_reason": "invalid_candidate_delivered",
+          "fault": {
+            "allocator_fault": "invalid_candidate_delivered",
+            "allocator_status": "fault",
+            "delivered_nm": {
+              "binary64": "0000000000000000"
+            },
+            "generation": 0,
+            "next_state": "inhibited",
+            "previous_state": "ready",
+            "reason": "invalid_candidate_delivered",
+            "recovery_streak": 0,
+            "reference_gate_allowed": false,
+            "requested_nm": {
+              "binary64": "7fefffffffffffff"
+            },
+            "restart_requested": false,
+            "sequence": 2,
+            "wheel_torque_nm": [
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              },
+              {
+                "binary64": "0000000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "invalid_candidate_delivered",
+            "status": "inhibited"
+          },
+          "now_ms": 100,
+          "restart_requested": false,
+          "sequence": 2
+        }
+      },
+      "sequence": 2
+    },
+    {
+      "agreement": true,
+      "checks": {
+        "allocator": {
+          "delivered_bits": "4044000000000000",
+          "fault": null,
+          "requested_bits": "4044000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 150,
+          "previous_tick": 150
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": false,
+          "command_nm": [
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            }
+          ],
+          "command_reason": "recovery_valid_sample",
+          "fault": {
+            "allocator_fault": null,
+            "allocator_status": "ok",
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "generation": 0,
+            "next_state": "recovery_pending",
+            "previous_state": "inhibited",
+            "reason": "recovery_valid_sample",
+            "recovery_streak": 1,
+            "reference_gate_allowed": false,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "restart_requested": false,
+            "sequence": 3,
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "rise_rate_limit",
+            "status": "limited"
+          },
+          "now_ms": 150,
+          "restart_requested": false,
+          "sequence": 3
+        }
+      },
+      "previous_proposed_bits": [
+        "0000000000000000",
+        "0000000000000000",
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "python_checks": {
+        "allocator": {
+          "delivered_bits": "4044000000000000",
+          "fault": null,
+          "requested_bits": "4044000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 150,
+          "previous_tick": 150
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": false,
+          "command_nm": [
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            },
+            {
+              "binary64": "0000000000000000"
+            }
+          ],
+          "command_reason": "recovery_valid_sample",
+          "fault": {
+            "allocator_fault": null,
+            "allocator_status": "ok",
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "generation": 0,
+            "next_state": "recovery_pending",
+            "previous_state": "inhibited",
+            "reason": "recovery_valid_sample",
+            "recovery_streak": 1,
+            "reference_gate_allowed": false,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "restart_requested": false,
+            "sequence": 3,
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "rise_rate_limit",
+            "status": "limited"
+          },
+          "now_ms": 150,
+          "restart_requested": false,
+          "sequence": 3
+        }
+      },
+      "sequence": 3
+    },
+    {
+      "agreement": true,
+      "checks": {
+        "allocator": {
+          "delivered_bits": "4044000000000000",
+          "fault": null,
+          "requested_bits": "4044000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 200,
+          "previous_tick": 200
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": true,
+          "command_nm": [
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            }
+          ],
+          "command_reason": "rise_rate_limit",
+          "fault": {
+            "allocator_fault": null,
+            "allocator_status": "ok",
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "generation": 0,
+            "next_state": "ready",
+            "previous_state": "recovery_pending",
+            "reason": "recovery_criteria_met",
+            "recovery_streak": 2,
+            "reference_gate_allowed": true,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "restart_requested": false,
+            "sequence": 4,
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "rise_rate_limit",
+            "status": "limited"
+          },
+          "now_ms": 200,
+          "restart_requested": false,
+          "sequence": 4
+        }
+      },
+      "previous_proposed_bits": [
+        "0000000000000000",
+        "0000000000000000",
+        "0000000000000000",
+        "0000000000000000"
+      ],
+      "python_checks": {
+        "allocator": {
+          "delivered_bits": "4044000000000000",
+          "fault": null,
+          "requested_bits": "4044000000000000",
+          "status": "ok",
+          "wheel_bits": [
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000",
+            "4024000000000000"
+          ]
+        },
+        "base": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "clock": {
+          "fault": null,
+          "now_ms": 200,
+          "previous_tick": 200
+        },
+        "effective": {
+          "latched": false,
+          "output_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "previous_hex": [
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2",
+            "0x1.4000000000000p+2"
+          ],
+          "reason": "rise_rate_limit",
+          "status": "limited"
+        },
+        "row": {
+          "allocator": {
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "fault": null,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "status": "ok",
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "clock_fault": null,
+          "command_allowed": true,
+          "command_nm": [
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            },
+            {
+              "binary64": "4014000000000000"
+            }
+          ],
+          "command_reason": "rise_rate_limit",
+          "fault": {
+            "allocator_fault": null,
+            "allocator_status": "ok",
+            "delivered_nm": {
+              "binary64": "4044000000000000"
+            },
+            "generation": 0,
+            "next_state": "ready",
+            "previous_state": "recovery_pending",
+            "reason": "recovery_criteria_met",
+            "recovery_streak": 2,
+            "reference_gate_allowed": true,
+            "requested_nm": {
+              "binary64": "4044000000000000"
+            },
+            "restart_requested": false,
+            "sequence": 4,
+            "wheel_torque_nm": [
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              },
+              {
+                "binary64": "4024000000000000"
+              }
+            ]
+          },
+          "guard": {
+            "output_nm": [
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              },
+              {
+                "binary64": "4014000000000000"
+              }
+            ],
+            "pedal_overlap_latched": false,
+            "reason": "rise_rate_limit",
+            "status": "limited"
+          },
+          "now_ms": 200,
+          "restart_requested": false,
+          "sequence": 4
+        }
+      },
+      "sequence": 4
+    }
+  ],
+  "trace_sha256": "87627a35b799add558629f3bdf1c2fe8e567bcb36d95684c151bcc72c7e044ea",
+  "viewer_status": "unrepresentable"
+}

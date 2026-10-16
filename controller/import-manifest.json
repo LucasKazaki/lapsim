@@ -1,0 +1,2105 @@
+{
+  "schema": "lapsim.controller-import.v1",
+  "upstream_repository": "https://github.com/LucasKazaki/lucas-agent-studio",
+  "upstream_commit": "73cc2e2bbbf3fdae4a4fed1cc6e7b3df8bbb110e",
+  "original_prefix": "projects/enme408-torque-control/",
+  "destination_prefix": "controller/",
+  "files": {
+    "README.md": {
+      "original_path": "projects/enme408-torque-control/README.md",
+      "sha256": "1e2f932fce40331805fc4e4f3ba86305990c305fb5d66ce2eab214506ac40bca",
+      "bytes": 8384
+    },
+    "reference/aggregate_power_budget.py": {
+      "original_path": "projects/enme408-torque-control/reference/aggregate_power_budget.py",
+      "sha256": "8e8f7ebd26657f3876f6cb932fc1ba7bfcd0294ff08fe02506fb38f728166c0e",
+      "bytes": 11178
+    },
+    "reference/allocation_contract.py": {
+      "original_path": "projects/enme408-torque-control/reference/allocation_contract.py",
+      "sha256": "67151ba23e53edd6fa1a375d76ed7516c0b574fd468f81766c2faf3caf2f9099",
+      "bytes": 3069
+    },
+    "reference/allocator.py": {
+      "original_path": "projects/enme408-torque-control/reference/allocator.py",
+      "sha256": "fa44bd9e03afcbdae2bfdf698405eb510e42b0774176de0ab614061b6ae510bb",
+      "bytes": 6588
+    },
+    "reference/allocator_cortex_m4_objects.py": {
+      "original_path": "projects/enme408-torque-control/reference/allocator_cortex_m4_objects.py",
+      "sha256": "132b2fe3ec9d7ffb2b7a8d0efc7b153ce547192c2fea99034ccc855cb8910ce4",
+      "bytes": 28707
+    },
+    "reference/allocator_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/allocator_parity.py",
+      "sha256": "7e13e91fb097795ddddd595f05b09299428a4caf62a3869d0f4621be013c4fea",
+      "bytes": 29106
+    },
+    "reference/bench-scenario.example.json": {
+      "original_path": "projects/enme408-torque-control/reference/bench-scenario.example.json",
+      "sha256": "5af0071216b03e781ee1e9cd89d74b870dc0e2f090fd75a5ff15800fcb686bcc",
+      "bytes": 12901
+    },
+    "reference/bench_replay.py": {
+      "original_path": "projects/enme408-torque-control/reference/bench_replay.py",
+      "sha256": "24b0cf6441af2d127e1942fcd3d7a9abea259303805b98072c857861ebe615fc",
+      "bytes": 8155
+    },
+    "reference/bounded_guard_replay.py": {
+      "original_path": "projects/enme408-torque-control/reference/bounded_guard_replay.py",
+      "sha256": "793741fb4c92556976a86e0a5c1f2620e1de8e9dbcb93f7f0befe169cc856433",
+      "bytes": 1753
+    },
+    "reference/build_reproduction_receipt.py": {
+      "original_path": "projects/enme408-torque-control/reference/build_reproduction_receipt.py",
+      "sha256": "3c3aaa3b67f4c46fe87425e66083d6893e2d3b766b25a0bdf924f427b70c05fc",
+      "bytes": 10891
+    },
+    "reference/bxcan_fifo_timing.py": {
+      "original_path": "projects/enme408-torque-control/reference/bxcan_fifo_timing.py",
+      "sha256": "224629327f86fd97457b11bf0fccaf0a7547c6a186ad88ad7ac0c2062ddd1414",
+      "bytes": 11032
+    },
+    "reference/c_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/c_parity.py",
+      "sha256": "6b08f0dd4311c0a07c9daa08ba05fe40c1b3e26c0fe417765a9c6c621c20864c",
+      "bytes": 28935
+    },
+    "reference/can_filter_32bit.py": {
+      "original_path": "projects/enme408-torque-control/reference/can_filter_32bit.py",
+      "sha256": "856f7824915d0dd9da1bf71c58faf708fdd5e446438e84ac5d22745921e24580",
+      "bytes": 6668
+    },
+    "reference/can_rx_age_evidence.py": {
+      "original_path": "projects/enme408-torque-control/reference/can_rx_age_evidence.py",
+      "sha256": "ed25e9749bcd81053f3b9521ae5ff7fd76c860051642999f9e0136b8cac0bad4",
+      "bytes": 8999
+    },
+    "reference/can_tx_age_evidence.py": {
+      "original_path": "projects/enme408-torque-control/reference/can_tx_age_evidence.py",
+      "sha256": "0f10e0200d99ffe85eeb7bf52ce72f8c0514be6b2457872d51f17fe550c62e92",
+      "bytes": 14380
+    },
+    "reference/can_tx_publication_evidence.py": {
+      "original_path": "projects/enme408-torque-control/reference/can_tx_publication_evidence.py",
+      "sha256": "a4a441b4c3ea0f9514abef16bff3dcf01e0a2a2ae321c6a6bf87f5b1b12f0bb8",
+      "bytes": 7283
+    },
+    "reference/clock_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/clock_parity.py",
+      "sha256": "42ae7de0e4302e306dabb09ce1f6a57a530c40af4ae799aa066dc1e6a969bbcd",
+      "bytes": 21053
+    },
+    "reference/command_guard.py": {
+      "original_path": "projects/enme408-torque-control/reference/command_guard.py",
+      "sha256": "dc27b9a399df300a088db28a2cc3efbe2188bea7e3ce9582b044ae92f2d37afe",
+      "bytes": 8429
+    },
+    "reference/comms_observer.py": {
+      "original_path": "projects/enme408-torque-control/reference/comms_observer.py",
+      "sha256": "196a21be69fab66c43f80025bf6d113b0e4c115249ce80e2075cebbf517dcdd0",
+      "bytes": 6099
+    },
+    "reference/control_pipeline.py": {
+      "original_path": "projects/enme408-torque-control/reference/control_pipeline.py",
+      "sha256": "19b1b1ce3d55cb3eef9ba33afcdf0ff5f88db7b2c2a54892fedd2f07f71d167c",
+      "bytes": 5099
+    },
+    "reference/cortex_m4_objects.py": {
+      "original_path": "projects/enme408-torque-control/reference/cortex_m4_objects.py",
+      "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090",
+      "bytes": 21282
+    },
+    "reference/cortex_m4_reaccount.py": {
+      "original_path": "projects/enme408-torque-control/reference/cortex_m4_reaccount.py",
+      "sha256": "6a962b4560d5a59f12bb829944e03dbf8d6a39dcdb016f33ae2891b7d459a53c",
+      "bytes": 7339
+    },
+    "reference/cycle_clock.py": {
+      "original_path": "projects/enme408-torque-control/reference/cycle_clock.py",
+      "sha256": "e5e847b4e9b7eab51670126204fdfb41c45789ee5f8aa04073f1135cafcaa9b9",
+      "bytes": 2113
+    },
+    "reference/evidence_contract.py": {
+      "original_path": "projects/enme408-torque-control/reference/evidence_contract.py",
+      "sha256": "59d3c8db27e95809f33781cfdd83f05e08a980daff82caf3c2857a0ec13be49f",
+      "bytes": 8259
+    },
+    "reference/evidence_questionnaire.example.json": {
+      "original_path": "projects/enme408-torque-control/reference/evidence_questionnaire.example.json",
+      "sha256": "6b6877f576393c06fc830a228e5aeae3ad709f4f2b9e4b638e24f7069fc08c3a",
+      "bytes": 1408
+    },
+    "reference/fault_state.py": {
+      "original_path": "projects/enme408-torque-control/reference/fault_state.py",
+      "sha256": "1abe78b642ca381257f1b7e26eb8ac5b125e98d33a91c97f9808ab9a5690d9d3",
+      "bytes": 7455
+    },
+    "reference/guard_cortex_m4_objects.py": {
+      "original_path": "projects/enme408-torque-control/reference/guard_cortex_m4_objects.py",
+      "sha256": "64f51787e0c8bfcff20bf423316480414d941df51f603235df1636053c4781b4",
+      "bytes": 11997
+    },
+    "reference/guard_overlap_observation.py": {
+      "original_path": "projects/enme408-torque-control/reference/guard_overlap_observation.py",
+      "sha256": "c84a15ef11830834476a578ff7ac8b47bcfcb21567f063dc610be5f1a9d5a213",
+      "bytes": 3289
+    },
+    "reference/guard_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/guard_parity.py",
+      "sha256": "0e657dd73b05b84fc3062b02a2929a0ae49e997251c80bde6bb18cb1ed255854",
+      "bytes": 26614
+    },
+    "reference/guard_request_contract.py": {
+      "original_path": "projects/enme408-torque-control/reference/guard_request_contract.py",
+      "sha256": "f91e435e4c7c0b44f12028eee522e4cefe07c39c71bca5760bb4c8c30a49a453",
+      "bytes": 885
+    },
+    "reference/guard_trusted_clear.py": {
+      "original_path": "projects/enme408-torque-control/reference/guard_trusted_clear.py",
+      "sha256": "a63da8593bdacb39492bf64a36032e683b74321ccca8e074b557337e778d714c",
+      "bytes": 2753
+    },
+    "reference/iwdg_timeout_interval.py": {
+      "original_path": "projects/enme408-torque-control/reference/iwdg_timeout_interval.py",
+      "sha256": "566aec45095bedd9541fe3a1364872d4cc31ea318623c6090eda801c126abc55",
+      "bytes": 2061
+    },
+    "reference/kinematic_ediff.py": {
+      "original_path": "projects/enme408-torque-control/reference/kinematic_ediff.py",
+      "sha256": "9f753afaea08cd4b3d8812aa3df0c0487e893932ae6b3e5761b1ac15f9fe6216",
+      "bytes": 8779
+    },
+    "reference/kinematic_observer.py": {
+      "original_path": "projects/enme408-torque-control/reference/kinematic_observer.py",
+      "sha256": "45a24adbe00579041b71cf10c733d8383ec7fc1f82b353804ba5fbc6e4696ffa",
+      "bytes": 4153
+    },
+    "reference/latch_recovery_experiment.py": {
+      "original_path": "projects/enme408-torque-control/reference/latch_recovery_experiment.py",
+      "sha256": "84f59688993ad0507cb1d59d47e6b33fe2be9159c2990e95f5b46181bbcbf4eb",
+      "bytes": 4334
+    },
+    "reference/native/allocator_sanitizer_probe.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/allocator_sanitizer_probe.c",
+      "sha256": "bfba788662f19a405d9f00b4389d5193569cb56dba53e6b992e29be916301495",
+      "bytes": 5095
+    },
+    "reference/native/clock_sanitizer_probe.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/clock_sanitizer_probe.c",
+      "sha256": "6d68c2edcca09bf03cb1c6cfe5926c7b7c978b0fd25254ae8d872e64860de43a",
+      "bytes": 3447
+    },
+    "reference/native/guard_sanitizer_probe.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/guard_sanitizer_probe.c",
+      "sha256": "740a0c27b5477cef295b461dd9b96a131caf8444fd8cadc83424285e341ce665",
+      "bytes": 4838
+    },
+    "reference/native/pedal_sanitizer_probe.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/pedal_sanitizer_probe.c",
+      "sha256": "0cc081cde182b5cceac564c95333348e647196b0a91d390c1d9f3ad27f917f37",
+      "bytes": 2347
+    },
+    "reference/native/sanitizer_probe.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/sanitizer_probe.c",
+      "sha256": "d2cac5d65fc5dbf273966030acbafb325fbcd04adcebef2cae5126ef14dbba9d",
+      "bytes": 3430
+    },
+    "reference/native/torque_allocator.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_allocator.c",
+      "sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+      "bytes": 6677
+    },
+    "reference/native/torque_allocator.h": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_allocator.h",
+      "sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+      "bytes": 1823
+    },
+    "reference/native/torque_clock.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_clock.c",
+      "sha256": "09d810044a91c3b2556088a1d538b3ca928081464802d3c216ea7a31e5a1c467",
+      "bytes": 4173
+    },
+    "reference/native/torque_clock.h": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_clock.h",
+      "sha256": "a1e033078e500bc5f89d8f0e13d1273cec8982fc70cb53ec0b85657b368d1b8b",
+      "bytes": 2331
+    },
+    "reference/native/torque_contract.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_contract.c",
+      "sha256": "a0b07fdf5b36d1c266483a704f6c1fd3a1bb03a059839f31f0d756a38ef4bbb0",
+      "bytes": 10658
+    },
+    "reference/native/torque_contract.h": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_contract.h",
+      "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "bytes": 3938
+    },
+    "reference/native/torque_guard.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_guard.c",
+      "sha256": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+      "bytes": 6920
+    },
+    "reference/native/torque_guard.h": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_guard.h",
+      "sha256": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+      "bytes": 1972
+    },
+    "reference/native/torque_pedal.c": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_pedal.c",
+      "sha256": "fbc18610b7720ce71aa21f9d818103d9605dad72702689d8d7e3747a58f266bd",
+      "bytes": 4669
+    },
+    "reference/native/torque_pedal.h": {
+      "original_path": "projects/enme408-torque-control/reference/native/torque_pedal.h",
+      "sha256": "b1932613e5febf0f9117f82ff3ca889a4445eda4bd79d4e820aa74a5efc2856d",
+      "bytes": 2053
+    },
+    "reference/native_bench_replay.py": {
+      "original_path": "projects/enme408-torque-control/reference/native_bench_replay.py",
+      "sha256": "a58950870eee9b848417c3ed6ed5b818cd3018c73d0d757920bf48a8a2a42fb9",
+      "bytes": 25373
+    },
+    "reference/pedal_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/pedal_parity.py",
+      "sha256": "4985722fce4e23422591cfa355f725c369112b2cd09328c4143e7105b1f457d8",
+      "bytes": 20568
+    },
+    "reference/recovery_latency_tradeoff.py": {
+      "original_path": "projects/enme408-torque-control/reference/recovery_latency_tradeoff.py",
+      "sha256": "7405b05da9180374a4ae68dbbea836729bba5ec70697c8980767f7013b8420f7",
+      "bytes": 5210
+    },
+    "reference/recovery_probability_log_evidence.py": {
+      "original_path": "projects/enme408-torque-control/reference/recovery_probability_log_evidence.py",
+      "sha256": "3bd9d99a8645a081270fa20342e923cce8ac9c6c82be8e3f67b0ec680f8dc0cb",
+      "bytes": 4429
+    },
+    "reference/recovery_wait_provenance.py": {
+      "original_path": "projects/enme408-torque-control/reference/recovery_wait_provenance.py",
+      "sha256": "c7d061b2d8c98383607d8eb4321c47b01c1fd2055aad28b260c124a157cb780e",
+      "bytes": 2134
+    },
+    "reference/stack_evidence_gate.py": {
+      "original_path": "projects/enme408-torque-control/reference/stack_evidence_gate.py",
+      "sha256": "9dbe914be3e4cb74f5517d9918a1f6d1c938eb93e0287244c66cd8bcafb160a9",
+      "bytes": 15045
+    },
+    "reference/stm32f405_device_master_applicability.py": {
+      "original_path": "projects/enme408-torque-control/reference/stm32f405_device_master_applicability.py",
+      "sha256": "3c2aa7c238d6027bd23970851a7c0c85024604a0c987af5e026b5b597e2e5fa9",
+      "bytes": 7614
+    },
+    "reference/team-interface-request.example.json": {
+      "original_path": "projects/enme408-torque-control/reference/team-interface-request.example.json",
+      "sha256": "2f3fbf5b7b6c26a629f9aca3d599df9c85ce01f034fcaa640cadcb8783589ca5",
+      "bytes": 1152
+    },
+    "reference/team_evidence_packet.py": {
+      "original_path": "projects/enme408-torque-control/reference/team_evidence_packet.py",
+      "sha256": "3d23976f04996cf2329e8ea5cdd282a05ef8468cf606310345c33556f96cc283",
+      "bytes": 9659
+    },
+    "reference/team_evidence_request.example.json": {
+      "original_path": "projects/enme408-torque-control/reference/team_evidence_request.example.json",
+      "sha256": "e5fc11d5ab280eb3a2aad5b7fddff10161a8fe692ad0e5109e0fe6421b5581b7",
+      "bytes": 1308
+    },
+    "reference/test_aggregate_power_budget.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_aggregate_power_budget.py",
+      "sha256": "b9c1878ca85982f3b7436219cbc939d517967028406de50fffd3a3ce991d7cc2",
+      "bytes": 11787
+    },
+    "reference/test_allocation_contract.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_allocation_contract.py",
+      "sha256": "fba23b1ab8b9bbbf389d6c6141e5dfaebdc6445a32c03362875e04a61914adb6",
+      "bytes": 4920
+    },
+    "reference/test_allocator.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_allocator.py",
+      "sha256": "d7bf1d8776d5328192a3b41606813f3fe3cddd4d44cb04165f9542a0d2393a76",
+      "bytes": 6187
+    },
+    "reference/test_allocator_cortex_m4_objects.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_allocator_cortex_m4_objects.py",
+      "sha256": "126295bfa6e57a5c09e0379dbe049357751ac04a3d02714b2c8ed63c6f9dccef",
+      "bytes": 29256
+    },
+    "reference/test_allocator_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_allocator_parity.py",
+      "sha256": "cb68085e2ffce8b18505c05928c85811201a94ca13738940ed88b9f44541f336",
+      "bytes": 5629
+    },
+    "reference/test_bounded_guard_replay.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_bounded_guard_replay.py",
+      "sha256": "b0f1476eb88e79b678af97fe3cb9185377b030d599bbdbe237d018016de85c8d",
+      "bytes": 4831
+    },
+    "reference/test_build_reproduction_receipt.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_build_reproduction_receipt.py",
+      "sha256": "955dead896f06f73abb9a45cd34fce25640cd902846680071303835dca9ca472",
+      "bytes": 3296
+    },
+    "reference/test_c_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_c_parity.py",
+      "sha256": "0fb404fd79886dd7a5c8da1fd68ed09e7558ab4491bd073d21405fdbcb69c41d",
+      "bytes": 5137
+    },
+    "reference/test_can_rx_age_evidence.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_can_rx_age_evidence.py",
+      "sha256": "5dc311a112762447781a47716063fcb5a98a7afe0e3613fb8e52b93a74f06ec9",
+      "bytes": 8526
+    },
+    "reference/test_can_tx_age_evidence.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_can_tx_age_evidence.py",
+      "sha256": "433b0c88ea985487ce533ef8fcbfcfe947b15cadd4cdb6e0e242b17e595f662a",
+      "bytes": 8645
+    },
+    "reference/test_can_tx_publication_evidence.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_can_tx_publication_evidence.py",
+      "sha256": "d7ff040a7396afe2c2655f1045dab84bfe5ebc5eb5739d6f7763db707ab9c29a",
+      "bytes": 8244
+    },
+    "reference/test_clock_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_clock_parity.py",
+      "sha256": "fa90f4d0b9eed87f9f7db380efcc525049c40b17642714d26d6e72296ea80434",
+      "bytes": 4278
+    },
+    "reference/test_command_guard.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_command_guard.py",
+      "sha256": "b72ec8031645665432a897d9fd47d734cb54ac73a1ba4c78edb069d6216003a7",
+      "bytes": 6406
+    },
+    "reference/test_control_pipeline.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_control_pipeline.py",
+      "sha256": "044a6d8f473dc3cb99fb1eb42761e5d63ebe6b00dcb01c0083e4ac34054afdfa",
+      "bytes": 10740
+    },
+    "reference/test_cortex_m4_objects.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_cortex_m4_objects.py",
+      "sha256": "b02d58eb7d909552ebe80a388833a319cfce9292320ed9e42137dd2aefd542f7",
+      "bytes": 10506
+    },
+    "reference/test_cycle_clock.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_cycle_clock.py",
+      "sha256": "b44fbcc4663cf9b8826ec348ae09b4285cff441c24f4313634a767f80ad3bcbf",
+      "bytes": 3687
+    },
+    "reference/test_fault_state.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_fault_state.py",
+      "sha256": "11a045a34a591f1a6eba7c1933cfd8e8226af0b34ef4db6a6b8fd6b1c1c7f44d",
+      "bytes": 7537
+    },
+    "reference/test_guard_cortex_m4_objects.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_guard_cortex_m4_objects.py",
+      "sha256": "1825ddf908aafadd6fa4efa78bb750fb41edc74a204da5c21b136ed625c14940",
+      "bytes": 5332
+    },
+    "reference/test_guard_overlap_observation.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_guard_overlap_observation.py",
+      "sha256": "4d4e281d182d5e3aae4b629ac64f229f98a777740cba0731539f2983adcba961",
+      "bytes": 6358
+    },
+    "reference/test_guard_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_guard_parity.py",
+      "sha256": "88ef9ad275cabc1a26364c980f1481352d25512bc3476963a08ef6bf7735d30c",
+      "bytes": 3951
+    },
+    "reference/test_guard_request_contract.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_guard_request_contract.py",
+      "sha256": "78afacc0d0f7cb87d83027120b7408ca8e21eae0a147bdb2f31748118e330d81",
+      "bytes": 6708
+    },
+    "reference/test_native_bench_replay.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_native_bench_replay.py",
+      "sha256": "d2a6b200eff02e73651c24d3d3d177fa1ab5bb23adf9e7a06e9fd2fcd6a9f886",
+      "bytes": 11164
+    },
+    "reference/test_pedal_parity.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_pedal_parity.py",
+      "sha256": "e3a7929e70cb51cf0916a9198f0272d7c0fdcab48f3cf3104c0d8351863bb22e",
+      "bytes": 3745
+    },
+    "reference/test_recovery_latency_tradeoff.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_recovery_latency_tradeoff.py",
+      "sha256": "a87b41c75e10cb108f16bb17db90242cc1f9b7ef21cd390d6f0f171fc6dc9147",
+      "bytes": 5059
+    },
+    "reference/test_recovery_probability_log_evidence.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_recovery_probability_log_evidence.py",
+      "sha256": "1242d0ce561466fcef5ea8d21801df8e13563b2f507796d0622e0d38bf93b43f",
+      "bytes": 6111
+    },
+    "reference/test_recovery_wait_provenance.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_recovery_wait_provenance.py",
+      "sha256": "0586be56564d7af7c04c2e9bedccd2d06d9b97568c2397a56378b4aaf7a707bc",
+      "bytes": 4647
+    },
+    "reference/test_stm32f405_device_master_applicability.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_stm32f405_device_master_applicability.py",
+      "sha256": "22a741ed4a525ad90383588ed8237395313783136ba6b95275fecd0923462b42",
+      "bytes": 4754
+    },
+    "reference/test_tc02ar_allocator_replay_bound.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02ar_allocator_replay_bound.py",
+      "sha256": "c29d031ea8bbbfc8b8c73fd635424dd6af06715a368fbce16a26d32cdff975f4",
+      "bytes": 2120
+    },
+    "reference/test_tc02at_timebase_input_validation.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02at_timebase_input_validation.py",
+      "sha256": "5ddc5204586daa517b0f614ddb8874a63fa37014c730f792ed0cb324cac6ffd0",
+      "bytes": 3272
+    },
+    "reference/test_tc02au_boolean_flag_validation.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02au_boolean_flag_validation.py",
+      "sha256": "865cb79e04f08075fc959fe4cde36c6159013e8d598bd83674e0f176cf889dc9",
+      "bytes": 3895
+    },
+    "reference/test_tc02aw_timebase_contract.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02aw_timebase_contract.py",
+      "sha256": "f424698b89b8b86c4cc80228fdbd9123ca6304741181ebc0664188f97bc78b94",
+      "bytes": 4358
+    },
+    "reference/test_tc02da_numeric_domain.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02da_numeric_domain.py",
+      "sha256": "f8e0ff5422d5736393c10ec99ef2bf1dffee30084bf7d139233b4a3f5ec2edd6",
+      "bytes": 4521
+    },
+    "reference/test_tc02dc_allocator_numeric_domain.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02dc_allocator_numeric_domain.py",
+      "sha256": "5e58b0b5da4fee508057687bd0e1c5c7653e516e490b0d8082a6896e5d2fac9c",
+      "bytes": 4934
+    },
+    "reference/test_tc02dd_guard_vector_shape.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02dd_guard_vector_shape.py",
+      "sha256": "52d0a6c4159a6e60a97c39ae0c97e9820e07645089d1751fb402c283b07ad5c7",
+      "bytes": 4300
+    },
+    "reference/test_tc02df_guard_aggregate_domain.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02df_guard_aggregate_domain.py",
+      "sha256": "8a642a0ea60de10fe25e58bbc05f74477cff6ae94abb81e435ed0a0260a216c1",
+      "bytes": 3397
+    },
+    "reference/test_tc02dg_pedal_latch_type.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02dg_pedal_latch_type.py",
+      "sha256": "f16b5b44b43d1037ac9dab8849f51292aee1d274fd426bee40ed7517732f6684",
+      "bytes": 4266
+    },
+    "reference/test_tc02di_latch_recovery_experiment.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02di_latch_recovery_experiment.py",
+      "sha256": "90197c9ba8a0a8be270b3b8ba0c05ce08a1703b8e65f13fe5d23cada8645039e",
+      "bytes": 6710
+    },
+    "reference/test_tc02dj_requalification_matrix.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02dj_requalification_matrix.py",
+      "sha256": "37e3f77fe9aff4564710aff2169fd0501be2595f7b4d08da7e8a5b903d2a9560",
+      "bytes": 2915
+    },
+    "reference/test_tc02dl_candidate_status_domain.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02dl_candidate_status_domain.py",
+      "sha256": "fa8848599acbca14b93289829a69dc9e4462532a6112f0c7285b7614c5dd3bd4",
+      "bytes": 3518
+    },
+    "reference/test_tc02dm_fault_observer_boundary.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02dm_fault_observer_boundary.py",
+      "sha256": "dff5724a2aa5c5cfb6c19b05072cdfa6ae273b0fc1fdac3bae4dd5ea0bd4c749",
+      "bytes": 4326
+    },
+    "reference/test_tc02do_request_delivery_consistency.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_tc02do_request_delivery_consistency.py",
+      "sha256": "24e3e966b289f9988b68501ce8527dfb35d3d50a71753e351cd3e2074d202834",
+      "bytes": 4464
+    },
+    "reference/test_team_evidence_packet.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_team_evidence_packet.py",
+      "sha256": "07ff4c162d9a08fd087b18b47d43ab414585c84e93a0988b3c80bb9d53152c79",
+      "bytes": 5979
+    },
+    "reference/test_torque_numeric.py": {
+      "original_path": "projects/enme408-torque-control/reference/test_torque_numeric.py",
+      "sha256": "74d19aaec979b5ecf6349cc436b4724b332f2a1a24ee9850b4d284c8360c1935",
+      "bytes": 1215
+    },
+    "reference/timebase_freshness.py": {
+      "original_path": "projects/enme408-torque-control/reference/timebase_freshness.py",
+      "sha256": "6dc6033a78eea19c3895c8666cf4427072e0024574aa026d4c30b2ea08c600be",
+      "bytes": 6304
+    },
+    "reference/torque_numeric.py": {
+      "original_path": "projects/enme408-torque-control/reference/torque_numeric.py",
+      "sha256": "b95d737d37c97839905ab85daa54539fa0401c1ad4f610d78d430c9f54680843",
+      "bytes": 754
+    },
+    "research/HANDOFF.md": {
+      "original_path": "projects/enme408-torque-control/research/HANDOFF.md",
+      "sha256": "1c7b571c39e80a060e5eb495f2c5a57d0443942cd74890079af64aab04554ef4",
+      "bytes": 717
+    },
+    "research/SOURCES-TC-00B.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-00B.md",
+      "sha256": "f053a57f8949469e0c8a2dcce22fa2c2fcc811bc474b477486a12e059eb24317",
+      "bytes": 1762
+    },
+    "research/SOURCES-TC-01E.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-01E.md",
+      "sha256": "bbae5b9ac0adf52d53d489431db50d9ff9f0773f5752a7e0650709cf09a0c9b0",
+      "bytes": 1381
+    },
+    "research/SOURCES-TC-01F.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-01F.md",
+      "sha256": "9c4a2631fb2a6e0e9210df97c940ef35f290e23a91edeaea19393b5990a595f7",
+      "bytes": 2855
+    },
+    "research/SOURCES-TC-01G.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-01G.md",
+      "sha256": "1df0cc3cd92ad53818e92731f7244b62d4f2a54ca855d628f52a566bc6769b93",
+      "bytes": 4106
+    },
+    "research/SOURCES-TC-01K.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-01K.md",
+      "sha256": "2ad4c0fb27214e703683c6f118e2244324b5fc16129c6f438fcd250615fdb9bc",
+      "bytes": 5092
+    },
+    "research/SOURCES-TC-01M.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-01M.md",
+      "sha256": "4f48a34a38543457df4193c48cb1db90a27d6d478147f7d57ffa3df480479185",
+      "bytes": 4626
+    },
+    "research/SOURCES-TC-01N.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-01N.md",
+      "sha256": "5c878416cf6608db35dafca05b2ecba79b3a3758e784aa2eb462b42cea0dfe69",
+      "bytes": 4279
+    },
+    "research/SOURCES-TC-01P.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-01P.md",
+      "sha256": "7433cf6eb195cce278032775cd95fb0f14de75df52619b49e54ee60fba735eca",
+      "bytes": 3018
+    },
+    "research/SOURCES-TC-02AD.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-02AD.md",
+      "sha256": "ea699c598f15e7efb741affbf649a02482f8c50b8dbd24f8b73d0b8c8e20fbbb",
+      "bytes": 2682
+    },
+    "research/SOURCES-TC-02AE.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-02AE.md",
+      "sha256": "8640b9c77074925336ab13267575a8f01cfccc74320b40117102ffc92871bc34",
+      "bytes": 3457
+    },
+    "research/SOURCES-TC-02AH.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-02AH.md",
+      "sha256": "463a026c3a8ea17e81b915fe87de9746caad70b0c119b94cb32b9f4350b34bba",
+      "bytes": 3262
+    },
+    "research/SOURCES-TC-02U.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-02U.md",
+      "sha256": "5a128df7d887cad39ac3eab41f66fa934d08d852cf7f02d9b382b30b60f12194",
+      "bytes": 2354
+    },
+    "research/SOURCES-TC-02X.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-02X.md",
+      "sha256": "8dd1dd587ccbef24c16826004ee1340b011caaadd7865fc668a6976de3bc1d4a",
+      "bytes": 3604
+    },
+    "research/SOURCES-TC-03B12.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B12.md",
+      "sha256": "f7c36ebc5f10948fe2fa34f340f632c9b57f7e96ee32b7168e2706ff777637ac",
+      "bytes": 1938
+    },
+    "research/SOURCES-TC-03B14.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B14.md",
+      "sha256": "879156344ca25955c1456e6ea7b965bfb3e828aa23d3c1ee042add550e474d06",
+      "bytes": 1307
+    },
+    "research/SOURCES-TC-03B16.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B16.md",
+      "sha256": "20be36758190577989b153010c82695a6af68883a1da44b5526554752ad7c17e",
+      "bytes": 1789
+    },
+    "research/SOURCES-TC-03B17.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B17.md",
+      "sha256": "868d664f45dc083550033e6165ed7d133d957cd885b9b6a5a046773a55c34080",
+      "bytes": 1890
+    },
+    "research/SOURCES-TC-03B18.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B18.md",
+      "sha256": "21c3e53562e85171ec885805ae973bc4e9cc2878d2a8db7f969efee883924254",
+      "bytes": 1350
+    },
+    "research/SOURCES-TC-03B19.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B19.md",
+      "sha256": "d3f588f1c4568f113e69afeabe500b3a1b36815385e20a21cac642c50a44cb59",
+      "bytes": 916
+    },
+    "research/SOURCES-TC-03B20.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B20.md",
+      "sha256": "9bc6c0852e7889ef67472e63cab3189a9cfe232bb4662cd915d6279bbe0f0390",
+      "bytes": 2398
+    },
+    "research/SOURCES-TC-03B21.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B21.md",
+      "sha256": "bd8b6ea878e689c3eff37eddff1ce6059908e5a70b4e2be011162ecb10ab8397",
+      "bytes": 3328
+    },
+    "research/SOURCES-TC-03B23.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B23.md",
+      "sha256": "272c33fcd0f7f6ec08a09e228336f57067664c994450ccdeb6d0bf9e8933d25b",
+      "bytes": 4139
+    },
+    "research/SOURCES-TC-03B24.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES-TC-03B24.md",
+      "sha256": "ff3ec0f914cf4a2d365f8cac7966c1211da0777c090d988dda71bdeea6a793c6",
+      "bytes": 4155
+    },
+    "research/SOURCES.md": {
+      "original_path": "projects/enme408-torque-control/research/SOURCES.md",
+      "sha256": "3683c5a6cbace72769ec35255aad8798e2dfbdb87a5e9b122459633c8e538a86",
+      "bytes": 5932
+    },
+    "research/TC-00B-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-00B-RECEIPT.md",
+      "sha256": "f968b1795e56b14c3c942aa71eaac32ca24731e1132940f242e8d27bef5f8852",
+      "bytes": 2076
+    },
+    "research/TC-01A.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-01A.md",
+      "sha256": "4c9b7145b52430f81e6a3e60e643c83f305aa498fafc294c26a2892350e0fa5d",
+      "bytes": 4434
+    },
+    "research/TC-01AC-speed-interval-power.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-01AC-speed-interval-power.md",
+      "sha256": "1ef79fd6d0c809e733f682f409d9f174f4c9416aa1df12df4103ad17910f025b",
+      "bytes": 4648
+    },
+    "research/TC-01AD-hold-interval-validity.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-01AD-hold-interval-validity.md",
+      "sha256": "377fbe6ac92dca9b999fbfa33e2d8b07c004efd88194de388a9298bb09e26fda",
+      "bytes": 4286
+    },
+    "research/TC-01B.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-01B.md",
+      "sha256": "cdfd92c42f442d0a60d25cf9b39760bce165cda130bc2280b24c08c6407d298c",
+      "bytes": 6596
+    },
+    "research/TC-01C-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-01C-RECEIPT.md",
+      "sha256": "0706e6639e3bce82b54bacdfce7c097d1788853e09bcf37648858e56a7430d11",
+      "bytes": 645
+    },
+    "research/TC-01K-BRANCH-COMPLETION.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-01K-BRANCH-COMPLETION.md",
+      "sha256": "5c176b4f0f257b92b8b7f0f98cf07a878c91fe10f9f0947704cb0fe10193df05",
+      "bytes": 2461
+    },
+    "research/TC-01M.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-01M.md",
+      "sha256": "f0ffc5673acc80f042858dda18d0c82ef5a4cf1937b20896d7bcf0bc04ee7bb5",
+      "bytes": 4002
+    },
+    "research/TC-01T-gear-efficiency-consistent-power.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-01T-gear-efficiency-consistent-power.md",
+      "sha256": "0703cc1cfc946d7e1df27089e7bbbdcf1c32735c262a4928632e0a142fe5d853",
+      "bytes": 2708
+    },
+    "research/TC-02A-LOCAL-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02A-LOCAL-RECEIPT.md",
+      "sha256": "52e23efa1de18820fd7fa51b0e410a6a0964ac4e282e1f73393388684df85f8f",
+      "bytes": 1204
+    },
+    "research/TC-02A.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02A.md",
+      "sha256": "456c7b53cf84159b6aa863db62f964dfcaf97b9a545eb4194bc3b6a07a792f66",
+      "bytes": 5930
+    },
+    "research/TC-02AO-FULL-INTEGRATION-PREFLIGHT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02AO-FULL-INTEGRATION-PREFLIGHT.md",
+      "sha256": "56678ca485b38278eada42635e24171125adf249001b08fbcbfc1b3cfca58e69",
+      "bytes": 3687
+    },
+    "research/TC-02BS-GUARD-REQUEST-CONTRACT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02BS-GUARD-REQUEST-CONTRACT.md",
+      "sha256": "72a7c2ea98d1cca1dbe0b105a440ace3b93f305a8925eea2eaf5552029fe5d0b",
+      "bytes": 3345
+    },
+    "research/TC-02CQ-CORRELATED-QUALIFICATION.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02CQ-CORRELATED-QUALIFICATION.md",
+      "sha256": "3803c47c90bac6e02e600778c28348b13daecedfbd117b9cc0d9e929144fc5a1",
+      "bytes": 3384
+    },
+    "research/TC-02D.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02D.md",
+      "sha256": "27db51f0d109f5ab18be090524e4d00ddb2da06922ae3c946a6dad3ebcb3a813",
+      "bytes": 5036
+    },
+    "research/TC-02DL-candidate-status.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02DL-candidate-status.md",
+      "sha256": "edb284096f343d1d0081c029e6f38b6c466b166e8d6614fc54d1857997339348",
+      "bytes": 2952
+    },
+    "research/TC-02DM-fault-observer-validation.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02DM-fault-observer-validation.md",
+      "sha256": "9dda2c24e35b627d8ab70cd21ab5f1a8725b31d4dc125461699674892ccd6962",
+      "bytes": 4141
+    },
+    "research/TC-02DO-request-delivery-contract.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02DO-request-delivery-contract.md",
+      "sha256": "b933ba16a4c01792a3344cb342e511945f7271a01b923d5b7d98c489b54e7365",
+      "bytes": 3034
+    },
+    "research/TC-02DQ-bounded-fault-replay.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02DQ-bounded-fault-replay.md",
+      "sha256": "7acaa93b47c6a184f2546c26f12d1118c28e51f30d231ed1d476f12cb3c8d7e8",
+      "bytes": 3430
+    },
+    "research/TC-02DS-source-allocator-pipeline.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02DS-source-allocator-pipeline.md",
+      "sha256": "558ba0cb8920e7a12fb233f9529be20d45aafd433a24f83ac2fe669e4f93d4e9",
+      "bytes": 3904
+    },
+    "research/TC-02DZ-compact-preflight-acceptance.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02DZ-compact-preflight-acceptance.md",
+      "sha256": "8c65defc79ff339df22d7cdf323db6258b61abd101ddd19f337ffcf72f7a1e6f",
+      "bytes": 3296
+    },
+    "research/TC-02E-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02E-RECEIPT.md",
+      "sha256": "3840b94245b9f951f6672125b5fd6698dc7b6a7094467ce61b333049fc4d1dcd",
+      "bytes": 2567
+    },
+    "research/TC-02E.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02E.md",
+      "sha256": "e5e66d0d070bfc8b19315952c9f26b900178b0a1e82ba9811216cdc6e47ff0b6",
+      "bytes": 5245
+    },
+    "research/TC-02EB-bounded-freshness-snapshot.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02EB-bounded-freshness-snapshot.md",
+      "sha256": "2a0d919c1ebb6528f06617027934375b308b560e63395616957f2495d7f6488c",
+      "bytes": 3631
+    },
+    "research/TC-02EC-frequency-overflow-guard.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02EC-frequency-overflow-guard.md",
+      "sha256": "8664b0f5a17818ae9010031d91f5dd202d9d088444e8708d4715fc0c293fd8fc",
+      "bytes": 4587
+    },
+    "research/TC-02F-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02F-RECEIPT.md",
+      "sha256": "d0d64b10e0fc599a803267f17ded5e967b11d2701a161c0527c787b5c29af01f",
+      "bytes": 1159
+    },
+    "research/TC-02F.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02F.md",
+      "sha256": "32a603d17ed629659732fac7fc3468ccec15599e35a916a5f91a786f87fed5d3",
+      "bytes": 2788
+    },
+    "research/TC-02G.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02G.md",
+      "sha256": "87c21d0451a523d5a108e58fb6ae20ffff7a869f50c36cc36fba9b30272f61fd",
+      "bytes": 5413
+    },
+    "research/TC-02H.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02H.md",
+      "sha256": "f5c166c82dfff8c04531c38ad7d9bfb23e459b399f030e3f023ec67304c772d7",
+      "bytes": 5777
+    },
+    "research/TC-02I.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02I.md",
+      "sha256": "1b36e3022435f6d184eb9b6fdd40ca11a2f95484b8d114e42092227585fb6678",
+      "bytes": 6173
+    },
+    "research/TC-02N.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02N.md",
+      "sha256": "31e6bb5ae2517c13178d6ed8bdeb990ec029a7439e1b34acde7b1e81b6846ec6",
+      "bytes": 4901
+    },
+    "research/TC-02R-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02R-RECEIPT.md",
+      "sha256": "77d976cbe7f382a4b5b39d452bf4d3ed821cda284ee8ebb9e18212e962bbf8cc",
+      "bytes": 1420
+    },
+    "research/TC-02R.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02R.md",
+      "sha256": "f26ce9248c7d286714ec3a8e8fcb3f3412d4d397828b9ddf93b96eaf3613e89b",
+      "bytes": 4151
+    },
+    "research/TC-02T-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02T-RECEIPT.md",
+      "sha256": "9a49580c3f20c5e57ae795305dc410a525c99fd8a1b01263e73bc73c24ae51bc",
+      "bytes": 498
+    },
+    "research/TC-02Y-HANDOFF.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02Y-HANDOFF.md",
+      "sha256": "0a4451c94ec0dd8947f817b039b563ed41b593353bfb3135cc343acf3b0d32b0",
+      "bytes": 857
+    },
+    "research/TC-02Y-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-02Y-RECEIPT.md",
+      "sha256": "9b7fdfe81c21c04708c9a5e2b7ea124e5d421d562884aa3c6b7d47e3484fd6d5",
+      "bytes": 839
+    },
+    "research/TC-03A-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03A-RECEIPT.md",
+      "sha256": "3f3ef4fabc9e3ff1405f1cf8b135be0e255aa2a3dfaa5597ad4265315af287a8",
+      "bytes": 869
+    },
+    "research/TC-03A-control-pipeline-review.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03A-control-pipeline-review.md",
+      "sha256": "6010169bad9af656eb63384d9edecf65db5f98dfc2b393301e20de59b3fef3f5",
+      "bytes": 6583
+    },
+    "research/TC-03A.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03A.md",
+      "sha256": "bedf97d2d029a483c20761a7d0e4ba1395352a922d8bf0fa3a295dc2c2b56ab7",
+      "bytes": 4913
+    },
+    "research/TC-03B-local-model-assessment.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B-local-model-assessment.json",
+      "sha256": "ea49e0f4840a2ffcd18f61c28fbd6e8006971b752119b8b70e399571e26b08f0",
+      "bytes": 7191
+    },
+    "research/TC-03B-numeric-contract-change.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B-numeric-contract-change.json",
+      "sha256": "8ca327532064b32d3cf14845392fc5a7fe2f3fa8ed5a8146858034107e339f59",
+      "bytes": 2893
+    },
+    "research/TC-03B-portable-c-parity.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B-portable-c-parity.md",
+      "sha256": "e93e0d94f0010d1a831162ad95a6c9fcf0138c64ee676d81b252c3e407f37cb0",
+      "bytes": 9210
+    },
+    "research/TC-03B0-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B0-RECEIPT.md",
+      "sha256": "5b5ab6b5defa0412b91d2bec3d2aee0986baf8daa00d56eba3883640f9091a81",
+      "bytes": 1318
+    },
+    "research/TC-03B0.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B0.md",
+      "sha256": "a330f19a36b958897bb2962852283026f19ea41d5298b2d4abcafac4e00f702c",
+      "bytes": 5558
+    },
+    "research/TC-03B12-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B12-RECEIPT.md",
+      "sha256": "b8dc640a318b3453e95f22b85cbae33370cadf78b051711ead05ab5f5d55312d",
+      "bytes": 1025
+    },
+    "research/TC-03B12.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B12.md",
+      "sha256": "44794d44d9996fda16ba6f9b8352c4bbf774a588ef4dcb1cab45326e9dd50533",
+      "bytes": 5900
+    },
+    "research/TC-03B13.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B13.md",
+      "sha256": "bc86bce3edaea1da461f02b5fd7f48372312c22daa8f642734dc230b090f4616",
+      "bytes": 6085
+    },
+    "research/TC-03B14-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B14-RECEIPT.md",
+      "sha256": "862688f1424d52f8346e62249f45f7c77d57de4220c6b9b081094b06caf06d83",
+      "bytes": 412
+    },
+    "research/TC-03B15-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B15-RECEIPT.md",
+      "sha256": "fc1252b8d2fa40b4b91f5f027f9f8643d9366a9326e98d1826d53a4c8ab8b26a",
+      "bytes": 1061
+    },
+    "research/TC-03B15.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B15.md",
+      "sha256": "ebbda39ca0ce6a6e5b3b6c8fb4382bec0d1c839a58866d7d43a7255a776c7010",
+      "bytes": 4514
+    },
+    "research/TC-03B16-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B16-RECEIPT.md",
+      "sha256": "39f2fc813fff013b0109b85c277b84e9b4be8836b4319e564510c409f87e03fc",
+      "bytes": 1548
+    },
+    "research/TC-03B16.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B16.md",
+      "sha256": "ca22a85ed5817c3a5cad3c13e073e020e61f986a1d6f341aded3a36440456cca",
+      "bytes": 7582
+    },
+    "research/TC-03B17-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B17-RECEIPT.md",
+      "sha256": "c3588247434d1f90f386d6045790661c895ce6bc4ca08cc5dca52832851f7097",
+      "bytes": 828
+    },
+    "research/TC-03B17.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B17.md",
+      "sha256": "539c64fc6baa7ba161ab68e2a9319621d05c6f570090d92cedb7f1f5df4cba7e",
+      "bytes": 4795
+    },
+    "research/TC-03B18-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B18-RECEIPT.md",
+      "sha256": "09cabb97e296ee1cf7a741d9608da6bbbacc133e4886eb1dde093d02c8701118",
+      "bytes": 1224
+    },
+    "research/TC-03B20-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B20-RECEIPT.md",
+      "sha256": "3444c5bfb09e8fc11989ec4686f98d5a1d5986ee4227afc0d739b251035fdc3f",
+      "bytes": 1745
+    },
+    "research/TC-03B4.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B4.md",
+      "sha256": "dc8060672a3060feac0dda1db391b913f9dbdd1f126a42ab2ee6351712060ce4",
+      "bytes": 4363
+    },
+    "research/TC-03B8-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B8-RECEIPT.md",
+      "sha256": "4dd98bb2015fa4dfbaccc01ba087a45e9e6dd1da30be3fa6dff7e7088eb23ac4",
+      "bytes": 1138
+    },
+    "research/TC-03B8.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B8.md",
+      "sha256": "af87baf19b246dd6525bc98797bc7aa1b95c8d112af38264352081fb8eb1b8de",
+      "bytes": 7416
+    },
+    "research/TC-03B9-RECEIPT.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03B9-RECEIPT.md",
+      "sha256": "f7d7098b80c8a5d694b9ac1c92cb5f20228d5a502e716f12ac31e9a0b31753c4",
+      "bytes": 671
+    },
+    "research/TC-03C-clock-protocol.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03C-clock-protocol.json",
+      "sha256": "0c795109b0d017ceb09d75f78289799516fe8df00ca7863966d5564f8fe92afc",
+      "bytes": 4174
+    },
+    "research/TC-03C-local-model-assessment.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03C-local-model-assessment.json",
+      "sha256": "a00f88643a7e8309b98993f7dbfea06e2c662a8103213c1db1adb80bafc4abeb",
+      "bytes": 6965
+    },
+    "research/TC-03C-portable-clock.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03C-portable-clock.md",
+      "sha256": "ceda0328f8ec76795927fafbfb1eb764bf243985ec390c3c5a1a011de0229859",
+      "bytes": 8967
+    },
+    "research/TC-03C-review-repair.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03C-review-repair.json",
+      "sha256": "666f762d828776cfa3ee1298a8299328c51eab6ec6b30e15ba2bdef3361591f5",
+      "bytes": 1350
+    },
+    "research/TC-03D-pedal-protocol.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03D-pedal-protocol.json",
+      "sha256": "904e1e010a7dddc1e87d29b032fff80474c060e6a8909e9faa58616323a26df2",
+      "bytes": 4165
+    },
+    "research/TC-03D-portable-pedal-adapters.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03D-portable-pedal-adapters.md",
+      "sha256": "be48557889c587008e2faaf8a9b04002b5033fd27bda2f9cce7dcc2cc3faa864",
+      "bytes": 7490
+    },
+    "research/TC-03E-cortex-m4-object-feasibility.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-cortex-m4-object-feasibility.md",
+      "sha256": "c8252dc932f8f193959abbf4a297fdd7147883a7f5514e140a38204eb67a71fb",
+      "bytes": 11068
+    },
+    "research/TC-03E-cortex-m4-object-protocol.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-cortex-m4-object-protocol.json",
+      "sha256": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a",
+      "bytes": 10392
+    },
+    "research/TC-03E-evidence/README.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/README.md",
+      "sha256": "b891690f21249342e8db5b141726adabbc18fbcb713b9f1f5438c952bb97700b",
+      "bytes": 2012
+    },
+    "research/TC-03E-evidence/ci-canonical-path-independent-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/ci-canonical-path-independent-review.json",
+      "sha256": "631c69cdfc024a8a01f96cf04381b60cdd58d5a4f4818d3a357d2e284bb18f64",
+      "bytes": 2484
+    },
+    "research/TC-03E-evidence/ci-canonical-path-repair.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/ci-canonical-path-repair.json",
+      "sha256": "cd8152821657af13fe5bb9021df88438e8b07d38da0dff16f2193bc0a0f2c065",
+      "bytes": 2146
+    },
+    "research/TC-03E-evidence/executed-cortex_m4_objects.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/executed-cortex_m4_objects.py.txt",
+      "sha256": "40c299716d1a0a497c0ee0ec74e78faf113dd235237892994e19f93017c22dc8",
+      "bytes": 20544
+    },
+    "research/TC-03E-evidence/file-only-reaccount.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/file-only-reaccount.json",
+      "sha256": "c6356c430dcb089f1d1023daac40759285c5386fc0077b8660c9bf6220443fb7",
+      "bytes": 206405
+    },
+    "research/TC-03E-evidence/independent-file-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/independent-file-review.json",
+      "sha256": "f16dd19baadeddccf43452398e7a13f69abc7c1ac5840d0c680e97a9b99f1d5d",
+      "bytes": 11328
+    },
+    "research/TC-03E-evidence/initial-pr72-manifest.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/initial-pr72-manifest.json",
+      "sha256": "aa25cbab35643613950e37ab29590841a08306009f23cb41ea3a78c8ee8fdb68",
+      "bytes": 2839
+    },
+    "research/TC-03E-evidence/initial-reviewed-cortex_m4_objects.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/initial-reviewed-cortex_m4_objects.py.txt",
+      "sha256": "d2815f25604f99596ef0cc0cfad5d3f11bc4dd5067299b24757856a854bbfcf9",
+      "bytes": 21216
+    },
+    "research/TC-03E-evidence/initial-reviewed-test_cortex_m4_objects.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/initial-reviewed-test_cortex_m4_objects.py.txt",
+      "sha256": "04d3b650ce0a4ca21e474caf366805dc26c8de026087fbb491c477d9bad054c5",
+      "bytes": 9590
+    },
+    "research/TC-03E-evidence/manifest.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/manifest.json",
+      "sha256": "cee8f35dd5a65f256e82fe923e0fefe96a16be253d5eeef63583fa4d191c783f",
+      "bytes": 4093
+    },
+    "research/TC-03E-evidence/original-receipt.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/original-receipt.json",
+      "sha256": "509498f3879202fcb786be715edda00831ad629bd03de18ad9de8b441c17142f",
+      "bytes": 186931
+    },
+    "research/TC-03E-evidence/software-checks.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/software-checks.json",
+      "sha256": "ce8b192a7a9f64aacbaee9658b23e15453687c39a78b606774cc56729afee2c4",
+      "bytes": 565
+    },
+    "research/TC-03E-evidence/summary.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/summary.json",
+      "sha256": "122e9375823ea50a5b27f7066f7618425c890aff3f96bc73125185be748615cb",
+      "bytes": 21535
+    },
+    "research/TC-03E-evidence/toolchain-provenance.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03E-evidence/toolchain-provenance.json",
+      "sha256": "b01e46524b653553d483dac2bce75800b36470d4a050493438b80ab2faf0f3d2",
+      "bytes": 3250
+    },
+    "research/TC-03F-base-command-guard-protocol.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03F-base-command-guard-protocol.json",
+      "sha256": "dae91039428cd0e4d55596d5e99734acebc59378100b2984fda80e1e80babff2",
+      "bytes": 13141
+    },
+    "research/TC-03F-base-command-guard.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03F-base-command-guard.md",
+      "sha256": "b5d4749b451a7b73582fcc87be3f6e786c64026ba1adcb50607b03dc5d1264c0",
+      "bytes": 5895
+    },
+    "research/TC-03G-base-guard-object-annex.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-base-guard-object-annex.md",
+      "sha256": "c1da60018eb737ea23775f8d1f840c46818f7d26b7249f68613590139f76af43",
+      "bytes": 7180
+    },
+    "research/TC-03G-base-guard-object-protocol.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-base-guard-object-protocol.json",
+      "sha256": "6fd1aa2c1aab66d5fef12ccb46d727e233ecc1d4a531eb21e7148e55ad9b8d20",
+      "bytes": 12220
+    },
+    "research/TC-03G-evidence/README.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-evidence/README.md",
+      "sha256": "ccc365439047687bbee02cce1d7bc7cdbc9b8ef0e30e62a7fd78f795da2acebc",
+      "bytes": 1926
+    },
+    "research/TC-03G-evidence/actual-receipt.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-evidence/actual-receipt.json",
+      "sha256": "b03ac8621d127153d4b0b354d00e9d8a3dd673d8735cd86527be89e47077ceb8",
+      "bytes": 87051
+    },
+    "research/TC-03G-evidence/command-logs.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-evidence/command-logs.json",
+      "sha256": "54635d46e3bd36e6a39720b9d64448f53508c47325a84ed55ee13ecef170a801",
+      "bytes": 106836
+    },
+    "research/TC-03G-evidence/executed-driver.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-evidence/executed-driver.py.txt",
+      "sha256": "64f51787e0c8bfcff20bf423316480414d941df51f603235df1636053c4781b4",
+      "bytes": 11997
+    },
+    "research/TC-03G-evidence/independent-artifact-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-evidence/independent-artifact-review.json",
+      "sha256": "97a80a90464ac841cd5916b5a603a5319021fc6c7fe38e0e562c00007c6fe0bc",
+      "bytes": 11659
+    },
+    "research/TC-03G-evidence/manifest.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-evidence/manifest.json",
+      "sha256": "757616858b43527d8a3ecbabf200e169500664322ddbd894402306ee84d032f6",
+      "bytes": 1407
+    },
+    "research/TC-03G-evidence/retained-artifact-manifest.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-evidence/retained-artifact-manifest.json",
+      "sha256": "b4c6d9377c665de82e9e43cf51dc5a70170c0adf263af319d19c0b5044600749",
+      "bytes": 12499
+    },
+    "research/TC-03G-evidence/software-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-evidence/software-tests.txt",
+      "sha256": "984459d0b5f17a79263fda4564211d5140ab93dcec960b15e87d17f0cfd61095",
+      "bytes": 1513
+    },
+    "research/TC-03G-evidence/summary.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03G-evidence/summary.json",
+      "sha256": "22c1ff4d4140a320511709c270bcc59e93dc1c02ef03ca92de44609e68402a33",
+      "bytes": 19799
+    },
+    "research/TC-03H-allocator-case-generator.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-allocator-case-generator.json",
+      "sha256": "e129a3c54cf47b1e0658215e98cb121207619c358bc5f210b022113e33f5f1f6",
+      "bytes": 2120
+    },
+    "research/TC-03H-evidence/README.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/README.md",
+      "sha256": "12338997d3860d6e9f5b37efd594368997193ca65e77f2eb7c4b1a00e041d553",
+      "bytes": 2431
+    },
+    "research/TC-03H-evidence/attempt-1-failed.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/attempt-1-failed.json",
+      "sha256": "8e7c29d0dfc06e11622958db4954f6f951c65aabbb924ed425970d43a7c2da50",
+      "bytes": 6853
+    },
+    "research/TC-03H-evidence/attempt-2-failed.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/attempt-2-failed.json",
+      "sha256": "fb5105e3ede28748be939cfe214c8d6586ed1240e95a61b0e3560afb298a1a54",
+      "bytes": 6842
+    },
+    "research/TC-03H-evidence/attempt-3-passed.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/attempt-3-passed.json",
+      "sha256": "9a9ccd559dcffa27d359ff07dc2b1087bc5c88a25b2d4c79d47ec4618d2b2aa5",
+      "bytes": 10015
+    },
+    "research/TC-03H-evidence/caller-repair-2.diff": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/caller-repair-2.diff",
+      "sha256": "c074ffe86ccfe2921cc9e1ea46d1082a1d3f884e2c4b85e11624ac8bd3d56c9e",
+      "bytes": 5776
+    },
+    "research/TC-03H-evidence/caller-repair-3.diff": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/caller-repair-3.diff",
+      "sha256": "9e7d9130ffbef4c23d329b0c175a7fa6aa51aaa8ddf66295a6b35ca4af4b1daa",
+      "bytes": 2852
+    },
+    "research/TC-03H-evidence/executed-driver-1.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/executed-driver-1.py.txt",
+      "sha256": "6a3ee416b6aa375c93a7daff5c015356897243130168383c527b028206208966",
+      "bytes": 28192
+    },
+    "research/TC-03H-evidence/executed-driver-2.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/executed-driver-2.py.txt",
+      "sha256": "3e4140fbadec599a35f39b0c64767be34b9beccc55b9ea8ab59497386416ef6b",
+      "bytes": 29048
+    },
+    "research/TC-03H-evidence/full-reference-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/full-reference-tests.txt",
+      "sha256": "93ceb69296586d9770c8544a4308b4b38b4b7a033e61ac89d7ba73d555c7c567",
+      "bytes": 1513
+    },
+    "research/TC-03H-evidence/generator-freeze-1.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/generator-freeze-1.json",
+      "sha256": "7bc831952cf697843204555e46ac159ddd7501c1c2e8a784564a126964c90105",
+      "bytes": 1181
+    },
+    "research/TC-03H-evidence/generator-freeze-2.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/generator-freeze-2.json",
+      "sha256": "e906a4cd41c5df361a11b65c818607f3f27fbdaa111b2e21a554e3da4d83af29",
+      "bytes": 1632
+    },
+    "research/TC-03H-evidence/independent-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/independent-review.json",
+      "sha256": "29b685981d7c9713ce89d685ffaf72e7ce781aa17bd6530692b0e2c50f750c6a",
+      "bytes": 40616
+    },
+    "research/TC-03H-evidence/local-plain-probe.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/local-plain-probe.json",
+      "sha256": "6ef7e4bfa17e7616b88f5008e2b21d886504885cdcde13519f0d521a03561518",
+      "bytes": 790
+    },
+    "research/TC-03H-evidence/manifest.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/manifest.json",
+      "sha256": "e39403356af98c08f4663c3e35baefb802299a4ab551569736eaccec7ca84f37",
+      "bytes": 2483
+    },
+    "research/TC-03H-evidence/review-handoff.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/review-handoff.json",
+      "sha256": "49a006a5a8249e1a809496f2d58d1b19b0671c0f7fa5739a415aca0073bd3b54",
+      "bytes": 4859
+    },
+    "research/TC-03H-evidence/summary.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-evidence/summary.json",
+      "sha256": "f2a1097db37d1d314b070964fe69f86a4b4c64b5dedf542871e10400e82c63d7",
+      "bytes": 6828
+    },
+    "research/TC-03H-portable-allocator-protocol.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-portable-allocator-protocol.json",
+      "sha256": "899d3261dbf6542a035833fa6082dca1626ec536c02ea44e63e843a9c9781ce3",
+      "bytes": 25905
+    },
+    "research/TC-03H-portable-allocator.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03H-portable-allocator.md",
+      "sha256": "6d71ad4c93080971eb8ba398214bc1d90f48382dffaa7be2767b508d540be6af",
+      "bytes": 10652
+    },
+    "research/TC-03I-evidence/IO-diagnostic-repair.diff": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/IO-diagnostic-repair.diff",
+      "sha256": "e2f582136bcd13269f1e875a6eae7f34be0db92877c381d82e3222ecdcf41468",
+      "bytes": 7623
+    },
+    "research/TC-03I-evidence/IO-repair-handoff.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/IO-repair-handoff.json",
+      "sha256": "0de8186c9cbe8b16fece4196d445f442a3c7797f187dd7f45707244876bcbf12",
+      "bytes": 2849
+    },
+    "research/TC-03I-evidence/before-IO-repair-case-freeze.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/before-IO-repair-case-freeze.json",
+      "sha256": "b858e004bc2053305f77e2a75679f82c0e22ec6b924b8e06ea9ac9857504d90c",
+      "bytes": 1056
+    },
+    "research/TC-03I-evidence/before-IO-repair-consumer.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/before-IO-repair-consumer.py.txt",
+      "sha256": "1f14c1828c6d33c33520b192273a3828dd1e92a5807546691f6b9a1d8638be8f",
+      "bytes": 24268
+    },
+    "research/TC-03I-evidence/before-IO-repair-tests.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/before-IO-repair-tests.py.txt",
+      "sha256": "02f9001f06e358adc18d36621f9a07678272039c0baeaba2a4aaccb4e7cfdecd",
+      "bytes": 9385
+    },
+    "research/TC-03I-evidence/browser-review-v3.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/browser-review-v3.json",
+      "sha256": "0f598ae749475711e7d7a7891f6310706e0f1e017f4f2546cb34b289f77024d8",
+      "bytes": 2195
+    },
+    "research/TC-03I-evidence/browser-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/browser-review.json",
+      "sha256": "e6ffc0a6558bb9f25b4bd8c772af20f9906a5908fe75d7684dd3bbe353f35f31",
+      "bytes": 1276
+    },
+    "research/TC-03I-evidence/example-command-01-stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/example-command-01-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03I-evidence/example-command-01-stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/example-command-01-stdout.txt",
+      "sha256": "d870defbc8dad583cff66a34b8f2e3247bc7cd6d77d301aefded73c4f7b483da",
+      "bytes": 248
+    },
+    "research/TC-03I-evidence/example-command-02-stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/example-command-02-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03I-evidence/example-command-02-stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/example-command-02-stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03I-evidence/example-v3-command-01-stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/example-v3-command-01-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03I-evidence/example-v3-command-01-stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/example-v3-command-01-stdout.txt",
+      "sha256": "d870defbc8dad583cff66a34b8f2e3247bc7cd6d77d301aefded73c4f7b483da",
+      "bytes": 248
+    },
+    "research/TC-03I-evidence/example-v3-command-02-stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/example-v3-command-02-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03I-evidence/example-v3-command-02-stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/example-v3-command-02-stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03I-evidence/export-status-v3.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/export-status-v3.json",
+      "sha256": "c6c37633692690c0bb361e78154a92a3fb0f0cb4ba69050cb6eefb2439b47900",
+      "bytes": 449
+    },
+    "research/TC-03I-evidence/export-status.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/export-status.json",
+      "sha256": "226f92e85ada9fe3776854de7e38684ddf8ae01847b1249f7e8ccfd77d5c1248",
+      "bytes": 449
+    },
+    "research/TC-03I-evidence/full-reference-tests-v3.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/full-reference-tests-v3.txt",
+      "sha256": "0b7c2e3d86030e7a89bd44ba048ac40fab2815d63235e5b6724ce2b46a6a8635",
+      "bytes": 1513
+    },
+    "research/TC-03I-evidence/full-reference-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/full-reference-tests.txt",
+      "sha256": "aa71640976962a610927a3ea0f1a404fbcd1f740c36c496e5219ddc8707399b5",
+      "bytes": 1513
+    },
+    "research/TC-03I-evidence/independent-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/independent-review.json",
+      "sha256": "ab61e8132c0d0bd2c7cc0b82a87fc5af0eedf088018c98f110024c3399a5a3f4",
+      "bytes": 122896
+    },
+    "research/TC-03I-evidence/independent-review.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/independent-review.md",
+      "sha256": "f0fc305199d61569e679d3fc8336cc0bf488771d2aa6314f8e7fc2a75a22d677",
+      "bytes": 4076
+    },
+    "research/TC-03I-evidence/initial-case-freeze.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/initial-case-freeze.json",
+      "sha256": "ca540a808352c308193cf72d87ccceb5d01cdd0a7ee62c1b81ec41ac1840915d",
+      "bytes": 1056
+    },
+    "research/TC-03I-evidence/initial-executed-native-consumer.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/initial-executed-native-consumer.py.txt",
+      "sha256": "b9cf3f95a6ef88d8ad3561c2d994a9c0079c133619426b4528279f46aa841cdb",
+      "bytes": 21448
+    },
+    "research/TC-03I-evidence/initial-executed-tests.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/initial-executed-tests.py.txt",
+      "sha256": "2627a65e1a91fd254c996bec56b43ffda4c8c136690c17297427a96dc44c096e",
+      "bytes": 9431
+    },
+    "research/TC-03I-evidence/initial-failed-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/initial-failed-tests.txt",
+      "sha256": "db8d055231eb28678e4c7648e1037668e46798810a345fd508e11f6acd9b3f88",
+      "bytes": 5312
+    },
+    "research/TC-03I-evidence/lapsim-viewer-tests-v3.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/lapsim-viewer-tests-v3.txt",
+      "sha256": "89e74573b01fdaec858683172308db8276e0ecdb056073f3c52479b4d935d8ba",
+      "bytes": 101
+    },
+    "research/TC-03I-evidence/lapsim-viewer-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/lapsim-viewer-tests.txt",
+      "sha256": "323e209327482bb8e7fda4a9f9077a661b20ac7180e09d79597a6bcc65996f38",
+      "bytes": 101
+    },
+    "research/TC-03I-evidence/local-bundle-manifest-v3.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/local-bundle-manifest-v3.json",
+      "sha256": "1ca045dfdd504dea4594c7c207b165dbff8d3bef06dea5dbc072505ad282ccf1",
+      "bytes": 2174
+    },
+    "research/TC-03I-evidence/local-bundle-manifest.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/local-bundle-manifest.json",
+      "sha256": "4325cb6ef0fe94728af5bcbc88e278038ac4a5dcb80391ec83269a9395a5b10b",
+      "bytes": 1928
+    },
+    "research/TC-03I-evidence/manifest-v2.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/manifest-v2.json",
+      "sha256": "5d503e110aaf5ef8799e8a86902c8773048b8eb19690e4c618a2ba3ec0e20815",
+      "bytes": 3960
+    },
+    "research/TC-03I-evidence/manifest.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/manifest.json",
+      "sha256": "c8e08053bd78489ebd82dce360e1da93d5d55dc0264c52366fe369cb5e9b26df",
+      "bytes": 7304
+    },
+    "research/TC-03I-evidence/native-run-v3.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/native-run-v3.json",
+      "sha256": "b96b9cc5e6b27e2d2d4e8a345393a1635ca713dda2a1dfaec7025300cca21d5f",
+      "bytes": 177310
+    },
+    "research/TC-03I-evidence/native-run.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/native-run.json",
+      "sha256": "4a6bcdeeba57b3fe1908fdfa2f90282d3a9afdfa51656b039540287aa274bdd2",
+      "bytes": 177310
+    },
+    "research/TC-03I-evidence/overflow-command-01-stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/overflow-command-01-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03I-evidence/overflow-command-01-stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/overflow-command-01-stdout.txt",
+      "sha256": "d870defbc8dad583cff66a34b8f2e3247bc7cd6d77d301aefded73c4f7b483da",
+      "bytes": 248
+    },
+    "research/TC-03I-evidence/overflow-command-02-stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/overflow-command-02-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03I-evidence/overflow-command-02-stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/overflow-command-02-stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03I-evidence/overflow-export-status.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/overflow-export-status.json",
+      "sha256": "5411fe0c94de0d71732aceed9ca08845e76766002d9a576273ac9484303ece2d",
+      "bytes": 273
+    },
+    "research/TC-03I-evidence/overflow-run.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/overflow-run.json",
+      "sha256": "db230f7c83543a295642982d7fcb23c3653fb52ab1e85d7be8566931501854c1",
+      "bytes": 58380
+    },
+    "research/TC-03I-evidence/trace-v3.csv": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/trace-v3.csv",
+      "sha256": "cf1008383b1b9a8d0a605a3c21637b7a42580321aa2958d303627425fa423dff",
+      "bytes": 2042
+    },
+    "research/TC-03I-evidence/trace.csv": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/trace.csv",
+      "sha256": "cf1008383b1b9a8d0a605a3c21637b7a42580321aa2958d303627425fa423dff",
+      "bytes": 2042
+    },
+    "research/TC-03I-evidence/viewer-receipt-v3.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/viewer-receipt-v3.json",
+      "sha256": "dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8",
+      "bytes": 28688
+    },
+    "research/TC-03I-evidence/viewer-receipt.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-evidence/viewer-receipt.json",
+      "sha256": "111f998c705bdf85955c0054e08789791ff7d1c566a623267c9988869ba2ff43",
+      "bytes": 28688
+    },
+    "research/TC-03I-native-bench-CI-extension.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-native-bench-CI-extension.json",
+      "sha256": "748e4b0393bfe194a8367c35e9111a0707825c275871bad4d9c7fee405773bc2",
+      "bytes": 1184
+    },
+    "research/TC-03I-native-bench-case-generator.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-native-bench-case-generator.json",
+      "sha256": "3353aa234ac9a8269dc752a2795e78a5e04238a6a352a578ad39d2daef141037",
+      "bytes": 1056
+    },
+    "research/TC-03I-native-bench-replay-protocol.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-native-bench-replay-protocol.json",
+      "sha256": "474f0a2928b169e13bd41779b45fa73f4806ab03cc7d88817fc231c1c0f83733",
+      "bytes": 31905
+    },
+    "research/TC-03I-native-bench-replay.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03I-native-bench-replay.md",
+      "sha256": "e6ded62034a5bd355b12fa281e499e025f3899a76eb8e9a0e7d89cfbc20c4036",
+      "bytes": 5626
+    },
+    "research/TC-03J-allocator-arm-research-baseline.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-allocator-arm-research-baseline.json",
+      "sha256": "beb053e98a5410381bd0b02a8c96d59e39f4ff9c9419f1b7622de79d60806e21",
+      "bytes": 63395
+    },
+    "research/TC-03J-allocator-object-annex.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-allocator-object-annex.md",
+      "sha256": "79641cb0607697656f477561a19d7c81fd6382705e564839195f6f56ef70ca2f",
+      "bytes": 9116
+    },
+    "research/TC-03J-allocator-object-protocol.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-allocator-object-protocol.json",
+      "sha256": "6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912",
+      "bytes": 27343
+    },
+    "research/TC-03J-evidence/README.md": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/README.md",
+      "sha256": "e99195ae4f36437851ad9d72ef2f8307550bdd24ad3b2f9342b9bc8052aed8b1",
+      "bytes": 3172
+    },
+    "research/TC-03J-evidence/accounting-repair-v1/driver-and-tests.diff": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/accounting-repair-v1/driver-and-tests.diff",
+      "sha256": "832fe70e939616a45aa8f69d0a6a5d8410210d68447e62840a1125a2eef9a017",
+      "bytes": 23966
+    },
+    "research/TC-03J-evidence/accounting-repair-v1/old-guard-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/accounting-repair-v1/old-guard-tests.txt",
+      "sha256": "a1e5b9e800f8dc3388c1d3cdf542cb46352b1512fc0a378fa787e93c4e45edd5",
+      "bytes": 1502
+    },
+    "research/TC-03J-evidence/accounting-repair-v1/shared-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/accounting-repair-v1/shared-tests.txt",
+      "sha256": "23fabf25d5d69e3c9bd72bb4e8956fde41504f6b293f2736fa5bc1e92992d0df",
+      "bytes": 3286
+    },
+    "research/TC-03J-evidence/accounting-repair-v1/software-freeze.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/accounting-repair-v1/software-freeze.json",
+      "sha256": "1ffa92f8b24c9cc76dab4c30044823da533938a787dd4e13c2f982c5344ea65c",
+      "bytes": 823
+    },
+    "research/TC-03J-evidence/accounting-repair-v1/source-handoff.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/accounting-repair-v1/source-handoff.json",
+      "sha256": "c8cd8687a3a642eea950c822f543bb497e41f36c4b1fa34b1359a36b07b546d6",
+      "bytes": 10606
+    },
+    "research/TC-03J-evidence/accounting-repair-v1/test-log.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/accounting-repair-v1/test-log.txt",
+      "sha256": "d061e89285738dc8df212b2061e6bf4dd3c6ac82a114d33119f77b0cb8b33f8a",
+      "bytes": 5960
+    },
+    "research/TC-03J-evidence/actual-cli.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/actual-cli.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/actual-cli.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/actual-cli.stdout.txt",
+      "sha256": "755c5345686250eb93e69d672db995f135ea23be8298629e8eed14f7815f059b",
+      "bytes": 149
+    },
+    "research/TC-03J-evidence/actual-receipt.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/actual-receipt.json",
+      "sha256": "ec187f77bbc2dd45303f78edcf859d1207e91e8469e83627166ec6d9e8a571bd",
+      "bytes": 165613
+    },
+    "research/TC-03J-evidence/executed-allocator_cortex_m4_objects.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/executed-allocator_cortex_m4_objects.py.txt",
+      "sha256": "132b2fe3ec9d7ffb2b7a8d0efc7b153ce547192c2fea99034ccc855cb8910ce4",
+      "bytes": 28707
+    },
+    "research/TC-03J-evidence/executed-historical-baseline.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/executed-historical-baseline.json",
+      "sha256": "beb053e98a5410381bd0b02a8c96d59e39f4ff9c9419f1b7622de79d60806e21",
+      "bytes": 63395
+    },
+    "research/TC-03J-evidence/executed-protocol.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/executed-protocol.json",
+      "sha256": "6cd2ab954e137c0f052e5f83e6c3a3516b5813d7c2749a7ee415c2e2bf0c9912",
+      "bytes": 27343
+    },
+    "research/TC-03J-evidence/executed-shared-helper.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/executed-shared-helper.py.txt",
+      "sha256": "57d4855b25045ca0f237a74e27ade42df43ca7a5bf193eb935d7edfb2b998090",
+      "bytes": 21282
+    },
+    "research/TC-03J-evidence/full-host-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/full-host-tests.txt",
+      "sha256": "76367a323de5916e9a308fed2592d8bc6d50683fc18ac6eb56578d96fa494360",
+      "bytes": 1513
+    },
+    "research/TC-03J-evidence/independent-artifact-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/independent-artifact-review.json",
+      "sha256": "541f42ef1d2b113d9842fabc54a43cbad3274869636e5208a1a3cc1237ef8f13",
+      "bytes": 82260
+    },
+    "research/TC-03J-evidence/independent-auditor/allocator-arm-root-audit-attempt1.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/independent-auditor/allocator-arm-root-audit-attempt1.txt",
+      "sha256": "f72329d0333c17882e4d4fe38a3b264fa062679b230014f09c1868ed7b680636",
+      "bytes": 690
+    },
+    "research/TC-03J-evidence/independent-auditor/allocator-arm-root-audit-attempt2.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/independent-auditor/allocator-arm-root-audit-attempt2.txt",
+      "sha256": "cb3f7d055d8293b269c06ce6fa126794afcba40073369a6a0bcf584c033acedd",
+      "bytes": 665
+    },
+    "research/TC-03J-evidence/independent-auditor/allocator-arm-root-audit-attempt3.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/independent-auditor/allocator-arm-root-audit-attempt3.txt",
+      "sha256": "3ab241a5631c3dadfca81d5efeac2a9f25138c4e0b8b0b19496be4e687cdf5de",
+      "bytes": 453
+    },
+    "research/TC-03J-evidence/independent-auditor/audit_allocator_arm_root_before_archive_path_repair.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/independent-auditor/audit_allocator_arm_root_before_archive_path_repair.py.txt",
+      "sha256": "14c432ac4e773a2893722f82077f5424a411f6970dcbd698fb8e327adede8d9d",
+      "bytes": 14117
+    },
+    "research/TC-03J-evidence/independent-auditor/audit_allocator_arm_root_before_listing_parser_repair.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/independent-auditor/audit_allocator_arm_root_before_listing_parser_repair.py.txt",
+      "sha256": "17b3bf2a8e511a4dd0fd9a223be543ce793c8bdad12797299efdbec7c88b849c",
+      "bytes": 12915
+    },
+    "research/TC-03J-evidence/independent-auditor/audit_allocator_arm_root_before_relocation_parser_repair.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/independent-auditor/audit_allocator_arm_root_before_relocation_parser_repair.py.txt",
+      "sha256": "d252d8c2845fe1c620419c7cab348971fe99a0b3497ac76ec8942cbc8f6943a9",
+      "bytes": 13591
+    },
+    "research/TC-03J-evidence/independent-auditor/audit_allocator_arm_root_v1.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/independent-auditor/audit_allocator_arm_root_v1.py.txt",
+      "sha256": "4821f10b7f14e1905f35703675056ff022cfb359af33ed331e51a3ffc31cc292",
+      "bytes": 14267
+    },
+    "research/TC-03J-evidence/independent-auditor/audit_guard_arm_annex.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/independent-auditor/audit_guard_arm_annex.py.txt",
+      "sha256": "19add6395a1be6367984363349bee10a60ab0e0dc066368fd34ebd6ddf0026e1",
+      "bytes": 12814
+    },
+    "research/TC-03J-evidence/logs/compile-1-hard-torque_allocator.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/compile-1-hard-torque_allocator.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/compile-1-hard-torque_allocator.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/compile-1-hard-torque_allocator.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/compile-1-softfp-torque_allocator.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/compile-1-softfp-torque_allocator.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/compile-1-softfp-torque_allocator.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/compile-1-softfp-torque_allocator.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/compile-2-hard-torque_allocator.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/compile-2-hard-torque_allocator.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/compile-2-hard-torque_allocator.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/compile-2-hard-torque_allocator.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/compile-2-softfp-torque_allocator.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/compile-2-softfp-torque_allocator.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/compile-2-softfp-torque_allocator.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/compile-2-softfp-torque_allocator.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-0.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-0.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-0.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-0.stdout.txt",
+      "sha256": "b3baa4b4a4baeb598b2c772043b9c44691f7add707e41ab5b6f699d8dbd233a6",
+      "bytes": 18797
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-1.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-1.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-1.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-1.stdout.txt",
+      "sha256": "1fa51de781c61cb3fe1179b3fd4ca64eaa5d130d03e209e5dcedd9b6adf25783",
+      "bytes": 203
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-2.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-2.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-2.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-2.stdout.txt",
+      "sha256": "160bc07596ff737e4239e8df849b2dbde5e73bf3f5d770bd6a2ca9551f48f85a",
+      "bytes": 1228
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-3.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-3.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-3.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-3.stdout.txt",
+      "sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "bytes": 274
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-4.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-4.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-4.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-hard-torque_allocator-4.stdout.txt",
+      "sha256": "116126741ea89bc2c439b3a57f47524ee59a39d7a04618ac3d1e67072a0fe005",
+      "bytes": 49810
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-0.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-0.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-0.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-0.stdout.txt",
+      "sha256": "558cb395ce4d9b8921925d796511077fab5226af8010410b545173d51c49f733",
+      "bytes": 18679
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-1.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-1.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-1.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-1.stdout.txt",
+      "sha256": "034350e94b66364f75905c91ee14e6be65d5ef90d0a3898ca4e8b6b30afe537e",
+      "bytes": 205
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-2.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-2.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-2.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-2.stdout.txt",
+      "sha256": "026221f906a9ad42fbacc1bbd9df5d9105a626c28e5732ac9f8d9aa3d5b1ca88",
+      "bytes": 1230
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-3.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-3.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-3.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-3.stdout.txt",
+      "sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "bytes": 274
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-4.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-4.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-4.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-1-softfp-torque_allocator-4.stdout.txt",
+      "sha256": "7e51fc0f2b3319545e0423521ae7302d30b425a2d53a8826fee10ee1cb163a4e",
+      "bytes": 50066
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-0.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-0.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-0.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-0.stdout.txt",
+      "sha256": "d554958990cf1012168f1ae4b28b883dc4f3443c208abdd33464bbe7ad55bfc8",
+      "bytes": 18797
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-1.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-1.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-1.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-1.stdout.txt",
+      "sha256": "d70ea0ad63950390aaeb6ea04e1b5ac213a6265d2f56f1fdcf0d912b68816cc3",
+      "bytes": 203
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-2.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-2.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-2.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-2.stdout.txt",
+      "sha256": "40920f0990f4946860bfec421c64e87e47e7978c523393a63f617f2b88bef31d",
+      "bytes": 1228
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-3.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-3.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-3.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-3.stdout.txt",
+      "sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "bytes": 274
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-4.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-4.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-4.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-hard-torque_allocator-4.stdout.txt",
+      "sha256": "4a213285cf9070456dfb964774263b0dd232f32235d6e3b952b678dba747a5d5",
+      "bytes": 49810
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-0.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-0.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-0.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-0.stdout.txt",
+      "sha256": "a1b64df43c7f51d3fbd14ab4acd04ecbd7391e4e6b2f569b89075615de0e9431",
+      "bytes": 18679
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-1.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-1.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-1.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-1.stdout.txt",
+      "sha256": "91050ad1e667ef732d59fab98354ef3b5175c1d6d374ced782819d43dc25bd31",
+      "bytes": 205
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-2.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-2.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-2.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-2.stdout.txt",
+      "sha256": "359a00302e5026335ec03a44201cbf8dab342b63a93fbcd5ce654e87c379827a",
+      "bytes": 1230
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-3.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-3.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-3.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-3.stdout.txt",
+      "sha256": "6856d5c083aac25be3579376fee1a34584261c3f187e9c1477268cd1da64c07d",
+      "bytes": 274
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-4.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-4.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-4.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/inspect-2-softfp-torque_allocator-4.stdout.txt",
+      "sha256": "6940ffc953e0d676a1e423987c3ae7cd872ebc0ac15519b452c5eac2756b5e40",
+      "bytes": 50066
+    },
+    "research/TC-03J-evidence/logs/multilib-hard.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/multilib-hard.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/multilib-hard.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/multilib-hard.stdout.txt",
+      "sha256": "3eef8e35c2edf63d53216f3f13beef6325ddc2b6ec4158435e7374309215c974",
+      "bytes": 62
+    },
+    "research/TC-03J-evidence/logs/multilib-softfp.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/multilib-softfp.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/multilib-softfp.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/multilib-softfp.stdout.txt",
+      "sha256": "7eccd009f7d3a027c6477094c17ec2c90858ee8c2f994aa88379964c7b2f0261",
+      "bytes": 62
+    },
+    "research/TC-03J-evidence/logs/version-clang.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-clang.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/version-clang.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-clang.stdout.txt",
+      "sha256": "5253bf2711948e8d49ce32b64fe1946a39bf0fc05e576618ec95f5ad3e4276cc",
+      "bytes": 235
+    },
+    "research/TC-03J-evidence/logs/version-llvm-nm.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-llvm-nm.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/version-llvm-nm.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-llvm-nm.stdout.txt",
+      "sha256": "828d1bd5e3fe0e0c87afc32ed08a85e4b2f64032cb3a7c6e789b61a4da10afa6",
+      "bytes": 133
+    },
+    "research/TC-03J-evidence/logs/version-llvm-objdump.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-llvm-objdump.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/version-llvm-objdump.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-llvm-objdump.stdout.txt",
+      "sha256": "e080ab287e5a9ef1d874477b78c0d77c7d05c0e8ce15c4f874d6ef93b48bcde8",
+      "bytes": 449
+    },
+    "research/TC-03J-evidence/logs/version-llvm-readobj.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-llvm-readobj.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/version-llvm-readobj.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-llvm-readobj.stdout.txt",
+      "sha256": "3f8af3c3b94795d47dcf6db50ee24cc7c87445be73e53af38459599fe07c8271",
+      "bytes": 101
+    },
+    "research/TC-03J-evidence/logs/version-llvm-size.stderr.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-llvm-size.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "research/TC-03J-evidence/logs/version-llvm-size.stdout.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/logs/version-llvm-size.stdout.txt",
+      "sha256": "c5ca086372ff5f6022e36968047bec07534d6a606cad8f924a40a881fa916180",
+      "bytes": 226
+    },
+    "research/TC-03J-evidence/manifest.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/manifest.json",
+      "sha256": "349e419fb65fd4e1e8ef845eb063ce00bc4be9a75693ac17ad77f2e98f521990",
+      "bytes": 22907
+    },
+    "research/TC-03J-evidence/native-snapshot/torque_allocator.c.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/native-snapshot/torque_allocator.c.txt",
+      "sha256": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+      "bytes": 6677
+    },
+    "research/TC-03J-evidence/native-snapshot/torque_allocator.h.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/native-snapshot/torque_allocator.h.txt",
+      "sha256": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+      "bytes": 1823
+    },
+    "research/TC-03J-evidence/native-snapshot/torque_contract.h.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/native-snapshot/torque_contract.h.txt",
+      "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "bytes": 3938
+    },
+    "research/TC-03J-evidence/objects/repeat-1-hard-torque_allocator.d": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-1-hard-torque_allocator.d",
+      "sha256": "f05a9be7a5b783352e92edee685819d1042bce2f17d30e0b8b36d3d68e8ab6a4",
+      "bytes": 4730
+    },
+    "research/TC-03J-evidence/objects/repeat-1-hard-torque_allocator.o": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-1-hard-torque_allocator.o",
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "bytes": 6432
+    },
+    "research/TC-03J-evidence/objects/repeat-1-hard-torque_allocator.su": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-1-hard-torque_allocator.su",
+      "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+      "bytes": 250
+    },
+    "research/TC-03J-evidence/objects/repeat-1-softfp-torque_allocator.d": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-1-softfp-torque_allocator.d",
+      "sha256": "45c57627419a1034daf1cfa8b7b787d025fa663f132fd4fef10967e59dc15bfc",
+      "bytes": 4732
+    },
+    "research/TC-03J-evidence/objects/repeat-1-softfp-torque_allocator.o": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-1-softfp-torque_allocator.o",
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "bytes": 6456
+    },
+    "research/TC-03J-evidence/objects/repeat-1-softfp-torque_allocator.su": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-1-softfp-torque_allocator.su",
+      "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+      "bytes": 250
+    },
+    "research/TC-03J-evidence/objects/repeat-2-hard-torque_allocator.d": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-2-hard-torque_allocator.d",
+      "sha256": "0c0fd1318549574aab840c45263b768fd522978777cf895997846aec1f515b69",
+      "bytes": 4730
+    },
+    "research/TC-03J-evidence/objects/repeat-2-hard-torque_allocator.o": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-2-hard-torque_allocator.o",
+      "sha256": "d9efcad5c7fa7211233983e8f904469e572713e48f3273735a3e3720cba12d60",
+      "bytes": 6432
+    },
+    "research/TC-03J-evidence/objects/repeat-2-hard-torque_allocator.su": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-2-hard-torque_allocator.su",
+      "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+      "bytes": 250
+    },
+    "research/TC-03J-evidence/objects/repeat-2-softfp-torque_allocator.d": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-2-softfp-torque_allocator.d",
+      "sha256": "0d0c445175e6f9fa49782b06766310feafa1132baa29ae62208dfa36ff3d0b79",
+      "bytes": 4732
+    },
+    "research/TC-03J-evidence/objects/repeat-2-softfp-torque_allocator.o": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-2-softfp-torque_allocator.o",
+      "sha256": "1610ec4d8f76780d72aa46e57bf347b53986ca0715ad1e0f3ea495c7be9d1cbf",
+      "bytes": 6456
+    },
+    "research/TC-03J-evidence/objects/repeat-2-softfp-torque_allocator.su": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/objects/repeat-2-softfp-torque_allocator.su",
+      "sha256": "d592000416c152d576c32d06830c72299ab2d99013472d3d0fba66cb6ae091f0",
+      "bytes": 250
+    },
+    "research/TC-03J-evidence/old-guard-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/old-guard-tests.txt",
+      "sha256": "4fe978b2f0b8d908b0474cc5f839c7d4c67c7b16c05be187113a3a2fc7728b03",
+      "bytes": 1502
+    },
+    "research/TC-03J-evidence/owner-audit.log": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/owner-audit.log",
+      "sha256": "57042880eacb8f53029fb068a3bc759fa404aa210f31b196228600e3dcb42f7d",
+      "bytes": 226
+    },
+    "research/TC-03J-evidence/owner-auditor.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/owner-auditor.py.txt",
+      "sha256": "17f726025f402de66ea71f5b8f2fef12e3a48e90d585dd438576c9bf79f05d36",
+      "bytes": 7517
+    },
+    "research/TC-03J-evidence/owner-raw-file-audit.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/owner-raw-file-audit.json",
+      "sha256": "c6676284220aceda8ea14dcaeac31ec3e3f4d56d5fe3dca0cc7ab5581eef9267",
+      "bytes": 70950
+    },
+    "research/TC-03J-evidence/pre-call-review-v1/before-freeze.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/pre-call-review-v1/before-freeze.json",
+      "sha256": "a80214a623cd70c59b264133f5b1c9be4ee3903f2a12e36a0b54b20a3cab0c4e",
+      "bytes": 1211
+    },
+    "research/TC-03J-evidence/pre-call-review-v1/root-source-findings.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/pre-call-review-v1/root-source-findings.json",
+      "sha256": "37fe88bab2556f5ad9bdd299d2d70b4e9ed0bd7b073aaa94352bce6362ccfac5",
+      "bytes": 1038
+    },
+    "research/TC-03J-evidence/pre-call-review-v1/unexecuted-driver.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/pre-call-review-v1/unexecuted-driver.py.txt",
+      "sha256": "8e2c7f604fbd224f02396bdd3a90646107091b45498769c5194e79b5b179d252",
+      "bytes": 24201
+    },
+    "research/TC-03J-evidence/pre-call-review-v1/unexecuted-tests.py.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/pre-call-review-v1/unexecuted-tests.py.txt",
+      "sha256": "064c8919ccde1ebf148b7822f5880200ebc36093690ffa9755a50f953f2e62f6",
+      "bytes": 21746
+    },
+    "research/TC-03J-evidence/retained-artifact-manifest.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/retained-artifact-manifest.json",
+      "sha256": "e66f00f14562e6f61f21a1a0aa288ad3b77f2c6e30418b278bf6a1bad3860783",
+      "bytes": 48114
+    },
+    "research/TC-03J-evidence/root-proposal-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/root-proposal-review.json",
+      "sha256": "be105357850edb883f687ef3ab63a80e2e9a85c726d23bb0608cf90b62f7826d",
+      "bytes": 1566
+    },
+    "research/TC-03J-evidence/root-repair-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/root-repair-review.json",
+      "sha256": "ab013b8bcc420eb4f795e9022a7870bb1ac5cfe324fbc9e7a0d2e1bc68c193c1",
+      "bytes": 1634
+    },
+    "research/TC-03J-evidence/root-repair-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/root-repair-tests.txt",
+      "sha256": "47c1261931cbddc9be19ebc8f565703640980e1db199d0304051e42d748e2726",
+      "bytes": 10481
+    },
+    "research/TC-03J-evidence/shared-tests.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/shared-tests.txt",
+      "sha256": "c0bdfe6175e929801795d2891f47ee0dca9adb523e67a349a183fa0dac1137c4",
+      "bytes": 3286
+    },
+    "research/TC-03J-evidence/source-handoff-before-root-review-v2.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/source-handoff-before-root-review-v2.json",
+      "sha256": "9de89b18c307a3017c9f50b521a9cb4e9b08e9ceea00ac468cd2fdcc91462661",
+      "bytes": 9630
+    },
+    "research/TC-03J-evidence/source-handoff-before-root-review.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/source-handoff-before-root-review.json",
+      "sha256": "bc72d6c1fbe201609bca9718f8e10b2945d76cdd0fafb4f25eef9cbadc6c1e7f",
+      "bytes": 9329
+    },
+    "research/TC-03J-evidence/summary.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/summary.json",
+      "sha256": "c4e06f5afab7a970650f894d1b353f3c448915a718211b3cef0baf02c4f32731",
+      "bytes": 10422
+    },
+    "research/TC-03J-evidence/test-log.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/test-log.txt",
+      "sha256": "e370fde52aafa81a0c9956c948d90c199a93974e9c370b54573ed7ab79083910",
+      "bytes": 4448
+    },
+    "research/TC-03J-evidence/toolchain-provenance.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/toolchain-provenance.json",
+      "sha256": "9e9f350c9ea138bd0738adf03592111ee5c9feea9a67010e47b63bfe13471297",
+      "bytes": 6191
+    },
+    "research/TC-03J-evidence/windows-checkout-repair-v1/attribute.diff": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/windows-checkout-repair-v1/attribute.diff",
+      "sha256": "5086c8e1c1549c5d8e2560c49bf5286297cda976891e794ab089c95df7b9ee6f",
+      "bytes": 781
+    },
+    "research/TC-03J-evidence/windows-checkout-repair-v1/earlier-inventory-check-failure.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/windows-checkout-repair-v1/earlier-inventory-check-failure.json",
+      "sha256": "3cf80dc34dc73ca848f6f92fcf0c9b93ecb93321fa1b39c45f887c2f44dab319",
+      "bytes": 889
+    },
+    "research/TC-03J-evidence/windows-checkout-repair-v1/fixed-checkout-verification.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/windows-checkout-repair-v1/fixed-checkout-verification.json",
+      "sha256": "6e2c641d676a33c9352e2a6588805bd609715fd877d1885f6898855455f61043",
+      "bytes": 408
+    },
+    "research/TC-03J-evidence/windows-checkout-repair-v1/initial-failed-CI-log.txt": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/windows-checkout-repair-v1/initial-failed-CI-log.txt",
+      "sha256": "6fd4ebe0b85e9d47ec921781392dce8e507dda74c20d9e735f126faf7d1fd53e",
+      "bytes": 35983
+    },
+    "research/TC-03J-evidence/windows-checkout-repair-v1/original-reproduction.json": {
+      "original_path": "projects/enme408-torque-control/research/TC-03J-evidence/windows-checkout-repair-v1/original-reproduction.json",
+      "sha256": "02e6ee727683c748404cbe491cd9cb26d17d357cb67d333b0685eaef98663538",
+      "bytes": 549
+    }
+  },
+  "scope": "Exact Git blob bytes of the ENME408 controller project only; historical receipts retain their original identities."
+}

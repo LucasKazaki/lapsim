@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\Users\lucas\Documents\Codex\2026-10-15\go\work\audit_allocator_arm_root_v1.py", line 184, in <module>
+    if __name__=='__main__':run()
+                            ^^^^^
+  File "C:\Users\lucas\Documents\Codex\2026-10-15\go\work\audit_allocator_arm_root_v1.py", line 108, in run
+    listing=disassembly_bytes(RUN/dis['stdout'],executable,relocations)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas\Documents\Codex\2026-10-15\go\work\audit_allocator_arm_root_v1.py", line 63, in disassembly_bytes
+    assert all(covered[name]==set(range(len(raw))) for name,raw in sections.items())
+AssertionError
+

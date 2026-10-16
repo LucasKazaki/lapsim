@@ -1,0 +1,5925 @@
+{
+  "schema": "enme408-cortex-m4-objects/v1",
+  "status": "failed_retained",
+  "protocol_sha256": "c1c8117a1c8a1e765afb8c2e44ab0362af7cbd296806a07498c348505fbf8f2a",
+  "runner_sha256": "40c299716d1a0a497c0ee0ec74e78faf113dd235237892994e19f93017c22dc8",
+  "source_files": {
+    "torque_clock.c": {
+      "sha256": "bc9bc619a45ad914e4361f3a59d997ba0eab3c6a125badf8f3003f1c4e6555a5",
+      "bytes": 4077
+    },
+    "torque_clock.h": {
+      "sha256": "7bff3b5a1e27d99118754032db355858724a29e19fd12f5b75eb741124765088",
+      "bytes": 2287
+    },
+    "torque_contract.c": {
+      "sha256": "31d16ee757ba9bb154177297ddf83590f530fccc9c07abc74d42bb3c1e35f28c",
+      "bytes": 10424
+    },
+    "torque_contract.h": {
+      "sha256": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "bytes": 3938
+    },
+    "torque_pedal.c": {
+      "sha256": "6bf52211195cfc01342a37047f807580481802a123f91a9eed7c86e1f6421f15",
+      "bytes": 4566
+    },
+    "torque_pedal.h": {
+      "sha256": "670fbd511ff147945b3eab476e6534f0ed5b9149b453993b96b19e5e466ad128",
+      "bytes": 2010
+    }
+  },
+  "commands": [
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--version"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.046999999998661224,
+      "stdout": "logs/version-clang.stdout.txt",
+      "stdout_sha256": "5253bf2711948e8d49ce32b64fe1946a39bf0fc05e576618ec95f5ad3e4276cc",
+      "stderr": "logs/version-clang.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--version"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.031000000002677552,
+      "stdout": "logs/version-llvm-readobj.stdout.txt",
+      "stdout_sha256": "3f8af3c3b94795d47dcf6db50ee24cc7c87445be73e53af38459599fe07c8271",
+      "stderr": "logs/version-llvm-readobj.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--version"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.0319999999992433,
+      "stdout": "logs/version-llvm-size.stdout.txt",
+      "stdout_sha256": "c5ca086372ff5f6022e36968047bec07534d6a606cad8f924a40a881fa916180",
+      "stderr": "logs/version-llvm-size.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--version"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.030999999995401595,
+      "stdout": "logs/version-llvm-nm.stdout.txt",
+      "stdout_sha256": "828d1bd5e3fe0e0c87afc32ed08a85e4b2f64032cb3a7c6e789b61a4da10afa6",
+      "stderr": "logs/version-llvm-nm.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=hard",
+        "-print-multi-directory"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/multilib-hard.stdout.txt",
+      "stdout_sha256": "3eef8e35c2edf63d53216f3f13beef6325ddc2b6ec4158435e7374309215c974",
+      "stderr": "logs/multilib-hard.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mfloat-abi=softfp",
+        "-print-multi-directory"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/multilib-softfp.stdout.txt",
+      "stdout_sha256": "7eccd009f7d3a027c6477094c17ec2c90858ee8c2f994aa88379964c7b2f0261",
+      "stderr": "logs/multilib-softfp.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_contract.d",
+        "-c",
+        "torque_contract.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.10899999999674037,
+      "stdout": "logs/compile-1-hard-torque_contract.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-hard-torque_contract.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-1-hard-torque_contract-0.stdout.txt",
+      "stdout_sha256": "662021883a14ea44fd59b6407c944a549958a46fbbab006846e69684330ab473",
+      "stderr": "logs/inspect-1-hard-torque_contract-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-1-hard-torque_contract-1.stdout.txt",
+      "stdout_sha256": "0b70509cf63576b3ff6367752678a9c367e04ae686c6b2d44d2792aa3878a024",
+      "stderr": "logs/inspect-1-hard-torque_contract-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-1-hard-torque_contract-2.stdout.txt",
+      "stdout_sha256": "b68cdd9c0f13ea13dd15e16512ca8c9e3a6373ffe92f98c3d8b63f825702f120",
+      "stderr": "logs/inspect-1-hard-torque_contract-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout": "logs/inspect-1-hard-torque_contract-3.stdout.txt",
+      "stdout_sha256": "a8099bd86bf9b4de850b6b39a103258fc37094c972ad85d13fa2d5a9673cd10d",
+      "stderr": "logs/inspect-1-hard-torque_contract-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_clock.d",
+        "-c",
+        "torque_clock.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.062000000005355105,
+      "stdout": "logs/compile-1-hard-torque_clock.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-hard-torque_clock.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-1-hard-torque_clock-0.stdout.txt",
+      "stdout_sha256": "3ab41686ea77caf2d92f2fc7acb388c6bf00a3888ceed3b1cd2f2eab008597bb",
+      "stderr": "logs/inspect-1-hard-torque_clock-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-1-hard-torque_clock-1.stdout.txt",
+      "stdout_sha256": "fb354bfefa6e4201e7d8328f86797978f541ebf862d9add38d12bd96f0191738",
+      "stderr": "logs/inspect-1-hard-torque_clock-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-1-hard-torque_clock-2.stdout.txt",
+      "stdout_sha256": "7efe263b4cd3ba7c07bda2dc2344a3edb803a368dc105ff608ce3dde1948defb",
+      "stderr": "logs/inspect-1-hard-torque_clock-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-1-hard-torque_clock-3.stdout.txt",
+      "stdout_sha256": "fe958ee5a272c8e1833c1e5e1f45843345d226558c1f9f9da53d296d82fccaa6",
+      "stderr": "logs/inspect-1-hard-torque_clock-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_pedal.d",
+        "-c",
+        "torque_pedal.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.07800000000133878,
+      "stdout": "logs/compile-1-hard-torque_pedal.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-hard-torque_pedal.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-1-hard-torque_pedal-0.stdout.txt",
+      "stdout_sha256": "1a63510651a0a2f4a1a42b8f8e74f641d539d283b8b63328cb650516a8d68a9b",
+      "stderr": "logs/inspect-1-hard-torque_pedal-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-1-hard-torque_pedal-1.stdout.txt",
+      "stdout_sha256": "08d416f96404eb2b360dc2c1e8ee618ce97e08e7cdf253c1df4d0ac28fa604dc",
+      "stderr": "logs/inspect-1-hard-torque_pedal-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-1-hard-torque_pedal-2.stdout.txt",
+      "stdout_sha256": "4231449671fc77b50472b629399f505b8b54ff7ffba2cc29434ea954e158b09c",
+      "stderr": "logs/inspect-1-hard-torque_pedal-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-1-hard-torque_pedal-3.stdout.txt",
+      "stdout_sha256": "be40388fbc503ec366a19cc33d59b5d26e8935b1ad35616076058de56456d6c7",
+      "stderr": "logs/inspect-1-hard-torque_pedal-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_contract.d",
+        "-c",
+        "torque_contract.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.09399999999732245,
+      "stdout": "logs/compile-1-softfp-torque_contract.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-softfp-torque_contract.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-1-softfp-torque_contract-0.stdout.txt",
+      "stdout_sha256": "061310ca6cc5dba46ae822e142eeeb9f4ffd3167a7d85eae31063f206f9b5134",
+      "stderr": "logs/inspect-1-softfp-torque_contract-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-1-softfp-torque_contract-1.stdout.txt",
+      "stdout_sha256": "3446c72a8c8b52056c32936921accc3460205c881fbe11835bb947dc43d1c4f7",
+      "stderr": "logs/inspect-1-softfp-torque_contract-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-1-softfp-torque_contract-2.stdout.txt",
+      "stdout_sha256": "99c72bd26a9e53273eabf04d846a96ee07665a0bc22dc58b7ab275981893e40c",
+      "stderr": "logs/inspect-1-softfp-torque_contract-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-1-softfp-torque_contract-3.stdout.txt",
+      "stdout_sha256": "a8099bd86bf9b4de850b6b39a103258fc37094c972ad85d13fa2d5a9673cd10d",
+      "stderr": "logs/inspect-1-softfp-torque_contract-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_clock.d",
+        "-c",
+        "torque_clock.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.06300000000192085,
+      "stdout": "logs/compile-1-softfp-torque_clock.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-softfp-torque_clock.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-1-softfp-torque_clock-0.stdout.txt",
+      "stdout_sha256": "0b5d4e835dcb6b166338511be46adb9b1bd604476a65466e8c6e1a147fdc513e",
+      "stderr": "logs/inspect-1-softfp-torque_clock-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-1-softfp-torque_clock-1.stdout.txt",
+      "stdout_sha256": "c515fc6af71860bd93e67a1d1be9167f93751ffedb65a98b1bf7db452b55fa18",
+      "stderr": "logs/inspect-1-softfp-torque_clock-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-1-softfp-torque_clock-2.stdout.txt",
+      "stdout_sha256": "df368662d81627f4bd5fe265fbd036a5b4188e6a3996a082759d1e830d4cac11",
+      "stderr": "logs/inspect-1-softfp-torque_clock-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-1-softfp-torque_clock-3.stdout.txt",
+      "stdout_sha256": "fe958ee5a272c8e1833c1e5e1f45843345d226558c1f9f9da53d296d82fccaa6",
+      "stderr": "logs/inspect-1-softfp-torque_clock-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_pedal.d",
+        "-c",
+        "torque_pedal.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.07800000000133878,
+      "stdout": "logs/compile-1-softfp-torque_pedal.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-1-softfp-torque_pedal.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-1-softfp-torque_pedal-0.stdout.txt",
+      "stdout_sha256": "8c74bb3b593b2c4668255f45a83a21492a595285c9f5be82a434af97ebc16aac",
+      "stderr": "logs/inspect-1-softfp-torque_pedal-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-1-softfp-torque_pedal-1.stdout.txt",
+      "stdout_sha256": "b7d850a74623da6c0f9ea6a371bceff13409cb8d59416ec399520ca3b310c948",
+      "stderr": "logs/inspect-1-softfp-torque_pedal-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-1-softfp-torque_pedal-2.stdout.txt",
+      "stdout_sha256": "2b085ee0727672a9026ef39585d0ad2563a52b9b644d8167dc6bfd537a67803a",
+      "stderr": "logs/inspect-1-softfp-torque_pedal-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-1\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-1-softfp-torque_pedal-3.stdout.txt",
+      "stdout_sha256": "be40388fbc503ec366a19cc33d59b5d26e8935b1ad35616076058de56456d6c7",
+      "stderr": "logs/inspect-1-softfp-torque_pedal-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_contract.d",
+        "-c",
+        "torque_contract.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.09399999999732245,
+      "stdout": "logs/compile-2-hard-torque_contract.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-hard-torque_contract.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-2-hard-torque_contract-0.stdout.txt",
+      "stdout_sha256": "840b8f4748338c8b9ed935a8705929e7b4b911091130535c6d45c9a956517d33",
+      "stderr": "logs/inspect-2-hard-torque_contract-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-2-hard-torque_contract-1.stdout.txt",
+      "stdout_sha256": "9e786708a18798402aa680de9635a28350a00976d1257f9790bae3319cb06bd9",
+      "stderr": "logs/inspect-2-hard-torque_contract-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-2-hard-torque_contract-2.stdout.txt",
+      "stdout_sha256": "6701acabe515a2a4da03195b9c0e521588e14616745ff12cc86e770d05e36e08",
+      "stderr": "logs/inspect-2-hard-torque_contract-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-hard-torque_contract-3.stdout.txt",
+      "stdout_sha256": "a8099bd86bf9b4de850b6b39a103258fc37094c972ad85d13fa2d5a9673cd10d",
+      "stderr": "logs/inspect-2-hard-torque_contract-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_clock.d",
+        "-c",
+        "torque_clock.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.062000000005355105,
+      "stdout": "logs/compile-2-hard-torque_clock.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-hard-torque_clock.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "stdout": "logs/inspect-2-hard-torque_clock-0.stdout.txt",
+      "stdout_sha256": "4970cdc5414c756b77b3ca4272836b34101f6bdefc3606bb1881fea0d2ceb9cf",
+      "stderr": "logs/inspect-2-hard-torque_clock-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-hard-torque_clock-1.stdout.txt",
+      "stdout_sha256": "2e35887da5bc36f998ce23f1ec9019512da3493759c4a5a6de42a651bd140855",
+      "stderr": "logs/inspect-2-hard-torque_clock-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-2-hard-torque_clock-2.stdout.txt",
+      "stdout_sha256": "8c45ff8ef722cd870217b1e13586b1b05089b6ffa685010d5ed29f7bc291affe",
+      "stderr": "logs/inspect-2-hard-torque_clock-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-hard-torque_clock-3.stdout.txt",
+      "stdout_sha256": "fe958ee5a272c8e1833c1e5e1f45843345d226558c1f9f9da53d296d82fccaa6",
+      "stderr": "logs/inspect-2-hard-torque_clock-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=hard",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_pedal.d",
+        "-c",
+        "torque_pedal.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.06199999999807915,
+      "stdout": "logs/compile-2-hard-torque_pedal.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-hard-torque_pedal.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-2-hard-torque_pedal-0.stdout.txt",
+      "stdout_sha256": "553f393d5fffb5be3b780261deab6ece76dbccd0e79effd11a636ae57f25fdde",
+      "stderr": "logs/inspect-2-hard-torque_pedal-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-hard-torque_pedal-1.stdout.txt",
+      "stdout_sha256": "ee87fab172b1f6ab2b5d7c1b3fbac7d66718f4a2bbee5c4359a128ddffa93c0f",
+      "stderr": "logs/inspect-2-hard-torque_pedal-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-2-hard-torque_pedal-2.stdout.txt",
+      "stdout_sha256": "cdbae07e5554fb3ea52f920022c960a07c4b1c7236f7c56eecf6ef44d804d72a",
+      "stderr": "logs/inspect-2-hard-torque_pedal-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\hard\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-2-hard-torque_pedal-3.stdout.txt",
+      "stdout_sha256": "be40388fbc503ec366a19cc33d59b5d26e8935b1ad35616076058de56456d6c7",
+      "stderr": "logs/inspect-2-hard-torque_pedal-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_contract.d",
+        "-c",
+        "torque_contract.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.0930000000007567,
+      "stdout": "logs/compile-2-softfp-torque_contract.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-softfp-torque_contract.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-2-softfp-torque_contract-0.stdout.txt",
+      "stdout_sha256": "996a1cc9c751289ecaadc0f58315eb3413179c79b54129b55c1afc9a2b142410",
+      "stderr": "logs/inspect-2-softfp-torque_contract-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-softfp-torque_contract-1.stdout.txt",
+      "stdout_sha256": "876d771411c85655e26e7cc0a2df6e1586da474592b50a8576fc009b1008e386",
+      "stderr": "logs/inspect-2-softfp-torque_contract-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-2-softfp-torque_contract-2.stdout.txt",
+      "stdout_sha256": "a25775431570dd027d752e24e5b67ee1711bb7acf817976c99a7695742b76315",
+      "stderr": "logs/inspect-2-softfp-torque_contract-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_contract.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-softfp-torque_contract-3.stdout.txt",
+      "stdout_sha256": "a8099bd86bf9b4de850b6b39a103258fc37094c972ad85d13fa2d5a9673cd10d",
+      "stderr": "logs/inspect-2-softfp-torque_contract-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_clock.d",
+        "-c",
+        "torque_clock.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.06199999999807915,
+      "stdout": "logs/compile-2-softfp-torque_clock.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-softfp-torque_clock.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-2-softfp-torque_clock-0.stdout.txt",
+      "stdout_sha256": "65fb95eb0adc5702f9aa822c4e0809d06b1b11a1f2c1e6c37eee639f1d130cb1",
+      "stderr": "logs/inspect-2-softfp-torque_clock-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-softfp-torque_clock-1.stdout.txt",
+      "stdout_sha256": "58d8722697cb289412b05a28947d5006a382c4de4a37d0e33271eab9723b2c63",
+      "stderr": "logs/inspect-2-softfp-torque_clock-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-softfp-torque_clock-2.stdout.txt",
+      "stdout_sha256": "9bd0dbf1774775ebba23ed52aeb587e0b0b702395f1a408c9cab830e2d89084f",
+      "stderr": "logs/inspect-2-softfp-torque_clock-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_clock.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01599999999598367,
+      "stdout": "logs/inspect-2-softfp-torque_clock-3.stdout.txt",
+      "stdout_sha256": "fe958ee5a272c8e1833c1e5e1f45843345d226558c1f9f9da53d296d82fccaa6",
+      "stderr": "logs/inspect-2-softfp-torque_clock-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "--no-default-config",
+        "--target=armv7em-none-eabi",
+        "-mcpu=cortex-m4",
+        "-mthumb",
+        "-mfpu=fpv4-sp-d16",
+        "-mlittle-endian",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-ffreestanding",
+        "-fno-fast-math",
+        "-fno-finite-math-only",
+        "-ffp-contract=off",
+        "-fexcess-precision=standard",
+        "-fstack-usage",
+        "-ffunction-sections",
+        "-fdata-sections",
+        "-mfloat-abi=softfp",
+        "-MD",
+        "-MF",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_pedal.d",
+        "-c",
+        "torque_pedal.c",
+        "-o",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.06300000000192085,
+      "stdout": "logs/compile-2-softfp-torque_pedal.stdout.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "logs/compile-2-softfp-torque_pedal.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "--file-headers",
+        "--sections",
+        "--symbols",
+        "--arch-specific",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-softfp-torque_pedal-0.stdout.txt",
+      "stdout_sha256": "d39a5aec18285bb8ff32f827d7de5ee342a4fbdd403c3c60f7c8ccedc15ec3e0",
+      "stderr": "logs/inspect-2-softfp-torque_pedal-0.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=berkeley",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-2-softfp-torque_pedal-1.stdout.txt",
+      "stdout_sha256": "2f1696a299b91cc10838d7079aef6b71593ee7e5e0a4610220541ca14f3ab4dc",
+      "stderr": "logs/inspect-2-softfp-torque_pedal-1.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "--format=sysv",
+        "--radix=10",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.014999999999417923,
+      "stdout": "logs/inspect-2-softfp-torque_pedal-2.stdout.txt",
+      "stdout_sha256": "372c35591987333ba97d4729c1796f4e3e5c60ef6776a7ff94bef1f5efab655d",
+      "stderr": "logs/inspect-2-softfp-torque_pedal-2.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "--undefined-only",
+        "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\enme408-cortex-m4-objects-v1\\repeat-2\\softfp\\torque_pedal.o"
+      ],
+      "cwd": "native snapshot",
+      "status": "completed",
+      "exit_code": 0,
+      "seconds": 0.01600000000325963,
+      "stdout": "logs/inspect-2-softfp-torque_pedal-3.stdout.txt",
+      "stdout_sha256": "be40388fbc503ec366a19cc33d59b5d26e8935b1ad35616076058de56456d6c7",
+      "stderr": "logs/inspect-2-softfp-torque_pedal-3.stderr.txt",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "runtime": {
+    "python": "3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "machine": "AMD64"
+  },
+  "objects": [
+    {
+      "repeat": 1,
+      "abi": "hard",
+      "unit": "torque_contract",
+      "status": "metadata_error",
+      "path": "repeat-1/hard/torque_contract.o",
+      "sha256": "8e1197aabad79fd9baeb6a331c3e8b904b6b0b80a60fb7aef59336a7baa00959",
+      "bytes": 9740,
+      "berkeley_size": {
+        "text": 3877,
+        "data": 0,
+        "bss": 0,
+        "total": 3877
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__aeabi_dsub",
+        "__finite",
+        "fabs",
+        "fmax",
+        "frexp",
+        "ldexp",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 1110
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_abi_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_abi_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_abi_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_numeric_contract_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_numeric_contract_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_numeric_contract_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_init_snapshot",
+            "type": 1,
+            "flags": 6,
+            "bytes": 28
+          },
+          {
+            "name": ".rel.text.tc_init_snapshot",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_snapshot",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_snapshot",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_validate_allocation",
+            "type": 1,
+            "flags": 6,
+            "bytes": 832
+          },
+          {
+            "name": ".rel.text.tc_validate_allocation",
+            "type": 9,
+            "flags": 64,
+            "bytes": 320
+          },
+          {
+            "name": ".ARM.exidx.text.tc_validate_allocation",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_validate_allocation",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.wheel_total",
+            "type": 1,
+            "flags": 6,
+            "bytes": 80
+          },
+          {
+            "name": ".rel.text.wheel_total",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.wheel_total",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.wheel_total",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.ulp",
+            "type": 1,
+            "flags": 6,
+            "bytes": 104
+          },
+          {
+            "name": ".rel.text.ulp",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.ulp",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.ulp",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.text_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 38
+          },
+          {
+            "name": ".rel.text.text_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.text_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.text_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.text_nonempty",
+            "type": 1,
+            "flags": 6,
+            "bytes": 42
+          },
+          {
+            "name": ".rel.text.text_nonempty",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.text_nonempty",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.text_nonempty",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_contract_reason",
+            "type": 1,
+            "flags": 6,
+            "bytes": 28
+          },
+          {
+            "name": ".rel.text.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.tc_contract_reason",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_decide",
+            "type": 1,
+            "flags": 6,
+            "bytes": 1230
+          },
+          {
+            "name": ".rel.text.tc_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 176
+          },
+          {
+            "name": ".ARM.exidx.text.tc_decide",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.inhibit",
+            "type": 1,
+            "flags": 6,
+            "bytes": 326
+          },
+          {
+            "name": ".rel.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.inhibit",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.guard_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 568
+          },
+          {
+            "name": ".rel.text.guard_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 184
+          },
+          {
+            "name": ".ARM.exidx.text.guard_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.guard_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 395
+          },
+          {
+            "name": ".rodata.cst32",
+            "type": 1,
+            "flags": 18,
+            "bytes": 32
+          },
+          {
+            "name": ".rodata..Lswitch.table.tc_contract_reason",
+            "type": 1,
+            "flags": 2,
+            "bytes": 40
+          },
+          {
+            "name": ".rel.rodata..Lswitch.table.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 80
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 1104
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "1b5878bdc6f86fd3107bdb61a20bf8c1157a1cc738043000401f79e08453d991",
+        "records": [
+          {
+            "location": "torque_contract.c:60:tc_abi_version",
+            "function": "tc_abi_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:61:tc_numeric_contract_version",
+            "function": "tc_numeric_contract_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:63:tc_abi_sizeof",
+            "function": "tc_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:77:tc_init_snapshot",
+            "function": "tc_init_snapshot",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:84:tc_validate_allocation",
+            "function": "tc_validate_allocation",
+            "bytes": 104,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:53:wheel_total",
+            "function": "wheel_total",
+            "bytes": 32,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:43:ulp",
+            "function": "ulp",
+            "bytes": 24,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:24:text_valid",
+            "function": "text_valid",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:30:text_nonempty",
+            "function": "text_nonempty",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:129:tc_contract_reason",
+            "function": "tc_contract_reason",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:168:tc_decide",
+            "function": "tc_decide",
+            "bytes": 40,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:160:inhibit",
+            "function": "inhibit",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:145:guard_valid",
+            "function": "guard_valid",
+            "bytes": 56,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/hard/torque_contract.d",
+        "sha256": "f0b7ffdc6ec713b5d9d7818e31a97fecbf9c5c2b6898699e128c2db2fd0f78ae"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 1,
+      "abi": "hard",
+      "unit": "torque_clock",
+      "status": "metadata_error",
+      "path": "repeat-1/hard/torque_clock.o",
+      "sha256": "9198220167d52390a83c3ade966f86c3a4f19e99f38ccc8b9f6af5e125be60a5",
+      "bytes": 3424,
+      "berkeley_size": {
+        "text": 978,
+        "data": 0,
+        "bss": 0,
+        "total": 978
+      },
+      "undefined_symbols": [
+        "__aeabi_dcmpgt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_memcpy8",
+        "__aeabi_ui2d",
+        "__finite",
+        "fabs",
+        "memset",
+        "tc_decide"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 547
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_clock_contract_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_contract_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_contract_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clock_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_clock_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_init_clock",
+            "type": 1,
+            "flags": 6,
+            "bytes": 14
+          },
+          {
+            "name": ".rel.text.tc_init_clock",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_clock",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_clock",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clock_step",
+            "type": 1,
+            "flags": 6,
+            "bytes": 680
+          },
+          {
+            "name": ".rel.text.tc_clock_step",
+            "type": 9,
+            "flags": 64,
+            "bytes": 64
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_step",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_step",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clocked_decide",
+            "type": 1,
+            "flags": 6,
+            "bytes": 202
+          },
+          {
+            "name": ".rel.text.tc_clocked_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 48
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clocked_decide",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clocked_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.cst16",
+            "type": 1,
+            "flags": 18,
+            "bytes": 16
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 448
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "4388f57d264db9fec5851d1ad42a3fd5715daea17c72698eec2564fe0b33f6c8",
+        "records": [
+          {
+            "location": "torque_clock.c:26:tc_clock_contract_version",
+            "function": "tc_clock_contract_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:28:tc_clock_abi_sizeof",
+            "function": "tc_clock_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:38:tc_init_clock",
+            "function": "tc_init_clock",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:42:tc_clock_step",
+            "function": "tc_clock_step",
+            "bytes": 40,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:81:tc_clocked_decide",
+            "function": "tc_clocked_decide",
+            "bytes": 432,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/hard/torque_clock.d",
+        "sha256": "9ee5fd446453679b4319cccf293030d970c8ad702bd48e9e76247ba9fc0b5746"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 1,
+      "abi": "hard",
+      "unit": "torque_pedal",
+      "status": "metadata_error",
+      "path": "repeat-1/hard/torque_pedal.o",
+      "sha256": "ced2c11a37860cf743bc48b8b2c68e44aa7b7290f6b35f0d9a95e1e37bdece2d",
+      "bytes": 4416,
+      "berkeley_size": {
+        "text": 1460,
+        "data": 0,
+        "bss": 0,
+        "total": 1460
+      },
+      "undefined_symbols": [
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_memcpy",
+        "__finite",
+        "memchr",
+        "memset"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 620
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_pedal_adapter_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_pedal_adapter_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_pedal_adapter_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_pedal_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_pedal_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_pedal_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_trusted_overlap_trip",
+            "type": 1,
+            "flags": 6,
+            "bytes": 344
+          },
+          {
+            "name": ".rel.text.tc_trusted_overlap_trip",
+            "type": 9,
+            "flags": 64,
+            "bytes": 88
+          },
+          {
+            "name": ".ARM.exidx.text.tc_trusted_overlap_trip",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_trusted_overlap_trip",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_trusted_clear_cycle",
+            "type": 1,
+            "flags": 6,
+            "bytes": 84
+          },
+          {
+            "name": ".ARM.exidx.text.tc_trusted_clear_cycle",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_trusted_clear_cycle",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_reconcile_pedal_latch",
+            "type": 1,
+            "flags": 6,
+            "bytes": 642
+          },
+          {
+            "name": ".rel.text.tc_reconcile_pedal_latch",
+            "type": 9,
+            "flags": 64,
+            "bytes": 112
+          },
+          {
+            "name": ".ARM.exidx.text.tc_reconcile_pedal_latch",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_reconcile_pedal_latch",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.reason_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 38
+          },
+          {
+            "name": ".rel.text.reason_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.reason_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.reason_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fallback",
+            "type": 1,
+            "flags": 6,
+            "bytes": 218
+          },
+          {
+            "name": ".rel.text.fallback",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.fallback",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fallback",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 56
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 544
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "170e15a7673f154e0187c7bb112d20c54c51bbaff14107f55e9ba38d808943f1",
+        "records": [
+          {
+            "location": "torque_pedal.c:37:tc_pedal_adapter_version",
+            "function": "tc_pedal_adapter_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:38:tc_pedal_abi_sizeof",
+            "function": "tc_pedal_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:44:tc_trusted_overlap_trip",
+            "function": "tc_trusted_overlap_trip",
+            "bytes": 48,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:56:tc_trusted_clear_cycle",
+            "function": "tc_trusted_clear_cycle",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:63:tc_reconcile_pedal_latch",
+            "function": "tc_reconcile_pedal_latch",
+            "bytes": 32,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:28:reason_valid",
+            "function": "reason_valid",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:33:fallback",
+            "function": "fallback",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/hard/torque_pedal.d",
+        "sha256": "2e0a5e1af7c32e017b7a6b8bf8f4d3d2082e909c66a53c8822500821407b7c5b"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 1,
+      "abi": "softfp",
+      "unit": "torque_contract",
+      "status": "metadata_error",
+      "path": "repeat-1/softfp/torque_contract.o",
+      "sha256": "51ca97e829c82916066712337a9399fdec9f428f5cad84ae3ec4ce7f61cec368",
+      "bytes": 9764,
+      "berkeley_size": {
+        "text": 3901,
+        "data": 0,
+        "bss": 0,
+        "total": 3901
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__aeabi_dsub",
+        "__finite",
+        "fabs",
+        "fmax",
+        "frexp",
+        "ldexp",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 1110
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_abi_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_abi_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_abi_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_numeric_contract_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_numeric_contract_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_numeric_contract_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_init_snapshot",
+            "type": 1,
+            "flags": 6,
+            "bytes": 28
+          },
+          {
+            "name": ".rel.text.tc_init_snapshot",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_snapshot",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_snapshot",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_validate_allocation",
+            "type": 1,
+            "flags": 6,
+            "bytes": 832
+          },
+          {
+            "name": ".rel.text.tc_validate_allocation",
+            "type": 9,
+            "flags": 64,
+            "bytes": 320
+          },
+          {
+            "name": ".ARM.exidx.text.tc_validate_allocation",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_validate_allocation",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.wheel_total",
+            "type": 1,
+            "flags": 6,
+            "bytes": 80
+          },
+          {
+            "name": ".rel.text.wheel_total",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.wheel_total",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.wheel_total",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.ulp",
+            "type": 1,
+            "flags": 6,
+            "bytes": 104
+          },
+          {
+            "name": ".rel.text.ulp",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.ulp",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.ulp",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.text_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 38
+          },
+          {
+            "name": ".rel.text.text_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.text_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.text_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.text_nonempty",
+            "type": 1,
+            "flags": 6,
+            "bytes": 42
+          },
+          {
+            "name": ".rel.text.text_nonempty",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.text_nonempty",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.text_nonempty",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_contract_reason",
+            "type": 1,
+            "flags": 6,
+            "bytes": 28
+          },
+          {
+            "name": ".rel.text.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.tc_contract_reason",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_decide",
+            "type": 1,
+            "flags": 6,
+            "bytes": 1230
+          },
+          {
+            "name": ".rel.text.tc_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 176
+          },
+          {
+            "name": ".ARM.exidx.text.tc_decide",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.inhibit",
+            "type": 1,
+            "flags": 6,
+            "bytes": 326
+          },
+          {
+            "name": ".rel.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.inhibit",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.guard_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 592
+          },
+          {
+            "name": ".rel.text.guard_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 184
+          },
+          {
+            "name": ".ARM.exidx.text.guard_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.guard_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 395
+          },
+          {
+            "name": ".rodata.cst32",
+            "type": 1,
+            "flags": 18,
+            "bytes": 32
+          },
+          {
+            "name": ".rodata..Lswitch.table.tc_contract_reason",
+            "type": 1,
+            "flags": 2,
+            "bytes": 40
+          },
+          {
+            "name": ".rel.rodata..Lswitch.table.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 80
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 1104
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "8bd6dacb9994ae028b97cf967de6b3970ac57fb3b26b3ee06a7745916df883ac",
+        "records": [
+          {
+            "location": "torque_contract.c:60:tc_abi_version",
+            "function": "tc_abi_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:61:tc_numeric_contract_version",
+            "function": "tc_numeric_contract_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:63:tc_abi_sizeof",
+            "function": "tc_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:77:tc_init_snapshot",
+            "function": "tc_init_snapshot",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:84:tc_validate_allocation",
+            "function": "tc_validate_allocation",
+            "bytes": 112,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:53:wheel_total",
+            "function": "wheel_total",
+            "bytes": 32,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:43:ulp",
+            "function": "ulp",
+            "bytes": 24,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:24:text_valid",
+            "function": "text_valid",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:30:text_nonempty",
+            "function": "text_nonempty",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:129:tc_contract_reason",
+            "function": "tc_contract_reason",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:168:tc_decide",
+            "function": "tc_decide",
+            "bytes": 40,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:160:inhibit",
+            "function": "inhibit",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:145:guard_valid",
+            "function": "guard_valid",
+            "bytes": 56,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/softfp/torque_contract.d",
+        "sha256": "96493fc3f471895bc1505fef99157667c835bbbf7e59864af29c02397a384d58"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 1,
+      "abi": "softfp",
+      "unit": "torque_clock",
+      "status": "metadata_error",
+      "path": "repeat-1/softfp/torque_clock.o",
+      "sha256": "5310acda8778c40a3281ce85e2e93904005ee33316780343846d1300d5d84f4d",
+      "bytes": 3416,
+      "berkeley_size": {
+        "text": 970,
+        "data": 0,
+        "bss": 0,
+        "total": 970
+      },
+      "undefined_symbols": [
+        "__aeabi_dcmpgt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_memcpy8",
+        "__aeabi_ui2d",
+        "__finite",
+        "fabs",
+        "memset",
+        "tc_decide"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 547
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_clock_contract_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_contract_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_contract_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clock_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_clock_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_init_clock",
+            "type": 1,
+            "flags": 6,
+            "bytes": 14
+          },
+          {
+            "name": ".rel.text.tc_init_clock",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_clock",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_clock",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clock_step",
+            "type": 1,
+            "flags": 6,
+            "bytes": 672
+          },
+          {
+            "name": ".rel.text.tc_clock_step",
+            "type": 9,
+            "flags": 64,
+            "bytes": 64
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_step",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_step",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clocked_decide",
+            "type": 1,
+            "flags": 6,
+            "bytes": 202
+          },
+          {
+            "name": ".rel.text.tc_clocked_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 48
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clocked_decide",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clocked_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.cst16",
+            "type": 1,
+            "flags": 18,
+            "bytes": 16
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 448
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "4388f57d264db9fec5851d1ad42a3fd5715daea17c72698eec2564fe0b33f6c8",
+        "records": [
+          {
+            "location": "torque_clock.c:26:tc_clock_contract_version",
+            "function": "tc_clock_contract_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:28:tc_clock_abi_sizeof",
+            "function": "tc_clock_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:38:tc_init_clock",
+            "function": "tc_init_clock",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:42:tc_clock_step",
+            "function": "tc_clock_step",
+            "bytes": 40,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:81:tc_clocked_decide",
+            "function": "tc_clocked_decide",
+            "bytes": 432,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/softfp/torque_clock.d",
+        "sha256": "0285268cb5f2b04254586e0b3ffe527843e2e1d14c69cfaa8d9d8d1f7a28bf1c"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 1,
+      "abi": "softfp",
+      "unit": "torque_pedal",
+      "status": "metadata_error",
+      "path": "repeat-1/softfp/torque_pedal.o",
+      "sha256": "5561511107b443323f00aa309fb160a75b0f82d5b773d30926b623016cb86af4",
+      "bytes": 4440,
+      "berkeley_size": {
+        "text": 1484,
+        "data": 0,
+        "bss": 0,
+        "total": 1484
+      },
+      "undefined_symbols": [
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_memcpy",
+        "__finite",
+        "memchr",
+        "memset"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 620
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_pedal_adapter_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_pedal_adapter_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_pedal_adapter_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_pedal_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_pedal_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_pedal_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_trusted_overlap_trip",
+            "type": 1,
+            "flags": 6,
+            "bytes": 368
+          },
+          {
+            "name": ".rel.text.tc_trusted_overlap_trip",
+            "type": 9,
+            "flags": 64,
+            "bytes": 88
+          },
+          {
+            "name": ".ARM.exidx.text.tc_trusted_overlap_trip",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_trusted_overlap_trip",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_trusted_clear_cycle",
+            "type": 1,
+            "flags": 6,
+            "bytes": 84
+          },
+          {
+            "name": ".ARM.exidx.text.tc_trusted_clear_cycle",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_trusted_clear_cycle",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_reconcile_pedal_latch",
+            "type": 1,
+            "flags": 6,
+            "bytes": 642
+          },
+          {
+            "name": ".rel.text.tc_reconcile_pedal_latch",
+            "type": 9,
+            "flags": 64,
+            "bytes": 112
+          },
+          {
+            "name": ".ARM.exidx.text.tc_reconcile_pedal_latch",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_reconcile_pedal_latch",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.reason_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 38
+          },
+          {
+            "name": ".rel.text.reason_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.reason_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.reason_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fallback",
+            "type": 1,
+            "flags": 6,
+            "bytes": 218
+          },
+          {
+            "name": ".rel.text.fallback",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.fallback",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fallback",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 56
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 544
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "170e15a7673f154e0187c7bb112d20c54c51bbaff14107f55e9ba38d808943f1",
+        "records": [
+          {
+            "location": "torque_pedal.c:37:tc_pedal_adapter_version",
+            "function": "tc_pedal_adapter_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:38:tc_pedal_abi_sizeof",
+            "function": "tc_pedal_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:44:tc_trusted_overlap_trip",
+            "function": "tc_trusted_overlap_trip",
+            "bytes": 48,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:56:tc_trusted_clear_cycle",
+            "function": "tc_trusted_clear_cycle",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:63:tc_reconcile_pedal_latch",
+            "function": "tc_reconcile_pedal_latch",
+            "bytes": 32,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:28:reason_valid",
+            "function": "reason_valid",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:33:fallback",
+            "function": "fallback",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-1/softfp/torque_pedal.d",
+        "sha256": "44d40e3288b3e4a5de79b0ebd4f92a27e22fcd234c277361708864548264f81a"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 2,
+      "abi": "hard",
+      "unit": "torque_contract",
+      "status": "metadata_error",
+      "path": "repeat-2/hard/torque_contract.o",
+      "sha256": "8e1197aabad79fd9baeb6a331c3e8b904b6b0b80a60fb7aef59336a7baa00959",
+      "bytes": 9740,
+      "berkeley_size": {
+        "text": 3877,
+        "data": 0,
+        "bss": 0,
+        "total": 3877
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__aeabi_dsub",
+        "__finite",
+        "fabs",
+        "fmax",
+        "frexp",
+        "ldexp",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 1110
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_abi_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_abi_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_abi_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_numeric_contract_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_numeric_contract_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_numeric_contract_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_init_snapshot",
+            "type": 1,
+            "flags": 6,
+            "bytes": 28
+          },
+          {
+            "name": ".rel.text.tc_init_snapshot",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_snapshot",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_snapshot",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_validate_allocation",
+            "type": 1,
+            "flags": 6,
+            "bytes": 832
+          },
+          {
+            "name": ".rel.text.tc_validate_allocation",
+            "type": 9,
+            "flags": 64,
+            "bytes": 320
+          },
+          {
+            "name": ".ARM.exidx.text.tc_validate_allocation",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_validate_allocation",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.wheel_total",
+            "type": 1,
+            "flags": 6,
+            "bytes": 80
+          },
+          {
+            "name": ".rel.text.wheel_total",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.wheel_total",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.wheel_total",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.ulp",
+            "type": 1,
+            "flags": 6,
+            "bytes": 104
+          },
+          {
+            "name": ".rel.text.ulp",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.ulp",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.ulp",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.text_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 38
+          },
+          {
+            "name": ".rel.text.text_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.text_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.text_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.text_nonempty",
+            "type": 1,
+            "flags": 6,
+            "bytes": 42
+          },
+          {
+            "name": ".rel.text.text_nonempty",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.text_nonempty",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.text_nonempty",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_contract_reason",
+            "type": 1,
+            "flags": 6,
+            "bytes": 28
+          },
+          {
+            "name": ".rel.text.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.tc_contract_reason",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_decide",
+            "type": 1,
+            "flags": 6,
+            "bytes": 1230
+          },
+          {
+            "name": ".rel.text.tc_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 176
+          },
+          {
+            "name": ".ARM.exidx.text.tc_decide",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.inhibit",
+            "type": 1,
+            "flags": 6,
+            "bytes": 326
+          },
+          {
+            "name": ".rel.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.inhibit",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.guard_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 568
+          },
+          {
+            "name": ".rel.text.guard_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 184
+          },
+          {
+            "name": ".ARM.exidx.text.guard_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.guard_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 395
+          },
+          {
+            "name": ".rodata.cst32",
+            "type": 1,
+            "flags": 18,
+            "bytes": 32
+          },
+          {
+            "name": ".rodata..Lswitch.table.tc_contract_reason",
+            "type": 1,
+            "flags": 2,
+            "bytes": 40
+          },
+          {
+            "name": ".rel.rodata..Lswitch.table.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 80
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 1104
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "1b5878bdc6f86fd3107bdb61a20bf8c1157a1cc738043000401f79e08453d991",
+        "records": [
+          {
+            "location": "torque_contract.c:60:tc_abi_version",
+            "function": "tc_abi_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:61:tc_numeric_contract_version",
+            "function": "tc_numeric_contract_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:63:tc_abi_sizeof",
+            "function": "tc_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:77:tc_init_snapshot",
+            "function": "tc_init_snapshot",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:84:tc_validate_allocation",
+            "function": "tc_validate_allocation",
+            "bytes": 104,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:53:wheel_total",
+            "function": "wheel_total",
+            "bytes": 32,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:43:ulp",
+            "function": "ulp",
+            "bytes": 24,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:24:text_valid",
+            "function": "text_valid",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:30:text_nonempty",
+            "function": "text_nonempty",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:129:tc_contract_reason",
+            "function": "tc_contract_reason",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:168:tc_decide",
+            "function": "tc_decide",
+            "bytes": 40,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:160:inhibit",
+            "function": "inhibit",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:145:guard_valid",
+            "function": "guard_valid",
+            "bytes": 56,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/hard/torque_contract.d",
+        "sha256": "eb1fa7fb6cc434026cebb1905e057ebb1214894c042933e90953b2c958e0ff5d"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 2,
+      "abi": "hard",
+      "unit": "torque_clock",
+      "status": "metadata_error",
+      "path": "repeat-2/hard/torque_clock.o",
+      "sha256": "9198220167d52390a83c3ade966f86c3a4f19e99f38ccc8b9f6af5e125be60a5",
+      "bytes": 3424,
+      "berkeley_size": {
+        "text": 978,
+        "data": 0,
+        "bss": 0,
+        "total": 978
+      },
+      "undefined_symbols": [
+        "__aeabi_dcmpgt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_memcpy8",
+        "__aeabi_ui2d",
+        "__finite",
+        "fabs",
+        "memset",
+        "tc_decide"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 547
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_clock_contract_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_contract_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_contract_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clock_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_clock_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_init_clock",
+            "type": 1,
+            "flags": 6,
+            "bytes": 14
+          },
+          {
+            "name": ".rel.text.tc_init_clock",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_clock",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_clock",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clock_step",
+            "type": 1,
+            "flags": 6,
+            "bytes": 680
+          },
+          {
+            "name": ".rel.text.tc_clock_step",
+            "type": 9,
+            "flags": 64,
+            "bytes": 64
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_step",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_step",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clocked_decide",
+            "type": 1,
+            "flags": 6,
+            "bytes": 202
+          },
+          {
+            "name": ".rel.text.tc_clocked_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 48
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clocked_decide",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clocked_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.cst16",
+            "type": 1,
+            "flags": 18,
+            "bytes": 16
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 448
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "4388f57d264db9fec5851d1ad42a3fd5715daea17c72698eec2564fe0b33f6c8",
+        "records": [
+          {
+            "location": "torque_clock.c:26:tc_clock_contract_version",
+            "function": "tc_clock_contract_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:28:tc_clock_abi_sizeof",
+            "function": "tc_clock_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:38:tc_init_clock",
+            "function": "tc_init_clock",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:42:tc_clock_step",
+            "function": "tc_clock_step",
+            "bytes": 40,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:81:tc_clocked_decide",
+            "function": "tc_clocked_decide",
+            "bytes": 432,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/hard/torque_clock.d",
+        "sha256": "a46f48bb93e5cfd29421465cd53af183153db32677d004c559fecd7e8462def7"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 2,
+      "abi": "hard",
+      "unit": "torque_pedal",
+      "status": "metadata_error",
+      "path": "repeat-2/hard/torque_pedal.o",
+      "sha256": "ced2c11a37860cf743bc48b8b2c68e44aa7b7290f6b35f0d9a95e1e37bdece2d",
+      "bytes": 4416,
+      "berkeley_size": {
+        "text": 1460,
+        "data": 0,
+        "bss": 0,
+        "total": 1460
+      },
+      "undefined_symbols": [
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_memcpy",
+        "__finite",
+        "memchr",
+        "memset"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 620
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_pedal_adapter_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_pedal_adapter_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_pedal_adapter_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_pedal_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_pedal_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_pedal_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_trusted_overlap_trip",
+            "type": 1,
+            "flags": 6,
+            "bytes": 344
+          },
+          {
+            "name": ".rel.text.tc_trusted_overlap_trip",
+            "type": 9,
+            "flags": 64,
+            "bytes": 88
+          },
+          {
+            "name": ".ARM.exidx.text.tc_trusted_overlap_trip",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_trusted_overlap_trip",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_trusted_clear_cycle",
+            "type": 1,
+            "flags": 6,
+            "bytes": 84
+          },
+          {
+            "name": ".ARM.exidx.text.tc_trusted_clear_cycle",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_trusted_clear_cycle",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_reconcile_pedal_latch",
+            "type": 1,
+            "flags": 6,
+            "bytes": 642
+          },
+          {
+            "name": ".rel.text.tc_reconcile_pedal_latch",
+            "type": 9,
+            "flags": 64,
+            "bytes": 112
+          },
+          {
+            "name": ".ARM.exidx.text.tc_reconcile_pedal_latch",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_reconcile_pedal_latch",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.reason_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 38
+          },
+          {
+            "name": ".rel.text.reason_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.reason_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.reason_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fallback",
+            "type": 1,
+            "flags": 6,
+            "bytes": 218
+          },
+          {
+            "name": ".rel.text.fallback",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.fallback",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fallback",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 56
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 73
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 544
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "170e15a7673f154e0187c7bb112d20c54c51bbaff14107f55e9ba38d808943f1",
+        "records": [
+          {
+            "location": "torque_pedal.c:37:tc_pedal_adapter_version",
+            "function": "tc_pedal_adapter_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:38:tc_pedal_abi_sizeof",
+            "function": "tc_pedal_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:44:tc_trusted_overlap_trip",
+            "function": "tc_trusted_overlap_trip",
+            "bytes": 48,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:56:tc_trusted_clear_cycle",
+            "function": "tc_trusted_clear_cycle",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:63:tc_reconcile_pedal_latch",
+            "function": "tc_reconcile_pedal_latch",
+            "bytes": 32,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:28:reason_valid",
+            "function": "reason_valid",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:33:fallback",
+            "function": "fallback",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/hard/torque_pedal.d",
+        "sha256": "2a29e42c71c8e2b0bc7f358c555d760b226ef89038ee1b16ad681ac85ae2c0d8"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 2,
+      "abi": "softfp",
+      "unit": "torque_contract",
+      "status": "metadata_error",
+      "path": "repeat-2/softfp/torque_contract.o",
+      "sha256": "51ca97e829c82916066712337a9399fdec9f428f5cad84ae3ec4ce7f61cec368",
+      "bytes": 9764,
+      "berkeley_size": {
+        "text": 3901,
+        "data": 0,
+        "bss": 0,
+        "total": 3901
+      },
+      "undefined_symbols": [
+        "__aeabi_dadd",
+        "__aeabi_dcmpeq",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmplt",
+        "__aeabi_dmul",
+        "__aeabi_dsub",
+        "__finite",
+        "fabs",
+        "fmax",
+        "frexp",
+        "ldexp",
+        "memchr",
+        "memset",
+        "strcmp"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 1110
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_abi_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_abi_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_abi_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_numeric_contract_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_numeric_contract_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_numeric_contract_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_init_snapshot",
+            "type": 1,
+            "flags": 6,
+            "bytes": 28
+          },
+          {
+            "name": ".rel.text.tc_init_snapshot",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_snapshot",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_snapshot",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_validate_allocation",
+            "type": 1,
+            "flags": 6,
+            "bytes": 832
+          },
+          {
+            "name": ".rel.text.tc_validate_allocation",
+            "type": 9,
+            "flags": 64,
+            "bytes": 320
+          },
+          {
+            "name": ".ARM.exidx.text.tc_validate_allocation",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_validate_allocation",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.wheel_total",
+            "type": 1,
+            "flags": 6,
+            "bytes": 80
+          },
+          {
+            "name": ".rel.text.wheel_total",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.wheel_total",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.wheel_total",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.ulp",
+            "type": 1,
+            "flags": 6,
+            "bytes": 104
+          },
+          {
+            "name": ".rel.text.ulp",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.ulp",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.ulp",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.text_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 38
+          },
+          {
+            "name": ".rel.text.text_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.text_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.text_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.text_nonempty",
+            "type": 1,
+            "flags": 6,
+            "bytes": 42
+          },
+          {
+            "name": ".rel.text.text_nonempty",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.text_nonempty",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.text_nonempty",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_contract_reason",
+            "type": 1,
+            "flags": 6,
+            "bytes": 28
+          },
+          {
+            "name": ".rel.text.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 32
+          },
+          {
+            "name": ".ARM.exidx.text.tc_contract_reason",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_decide",
+            "type": 1,
+            "flags": 6,
+            "bytes": 1230
+          },
+          {
+            "name": ".rel.text.tc_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 176
+          },
+          {
+            "name": ".ARM.exidx.text.tc_decide",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.inhibit",
+            "type": 1,
+            "flags": 6,
+            "bytes": 326
+          },
+          {
+            "name": ".rel.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.inhibit",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.inhibit",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.guard_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 592
+          },
+          {
+            "name": ".rel.text.guard_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 184
+          },
+          {
+            "name": ".ARM.exidx.text.guard_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.guard_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 395
+          },
+          {
+            "name": ".rodata.cst32",
+            "type": 1,
+            "flags": 18,
+            "bytes": 32
+          },
+          {
+            "name": ".rodata..Lswitch.table.tc_contract_reason",
+            "type": 1,
+            "flags": 2,
+            "bytes": 40
+          },
+          {
+            "name": ".rel.rodata..Lswitch.table.tc_contract_reason",
+            "type": 9,
+            "flags": 64,
+            "bytes": 80
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 1104
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "8bd6dacb9994ae028b97cf967de6b3970ac57fb3b26b3ee06a7745916df883ac",
+        "records": [
+          {
+            "location": "torque_contract.c:60:tc_abi_version",
+            "function": "tc_abi_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:61:tc_numeric_contract_version",
+            "function": "tc_numeric_contract_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:63:tc_abi_sizeof",
+            "function": "tc_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:77:tc_init_snapshot",
+            "function": "tc_init_snapshot",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:84:tc_validate_allocation",
+            "function": "tc_validate_allocation",
+            "bytes": 112,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:53:wheel_total",
+            "function": "wheel_total",
+            "bytes": 32,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:43:ulp",
+            "function": "ulp",
+            "bytes": 24,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:24:text_valid",
+            "function": "text_valid",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:30:text_nonempty",
+            "function": "text_nonempty",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:129:tc_contract_reason",
+            "function": "tc_contract_reason",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:168:tc_decide",
+            "function": "tc_decide",
+            "bytes": 40,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:160:inhibit",
+            "function": "inhibit",
+            "bytes": 16,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_contract.c:145:guard_valid",
+            "function": "guard_valid",
+            "bytes": 56,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/softfp/torque_contract.d",
+        "sha256": "8b028127e34eacec8f93916574e3d4ce5bfc112e54da4b8bd0ff524c5db70793"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 2,
+      "abi": "softfp",
+      "unit": "torque_clock",
+      "status": "metadata_error",
+      "path": "repeat-2/softfp/torque_clock.o",
+      "sha256": "5310acda8778c40a3281ce85e2e93904005ee33316780343846d1300d5d84f4d",
+      "bytes": 3416,
+      "berkeley_size": {
+        "text": 970,
+        "data": 0,
+        "bss": 0,
+        "total": 970
+      },
+      "undefined_symbols": [
+        "__aeabi_dcmpgt",
+        "__aeabi_ddiv",
+        "__aeabi_dsub",
+        "__aeabi_memcpy8",
+        "__aeabi_ui2d",
+        "__finite",
+        "fabs",
+        "memset",
+        "tc_decide"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 547
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_clock_contract_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_contract_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_contract_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clock_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 22
+          },
+          {
+            "name": ".rel.text.tc_clock_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 16
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_init_clock",
+            "type": 1,
+            "flags": 6,
+            "bytes": 14
+          },
+          {
+            "name": ".rel.text.tc_init_clock",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.tc_init_clock",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_init_clock",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clock_step",
+            "type": 1,
+            "flags": 6,
+            "bytes": 672
+          },
+          {
+            "name": ".rel.text.tc_clock_step",
+            "type": 9,
+            "flags": 64,
+            "bytes": 64
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clock_step",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clock_step",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_clocked_decide",
+            "type": 1,
+            "flags": 6,
+            "bytes": 202
+          },
+          {
+            "name": ".rel.text.tc_clocked_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 48
+          },
+          {
+            "name": ".ARM.exidx.text.tc_clocked_decide",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_clocked_decide",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.cst16",
+            "type": 1,
+            "flags": 18,
+            "bytes": 16
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 448
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "4388f57d264db9fec5851d1ad42a3fd5715daea17c72698eec2564fe0b33f6c8",
+        "records": [
+          {
+            "location": "torque_clock.c:26:tc_clock_contract_version",
+            "function": "tc_clock_contract_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:28:tc_clock_abi_sizeof",
+            "function": "tc_clock_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:38:tc_init_clock",
+            "function": "tc_init_clock",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:42:tc_clock_step",
+            "function": "tc_clock_step",
+            "bytes": 40,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_clock.c:81:tc_clocked_decide",
+            "function": "tc_clocked_decide",
+            "bytes": 432,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/softfp/torque_clock.d",
+        "sha256": "235f50516182c32cb2c851ad6f19930ec0453d7eff4ce9bb9bb551402476f2a0"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    },
+    {
+      "repeat": 2,
+      "abi": "softfp",
+      "unit": "torque_pedal",
+      "status": "metadata_error",
+      "path": "repeat-2/softfp/torque_pedal.o",
+      "sha256": "5561511107b443323f00aa309fb160a75b0f82d5b773d30926b623016cb86af4",
+      "bytes": 4440,
+      "berkeley_size": {
+        "text": 1484,
+        "data": 0,
+        "bss": 0,
+        "total": 1484
+      },
+      "undefined_symbols": [
+        "__aeabi_dcmpge",
+        "__aeabi_dcmpgt",
+        "__aeabi_dcmple",
+        "__aeabi_dcmplt",
+        "__aeabi_memcpy",
+        "__finite",
+        "memchr",
+        "memset"
+      ],
+      "elf": {
+        "class": "ELF32",
+        "byte_order": "little",
+        "type": "relocatable",
+        "machine": "ARM",
+        "flags": 83886080,
+        "sections": [
+          {
+            "name": "",
+            "type": 0,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".strtab",
+            "type": 3,
+            "flags": 0,
+            "bytes": 620
+          },
+          {
+            "name": ".text",
+            "type": 1,
+            "flags": 6,
+            "bytes": 0
+          },
+          {
+            "name": ".text.tc_pedal_adapter_version",
+            "type": 1,
+            "flags": 6,
+            "bytes": 4
+          },
+          {
+            "name": ".ARM.exidx.text.tc_pedal_adapter_version",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_pedal_adapter_version",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_pedal_abi_sizeof",
+            "type": 1,
+            "flags": 6,
+            "bytes": 18
+          },
+          {
+            "name": ".ARM.exidx.text.tc_pedal_abi_sizeof",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_pedal_abi_sizeof",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_trusted_overlap_trip",
+            "type": 1,
+            "flags": 6,
+            "bytes": 368
+          },
+          {
+            "name": ".rel.text.tc_trusted_overlap_trip",
+            "type": 9,
+            "flags": 64,
+            "bytes": 88
+          },
+          {
+            "name": ".ARM.exidx.text.tc_trusted_overlap_trip",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_trusted_overlap_trip",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_trusted_clear_cycle",
+            "type": 1,
+            "flags": 6,
+            "bytes": 84
+          },
+          {
+            "name": ".ARM.exidx.text.tc_trusted_clear_cycle",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_trusted_clear_cycle",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.tc_reconcile_pedal_latch",
+            "type": 1,
+            "flags": 6,
+            "bytes": 642
+          },
+          {
+            "name": ".rel.text.tc_reconcile_pedal_latch",
+            "type": 9,
+            "flags": 64,
+            "bytes": 112
+          },
+          {
+            "name": ".ARM.exidx.text.tc_reconcile_pedal_latch",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.tc_reconcile_pedal_latch",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.reason_valid",
+            "type": 1,
+            "flags": 6,
+            "bytes": 38
+          },
+          {
+            "name": ".rel.text.reason_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.reason_valid",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.reason_valid",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".text.fallback",
+            "type": 1,
+            "flags": 6,
+            "bytes": 218
+          },
+          {
+            "name": ".rel.text.fallback",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".ARM.exidx.text.fallback",
+            "type": 1879048193,
+            "flags": 130,
+            "bytes": 8
+          },
+          {
+            "name": ".rel.ARM.exidx.text.fallback",
+            "type": 9,
+            "flags": 64,
+            "bytes": 8
+          },
+          {
+            "name": ".rodata.str1.1",
+            "type": 1,
+            "flags": 50,
+            "bytes": 56
+          },
+          {
+            "name": ".comment",
+            "type": 1,
+            "flags": 48,
+            "bytes": 22
+          },
+          {
+            "name": ".note.GNU-stack",
+            "type": 1,
+            "flags": 0,
+            "bytes": 0
+          },
+          {
+            "name": ".ARM.attributes",
+            "type": 1879048195,
+            "flags": 0,
+            "bytes": 71
+          },
+          {
+            "name": ".llvm_addrsig",
+            "type": 1879002115,
+            "flags": 2147483648,
+            "bytes": 0
+          },
+          {
+            "name": ".symtab",
+            "type": 2,
+            "flags": 0,
+            "bytes": 544
+          }
+        ],
+        "arm_attribute_tags": {
+          "67": "2.09",
+          "5": "cortex-m4",
+          "6": 13,
+          "7": 77,
+          "8": 0,
+          "9": 2,
+          "10": 6,
+          "14": 0,
+          "17": 1,
+          "18": 4,
+          "20": 1,
+          "21": 0,
+          "23": 3,
+          "24": 1,
+          "25": 1,
+          "26": 2,
+          "27": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "38": 1
+        }
+      },
+      "stack_usage": {
+        "status": "emitted",
+        "sha256": "170e15a7673f154e0187c7bb112d20c54c51bbaff14107f55e9ba38d808943f1",
+        "records": [
+          {
+            "location": "torque_pedal.c:37:tc_pedal_adapter_version",
+            "function": "tc_pedal_adapter_version",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:38:tc_pedal_abi_sizeof",
+            "function": "tc_pedal_abi_sizeof",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:44:tc_trusted_overlap_trip",
+            "function": "tc_trusted_overlap_trip",
+            "bytes": 48,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:56:tc_trusted_clear_cycle",
+            "function": "tc_trusted_clear_cycle",
+            "bytes": 0,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:63:tc_reconcile_pedal_latch",
+            "function": "tc_reconcile_pedal_latch",
+            "bytes": 32,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:28:reason_valid",
+            "function": "reason_valid",
+            "bytes": 8,
+            "qualifier": "static"
+          },
+          {
+            "location": "torque_pedal.c:33:fallback",
+            "function": "fallback",
+            "bytes": 16,
+            "qualifier": "static"
+          }
+        ],
+        "scope": "Compiler-local frame only; excludes callees/helper frames, interrupts, scheduler and FPU context"
+      },
+      "dependency_file": {
+        "path": "repeat-2/softfp/torque_pedal.d",
+        "sha256": "45f84aa5f43c78f1591d540967d56035daeda706802362e1a632082a1d7e6a51"
+      },
+      "error": "dependency outside verified source/toolchain: C:UserslucasDocumentsCodex2026-10-15goworktoolsarm-atfe-22.1.0-windowsATfE-22.1.0-Windows-x86_64libclang22includestddef.h"
+    }
+  ],
+  "target_execution_calls": 0,
+  "linked_firmware": false,
+  "limitations": [
+    "Unknown exact MCU part, board configuration, team toolchain, ABI, startup and library versions",
+    "Unresolved symbols are not linked library size or helper runtime behavior",
+    "Object section sums are not full-firmware flash/RAM fit; no guessed memory limits",
+    "Per-function local stack data excludes called helpers, caller frames, interrupt/FPU context and scheduling",
+    "No measured target parity, timing, deadline, WCET, CAN/vehicle behavior or safety approval",
+    "Ordinary local checkout work; no Company Runtime task/run/acceptance identity is fabricated"
+  ],
+  "toolchain": {
+    "archive_sha256": "9db55e43d5fdb1619692259897bf1e64f61da82a558827aae6928a2ccb39d348",
+    "archive_bytes": 710565705,
+    "verified_file_count": 48211,
+    "tools": {
+      "clang.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\clang.exe",
+        "sha256": "b3b1f1a074e4312449c54a058034a4abd4edf8015db88fe35f1f5cf26f975dcd"
+      },
+      "llvm-nm.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-nm.exe",
+        "sha256": "f161335bfe6d45a49b4517bc190df1f1a2561f16f1d0634ce1dadddc4043667a"
+      },
+      "llvm-readobj.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-readobj.exe",
+        "sha256": "88021c83dd2dd96723316ab351580357ac5ac385fc277364b4bdc331b1f8e674"
+      },
+      "llvm-size.exe": {
+        "path": "C:\\Users\\lucas\\Documents\\Codex\\2026-10-15\\go\\work\\tools\\arm-atfe-22.1.0-windows\\ATfE-22.1.0-Windows-x86_64\\bin\\llvm-size.exe",
+        "sha256": "463ba9ff5d2a5dda72a790868382b7e382f3b4e4612774a8d7c2b41096210584"
+      }
+    },
+    "manifest_sha256": "e61db4e336f1727579b6a5581d07feaa859c3c472960187ec52fff794aa7aa0a",
+    "license_files": [
+      {
+        "path": "LICENSE.txt",
+        "sha256": "a9ed3eae930adbc631b83300b78ab5d228c9b1e4560d64ec4b4ea2bcf69f4569"
+      },
+      {
+        "path": "third-party-licenses/picolibc/COPYING.picolibc",
+        "sha256": "df8aecac86a7cce2db23fac812e058aef093f667ff20b95793f7032a4a668a43"
+      }
+    ],
+    "verification_seconds": 46.35899999999674
+  },
+  "repeat_comparisons": [
+    {
+      "abi": "hard",
+      "unit": "torque_contract",
+      "equal_object_sha256": false
+    },
+    {
+      "abi": "hard",
+      "unit": "torque_clock",
+      "equal_object_sha256": false
+    },
+    {
+      "abi": "hard",
+      "unit": "torque_pedal",
+      "equal_object_sha256": false
+    },
+    {
+      "abi": "softfp",
+      "unit": "torque_contract",
+      "equal_object_sha256": false
+    },
+    {
+      "abi": "softfp",
+      "unit": "torque_clock",
+      "equal_object_sha256": false
+    },
+    {
+      "abi": "softfp",
+      "unit": "torque_pedal",
+      "equal_object_sha256": false
+    }
+  ],
+  "elapsed_seconds": 49.125
+}

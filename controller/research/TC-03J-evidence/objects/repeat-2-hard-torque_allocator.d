@@ -1,0 +1,30 @@
+C:\Users\lucas\Documents\Codex\2026-10-15\go\work\enme408-allocator-cortex-m4-v1\repeat-2\hard\torque_allocator.o: \
+  torque_allocator.c torque_allocator.h torque_contract.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\stddef.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__stddef_header_macro.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__stddef_ptrdiff_t.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__stddef_size_t.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__stddef_wchar_t.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__stddef_null.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__stddef_max_align_t.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__stddef_offsetof.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\stdint.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\stdint.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\float.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__float_header_macro.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__float_float.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\math.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\sys\cdefs.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\sys\config.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\machine\ieeefp.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\sys\features.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\picolibc.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\machine\_default_types.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\machine\math.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\string.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\sys\_locale.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\strings.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\sys\_types.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\lib\clang\22\include\__stddef_wint_t.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\machine\_types.h \
+  C:\Users\lucas\Documents\Codex\2026-10-15\go\work\tools\arm-atfe-22.1.0-windows\ATfE-22.1.0-Windows-x86_64\bin\..\lib\clang-runtimes\arm-none-eabi\include\sys\string.h

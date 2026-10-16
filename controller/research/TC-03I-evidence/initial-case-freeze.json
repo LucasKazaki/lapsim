@@ -1,0 +1,25 @@
+{
+  "schema": "enme408-native-bench-case-freeze/v1",
+  "frozen_before_first_native_verification": true,
+  "protocol_sha256": "474f0a2928b169e13bd41779b45fa73f4806ab03cc7d88817fc231c1c0f83733",
+  "generator_files": {
+    "native_bench_replay.py": "b9cf3f95a6ef88d8ad3561c2d994a9c0079c133619426b4528279f46aa841cdb",
+    "test_native_bench_replay.py": "2627a65e1a91fd254c996bec56b43ffda4c8c136690c17297427a96dc44c096e"
+  },
+  "cases": [
+    "unchanged 18-cycle fixture",
+    "three-cycle 0/5/10 startup",
+    "clock-only positive guard with later recovery",
+    "epsilon over-request",
+    "finite three-cap DBL_MAX total overflow with later recovery",
+    "NUL unit and JavaScript-safe tick boundary",
+    "bounded malformed preflight and UTF16 boundaries",
+    "attempt/source preservation",
+    "actual missing-compiler accounting",
+    "injected export failure preserving sealed run"
+  ],
+  "limits": [
+    "No random benchmarks, GPU, ARM, target or hardware calls.",
+    "Injected build/IO tests are labeled and are not actual execution receipts."
+  ]
+}
