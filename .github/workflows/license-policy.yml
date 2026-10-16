@@ -8,11 +8,18 @@ on:
       - NOTICE
       - CONTRIBUTING.md
       - README.md
+      - AGENTS.md
+      - CLAUDE.md
+      - LOCAL-WORKER.md
       - START-HERE.txt
       - docs/licensing.md
       - docs/release.md
       - scripts/build_windows.py
+      - scripts/portable_entry.py
+      - src/lapsim/desktop.py
+      - scripts/check_dco.py
       - scripts/check_license_policy.py
+      - .github/workflows/dco.yml
       - .github/workflows/license-policy.yml
   push:
     branches: [main]
@@ -22,11 +29,18 @@ on:
       - NOTICE
       - CONTRIBUTING.md
       - README.md
+      - AGENTS.md
+      - CLAUDE.md
+      - LOCAL-WORKER.md
       - START-HERE.txt
       - docs/licensing.md
       - docs/release.md
       - scripts/build_windows.py
+      - scripts/portable_entry.py
+      - src/lapsim/desktop.py
+      - scripts/check_dco.py
       - scripts/check_license_policy.py
+      - .github/workflows/dco.yml
       - .github/workflows/license-policy.yml
   workflow_dispatch:
 

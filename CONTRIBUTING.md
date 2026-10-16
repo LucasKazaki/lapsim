@@ -36,7 +36,8 @@ Do not submit a contribution if you cannot make those statements.
 
 ## Commit sign-off
 
-Use a Developer Certificate of Origin sign-off on every commit:
+Every commit made after this policy is adopted must include a Developer
+Certificate of Origin sign-off that matches the commit author:
 
 ```text
 Signed-off-by: Your Name <your-email@example.com>
@@ -44,8 +45,13 @@ Signed-off-by: Your Name <your-email@example.com>
 
 Add it with `git commit -s`. The sign-off certifies that you have the right to
 submit the contribution under the repository's stated terms. A sign-off is not
-a substitute for obtaining required UMD, team, sponsor, employer, or third-party
-approval.
+a substitute for obtaining required UMD, team, sponsor, employer, or
+third-party approval.
+
+The pull request that first introduces this policy is the sole bootstrap
+exception because the requirement did not exist on its base commit. The
+`DCO sign-off` GitHub Actions workflow enforces the rule on every later pull
+request.
 
 ## Pull-request checklist
 
