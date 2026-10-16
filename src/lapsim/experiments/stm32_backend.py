@@ -22,6 +22,7 @@ from .controller_backend import PythonController, controller_source_identity
 
 HEADER = struct.Struct("<4sBBHQI")
 MAX_FRAME = 512
+TCG_CACHE_MIB = 16
 
 
 def encode_frame(kind: int, session: int, sequence: int, payload: bytes = b"") -> bytes:
@@ -121,6 +122,8 @@ class QemuWire:
             str(qemu.absolute()),
             "-M",
             "netduinoplus2",
+            "-accel",
+            f"tcg,tb-size={TCG_CACHE_MIB}",
             "-display",
             "none",
             "-monitor",
@@ -337,6 +340,7 @@ class QemuController(PythonController):
             **controller_source_identity(),
             "backend": self.backend_id,
             "emulator_version": version,
+            "emulator_accelerator": f"tcg,tb-size={TCG_CACHE_MIB}",
             "emulator_executable_sha256": sha256(qemu.read_bytes()).hexdigest(),
             "firmware_build_id": receipt["build_id"],
             "firmware_elf_sha256": digest,

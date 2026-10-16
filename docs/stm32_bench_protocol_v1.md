@@ -12,6 +12,30 @@ documented 1 MB flash/128 KB normal SRAM subset. Use software binary64
 (`-mfloat-abi=soft`), ordinary rounding, no fast math; never narrow to float32.
 Arm GNU Toolchain 12.3.Rel1, GCC 12.3.1, is the pinned local build tool.
 
+### Host resource contract
+
+The host starts TCG with `-accel tcg,tb-size=16`, bounding each translation
+cache to 16 MiB. The installed Windows emulator otherwise attempted a
+1,073,741,824-byte JIT allocation per process. An actual eight-worker batch
+on a 32-logical-processor, 31 GiB Windows host produced paging-file allocation
+failures despite sufficient memory for an individual experiment. Keep those
+failed logs; increasing a global page-file setting is not the repair.
+
+The cache option controls host translation storage, not target SRAM, controller
+precision, scenario clocks or the firmware image. QEMU documents `tb-size` in
+MiB in its [invocation reference](https://www.qemu.org/docs/master/system/invocation.html)
+(accessed 16 October 2026). Verify the installed release with actual execution.
+
+Acceptance for this repair: run the ten frozen study cases under both allocation
+strategies through Python, native C and QEMU; require exact Python-result
+agreement and replay each record through its actual backend. Execute independent
+cases in at most eight processes with one BLAS thread each, retain process exits
+and sampled CPU/memory, and run the real desktop self-test during the batch.
+Within each case, preserve causal lockstep and the existing timeouts. Independent
+sessions have different protocol transcript hashes; replay must preserve the
+firmware/build/source identity and numerical result, not reuse a session hash.
+Host throughput is not physical STM32 deadline or WCET evidence.
+
 USART1 register access is an explicit emulation transport. No production pin
 or clock setup is asserted. QEMU's board supplies its generic clock; UART baud
 and wall-clock exchange do not establish physical serial timing. A minimal
