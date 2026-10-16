@@ -19,7 +19,10 @@ main classes for concise imports.
 The team browser release combines a prescribed-path lap simulator, the full
 expandable source/physics map, and [driving-control research](docs/simulator_research.md).
 Publication destination: [LapSim Team Lab](https://lapsim-team-lab.kazagpt.chatgpt.site).
-Share the simulator link or a map node's URL directly in Slack.
+The hosted site is a separate earlier build: its live manifest checked on
+16 October 2026 reports `651d843ad6696989a612886e867c7a4b7140dfb6`.
+The overnight changes below require a source checkout or internal build.
+Public release and site deployment are deferred by the owner.
 
 The browser runs the existing Python physics in a module worker. It loads the
 pinned scientific runtime on first use, needs an internet connection, and keeps
@@ -58,10 +61,32 @@ JSON replays through the command above. Model parameters, SI units, solver,
 source revision, clock periods and validity assumptions are inspectable in
 each record. See the [equations and acceptance contract](docs/dynamic_bicycle_contract.md).
 
-## Run or share the Windows app
+## Constrained rear-drive control study
 
-The portable team release is **`LapSim-Windows-x64.zip`**. Extract it and
-double-click **`LapSim.exe`** on Windows x64; recipients do not need Python.
+Open **Four-wheel lab → Controlled A/B study** on desktop, or **Torque control**
+in a locally built browser edition. Both allocation strategies execute real
+controller, constrained actuator and four-wheel plant loops with identical
+inputs. Inspect actual speed/slip/energy, proposed/guarded/limited/actual torque,
+contact forces and faults; save JSON and open it for checked replay. The
+independent rear-actuator topology and all parameters are synthetic assumptions.
+Nominal launch can produce identical A/B results; no improvement is invented.
+
+```text
+python -m lapsim.experiments.control_study --case split_grip --output comparison.json
+python -m lapsim.experiments.control_study --replay comparison.json
+```
+
+Python is the ordinary UI backend. Optional host C and actual generic QEMU
+STM32F405 firmware use explicit command-line backends against the same PC plant.
+They never silently fall back to Python. See the [control lab guide](docs/closed_loop_lab.md)
+for commands, source identities, physics/transport contracts and the separate
+limits of host execution, emulation and physical testing.
+
+## Build the Windows app for internal review
+
+The build produces **`LapSim-Windows-x64.zip`**. No new public release is being
+published during this run. When supplied as a reviewed internal package, extract
+it and double-click **`LapSim.exe`** on Windows x64; recipients do not need Python.
 The single-file executable includes the runtime and mandatory course data.
 The ZIP also includes offline documentation, the expandable simulator map,
 source snapshot, and test evidence. Click **Simulator map** in the desktop

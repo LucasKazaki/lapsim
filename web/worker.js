@@ -54,11 +54,14 @@ sys.path[:0] = ['/lapsim/bundle/vendor', '/lapsim/bundle/src', '/lapsim/bundle/w
 from bridge import capabilities, run_simulation_json
 from dataclasses import asdict
 from lapsim.experiments.basic_dynamics import BicycleScenario, run_basic_json
+from lapsim.experiments.control_study import DEFAULT_REQUEST, run_control_comparison_json, replay_control_comparison_json
 def _web_progress(update):
     _emit_progress_json(json.dumps(update, allow_nan=False))
 `);
   const metadata = JSON.parse(runtime.runPython("json.dumps(capabilities(), allow_nan=False)"));
   metadata.basicDynamicsDefaults = JSON.parse(runtime.runPython("json.dumps(asdict(BicycleScenario()), allow_nan=False)"));
+  metadata.controlStudyDefaults = JSON.parse(runtime.runPython("json.dumps(DEFAULT_REQUEST, allow_nan=False)"));
+  metadata.controlStudyBackends = ["python_reference"];
   self.postMessage({ type: "ready", capabilities: metadata });
   return runtime;
 }
@@ -99,9 +102,11 @@ self.onmessage = async event => {
     lastPhase = null;
     lastProgressAt = 0;
     const py = await ready();
-    py.globals.set("_request_json", JSON.stringify(message.settings));
-    if (message.mode !== undefined && message.mode !== "basic_dynamics") throw new Error("Unsupported experiment mode.");
-    const encoded = await py.runPythonAsync(message.mode === "basic_dynamics" ? "run_basic_json(_request_json)" : "run_simulation_json(_request_json, _web_progress)");
+    if(message.mode==='closed_loop_comparison_replay' && (typeof message.recordJson!=='string'||new TextEncoder().encode(message.recordJson).length>40000000))throw new Error('Comparison import must be JSON under 40 MB.');
+    py.globals.set("_request_json", message.mode==='closed_loop_comparison_replay'?message.recordJson:JSON.stringify(message.settings));
+    const entrypoints = {basic_dynamics: "run_basic_json(_request_json)", closed_loop_comparison: "run_control_comparison_json(_request_json)", closed_loop_comparison_replay: "replay_control_comparison_json(_request_json)"};
+    if (message.mode !== undefined && !Object.hasOwn(entrypoints, message.mode)) throw new Error("Unsupported experiment mode.");
+    const encoded = await py.runPythonAsync(message.mode === undefined ? "run_simulation_json(_request_json, _web_progress)" : entrypoints[message.mode]);
     self.postMessage({ type: "result", requestId, result: JSON.parse(encoded), resultJson: encoded });
   } catch (error) {
     self.postMessage({ type: "error", requestId, error: { kind: error.name ?? "Error", message: String(error.message ?? error) } });

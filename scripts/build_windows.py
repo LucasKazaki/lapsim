@@ -20,6 +20,7 @@ WEB_SOURCE_FILES = (
     "index.html", "app.js", "styles.css", "worker.js", "bridge.py",
     "bench.html", "bench.css", "bench.js", "bench-data.js",
     "basic.html", "basic.css", "basic.js",
+    "control.html", "control.css", "control.js",
 )
 # Independently pinned like the site staging script; a mutable recipient
 # manifest cannot authorize new replay data in a source package.
@@ -68,7 +69,7 @@ def stage_assets() -> Path:
         identity = json.loads(previous.read_text(encoding="utf-8")) if previous.is_file() else {}
         source_commit = identity.get("code_commit")
         source_dirty = True  # This snapshot has no live clean-worktree guarantee.
-        for folder in ("src", "controller", "web", "scripts", "tests", "docs", "data", "analysis", "output", "packaging", ".vscode"):
+        for folder in ("src", "controller", "firmware", "web", "scripts", "tests", "docs", "data", "analysis", "output", "packaging", ".vscode"):
             paths.extend(path for path in (ROOT / folder).rglob("*") if path.is_file())
         paths.extend(path for path in ROOT.glob("LICENSE*") if path.is_file())
         paths.extend(ROOT / name for name in (".gitignore", ".gitattributes") if (ROOT / name).is_file())

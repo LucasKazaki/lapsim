@@ -37,7 +37,8 @@ its identity and fail without a library. Use a direct supported GCC/Clang
 executable for these historical commands. Windows GCC 12.1 and the CI
 GCC/Clang installations have executed successfully; arbitrary compiler-launcher
 installations are not claimed. Preserve the frozen upstream sources/receipts;
-a new launcher-preserving runtime builder belongs to E07/E14 with fresh evidence.
+the new launcher-preserving runtime builder is described in
+[the closed-loop lab guide](closed_loop_lab.md), with separate fresh evidence.
 
 The native runner compiles and loads all five C owners, compares actual results
 with Python, retains commands/binary/source identities and emits a viewer
@@ -47,5 +48,6 @@ zero; these are state/command observations, not achieved tire forces.
 
 `research/TC-03I-evidence/` and the earlier ARM object cohorts are immutable
 historical evidence. A fresh successful host run establishes relocation/native
-SIL behavior only. Closed-loop plant integration, a linked bench image,
-STM32 emulation and physical PIL retain separate acceptance gates in issue #19.
+SIL behavior only. The new closed-loop runner and linked/emulated F405 bench
+have separate execution evidence described in [the lab guide](closed_loop_lab.md).
+Physical PIL remains unavailable and retains its separate acceptance gate.

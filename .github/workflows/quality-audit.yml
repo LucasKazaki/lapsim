@@ -137,6 +137,7 @@ jobs:
           pwsh -NoProfile -File scripts/stage_team_site.ps1 -OutputDirectory dist/web
       - run: python quality/run_web_runtime.py
       - run: python quality/run_basic_dynamics_runtime.py
+      - run: python quality/run_control_study_runtime.py
       - if: always()
         uses: actions/upload-artifact@v4
         with:
