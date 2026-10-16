@@ -30,7 +30,10 @@ main classes for concise imports.
 The team browser release combines a prescribed-path lap simulator, the full
 expandable source/physics map, and [driving-control research](docs/simulator_research.md).
 Publication destination: [LapSim Team Lab](https://lapsim-team-lab.kazagpt.chatgpt.site).
-Share the simulator link or a map node's URL directly in Slack.
+The hosted site is a separate earlier build: its live manifest checked on
+16 October 2026 reports `651d843ad6696989a612886e867c7a4b7140dfb6`.
+The overnight changes below require a source checkout or internal build.
+Public release and site deployment are deferred by the owner.
 
 The browser runs the existing Python physics in a module worker. It loads the
 pinned scientific runtime on first use, needs an internet connection, and keeps
@@ -38,10 +41,80 @@ run inputs/results on the visitor's device. Completed runs can be compared and
 downloaded as replayable JSON. See the [browser guide](docs/web_simulator.md) for
 supported inputs, limitations, build steps, and verification evidence.
 
-## Run or share the Windows app
+**Torque review** opens a separate ENME408 bench-replay viewer: load a local
+receipt, inspect proposed wheel-slot commands and fault/recovery transitions,
+and trace the recorded source hashes. A standalone HTML export embeds the
+synthetic demo for sharing. See [the review instructions](docs/web_simulator.md#enme408-torque-review).
+This view displays host-reference evidence; it has no live command transport.
 
-The portable team release is **`LapSim-Windows-x64.zip`**. Extract it and
-double-click **`LapSim.exe`** on Windows x64; recipients do not need Python.
+## Basic dynamics: synthetic bicycle
+
+Choose **Basic dynamics · bicycle** in the desktop header, or **Basic dynamics**
+in the browser navigation. New basic sessions select `dynamic_bicycle_v1` with
+the separate `synthetic_bicycle_v1` parameter profile. Longitudinal/lateral
+velocity and yaw evolve with tire forces; the lap solver and existing saved
+runs keep their original physics. This first mode uses a prescribed rear-axle
+contact-force input (`none_prescribed_force`), with no torque controller,
+wheel angular dynamics or battery model. Independent wheel allocation belongs
+to the separate four-wheel plant.
+
+From an installed source checkout:
+
+```powershell
+python -m lapsim.ui.basic_dynamics
+python -m lapsim.experiments.basic_dynamics --output bicycle-run.json
+python -m lapsim.experiments.basic_dynamics --replay bicycle-run.json
+```
+
+Desktop JSON save/load verifies numerical replay before displaying an imported
+result. Browser JSON and CSV exports contain actual calculated samples; the
+JSON replays through the command above. Model parameters, SI units, solver,
+source revision, clock periods and validity assumptions are inspectable in
+each record. See the [equations and acceptance contract](docs/dynamic_bicycle_contract.md).
+
+## Constrained rear-drive control study
+
+Open **Four-wheel lab → Controlled A/B study** on desktop, or **Torque control**
+in a locally built browser edition. Both allocation strategies execute real
+controller, constrained actuator and four-wheel plant loops with identical
+inputs. Inspect actual speed/slip/energy, proposed/guarded/limited/actual torque,
+contact forces and faults; save JSON and open it for checked replay. The
+independent rear-actuator topology and all parameters are synthetic assumptions.
+Nominal launch can produce identical A/B results; no improvement is invented.
+
+```text
+python -m lapsim.experiments.control_study --case split_grip --output comparison.json
+python -m lapsim.experiments.control_study --replay comparison.json
+```
+
+Python is the ordinary UI backend. Optional host C and actual generic QEMU
+STM32F405 firmware use explicit command-line backends against the same PC plant.
+They never silently fall back to Python. See the [control lab guide](docs/closed_loop_lab.md)
+for commands, source identities, physics/transport contracts and the separate
+limits of host execution, emulation and physical testing.
+
+## Component materials study
+
+Open **Four-wheel lab → Component materials** on desktop. Compare two versioned
+synthetic isotropic material cards under identical bending/torsion loads. Edit
+tube geometry, inspect deflection/twist, component stiffness, stress, uncertainty
+bounds and recalculated mass/inertia; save and reopen a checked JSON comparison.
+An edited B geometry is a manual change, not an optimized design. This standalone
+component study has no chassis, joint or vehicle coupling and no browser UI.
+
+```text
+python -m lapsim.experiments.component_study --output component.json
+python -m lapsim.experiments.component_study --replay component.json
+```
+
+See the [component study guide](docs/component_study.md) for equations, assumptions,
+actual optional CalculiX refinement evidence and reusable tool decisions.
+
+## Build the Windows app for internal review
+
+The build produces **`LapSim-Windows-x64.zip`**. No new public release is being
+published during this run. When supplied as a reviewed internal package, extract
+it and double-click **`LapSim.exe`** on Windows x64; recipients do not need Python.
 The single-file executable includes the runtime and mandatory course data.
 The ZIP also includes offline documentation, the expandable simulator map,
 source snapshot, and test evidence. Click **Simulator map** in the desktop
@@ -145,27 +218,28 @@ flowchart LR
 
 ## LapSim desktop app
 
-On Windows, install **64-bit Python 3.11 or newer** with Tkinter, then from this
-checkout run the one-time setup. It creates `.venv`, installs the required
-packages, and checks that the app can import and load its bundled course:
+Install **64-bit Python 3.11 or newer** with Tkinter. From this checkout, one
+command creates/checks a project-local environment, verifies offline bicycle
+and controller replay, checks the desktop and launches it:
 
 ```powershell
-./setup_lapsim.cmd
-./launch_lapsim.cmd
+python scripts/bootstrap.py --launch
 ```
 
-You can also double-click those two files in that order. For a terminal-only
-setup without the batch file's final pause, run:
+Use the script's absolute path from another working directory. Initial setup
+may need internet; after setup, this read-only check works offline:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup_lapsim.ps1
-.venv\Scripts\python.exe -m lapsim.ui
+python scripts/bootstrap.py --check --desktop
 ```
+
+See [setup and package diagnostics](docs/setup.md) for environment recovery,
+development dependencies and verified wheel/source-distribution execution.
 
 Run the complete repository checks with
 `.venv\Scripts\python.exe scripts\check_all.py`. It runs each test module in
 a fresh process and writes the aggregate report to `work/test-results.xml`.
-Setup installs pytest. See [verification](docs/verification.md) to save the
+Install test tools with `python scripts/bootstrap.py --dev` first. See [verification](docs/verification.md) to save the
 full log and interpret skips. The older PowerShell checker also remains available.
 
 The launcher checks Python, Tk, app imports, and the bundled course before
@@ -235,8 +309,8 @@ For Python studies, `PathConstraintSolver.solve`, `prepare_one_lap_constraints`,
 `cell_road_grip_multiplier` tuple with one **absolute**, finite, positive tire
 grip multiplier per solver cell. The same cell value is used for its corner
 limit, braking-envelope calculation, and distance-cell force update; the
-vehicle's configured grip is restored afterward. An omitted schedule keeps the
-original uniform calculation. This API input is a numerical road-grip
+vehicle's configured grip is restored afterward. An omitted schedule keeps
+the original uniform calculation. This API input is a numerical road-grip
 sensitivity, distinct from the desktop's uniform percentage control and the
 four-wheel preview's separate pose model. A completed scheduled API lap can
 now be captured in a v2 lap record and checked by `replay_lap_record`, which
@@ -609,19 +683,20 @@ the replay and recorder do not require a central schema change.
 
 ## First endurance-lap validation
 
-Extract the first completed lap from the competition MF4, then replay its
-distance-indexed controls through the current vehicle model:
+The active distance-domain recorded-control workflow lives under
+`analysis/endurance/`. Inspect its input options with:
 
 ```powershell
-python scripts/extract_first_endurance_lap.py
-$env:PYTHONPATH='src'
-python scripts/validate_first_endurance_lap.py
+python analysis/endurance/analyze_endurance.py --help
 ```
 
-The validation performs no parameter fitting and does not alter vehicle
-defaults. It writes plots, telemetry, and metrics under
-`outputs/endurance_validation/first_lap_soc_open_loop/`. The replay assumptions
-are documented in `docs/first_lap_soc_validation.md`.
+With authorized lap, high-rate controls, corrected IMU and track inputs,
+run `python analysis/endurance/analyze_endurance.py`. See
+[the workflow guide](analysis/endurance/README.md) for the explicit scenario
+assumptions and outputs under `analysis/endurance/output/`. This is a replay
+and comparison workflow; it is not held-out vehicle validation. The older
+[brake-free SOC report](docs/first_lap_soc_validation.md) is historical and its
+producer is absent from this revision.
 
 ## Endurance torque optimization
 
@@ -651,3 +726,11 @@ segments and export its complete telemetry, metrics, and dashboard with:
 
 Use `--distance-m`, `--segment-length-m`, and `--output-dir` to change the
 experiment without editing the script.
+
+## Portable controller source
+
+The scoped ENME408 Python/C controller now lives under `controller/`, with
+original Git-blob hashes and immutable historical receipts. Follow
+[the one-repository controller commands](docs/controller_source.md) to verify
+the source import, run reference tests and execute the five-owner native C
+replay. This host replay is separate from a closed-loop plant or STM32 target.
