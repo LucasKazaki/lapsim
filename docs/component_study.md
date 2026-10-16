@@ -65,6 +65,9 @@ both numerical results and model metadata before displaying an imported record;
 source agreement is reported separately. The CLI can create a single run or the
 same paired comparison, and its replay command accepts either format. File reads
 are bounded before decoding, including files that grow during the read.
+Nonzero replayed values use relative tolerance 1e-10 with no absolute floor;
+zero values and integers match exactly. This prevents small section moments
+or tiny load responses from being replaced by zero during checked replay.
 The Python API exposes `run_component_comparison` and `replay_component_comparison`.
 
 ## Actual optional finite-element benchmark

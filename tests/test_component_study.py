@@ -255,3 +255,47 @@ def test_actual_cli_comparison_round_trip(tmp_path):
     import json
 
     assert json.loads(outcome.stdout)["runs_replayed"] == 2
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ("result", "nominal", "second_moment_m4"),
+        ("result", "nominal", "polar_moment_m4"),
+        ("result", "nominal", "centroid_ix_kgm2"),
+        ("result", "bounds", "second_moment_m4", "lower"),
+    ],
+)
+def test_valid_thin_section_cannot_replay_zeroed_small_inertias(path):
+    geometry = GeometryCard(point(0.03), point(0.001002), point(0.001))
+    record = run_component_study(geometry=geometry, force_y_n=1e-4, torque_x_nm=1e-6)
+    assert record["result"]["validity"]["within_declared_linear_domain"]
+    assert replay_component_study(record)["model_agreement"]
+    owner = record
+    for key in path[:-1]:
+        owner = owner[key]
+    assert 0 < owner[path[-1]] < 1e-12
+    owner[path[-1]] = 0.0
+    record["run_id"] = _content_id({k: v for k, v in record.items() if k != "run_id"})
+    with pytest.raises(ValueError, match="replay disagrees"):
+        replay_component_study(record)
+
+
+@pytest.mark.parametrize("force,forgery", [(1e-20, 0.0), (0.0, 1e-15)])
+def test_tiny_load_response_and_zero_do_not_have_a_universal_absolute_escape(
+    force, forgery
+):
+    record = run_component_study(force_y_n=force, torque_x_nm=0.0)
+    assert replay_component_study(record)["model_agreement"]
+    record["result"]["nominal"]["tip_deflection_m"] = forgery
+    record["run_id"] = _content_id({k: v for k, v in record.items() if k != "run_id"})
+    with pytest.raises(ValueError, match="replay disagrees"):
+        replay_component_study(record)
+
+
+def test_rehashed_fractional_corner_count_is_rejected():
+    record = run_component_study()
+    record["result"]["interval_corners"] = 128.000000001
+    record["run_id"] = _content_id({k: v for k, v in record.items() if k != "run_id"})
+    with pytest.raises(ValueError, match="replay disagrees"):
+        replay_component_study(record)

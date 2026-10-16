@@ -339,9 +339,11 @@ def replay_component_study(record: dict) -> dict:
                 and len(expected) == len(observed)
                 and all(compare(a, b) for a, b in zip(expected, observed))
             )
-        if type(expected) in (int, float):
+        if type(expected) is int:
+            return type(observed) is int and expected == observed
+        if type(expected) is float:
             return type(observed) in (int, float) and isclose(
-                expected, observed, rel_tol=1e-10, abs_tol=1e-12
+                expected, observed, rel_tol=1e-10, abs_tol=0.0
             )
         return type(expected) is type(observed) and expected == observed
 
@@ -362,7 +364,8 @@ def replay_component_study(record: dict) -> dict:
         "model_agreement": True,
         "source_agreement": record["source"] == actual["source"],
         "relative_tolerance": 1e-10,
-        "absolute_tolerance_si": 1e-12,
+        "absolute_tolerance_si": 0.0,
+        "zero_and_integer_policy": "exact; nonzero fields use relative tolerance only",
     }
 
 

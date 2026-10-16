@@ -46,7 +46,7 @@ Reuse the existing canonical JSON/content IDs, runtime/source provenance and
 strict JSON decoder. A separate structural record freezes complete cards, load,
 boundary/frame/units, analytic backend/version, source hashes, nominal results,
 intervals, 41 shape samples and validity. Replay checks its content ID and all
-metadata and recomputed results (relative 1e-10, absolute 1e-12 SI); source
+metadata and recomputed results (relative 1e-10; zero and integers exact); source
 agreement is reported separately. It never mutates a vehicle configuration.
 Limit imports to 256 KiB and bounded, finite structures. Saving is explicit.
 
@@ -84,3 +84,11 @@ Tool decision and primary references (accessed 2026-10-16):
 Analytic default is selected because its equations and domains are inspectable,
 portable and already supported by the project runtime. Specialist integrations
 require their own small execution benchmark before becoming dependencies.
+
+Review correction, 16 October: the original universal 1e-12 absolute replay
+tolerance admitted zero in place of a valid thin section's 3.94e-16 m4 second
+moment. Tighten absolute tolerance to zero for every floating field; retain
+relative 1e-10 for nonzero values and compare zero and integer fields exactly.
+This protects tiny inertia and load-response values without changing equations,
+model records or accepted results. Preserve the thin-section and tiny-load
+counterexamples and verify legitimately saved earlier records still replay.

@@ -4,8 +4,9 @@ Updated: **16 October 2026**. Tracking: [issue #19](https://github.com/LucasKaza
 
 **Status, 16 October implementation:** the consolidated main baseline includes
 the controller source closure, source/resource repairs and the real dynamic
-bicycle. The constrained control/virtual STM32 and installed-package tranche is
-tracked in PR #51 with reviewed follow-ups #54/#55. E15 adds the standalone
+bicycle. The constrained control/native C/virtual STM32 and installed-package
+tranche merged through PR #51 at `efc9095cecab5e812423fe781439e4a3b91715f7`
+and was reproduced from merged main. E15 adds the standalone
 component study described in [its guide](docs/component_study.md). Check the live
 PR/issue state before treating a candidate as merged. Public release and site
 deployment are deferred by the owner; physical PIL remains unavailable. The
