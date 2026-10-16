@@ -74,7 +74,8 @@ def main() -> int:
 
     readme = documents["README.md"]
     require(readme, "source-available, not open source", "README.md")
-    require(readme, "use by or for another student vehicle competition program is prohibited", "README.md")
+    require(readme, "Terps Racing uses are permitted", "README.md")
+    require(readme, "competition program is prohibited", "README.md")
     require(readme, "LICENSE_SCOPE.md", "README.md")
 
     guide = documents["docs/licensing.md"]
