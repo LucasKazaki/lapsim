@@ -15,6 +15,32 @@ if (-not (Test-Path -LiteralPath (Join-Path $destination 'assets/runtime-manifes
     throw 'Build the browser simulator with scripts/build_web.py first.'
 }
 
+# Recheck immutable fixture contents at the publication staging boundary too.
+$runtimeManifest = Get-Content -LiteralPath (Join-Path $destination 'assets/runtime-manifest.json') -Raw | ConvertFrom-Json
+$reviewedExamples = $runtimeManifest.reviewedReplaySha256
+if ($null -eq $reviewedExamples -or @($reviewedExamples.PSObject.Properties).Count -ne 2) {
+    throw 'Rebuild the browser runtime with the reviewed replay manifest.'
+}
+foreach ($entry in $reviewedExamples.PSObject.Properties) {
+    if ($entry.Name -notin @('enme408-synthetic-replay.json', 'enme408-native-c-replay.json')) { throw 'Unreviewed replay manifest entry.' }
+    $sourceExample = Join-Path $repository ('web/examples/' + $entry.Name)
+    if ((Get-FileHash -LiteralPath $sourceExample -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry.Value) {
+        throw 'Unreviewed replay source contents; rebuild only from reviewed fixtures.'
+    }
+}
+foreach ($relativeExamples in @('examples', 'web/examples')) {
+    $exampleDirectory = Join-Path $destination $relativeExamples
+    if (Test-Path -LiteralPath $exampleDirectory) {
+        foreach ($file in Get-ChildItem -LiteralPath $exampleDirectory -Force) {
+            $expected = $reviewedExamples.PSObject.Properties[$file.Name]
+            if ($file.PSIsContainer -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+                $null -eq $expected -or (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected.Value) {
+                throw 'Unreviewed staged replay; choose a fresh output directory.'
+            }
+        }
+    }
+}
+
 # Preserve repository-relative source links in the complete expandable map.
 $paths = @(git -C $repository ls-files) + @('docs/simulator_research.md', 'docs/web_simulator.md')
 foreach ($relative in ($paths | Sort-Object -Unique)) {

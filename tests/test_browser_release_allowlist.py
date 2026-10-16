@@ -40,3 +40,36 @@ def test_stale_unreviewed_output_is_preserved_and_build_fails(tmp_path, monkeypa
     with pytest.raises(ValueError, match="unreviewed"):
         module.build(output, runtime_only=runtime_only)
     assert private.read_bytes() == b"retain but do not publish"
+
+
+@pytest.mark.parametrize("runtime_only", [False, True])
+@pytest.mark.parametrize("name", ["enme408-synthetic-replay.json", "enme408-native-c-replay.json"])
+def test_private_bytes_under_reviewed_source_name_fail_before_manifest(tmp_path, monkeypatch, runtime_only, name):
+    module = builder(tmp_path, monkeypatch)
+    (module.ROOT / "web/examples" / name).write_bytes(b"private replacement")
+    output = tmp_path / "site"
+    with pytest.raises(ValueError, match="unreviewed replay source"):
+        module.build(output, runtime_only=runtime_only)
+    assert not (output / "assets/runtime-manifest.json").exists()
+
+
+@pytest.mark.parametrize("runtime_only", [False, True])
+def test_private_bytes_under_reviewed_output_name_fail(tmp_path, monkeypatch, runtime_only):
+    module = builder(tmp_path, monkeypatch)
+    output = tmp_path / "site"
+    module.build(output)
+    target = output / "examples/enme408-native-c-replay.json"
+    target.write_bytes(b"private output replacement")
+    with pytest.raises(ValueError, match="unreviewed examples"):
+        module.build(output, runtime_only=runtime_only)
+    assert target.read_bytes() == b"private output replacement"
+
+
+def test_reviewed_examples_survive_repeated_full_and_runtime_only_builds(tmp_path, monkeypatch):
+    module = builder(tmp_path, monkeypatch)
+    output = tmp_path / "site"
+    for runtime_only in (False, True, False):
+        manifest = module.build(output, runtime_only=runtime_only)
+        assert manifest["reviewedReplaySha256"] == module.REVIEWED_REPLAY_EXAMPLES
+        for name in module.REVIEWED_REPLAY_EXAMPLES:
+            assert (output / "examples" / name).read_bytes() == (module.ROOT / "web/examples" / name).read_bytes()
