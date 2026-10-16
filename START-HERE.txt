@@ -5,25 +5,24 @@ LapSim public demonstration - Windows x64
    a competition-use restriction; it is not open source.
 2. Extract the ZIP, then double-click LapSim.exe. Python is bundled.
 3. The public executable starts with a synthetic analytic course and contains
-   no bundled team-derived GNSS/IMU course, telemetry, calibration, or output
-   directory.
+   no bundled team-derived GNSS/IMU course, telemetry, calibration, historical
+   validation report, or output directory.
 4. Choose "Synthetic loop · AI demo" from Course and run a centerline lap.
 5. Click Simulator map to explore the flowchart, physics equations and
    individual variables. Search and click the child buttons to drill down.
-6. Read docs/team_guide.md for the demo, units, saved records and model limits.
-7. portable-self-test.json and verification/ contain the release check
-   evidence. checksums.json identifies the executable; build-info.json
-   identifies the curated source snapshot.
+6. Read docs/public_demo.md for the repeatable demonstration and model limits.
+7. portable-self-test.json and checksums.json contain release evidence;
+   build-info.json identifies the curated source snapshot.
 
-The executable also runs by itself. The ZIP keeps curated documentation, map,
-source, project and dependency notices, and verification evidence together.
-Public availability does not authorize another student vehicle competition
-program to use Covered Material for its vehicle or competition work.
+The ZIP keeps curated public documentation, the map, a reviewed source subset,
+project and dependency notices, and frozen self-test evidence together. Public
+availability does not authorize another student vehicle competition program to
+use Covered Material for its vehicle or competition work.
 
-The team-derived fused GNSS/IMU course has unresolved publication authority and
-is excluded from the public Windows artifact. UMD users who have separate
-authorization may use team data from access-controlled storage with the source
-checkout. AI racing line and the separate four-wheel pose preview are
+Team-derived data and reports have unresolved or separate publication rights
+and are excluded from the public Windows artifact. UMD users who have separate
+authorization may use those materials from access-controlled storage with the
+source checkout. AI racing line and the separate four-wheel pose preview are
 experimental. Test agreement does not establish real-car predictive accuracy.
 
 This is an unsigned educational/research build. See docs/release.md for

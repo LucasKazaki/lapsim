@@ -1,4 +1,5 @@
-"""Build and integration-test a standalone public Windows x64 distribution."""
+"""Build and integration-test a public Windows x64 demonstration."""
+
 from __future__ import annotations
 
 import argparse
@@ -15,17 +16,52 @@ import sysconfig
 from tempfile import TemporaryDirectory
 from zipfile import ZIP_DEFLATED, ZipFile
 
+
 ROOT = Path(__file__).resolve().parents[1]
 
+PUBLIC_DOCUMENTATION_FILES = (
+    "docs/architecture.md",
+    "docs/extending_models.md",
+    "docs/licensing.md",
+    "docs/public_demo.md",
+    "docs/release.md",
+)
+PUBLIC_SCRIPT_FILES = (
+    "scripts/build_windows.py",
+    "scripts/check_dco.py",
+    "scripts/check_license_policy.py",
+    "scripts/portable_entry.py",
+)
+PUBLIC_ROOT_FILES = (
+    "AGENTS.md",
+    "CLAUDE.md",
+    "LOCAL-WORKER.md",
+    "START-HERE.txt",
+    "packaging/LapSim.spec",
+    "pyproject.toml",
+    "requirements-build.lock",
+)
+REQUIRED_LEGAL_FILES = (
+    "LICENSE",
+    "LICENSE_SCOPE.md",
+    "NOTICE",
+    "CONTRIBUTING.md",
+    "docs/licensing.md",
+)
 PUBLIC_DISTRIBUTION_EXCLUSIONS = frozenset({
     "analysis/data/track/gnss_imu_endurance_track.csv",
     "analysis/data/track/gnss_imu_endurance_track.json",
+    "data/tires/hoosier_16x7p5-10_r20_upc.tir",
 })
 PUBLIC_DISTRIBUTION_EXCLUDED_PREFIXES = (
-    "analysis/data/",
-    "outputs/",
-    "output/",
+    "analysis/",
+    "data/",
+    "docs/evidence/",
     "logs/",
+    "output/",
+    "outputs/",
+    "tests/",
+    "work/",
 )
 
 
@@ -44,11 +80,24 @@ def _is_publicly_excluded(relative: Path) -> bool:
     )
 
 
+def _existing_paths(relative_names: tuple[str, ...]) -> list[Path]:
+    paths = [ROOT / name for name in relative_names]
+    missing = [
+        path.relative_to(ROOT).as_posix()
+        for path in paths
+        if not path.is_file()
+    ]
+    if missing:
+        raise RuntimeError(
+            "Required public release file is missing: " + ", ".join(missing)
+        )
+    return paths
+
+
 def stage_assets() -> Path:
-    """Stage a curated synthetic-data-only source snapshot for public release."""
+    """Stage a reviewed synthetic-data-only source snapshot."""
 
     assets = ROOT / "build" / "assets"
-    # Only a verified child of this checkout's build directory can be replaced.
     if assets.exists():
         if (
             assets.resolve().parent != (ROOT / "build").resolve()
@@ -58,53 +107,26 @@ def stage_assets() -> Path:
         shutil.rmtree(assets)
     assets.mkdir(parents=True)
 
-    paths: list[Path] = []
-    for folder, patterns in (
-        ("src", ("*.py",)),
-        ("scripts", ("*.py", "*.ps1")),
-        ("tests", ("*.py",)),
-        ("docs", ("*.md", "*.html", "*.css", "*.js", "*.py", "*.cjs")),
-        ("data", ("*.tir",)),
-        ("analysis", ("README.md",)),
-    ):
-        for pattern in patterns:
-            paths.extend((ROOT / folder).rglob(pattern))
-
-    paths.extend(
-        ROOT / name
-        for name in (
-            "README.md",
-            "START-HERE.txt",
-            "AGENTS.md",
-            "CLAUDE.md",
-            "LOCAL-WORKER.md",
-            "pyproject.toml",
-            "requirements-build.lock",
-            "build_lapsim.cmd",
-            "setup_lapsim.cmd",
-            "setup_lapsim.ps1",
-            "launch_lapsim.cmd",
-            "packaging/LapSim.spec",
-        )
-        if (ROOT / name).is_file()
-    )
-
-    required_legal_files = (
-        "LICENSE",
-        "LICENSE_SCOPE.md",
-        "NOTICE",
-        "CONTRIBUTING.md",
-        "docs/licensing.md",
-    )
     missing_legal_files = [
-        name for name in required_legal_files if not (ROOT / name).is_file()
+        name for name in REQUIRED_LEGAL_FILES if not (ROOT / name).is_file()
     ]
     if missing_legal_files:
         raise RuntimeError(
             "Refusing to build a distributable archive without legal notices: "
             + ", ".join(missing_legal_files)
         )
-    paths.extend(ROOT / name for name in required_legal_files)
+
+    paths: list[Path] = []
+    paths.extend(path for path in (ROOT / "src").rglob("*.py"))
+    paths.extend(_existing_paths(PUBLIC_DOCUMENTATION_FILES))
+    paths.extend(_existing_paths(PUBLIC_SCRIPT_FILES))
+    paths.extend(_existing_paths(PUBLIC_ROOT_FILES))
+    paths.extend(_existing_paths(REQUIRED_LEGAL_FILES))
+
+    flowchart_root = ROOT / "docs" / "simulator_flowchart"
+    if not flowchart_root.is_dir():
+        raise RuntimeError("Public simulator-flowchart directory is missing")
+    paths.extend(path for path in flowchart_root.rglob("*") if path.is_file())
 
     if (ROOT / ".git").exists():
         source_commit = subprocess.check_output(
@@ -125,35 +147,35 @@ def stage_assets() -> Path:
             ).strip()
         )
     else:
-        # A distributed source snapshot may be rebuilt without a Git checkout.
         previous = ROOT / "build-info.json"
-        identity = (
+        prior_identity = (
             json.loads(previous.read_text(encoding="utf-8"))
             if previous.is_file()
             else {}
         )
-        source_commit = identity.get("code_commit")
-        source_dirty = True  # No live clean-worktree guarantee is available.
+        source_commit = prior_identity.get("code_commit")
+        source_dirty = True
 
     checksums: dict[str, str] = {}
     for source in sorted(set(paths)):
-        if not source.is_file():
-            continue
         relative = source.relative_to(ROOT)
         if any(
-            part in {"__pycache__", ".venv", "build", "work"}
+            part in {"__pycache__", ".venv", "build"}
             for part in relative.parts
         ):
             continue
         if _is_publicly_excluded(relative):
-            continue
+            raise RuntimeError(
+                "Public release allowlist contains excluded material: "
+                f"{relative.as_posix()}"
+            )
         destination = assets / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
         checksums[relative.as_posix()] = sha256(source.read_bytes()).hexdigest()
 
     missing_staged_legal_files = [
-        name for name in required_legal_files if not (assets / name).is_file()
+        name for name in REQUIRED_LEGAL_FILES if not (assets / name).is_file()
     ]
     if missing_staged_legal_files:
         raise RuntimeError(
@@ -200,7 +222,6 @@ def stage_assets() -> Path:
         ),
     }
 
-    # Preserve license texts shipped by the interpreter and runtime dependencies.
     notices = assets / "third-party"
     notices.mkdir()
     python_license = Path(sys.base_prefix) / "LICENSE.txt"
@@ -315,8 +336,6 @@ def main() -> int:
     executable = output / "LapSim.exe"
     report_path = output / "portable-self-test.json"
 
-    # Launch a copy outside the checkout, with no Python/Git on PATH and no
-    # optional engineering evidence or existing user data.
     with TemporaryDirectory(prefix="LapSim public test ") as temporary:
         sandbox = Path(temporary)
         copied_exe = sandbox / "LapSim.exe"
@@ -370,24 +389,6 @@ def main() -> int:
         for path in assets.rglob("*"):
             if path.is_file():
                 bundle.write(path, path.relative_to(assets).as_posix())
-        for path in (ROOT / "work").glob("*results.xml"):
-            bundle.write(path, "verification/" + path.name)
-        for filename in (
-            "test-suite.log",
-            "physics-operating-sweep.json",
-            "documentation-qa.json",
-            "gui-recovery.json",
-            "gui-recovery.log",
-            "gui-repeat-course.log",
-            "gui-repeat-evidence.log",
-            "gui-repeat-restart.log",
-            "gui-capture-sys.log",
-            "gui-capture-sys-lifecycle.log",
-            "gui-shutdown.log",
-        ):
-            path = ROOT / "work" / filename
-            if path.is_file():
-                bundle.write(path, "verification/" + filename)
 
     print(f"Portable checks passed. Share {archive} or {executable}.")
     return 0

@@ -1,7 +1,8 @@
 name: DCO sign-off
 
 on:
-  pull_request:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -16,12 +17,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out the trusted base commit
+        uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Check Developer Certificate of Origin trailers
+      - name: Fetch the proposed head commit without checking it out
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git fetch --no-tags origin "$HEAD_SHA"
+      - name: Run the validator from the trusted base
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python scripts/check_dco.py --base "$BASE_SHA" --head "$HEAD_SHA"
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git cat-file -e "$BASE_SHA:scripts/check_dco.py"; then
+            echo "DCO policy marker is absent from the trusted base; bootstrap PR exempt."
+            exit 0
+          fi
+          git show "$BASE_SHA:scripts/check_dco.py" > "$RUNNER_TEMP/check_dco.py"
+          python "$RUNNER_TEMP/check_dco.py" --base "$BASE_SHA" --head "$HEAD_SHA"
