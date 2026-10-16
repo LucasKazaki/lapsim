@@ -75,14 +75,17 @@ def stage_assets() -> Path:
     checksums = {}
     allowed_web = {"web/" + name for name in WEB_SOURCE_FILES}
     allowed_web.update("web/examples/" + name for name in REVIEWED_WEB_REPLAYS)
-    if (ROOT / "web").exists():
-        for name, expected in REVIEWED_WEB_REPLAYS.items():
-            source = ROOT / "web/examples" / name
-            if (not source.is_file() or source.is_symlink()
-                    or source.resolve() != ROOT.resolve() / "web/examples" / name
-                    or source.stat().st_nlink != 1 or source.stat().st_size > 20_000_000
-                    or sha256(source.read_bytes().replace(b"\r\n", b"\n")).hexdigest() != expected):
-                raise ValueError("unreviewed or missing source-package replay: " + name)
+    for name in allowed_web:
+        source = ROOT / name
+        if not source.is_file():
+            raise ValueError("missing required browser source: " + name)
+        if source.is_symlink() or source.resolve() != ROOT.resolve() / name or source.stat().st_nlink != 1:
+            raise ValueError("refusing aliased browser source")
+    for name, expected in REVIEWED_WEB_REPLAYS.items():
+        source = ROOT / "web/examples" / name
+        if (source.stat().st_size > 20_000_000
+                or sha256(source.read_bytes().replace(b"\r\n", b"\n")).hexdigest() != expected):
+            raise ValueError("unreviewed source-package replay: " + name)
     for source in sorted(set(paths)):
         if any(part in {"__pycache__", ".venv", "build", "work"} for part in source.relative_to(ROOT).parts):
             continue

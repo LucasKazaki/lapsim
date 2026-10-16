@@ -59,7 +59,7 @@ def test_no_git_rebuild_preserves_handoff_and_hashes(tmp_path, monkeypatch):
     assert private.read_text(encoding="utf-8") == '"private sentinel"'
 
 
-@pytest.mark.parametrize("mutation", ["replace", "remove"])
+@pytest.mark.parametrize("mutation", ["replace", "remove", "missing_frontend", "missing_directory"])
 def test_snapshot_rejects_changed_or_missing_reviewed_replay(tmp_path, monkeypatch, mutation):
     root = Path(__file__).resolve().parents[1]
     spec = importlib.util.spec_from_file_location("snapshot_replay_guard", root / "scripts/build_windows.py")
@@ -69,8 +69,12 @@ def test_snapshot_rejects_changed_or_missing_reviewed_replay(tmp_path, monkeypat
     replay = tmp_path / "web/examples/enme408-native-c-replay.json"
     if mutation == "replace":
         replay.write_bytes(b"private replacement")
-    else:
+    elif mutation == "remove":
         replay.unlink()
+    elif mutation == "missing_frontend":
+        (tmp_path / "web/app.js").unlink()
+    else:
+        shutil.rmtree(tmp_path / "web")
     monkeypatch.setattr(builder, "ROOT", tmp_path)
-    with pytest.raises(ValueError, match="unreviewed or missing"):
+    with pytest.raises(ValueError, match="unreviewed|missing required"):
         builder.stage_assets()
