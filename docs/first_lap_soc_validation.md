@@ -1,4 +1,12 @@
-# Current-model first-lap replay
+# Historical first-lap SOC replay
+
+**Historical result; source/input revision was not recorded in this report.**
+The producer `scripts/validate_first_endurance_lap.py` is absent. Retain the
+numbers below as an earlier observation, not current validation. The current
+vehicle has a hydraulic brake model and the active analysis accepts front/rear
+pressure-to-torque parameters. See [the current workflow](../analysis/endurance/README.md)
+and [the command/input notice](first_endurance_lap_validation.md).
+No rerun or new calibration is implied by this archival correction.
 
 ## Purpose
 
@@ -31,7 +39,7 @@ model, braking is unapplied by default. This missing input adapter is reported
 in the metrics. A deliberate external assumption can be tested with
 `--brake-force-per-psi-n`, but it is not a fitted default.
 
-## Current result
+## Historical result
 
 With current defaults and no pressure-to-force adapter:
 
@@ -54,12 +62,11 @@ to enforce the prescribed racing line at the requested curvature.
 
 ## Reproduce
 
-```powershell
-$env:PYTHONPATH='src'
-.venv\Scripts\python.exe scripts\validate_first_endurance_lap.py
-```
+The original producer is unavailable in this revision. Inspect the active
+workflow with `python analysis/endurance/analyze_endurance.py --help`; its
+inputs, model and outputs differ, so it does not reproduce these old numbers.
 
-Outputs are written to
+The historical report named these output paths:
 `outputs/endurance_validation/first_lap_soc_open_loop/`:
 
 - `first_lap_actual_vs_sim.png`: SOC, speed, motor RPM, pack power, voltage,

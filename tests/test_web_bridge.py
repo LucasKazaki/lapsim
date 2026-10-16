@@ -22,8 +22,8 @@ from lapsim.experiments.lap_replay import replay_lap_record
 from lapsim.experiments.run_record import RunRecord
 from lapsim.optimization.torque_profile import PeriodicPiecewiseLinearTorqueProfile
 from lapsim.profiles import build_vehicle
-from lapsim.ui.course_catalog import load_course
-from lapsim.ui.simulation import apply_uniform_road_grip, endurance_run_config, path_solver_settings, resample_track, run_one_lap
+from lapsim.ui.course_catalog import load_course, solver_track_for_course
+from lapsim.ui.simulation import apply_uniform_road_grip, endurance_run_config, path_solver_settings, run_one_lap
 from lapsim.solvers.path_constraints import PathConstraintSolver
 
 
@@ -39,7 +39,7 @@ def test_web_default_matches_desktop_lap_and_all_telemetry(profile):
     settings = {"vehicleProfile": profile}
     actual = bridge.run_simulation(settings)
     vehicle, _ = build_vehicle(profile)
-    track = resample_track(load_course(bridge.DEFAULTS["courseId"]), 2.0)
+    track = solver_track_for_course(bridge.DEFAULTS["courseId"], load_course(bridge.DEFAULTS["courseId"]), 2.0)
     expected = run_one_lap(vehicle, track, torque_request_fraction=0.8)
     assert actual["status"] == ("completed" if expected.completed else "failed")
     assert actual["elapsedTimeS"] == pytest.approx(expected.driving_time_s, abs=1e-10)
@@ -59,7 +59,7 @@ def test_brake_and_regen_controls_reach_real_engine_and_saved_configuration(tmp_
     vehicle, _ = build_vehicle("repository_baseline")
     vehicle.brakes.maximum_pressure_psi = 80.0
     apply_uniform_road_grip(vehicle, 0.7)
-    track = resample_track(load_course(bridge.DEFAULTS["courseId"]), 2.0)
+    track = solver_track_for_course(bridge.DEFAULTS["courseId"], load_course(bridge.DEFAULTS["courseId"]), 2.0)
     limits = PathConstraintSolver(**path_solver_settings(vehicle)).solve(track, vehicle)
     config = replace(endurance_run_config(vehicle), regenerative_braking_soc_threshold=1.0, maximum_driving_time_s=600.0)
     controls = PeriodicPiecewiseLinearTorqueProfile(track.length_m, (0.0, track.length_m * 0.5), (0.8, 0.8))
@@ -115,7 +115,8 @@ def test_browser_grid_cap_is_checked_before_solver(monkeypatch):
     def should_not_run(*args, **kwargs):
         raise AssertionError("solver should not run for an oversized request")
     monkeypatch.setattr(bridge.PathConstraintSolver, "solve", should_not_run)
-    with pytest.raises(ValueError, match="1200 browser cells"):
+    monkeypatch.setattr(bridge, "MAXIMUM_CELLS", 100)
+    with pytest.raises(ValueError, match="100 browser cells"):
         bridge.run_simulation({"courseId": "team_endurance_fused_gnss_imu", "maxCellLengthM": 0.5})
 
 
@@ -178,4 +179,4 @@ print(json.dumps({'time': result['elapsedTimeS'], 'cells': result['cellCount']})
 """
     process = subprocess.run([sys.executable, "-c", code, str(extraction), manifest["sourceIdentity"]["source_sha256"]], cwd=tmp_path, capture_output=True, text=True, timeout=60)
     assert process.returncode == 0, process.stderr
-    assert json.loads(process.stdout)["cells"] == 98
+    assert json.loads(process.stdout)["cells"] == load_course(bridge.DEFAULTS["courseId"]).cell_count

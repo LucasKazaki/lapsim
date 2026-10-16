@@ -90,7 +90,7 @@ See [simulator research](simulator_research.md) for model/control context.
 | Torque fraction | 0-1 | Requested fraction of available drive torque; controller can reduce it |
 | Brake ceiling | 10-500 psi | Maximum line pressure used by path limits and controller |
 | Regen permission | Boolean | Permit regeneration below SOC 1 only where hardware/pack allow it |
-| Maximum cell length | 0.5-10 m | Exact same desktop resampler; requested grid must have at most 1,200 cells |
+| Maximum cell length | 0.5-10 m | Shared desktop/browser grid policy; effective grid must have at most 5,000 cells |
 | Starting speed | Automatic (`null`) or 0-40 m/s | Selected run initial condition; excessive path-entry speed can fail |
 
 Every numeric input must be finite and numeric. Unknown fields, Boolean
@@ -221,3 +221,20 @@ This measured development snapshot had uncommitted source changes; the final
 shared runtime manifest records the release identity. Worker initialization
 was measured after earlier CDN access, so its timing is not a cold-network
 download benchmark.
+
+## Effective-grid repair (E05, 16 October 2026)
+
+The real desktop worker and browser adapter now resolve through
+`lapsim.courses.solver_grid`. Coherent synthetic/imported arcs retain source
+boundaries and subdivide only for finer requested steps. The fused recorded
+course retains its legacy distance-weighted curvature resampling exception.
+A maximum cell length need not coarsen an already finer source. The browser
+uses the same 5,000-cell ceiling as the shared resolver; limits apply to the
+actual effective cells before physics executes.
+
+The Python browser adapter also accepts an explicit validated `CourseBundle`
+for headless import/parity checks. The browser UI has no course import picker;
+this is not an advertised interactive import capability. Existing saved laps
+continue replaying embedded geometry without resolving new grids. Old browser
+runs may therefore differ from newly calculated runs at the same displayed
+maximum step; their recorded geometry remains authoritative.
