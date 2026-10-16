@@ -74,6 +74,10 @@ Malformed numeric results, including integers outside the floating range, are
 rejected before comparison. Derived quantities must also remain finite; loads
 so small that an illustrative yield ratio overflows fail explicitly. CLI failures
 return an error without a traceback or a partial verification file.
+CLI output uses a unique sibling temporary file and atomic replacement. A
+partial-write or replacement failure preserves existing output bytes/mtime and
+cleans the temporary file. The expandable source map includes desktop/CLI entry,
+cards, equations, validity, replay and the optional FE evidence boundary.
 The Python API exposes `run_component_comparison` and `replay_component_comparison`.
 
 ## Actual optional finite-element benchmark

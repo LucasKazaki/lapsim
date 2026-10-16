@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import os
 from dataclasses import asdict, dataclass
 from hashlib import sha256
 from itertools import product
 from math import hypot, isclose, pi
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from lapsim.dynamics.bicycle import _finite
 from lapsim.resources import repository_root
@@ -456,6 +458,16 @@ def load_component_json(path: Path) -> dict:
     return value
 
 
+def _write_json_atomic(path: Path, text: str) -> None:
+    """Preserve an existing result if a write or replacement fails."""
+    temporary = path.with_name(path.name + "." + uuid4().hex + ".tmp")
+    try:
+        temporary.write_text(text, encoding="utf-8")
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path)
@@ -465,16 +477,16 @@ def main():
         "--material", choices=tuple(MATERIALS), default="synthetic_light_v1"
     )
     args = parser.parse_args()
-    if (
-        args.replay
-        and args.output
-        and (
-            args.replay.resolve() == args.output.resolve()
-            or (args.output.exists() and args.output.samefile(args.replay))
-        )
-    ):
-        parser.error("output must not overwrite the replay input or its aliases")
     try:
+        if (
+            args.replay
+            and args.output
+            and (
+                args.replay.resolve() == args.output.resolve()
+                or (args.output.exists() and args.output.samefile(args.replay))
+            )
+        ):
+            parser.error("output must not overwrite the replay input or its aliases")
         if args.replay:
             record = load_component_json(args.replay)
             value = (
@@ -488,7 +500,7 @@ def main():
             value = run_component_study(MATERIALS[args.material])
         text = _canonical_json(value) + "\n"
         if args.output:
-            args.output.write_text(text, encoding="utf-8")
+            _write_json_atomic(args.output, text)
         else:
             print(text)
     except (OSError, ValueError, TypeError, OverflowError) as error:

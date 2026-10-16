@@ -116,6 +116,9 @@ function visit(node, depth) {
 }
 
 visit(data.root, 0);
+for (const required of ["desktop-component-study", "component-study-cli", "component-study", "component-study-cards", "component-study-equations", "component-study-domain", "component-study-record", "component-study-fe"]) {
+  assert(ids.has(required), `The semantic component-study path is missing ${required}.`);
+}
 const unresolvedRelated = relatedReferences.filter(([, targetId]) => !ids.has(targetId));
 assert(
   unresolvedRelated.length === 0,

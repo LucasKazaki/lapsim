@@ -451,3 +451,64 @@ def test_derived_ratio_overflow_is_an_explicit_numerical_domain_failure():
             force_y_n=1e-320,
             torque_x_nm=0.0,
         )
+
+
+@pytest.mark.parametrize("failure", ["partial_write", "replace"])
+def test_cli_failed_output_preserves_existing_evidence(tmp_path, monkeypatch, failure):
+    import os
+    import sys
+    from pathlib import Path
+
+    from lapsim.experiments import component_study
+
+    target = tmp_path / "verification.json"
+    target.write_bytes(b"original verified evidence\n")
+    before = target.read_bytes(), target.stat().st_mtime_ns
+    original_write = Path.write_text
+
+    def interrupted_write(path, text, **kwargs):
+        original_write(path, text[:12], **kwargs)
+        raise OSError("simulated full disk after partial write")
+
+    def failed_replace(*args):
+        raise OSError("simulated replace failure")
+
+    if failure == "partial_write":
+        monkeypatch.setattr(Path, "write_text", interrupted_write)
+    else:
+        monkeypatch.setattr(os, "replace", failed_replace)
+    monkeypatch.setattr(sys, "argv", ["component_study", "--output", str(target)])
+    with pytest.raises(SystemExit) as error:
+        component_study.main()
+    assert error.value.code == 2
+    assert (target.read_bytes(), target.stat().st_mtime_ns) == before
+    assert sorted(path.name for path in tmp_path.iterdir()) == [target.name]
+
+
+def test_missing_replay_with_existing_output_is_a_clean_error(
+    tmp_path, capsys, monkeypatch
+):
+    import sys
+
+    from lapsim.experiments import component_study
+
+    target = tmp_path / "verification.json"
+    target.write_bytes(b"prior evidence")
+    before = target.read_bytes(), target.stat().st_mtime_ns
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "component_study",
+            "--replay",
+            str(tmp_path / "absent.json"),
+            "--output",
+            str(target),
+        ],
+    )
+    with pytest.raises(SystemExit) as error:
+        component_study.main()
+    assert error.value.code == 2
+    message = capsys.readouterr().err
+    assert "component study:" in message and "Traceback" not in message
+    assert (target.read_bytes(), target.stat().st_mtime_ns) == before
