@@ -14,7 +14,8 @@ explicit allowlist rather than copying the repository or all Markdown files.
 It does not package:
 
 - `analysis/`, `data/`, `tests/`, `work/`, `outputs/`, or `output/`;
-- `docs/evidence/` or historical validation reports;
+- `docs/evidence/`, `docs/simulator_flowchart/QA.md`, or other historical
+  validation and verification reports;
 - the derived GNSS/IMU course CSV or JSON;
 - tire/vendor parameter files;
 - telemetry, calibrations, fitted parameters, vehicle-specific configurations,
@@ -23,9 +24,9 @@ It does not package:
 
 The reviewed documentation allowlist is declared as
 `PUBLIC_DOCUMENTATION_FILES` in `scripts/build_windows.py`. The offline
-simulator-flowchart directory is included as a separate reviewed subtree. A
-path outside those lists does not enter the ZIP merely because it exists in the
-public repository.
+simulator-flowchart directory is included as a separate reviewed subtree, with
+its dated QA report explicitly excluded. A path outside those lists does not
+enter the ZIP merely because it exists in the public repository.
 
 The source checkout may still refer to separately controlled team material.
 Presence in the repository does not establish publication authority. Do not
@@ -133,7 +134,7 @@ Before distributing a public build:
    `docs/licensing.md` are present;
 2. inspect `build-info.json` and confirm every staged project file belongs to
    the declared allowlist;
-3. verify no excluded directory, course file, tire/vendor file, historical
+3. verify no excluded directory, course file, tire/vendor file, QA or historical
    validation report, or team evidence appears in the archive;
 4. run the exact final EXE from an unrelated current directory and clean user
    data location;

@@ -52,6 +52,7 @@ PUBLIC_DISTRIBUTION_EXCLUSIONS = frozenset({
     "analysis/data/track/gnss_imu_endurance_track.csv",
     "analysis/data/track/gnss_imu_endurance_track.json",
     "data/tires/hoosier_16x7p5-10_r20_upc.tir",
+    "docs/simulator_flowchart/QA.md",
 })
 PUBLIC_DISTRIBUTION_EXCLUDED_PREFIXES = (
     "analysis/",
@@ -126,7 +127,12 @@ def stage_assets() -> Path:
     flowchart_root = ROOT / "docs" / "simulator_flowchart"
     if not flowchart_root.is_dir():
         raise RuntimeError("Public simulator-flowchart directory is missing")
-    paths.extend(path for path in flowchart_root.rglob("*") if path.is_file())
+    paths.extend(
+        path
+        for path in flowchart_root.rglob("*")
+        if path.is_file()
+        and not _is_publicly_excluded(path.relative_to(ROOT))
+    )
 
     if (ROOT / ".git").exists():
         source_commit = subprocess.check_output(

@@ -131,7 +131,8 @@ def main() -> int:
         "synthetic-data-only",
         "explicit allowlist",
         "PUBLIC_DOCUMENTATION_FILES",
-        "historical validation reports",
+        "historical validation and verification reports",
+        "docs/simulator_flowchart/QA.md",
         '"course_synthetic": true',
         "Rebuild from the full checkout",
         "LICENSE_SCOPE.md",
@@ -161,9 +162,11 @@ def main() -> int:
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",
         "data/tires/hoosier_16x7p5-10_r20_upc.tir",
+        "docs/simulator_flowchart/QA.md",
         "docs/evidence/",
         "leaked_excluded_files",
         "reviewed synthetic-data-only source snapshot",
+        'and not _is_publicly_excluded(path.relative_to(ROOT))',
         'report.get("course_synthetic")',
         "scripts/check_license_policy.py",
     ):
@@ -232,17 +235,19 @@ def main() -> int:
         "pull_request_target:",
         "Check out the trusted base commit",
         "Fetch the proposed head commit without checking it out",
-        'git show "$BASE_SHA:scripts/check_dco.py"',
-        'python "$RUNNER_TEMP/check_dco.py"',
+        'git fetch --no-tags origin "refs/pull/${PR_NUMBER}/head"',
+        'test "$(git rev-parse FETCH_HEAD)" = "$HEAD_SHA"',
+        "Run the validator from the trusted base checkout",
+        'python scripts/check_dco.py --base "$BASE_SHA" --head "$HEAD_SHA"',
         "github.event.pull_request.base.sha",
         "github.event.pull_request.head.sha",
     ):
         require(dco_workflow, phrase, ".github/workflows/dco.yml")
-    forbid(
-        dco_workflow,
-        "python scripts/check_dco.py",
-        ".github/workflows/dco.yml",
-    )
+    for prohibited in (
+        '$RUNNER_TEMP/check_dco.py',
+        'git show "$BASE_SHA:scripts/check_dco.py"',
+    ):
+        forbid(dco_workflow, prohibited, ".github/workflows/dco.yml")
 
     agent = documents["AGENTS.md"]
     require(agent, "LICENSE_SCOPE.md", "AGENTS.md")
