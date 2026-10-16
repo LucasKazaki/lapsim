@@ -33,6 +33,34 @@ def main():
         assert lab.record is not None
         assert replay_component_comparison(lab.record)["runs_replayed"] == 2
         lab.save_to(output / "comparison.json")
+        from lapsim.ui import component_lab
+
+        callback_errors = []
+        root.report_callback_exception = lambda *error: callback_errors.append(error)
+        original_save_picker = component_lab.filedialog.asksaveasfilename
+        original_id = lab.record["run_id"]
+        try:
+            component_lab.filedialog.asksaveasfilename = lambda **kwargs: str(
+                output / "missing-parent" / "comparison.json"
+            )
+            lab.save_button.invoke()
+            root.update()
+            assert lab.status.get().startswith("Could not save:")
+            assert lab.record["run_id"] == original_id
+            assert not callback_errors
+            component_lab.filedialog.asksaveasfilename = lambda **kwargs: str(
+                output / "save-retry.json"
+            )
+            lab.save_button.invoke()
+            assert lab.status.get() == "Saved comparison: save-retry.json"
+            assert (
+                json.loads((output / "save-retry.json").read_text(encoding="utf-8"))[
+                    "run_id"
+                ]
+                == original_id
+            )
+        finally:
+            component_lab.filedialog.asksaveasfilename = original_save_picker
         root.update_idletasks()
         x, y = lab.window.winfo_rootx(), lab.window.winfo_rooty()
         screenshot = (
@@ -96,6 +124,8 @@ def main():
             "actual_tk_calculate": True,
             "two_materials": True,
             "saved_record_replayed": True,
+            "failed_save_reported_in_window_without_callback_traceback": True,
+            "failed_save_keeps_record_and_retry_succeeds": True,
             "import_readonly": True,
             "oversized_integer_import_rejected_cleanly": True,
             "nondefault_import_shows_stored_geometry_bounds_and_loads": True,

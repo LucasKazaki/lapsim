@@ -68,6 +68,9 @@ PR68 review acceptance: map the desktop/CLI → cards → analytic equations →
 validity → saved replay path and optional FE evidence boundary semantically.
 CLI partial-write and replacement failures must preserve existing evidence
 bytes/mtime and clean the sibling temporary file, as checked by fault injection.
+PR69 review acceptance: a filesystem failure from the actual desktop Save
+button must set a visible error without a Tk callback traceback, preserve the
+current result and allow a successful retry.
 
 Tool decision and primary references (accessed 2026-10-16):
 

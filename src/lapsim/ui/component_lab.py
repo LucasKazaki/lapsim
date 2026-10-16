@@ -304,7 +304,12 @@ class ComponentLab:
             filetypes=[("Comparison JSON", "*.json")],
         )
         if name:
-            self.save_to(Path(name))
+            try:
+                self.save_to(Path(name))
+            except (OSError, ValueError, TypeError) as exc:
+                self.status.set("Could not save: " + str(exc))
+            else:
+                self.status.set("Saved comparison: " + Path(name).name)
 
     def save_to(self, path: Path):
         if self.record is None:

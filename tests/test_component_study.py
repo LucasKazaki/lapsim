@@ -512,3 +512,26 @@ def test_missing_replay_with_existing_output_is_a_clean_error(
     message = capsys.readouterr().err
     assert "component study:" in message and "Traceback" not in message
     assert (target.read_bytes(), target.stat().st_mtime_ns) == before
+
+
+def test_desktop_save_callback_reports_failed_location_and_keeps_record(
+    tmp_path, monkeypatch
+):
+    from types import SimpleNamespace
+
+    from lapsim.ui import component_lab
+
+    lab = component_lab.ComponentLab.__new__(component_lab.ComponentLab)
+    lab.window = None
+    lab.record = run_component_comparison()
+    original_id = lab.record["run_id"]
+    messages = []
+    lab.status = SimpleNamespace(set=messages.append)
+    target = tmp_path / "missing-parent" / "comparison.json"
+    monkeypatch.setattr(
+        component_lab.filedialog, "asksaveasfilename", lambda **kwargs: str(target)
+    )
+    lab.save()
+    assert messages[-1].startswith("Could not save:")
+    assert lab.record["run_id"] == original_id
+    assert not target.exists() and not target.parent.exists()

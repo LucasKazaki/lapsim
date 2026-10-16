@@ -78,6 +78,9 @@ CLI output uses a unique sibling temporary file and atomic replacement. A
 partial-write or replacement failure preserves existing output bytes/mtime and
 cleans the temporary file. The expandable source map includes desktop/CLI entry,
 cards, equations, validity, replay and the optional FE evidence boundary.
+The desktop Save action reports filesystem errors in its status area, preserves
+the current comparison and permits retry; the actual button route is exercised
+against a missing destination directory and then a successful save.
 The Python API exposes `run_component_comparison` and `replay_component_comparison`.
 
 ## Actual optional finite-element benchmark
