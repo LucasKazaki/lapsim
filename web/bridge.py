@@ -6,24 +6,29 @@ or Matplotlib UI. A worker owns each fresh vehicle and all mutable run state.
 from __future__ import annotations
 
 from dataclasses import replace
-from math import ceil, isfinite
+from math import isfinite
 from numbers import Real
 from typing import Callable, Mapping, Any
 import json
 
 from lapsim.events.endurance import EnduranceSimulator
+from lapsim.courses.course_bundle import CourseBundle
+from lapsim.courses.solver_grid import GRID_POLICY_VERSION
 from lapsim.experiments.run_record import LapRunSettings, capture_lap_run
 from lapsim.optimization.torque_profile import PeriodicPiecewiseLinearTorqueProfile
 from lapsim.profiles import build_vehicle
 from lapsim.resources import build_identity
 from lapsim.solvers.path_constraints import PathConstraintSolver
-from lapsim.ui.course_catalog import COURSE_OPTIONS, course_source_metadata, load_course
+from lapsim.ui.course_catalog import (
+    COURSE_OPTIONS, course_source_metadata, load_course,
+    solver_cell_count_for_course, solver_track_for_course, imported_course_spec,
+)
 from lapsim.ui.simulation import (
-    apply_uniform_road_grip, endurance_run_config, path_solver_settings, resample_track,
+    apply_uniform_road_grip, endurance_run_config, path_solver_settings,
 )
 
 PROTOCOL_VERSION = 1
-MAXIMUM_CELLS = 1200
+MAXIMUM_CELLS = 5000
 PYODIDE_VERSION = "314.0.7"
 PROFILE_IDS = ("prius_2026_le", "repository_baseline")
 DEFAULTS = {
@@ -46,7 +51,7 @@ RANGES = {
 Progress = Callable[[dict[str, Any]], None]
 
 
-def normalize_settings(settings: Mapping[str, Any]) -> dict[str, Any]:
+def normalize_settings(settings: Mapping[str, Any], *, course_bundle: CourseBundle | None = None) -> dict[str, Any]:
     if not isinstance(settings, Mapping):
         raise ValueError("settings must be an object")
     unknown = set(settings) - set(DEFAULTS)
@@ -55,8 +60,15 @@ def normalize_settings(settings: Mapping[str, Any]) -> dict[str, Any]:
     result = DEFAULTS | dict(settings)
     if not isinstance(result["vehicleProfile"], str) or result["vehicleProfile"] not in PROFILE_IDS:
         raise ValueError("choose an available built-in vehicle profile")
-    if not isinstance(result["courseId"], str) or result["courseId"] not in {spec.course_id for spec in COURSE_OPTIONS}:
+    course_ids = {spec.course_id for spec in COURSE_OPTIONS}
+    if course_bundle is not None:
+        if not isinstance(course_bundle, CourseBundle):
+            raise ValueError("course_bundle must be a validated CourseBundle")
+        course_ids.add(imported_course_spec(course_bundle).course_id)
+    if not isinstance(result["courseId"], str) or result["courseId"] not in course_ids:
         raise ValueError("choose an available built-in course")
+    if course_bundle is not None and result["courseId"] != imported_course_spec(course_bundle).course_id:
+        raise ValueError("course bundle does not match the selected course identity")
     if type(result["regenEnabled"]) is not bool:
         raise ValueError("regenEnabled must be a Boolean")
     for name, (lower, upper) in RANGES.items():
@@ -88,6 +100,7 @@ def capabilities() -> dict[str, Any]:
         ],
         "units": {"elapsedTimeS": "s", "distanceM": "m", "energyKwh": "kWh", "socFinal": "fraction", "speedMps": "m/s", "brakePressurePsi": "psi"},
         "model": "prescribed_path_distance_domain",
+        "gridPolicyVersion": GRID_POLICY_VERSION,
         "evidenceLevel": "simulation_model_estimate",
         "sourceIdentity": build_identity(),
         "limitations": [
@@ -105,13 +118,18 @@ def _notify(progress: Progress | None, payload: dict[str, Any]) -> None:
         progress(payload)
 
 
-def run_simulation(settings: Mapping[str, Any], progress: Progress | None = None) -> dict[str, Any]:
-    selected = normalize_settings(settings)
-    source = load_course(selected["courseId"])
-    if ceil(source.length_m / selected["maxCellLengthM"]) > MAXIMUM_CELLS:
-        minimum_step = source.length_m / MAXIMUM_CELLS
-        raise ValueError(f"requested grid exceeds {MAXIMUM_CELLS} browser cells; use at least {minimum_step:.3f} m per cell")
-    track = resample_track(source, selected["maxCellLengthM"])
+def run_simulation(settings: Mapping[str, Any], progress: Progress | None = None, *,
+                   course_bundle: CourseBundle | None = None) -> dict[str, Any]:
+    """Execute built-ins or an explicitly supplied validated local course bundle.
+
+    The browser file-picker for course imports is not implemented. This keyword
+    supports host adapter/reproducibility checks without changing the JSON UI.
+    """
+    selected = normalize_settings(settings, course_bundle=course_bundle)
+    source = course_bundle.track if course_bundle is not None else load_course(selected["courseId"])
+    if solver_cell_count_for_course(selected["courseId"], source, selected["maxCellLengthM"]) > MAXIMUM_CELLS:
+        raise ValueError(f"effective grid exceeds {MAXIMUM_CELLS} browser cells")
+    track = solver_track_for_course(selected["courseId"], source, selected["maxCellLengthM"])
     if track.cell_count > MAXIMUM_CELLS:
         raise ValueError("resampled grid exceeds the browser compute cap")
     vehicle, manifest = build_vehicle(selected["vehicleProfile"])
@@ -125,13 +143,14 @@ def run_simulation(settings: Mapping[str, Any], progress: Progress | None = None
         regenerative_braking_soc_threshold=1.0 if selected["regenEnabled"] else None,
         maximum_driving_time_s=600.0,
     )
-    spec = next(spec for spec in COURSE_OPTIONS if spec.course_id == selected["courseId"])
+    spec = imported_course_spec(course_bundle) if course_bundle is not None else next(
+        spec for spec in COURSE_OPTIONS if spec.course_id == selected["courseId"])
     frozen_settings = LapRunSettings.from_track(
         track, track_id=spec.course_id, solver_step_m=selected["maxCellLengthM"],
         solver_settings=solver_settings, torque_request_fraction=selected["torqueFraction"],
         endurance_config=config, road_grip_multiplier=selected["gripMultiplier"],
         profile_id=manifest.profile_id, profile_label=manifest.profile_name,
-        source_course=course_source_metadata(spec, source),
+        source_course=course_source_metadata(spec, source, bundle=course_bundle),
     )
 
     def constraint_update(sample: Any) -> None:
@@ -179,6 +198,7 @@ def run_simulation(settings: Mapping[str, Any], progress: Progress | None = None
         "endingSpeedMps": result.ending_speed_mps,
         "seamSpeedDeltaMps": result.seam_speed_delta_mps,
         "cellCount": track.cell_count,
+        "gridPolicyVersion": GRID_POLICY_VERSION,
         "settings": selected,
         "telemetry": {"sampleTimeS": trace["sample_time_s"], "sampleDistanceM": trace["sample_distance_m"], "channels": trace["channels"]},
         "courseGeometry": {"distanceM": track.distance_m, "xM": track.x_m, "yM": track.y_m, "curvaturePerM": track.curvature_per_m},

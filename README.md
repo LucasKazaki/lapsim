@@ -604,19 +604,20 @@ the replay and recorder do not require a central schema change.
 
 ## First endurance-lap validation
 
-Extract the first completed lap from the competition MF4, then replay its
-distance-indexed controls through the current vehicle model:
+The active distance-domain recorded-control workflow lives under
+`analysis/endurance/`. Inspect its input options with:
 
 ```powershell
-python scripts/extract_first_endurance_lap.py
-$env:PYTHONPATH='src'
-python scripts/validate_first_endurance_lap.py
+python analysis/endurance/analyze_endurance.py --help
 ```
 
-The validation performs no parameter fitting and does not alter vehicle
-defaults. It writes plots, telemetry, and metrics under
-`outputs/endurance_validation/first_lap_soc_open_loop/`. The replay assumptions
-are documented in `docs/first_lap_soc_validation.md`.
+With authorized lap, high-rate controls, corrected IMU and track inputs,
+run `python analysis/endurance/analyze_endurance.py`. See
+[the workflow guide](analysis/endurance/README.md) for the explicit scenario
+assumptions and outputs under `analysis/endurance/output/`. This is a replay
+and comparison workflow; it is not held-out vehicle validation. The older
+[brake-free SOC report](docs/first_lap_soc_validation.md) is historical and its
+producer is absent from this revision.
 
 ## Endurance torque optimization
 
