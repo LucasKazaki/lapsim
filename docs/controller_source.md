@@ -28,6 +28,15 @@ directory and never overwrites an old receipt. An external temporary/evidence
 directory is appropriate; the parent directory must already exist. Missing
 compilers fail explicitly. There is no Python fallback labeled as C.
 
+Known inherited portability limit: the unchanged historical parity builders
+resolve a compiler's final symlink. A multicall launcher that depends on its
+invoked filename (for example `clang` through a `swiftly` dispatcher) can lose
+its identity and fail without a library. Use a direct supported GCC/Clang
+executable for these historical commands. Windows GCC 12.1 and the CI
+GCC/Clang installations have executed successfully; arbitrary compiler-launcher
+installations are not claimed. Preserve the frozen upstream sources/receipts;
+a new launcher-preserving runtime builder belongs to E07/E14 with fresh evidence.
+
 The native runner compiles and loads all five C owners, compares actual results
 with Python, retains commands/binary/source identities and emits a viewer
 receipt. The supplied 18-cycle synthetic fixture expects 9 allowed cycles,

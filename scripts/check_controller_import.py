@@ -7,10 +7,17 @@ import json
 from pathlib import Path
 import sys
 
+EXPECTED_UPSTREAM_COMMIT = "73cc2e2bbbf3fdae4a4fed1cc6e7b3df8bbb110e"
+EXPECTED_MANIFEST_SHA256 = "90da35d8fa1386a1d7a12b024d2b5a32431c3d5dc36a91d6f5150599c430596e"
+
 
 def verify(root: Path) -> dict:
     controller = root / "controller"
     manifest = json.loads((controller / "import-manifest.json").read_text(encoding="utf-8"))
+    canonical = json.dumps(manifest, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    if (manifest.get("upstream_commit") != EXPECTED_UPSTREAM_COMMIT
+            or sha256(canonical).hexdigest() != EXPECTED_MANIFEST_SHA256):
+        raise ValueError("reviewed controller inventory identity mismatch")
     local = {path.stem for path in (controller / "reference").glob("*.py")}
     dependencies = set()
     for relative, facts in manifest["files"].items():
