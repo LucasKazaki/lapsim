@@ -11,7 +11,10 @@ plain-language guide and does not replace those files.
   applicable law.
 - Recruiters, hiring managers, and technical reviewers who are not acting for
   a competing student vehicle team may download, run, and privately modify
-  covered material solely to evaluate the project or its contributors.
+  covered material solely to evaluate the project or its contributors. An
+  evaluator is not disqualified merely because the evaluator's employer
+  separately sponsors or supplies a competition team, provided the review is
+  independent of that competition support.
 - Current University of Maryland, College Park students, faculty, and staff may
   use covered material for coursework, teaching, independent study, and
   noncommercial academic research, provided the work is not for another
@@ -72,6 +75,8 @@ not permission to use them.
 | Activity | Result under LSCRL-1.0 |
 | --- | --- |
 | A company recruiter reviews the architecture and runs a synthetic demo to assess a candidate | Permitted for covered material |
+| A recruiter whose employer separately sponsors another Formula SAE team performs an unrelated hiring evaluation | Permitted for covered material |
+| Engineers at that sponsor use the simulator to help its sponsored team | Prohibited |
 | A UMD student modifies the simulator for a class project unrelated to another racing team | Permitted for covered material |
 | Terps Racing EV tunes its own vehicle with covered material | Permitted for covered material |
 | Another Formula SAE team runs the simulator with its own car parameters | Prohibited |
