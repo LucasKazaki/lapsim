@@ -512,6 +512,16 @@ def run_closed_loop(
                     measured_driver.accelerator_fraction
                     * scenario.maximum_driver_request_nm
                 )
+                braking_request = (
+                    measured_driver.brake_fraction > 0
+                    and measured_driver.accelerator_fraction <= 0.05
+                )
+                raw_regen = (
+                    -scenario.maximum_regen_request_nm * measured_driver.brake_fraction
+                    if braking_request
+                    else 0.0
+                )
+                raw_regen_candidate = (0.0, 0.0, raw_regen / 2, raw_regen / 2)
                 sample = backend.sample(
                     now // 1000,
                     measured["timestamp_us"] // 1000 if measured else 0,
@@ -534,21 +544,8 @@ def run_closed_loop(
                     # stored magnetic energy; wheel/pack states do not change.
                     state = replace(state, actuator_memory_nm=ZERO)
                 guarded = tuple(latest["command_nm"])
-                if (
-                    latest["command_allowed"]
-                    and measured_driver.brake_fraction > 0
-                    and measured_driver.accelerator_fraction <= 0.05
-                ):
-                    guarded = (
-                        0.0,
-                        0.0,
-                        -scenario.maximum_regen_request_nm
-                        * measured_driver.brake_fraction
-                        / 2,
-                        -scenario.maximum_regen_request_nm
-                        * measured_driver.brake_fraction
-                        / 2,
-                    )
+                if latest["command_allowed"] and braking_request:
+                    guarded = raw_regen_candidate
                 feasible = constrain_actuation(
                     scenario.actuation,
                     guarded,
@@ -564,7 +561,8 @@ def run_closed_loop(
                         "snapshot": measured,
                         "estimated_slips": estimated_slips,
                         "requested_propulsive_nm": request,
-                        "requested_regen_nm": min(0.0, sum(guarded)),
+                        "requested_regen_nm": raw_regen,
+                        "raw_regen_candidate_nm": raw_regen_candidate,
                         "core": latest,
                         "actuator_response_reset": response_reset,
                         "guarded_request_nm": guarded,
@@ -574,8 +572,7 @@ def run_closed_loop(
                         - sum(max(0.0, v) for v in command),
                         "unmet_regen_torque_nm": max(
                             0.0,
-                            -sum(min(0.0, v) for v in guarded)
-                            + sum(min(0.0, v) for v in command),
+                            -raw_regen + sum(min(0.0, v) for v in command),
                         ),
                     }
                 )

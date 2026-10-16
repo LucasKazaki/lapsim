@@ -18,6 +18,12 @@ Frozen before the correction to PR #51's integrated review candidate.
    These diagnostic additions and stricter native identity use record v3; earlier
    unreleased v1/v2 records explicitly require their recorded source. The held-RK
    physical solver remains policy 2, with unchanged accepted-case physics.
+   The raw brake-derived candidate is formed from the last causally available
+   measured driver sample before validity/enable/age supervision. Preserve it
+   even when supervision rejects the sample; never use future plant truth.
+   Record candidate, guarded and limited values separately. Disabled, invalid
+   and stale braking samples must show zero commanded torque and the rejected
+   raw regeneration magnitude rather than erasing it during inhibition.
 3. `bootstrap --check` must fail read-only when the ready marker is absent,
    corrupt, or mismatches dependency hash, source, Python or setup options.
    It must preserve the environment and marker bytes/mtime and perform no install
