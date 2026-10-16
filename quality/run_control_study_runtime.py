@@ -16,6 +16,14 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "audit/control-study"
 
 
+def wait_result(page, count):
+    page.wait_for_function(
+        "n=>window.__controlResults.length>=n || !document.getElementById('control-error').hidden",
+        arg=count, timeout=180000,
+    )
+    assert page.locator("#control-error").is_hidden(), page.locator("#control-error").inner_text()
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     server = ThreadingHTTPServer(
@@ -50,9 +58,7 @@ def main():
             for count, case in enumerate(("launch", "split_grip", "stale"), 1):
                 page.locator("#control-case").select_option(case)
                 page.locator("#control-run").click()
-                page.wait_for_function(
-                    "n=>window.__controlResults.length>=n", arg=count, timeout=180000
-                )
+                wait_result(page, count)
                 with page.expect_download() as event:
                     page.locator("#control-save").click()
                 path = OUT / (case + ".json")
@@ -133,8 +139,9 @@ def main():
             )
             page.locator("#control-case").select_option("full_braking")
             page.locator("#control-speed").fill(".01")
+            assert page.locator("#control-form").evaluate("form=>form.checkValidity()")
             page.locator("#control-run").click()
-            page.wait_for_function("window.__controlResults.length>=4", timeout=180000)
+            wait_result(page, 4)
             with page.expect_download() as event:
                 page.locator("#control-save").click()
             stop_path = OUT / "near-stop-braking.json"
@@ -150,7 +157,7 @@ def main():
                     for w in run["result"]["final_state"]["plant"]["wheel_speeds_rad_s"]
                 )
             page.locator("#control-file").set_input_files(str(OUT / "launch.json"))
-            page.wait_for_function("window.__controlResults.length>=5", timeout=180000)
+            wait_result(page, 5)
             assert page.locator("#control-speed").is_disabled()
             assert page.locator("#control-run").is_disabled()
             assert "Imported comparison" in page.locator("#control-status").inner_text()
