@@ -114,3 +114,43 @@ def test_regeneration_unmet_is_separate_and_reconciles_accepted_command(soc):
             )
         assert record["metrics"][key]["unmet_regen_impulse_nm_s"] > 0
     assert replay_control_comparison(record)["model_agreement"]
+
+
+@pytest.mark.parametrize("fault", ["disabled", "invalid", "stale"])
+def test_inhibited_braking_preserves_raw_candidate_and_rejected_regeneration(fault):
+    scenario = study_scenario(
+        dict(DEFAULT_REQUEST, case_id="full_braking", duration_s=0.2)
+    )
+    if fault == "stale":
+        scenario = replace(
+            scenario, sensor_delay_us=0, dropped_sequences=tuple(range(1, 20))
+        )
+    else:
+        scenario = replace(
+            scenario,
+            driver=tuple(
+                replace(
+                    point,
+                    **({"enabled": False} if fault == "disabled" else {"valid": False}),
+                )
+                for point in scenario.driver
+            ),
+        )
+    record = run_control_comparison(scenario)
+    for key, run in record["runs"].items():
+        rejected = [
+            event
+            for event in run["result"]["controller_events"]
+            if event["snapshot"] is not None
+            and not event["core"]["command_allowed"]
+            and (fault != "stale" or event["time_us"] >= 60_000)
+        ]
+        assert rejected
+        for event in rejected:
+            assert event["requested_regen_nm"] == -24.0
+            assert sum(event["raw_regen_candidate_nm"]) == -24.0
+            assert event["guarded_request_nm"] == (0.0, 0.0, 0.0, 0.0)
+            assert event["limited_command_nm"] == (0.0, 0.0, 0.0, 0.0)
+            assert event["unmet_regen_torque_nm"] == 24.0
+        assert record["metrics"][key]["unmet_regen_impulse_nm_s"] > 0
+    assert replay_control_comparison(record)["model_agreement"]

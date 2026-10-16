@@ -19,7 +19,10 @@ to improve every metric. Inspect distance/speed together with slip, energy,
 unmet command and the raw driver/contact-force proxy error. Unmet propulsion
 and rejected regeneration have separate nonnegative command-stage magnitudes
 and time integrals; rejection is measured before actuator response lag. Actual
-torque, contact forces and pack energy remain separately recorded.
+torque, contact forces and pack energy remain separately recorded. Raw eligible
+regeneration is derived from the last causally available measured driver sample
+before enable/validity/freshness supervision, so rejected stale/invalid/disabled
+requests remain inspectable while guarded and limited commands stay zero.
 
 Desktop and browser can save comparison JSON and open it for checked replay.
 Both stored runs execute again before the imported result appears. Imported
