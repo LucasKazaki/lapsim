@@ -15,10 +15,68 @@ if (-not (Test-Path -LiteralPath (Join-Path $destination 'assets/runtime-manifes
     throw 'Build the browser simulator with scripts/build_web.py first.'
 }
 
+# Recheck immutable fixture contents at the publication staging boundary too.
+$runtimeManifest = Get-Content -LiteralPath (Join-Path $destination 'assets/runtime-manifest.json') -Raw | ConvertFrom-Json
+$claimedExamples = $runtimeManifest.reviewedReplaySha256
+$reviewedExamples = [pscustomobject]@{
+    'enme408-synthetic-replay.json' = '3c77722726b4ef7e43e172df4adee75d312ed89a8c5a648b79f314d485996bec'
+    'enme408-native-c-replay.json' = 'dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8'
+}
+if ($null -eq $claimedExamples -or @($claimedExamples.PSObject.Properties).Count -ne 2) {
+    throw 'Rebuild the browser runtime with the reviewed replay manifest.'
+}
+foreach ($entry in $reviewedExamples.PSObject.Properties) {
+    if ($claimedExamples.PSObject.Properties[$entry.Name].Value -cne $entry.Value) {
+        throw 'Reviewed replay digest mismatch; the staged manifest is not a trust anchor.'
+    }
+}
+if ($runtimeManifest.reviewedReplayHashScope -ne 'UTF-8 file bytes with CRLF normalized to LF only') {
+    throw 'Unknown reviewed replay hash scope; rebuild the runtime.'
+}
+function Get-ReviewedReplayHash([string]$Path) {
+    if ((Get-Item -LiteralPath $Path).Length -gt 20000000) { throw 'Unreviewed replay size.' }
+    $utf8 = [Text.UTF8Encoding]::new($false, $true)
+    $text = $utf8.GetString([IO.File]::ReadAllBytes($Path)).Replace("`r`n", "`n")
+    return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($utf8.GetBytes($text))).ToLowerInvariant()
+}
+foreach ($entry in $reviewedExamples.PSObject.Properties) {
+    if ($entry.Name -notin @('enme408-synthetic-replay.json', 'enme408-native-c-replay.json')) { throw 'Unreviewed replay manifest entry.' }
+    $sourceExample = Join-Path $repository ('web/examples/' + $entry.Name)
+    if ((Get-ReviewedReplayHash $sourceExample) -ne $entry.Value) {
+        throw 'Unreviewed replay source contents; rebuild only from reviewed fixtures.'
+    }
+}
+foreach ($relativeExamples in @('examples', 'web/examples')) {
+    $exampleDirectory = Join-Path $destination $relativeExamples
+    if ($relativeExamples -eq 'examples' -and -not (Test-Path -LiteralPath $exampleDirectory -PathType Container)) {
+        throw 'Incomplete reviewed replay set; rebuild the browser runtime.'
+    }
+    if (Test-Path -LiteralPath $exampleDirectory) {
+        if ((Get-Item -LiteralPath $exampleDirectory -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Unreviewed staged replay directory; choose a fresh output directory.'
+        }
+        foreach ($file in Get-ChildItem -LiteralPath $exampleDirectory -Force) {
+            $expected = $reviewedExamples.PSObject.Properties[$file.Name]
+            if ($file.PSIsContainer -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+                $null -eq $expected -or (Get-ReviewedReplayHash $file.FullName) -ne $expected.Value) {
+                throw 'Unreviewed staged replay; choose a fresh output directory.'
+            }
+        }
+        foreach ($entry in $reviewedExamples.PSObject.Properties) {
+            if (-not (Test-Path -LiteralPath (Join-Path $exampleDirectory $entry.Name) -PathType Leaf)) {
+                throw 'Incomplete reviewed replay set; rebuild the browser runtime.'
+            }
+        }
+    }
+}
+
 # Preserve repository-relative source links in the complete expandable map.
 $paths = @(git -C $repository ls-files) + @('docs/simulator_research.md', 'docs/web_simulator.md')
 foreach ($relative in ($paths | Sort-Object -Unique)) {
     if ($relative -match '^(\.github/|output/|packaging/)' -or $relative -eq 'index.html' -or $relative -eq 'docs/simulator_flowchart/browser_check.cjs') { continue }
+    if ($relative -like 'web/examples/*' -and $relative -cnotin @(
+        'web/examples/enme408-synthetic-replay.json', 'web/examples/enme408-native-c-replay.json'
+    )) { continue }
     $source = [IO.Path]::GetFullPath((Join-Path $repository $relative))
     if (-not $source.StartsWith($repository + [IO.Path]::DirectorySeparatorChar)) { throw 'Source escapes the checkout.' }
     if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { continue }

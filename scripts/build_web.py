@@ -17,6 +17,7 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 ROOT = Path(__file__).resolve().parents[1]
 PYODIDE_VERSION = "314.0.7"
 VENDORED_PURE_PYTHON = {"openpyxl": "3.1.5", "et_xmlfile": "2.0.0"}
+REVIEWED_REPLAY_EXAMPLES = {'enme408-synthetic-replay.json': '3c77722726b4ef7e43e172df4adee75d312ed89a8c5a648b79f314d485996bec', 'enme408-native-c-replay.json': 'dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8'}
 
 
 def _git(arguments: list[str]) -> str | None:
@@ -87,6 +88,28 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
     output = output.resolve()
     if output == ROOT or output in {ROOT / "src", ROOT / "web"}:
         raise ValueError("choose a separate output folder")
+    # Content identity is checked in both modes before refreshing the manifest.
+    reviewed = {}
+    for name, expected in REVIEWED_REPLAY_EXAMPLES.items():
+        source = ROOT / "web/examples" / name
+        if source.is_symlink():
+            raise ValueError("refusing an aliased replay source")
+        if source.stat().st_size > 20_000_000:
+            raise ValueError("unreviewed replay source size")
+        raw = source.read_bytes()
+        if sha256(raw.replace(b"\r\n", b"\n")).hexdigest() != expected:
+            raise ValueError(f"unreviewed replay source contents: {name}")
+        reviewed[name] = raw
+    examples = output / "examples"
+    if examples.is_symlink():
+        raise ValueError("refusing an aliased example output directory")
+    if examples.exists():
+        for path in examples.iterdir():
+            expected = REVIEWED_REPLAY_EXAMPLES.get(path.name)
+            if (expected is None or path.is_symlink() or not path.is_file()
+                    or path.stat().st_nlink != 1 or path.stat().st_size > 20_000_000
+                    or sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest() != expected):
+                raise ValueError("output contains unreviewed examples; choose a fresh output directory")
     assets = output / "assets"
     assets.mkdir(parents=True, exist_ok=True)
     if not runtime_only:
@@ -96,7 +119,9 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
             if not source.is_file():
                 raise FileNotFoundError(f"Frontend file is missing: {source}")
             shutil.copy2(source, output / name)
-        shutil.copytree(ROOT / "web/examples", output / "examples", dirs_exist_ok=True)
+        examples.mkdir(exist_ok=True)
+        for name, raw in reviewed.items():
+            (examples / name).write_bytes(raw)
     else:
         shutil.copy2(ROOT / "web/worker.js", output / "worker.js")
     files = runtime_files()
@@ -118,6 +143,8 @@ def build(output: Path, *, runtime_only: bool = False) -> dict:
         "archiveBytes": archive.stat().st_size,
         "sourceIdentity": identity,
         "sourceFiles": len(files),
+        "reviewedReplaySha256": REVIEWED_REPLAY_EXAMPLES,
+        "reviewedReplayHashScope": "UTF-8 file bytes with CRLF normalized to LF only",
         "runtimeRequirements": "HTTPS or localhost; module Web Worker; WebAssembly; access to the pinned Pyodide CDN",
     }
     (assets / "runtime-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
