@@ -6,9 +6,11 @@ import ast
 import importlib.util
 import io
 import json
+import os
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -30,6 +32,78 @@ def walk(node):
 @pytest.fixture(scope="module")
 def inventory():
     return inventory_module.build_catalog()
+
+
+@pytest.fixture
+def inventory_cli(tmp_path, monkeypatch):
+    source = tmp_path / "src" / "fixture.py"
+    source.parent.mkdir()
+    source.write_text("π_n = 1\n", encoding="utf-8", newline="\n")
+    target = tmp_path / "source-inventory.js"
+    monkeypatch.setattr(inventory_module, "REPO", tmp_path)
+    monkeypatch.setattr(inventory_module, "TARGET", target)
+    monkeypatch.setattr(sys, "argv", ["generate_inventory.py"])
+    return target, source
+
+
+@pytest.mark.parametrize("newline", (b"\n", b"\r\n"), ids=("LF", "CRLF"))
+def test_inventory_main_preserves_current_bytes_and_mtime(inventory_cli, newline, monkeypatch):
+    target, _ = inventory_cli
+    current = inventory_module.serialize(inventory_module.build_catalog()).encode("utf-8")
+    target.write_bytes(current.replace(b"\n", newline))
+    # Use a clearly older timestamp, capturing the filesystem's own precision.
+    os.utime(target, ns=(946684800_000000000, 946684800_000000000))
+    before = target.read_bytes(), target.stat().st_mtime_ns
+    assert inventory_module.main() == 0
+    assert (target.read_bytes(), target.stat().st_mtime_ns) == before
+    monkeypatch.setattr(sys, "argv", ["generate_inventory.py", "--check"])
+    assert inventory_module.main() == 0
+    assert (target.read_bytes(), target.stat().st_mtime_ns) == before
+
+
+@pytest.mark.parametrize("initial", ("missing", "stale", "invalid_utf8", "bom"))
+def test_inventory_main_regenerates_missing_stale_or_corrupt_output(inventory_cli, initial):
+    target, _ = inventory_cli
+    expected = inventory_module.serialize(inventory_module.build_catalog()).encode("utf-8")
+    original = {
+        "stale": b"stale generated catalog\r\n",
+        "invalid_utf8": b"\xff\xfecorrupt UTF-8",
+        "bom": b"\xef\xbb\xbf" + expected,
+    }
+    if initial != "missing":
+        target.write_bytes(original[initial])
+    assert inventory_module.main() == 0
+    assert target.read_bytes() == expected
+
+
+def test_inventory_main_refreshes_catalog_after_real_source_change(inventory_cli):
+    target, source = inventory_cli
+    before = inventory_module.serialize(inventory_module.build_catalog()).encode("utf-8")
+    target.write_bytes(before.replace(b"\n", b"\r\n"))
+    source.write_text("π_n = 2\n", encoding="utf-8", newline="\n")
+    expected = inventory_module.serialize(inventory_module.build_catalog()).encode("utf-8")
+    assert expected != before
+    assert inventory_module.main() == 0
+    assert target.read_bytes() == expected
+
+
+@pytest.mark.parametrize("initial", (None, b"stale catalog\r\n", b"\xff\xfecorrupt UTF-8"))
+def test_inventory_check_rejects_missing_stale_or_corrupt_without_writing(
+    inventory_cli, initial, monkeypatch, capsys
+):
+    target, _ = inventory_cli
+    before = None
+    if initial is not None:
+        target.write_bytes(initial)
+        os.utime(target, ns=(946684800_000000000, 946684800_000000000))
+        before = target.read_bytes(), target.stat().st_mtime_ns
+    monkeypatch.setattr(sys, "argv", ["generate_inventory.py", "--check"])
+    assert inventory_module.main() == 1
+    assert "Source inventory is stale" in capsys.readouterr().out
+    if initial is None:
+        assert not target.exists()
+    else:
+        assert (target.read_bytes(), target.stat().st_mtime_ns) == before
 
 
 def bounded_stdlib_segment(lines, node):

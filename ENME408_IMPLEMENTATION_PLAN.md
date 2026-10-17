@@ -36,11 +36,18 @@ final half-second, with unchanged thresholds and exported telemetry. At clean
 `5c59265`, 66 focused checks and all 11 actual native checks passed; all six
 native scenarios retained identical commands and saved samples, and a fresh
 export replayed in a separate process. Tracked evidence manifests are linked
-from [the native guide](docs/chrono_suspension_study.md). E16 remains a draft
-until the repaired combined candidate completes its broader local and normal
-exact-head PR gates. The separately reviewed replay-cancellation candidate
-passed all 88 Windows modules and local WSL static/POSIX gates at `8e60ba1`;
-its normal PR integration remains separate from E16's numerical claims.
+from [the native guide](docs/chrono_suspension_study.md). The bounded headless
+E16 increment merged through [PR #87](https://github.com/LucasKazaki/lapsim/pull/87)
+at `4cd6c7552d640c9af23a956dce8d90f097c3eaee`; team geometry, calibration and
+compliance remain open. At this 17 October refresh, the
+[CLI follow-up #92](https://github.com/LucasKazaki/lapsim/pull/92) and
+[saved-record inspector #93](https://github.com/LucasKazaki/lapsim/pull/93)
+remain separate open draft PRs outside #87's accepted scope.
+The separately reviewed replay-cancellation repair passed all 88 Windows
+modules and local WSL static/POSIX gates at `8e60ba1`, then merged through
+[PR #86](https://github.com/LucasKazaki/lapsim/pull/86) at `a68eaa1` after the
+acceptance update in [PR #89](https://github.com/LucasKazaki/lapsim/pull/89).
+Those cancellation checks remain distinct from E16's numerical claims.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity
