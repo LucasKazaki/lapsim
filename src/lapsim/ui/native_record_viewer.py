@@ -14,12 +14,114 @@ from tkinter import filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
+from lapsim.experiments.suspension_compare import KINDS, compare_study_records
 from lapsim.experiments.suspension_study import inspect_study_record, read_study_record
 
 WHEELS = ("FL", "FR", "RL", "RR")
 STYLES = ("-", "--", ":", "-.")
 FONT = ("Segoe UI", 10)
 SAVED_STATUS = "Saved samples only · settling metrics and historical timings remain recorded claims · Focus slider: Left/Right select, Home/End jump"
+
+
+def _bounded_claim(value, limit=120):
+    """Bound untrusted visible text and expose control/formatting characters."""
+    parts, size = [], 0
+    for character in value[:limit]:
+        part = json.dumps(character, ensure_ascii=True)[1:-1]
+        if size + len(part) > limit - 1:
+            break
+        parts.append(part)
+        size += len(part)
+    if len(parts) < len(value):
+        parts.append("…")
+    return "".join(parts)
+
+
+def comparison_summary(report):
+    """Present bounded API results; retain the complete report in Details."""
+    compatibility = report["compatibility"]
+    selected = compatibility["selected_field"]
+    lines = [
+        "Compatible recorded inputs"
+        if compatibility["compatible_recorded_claims"]
+        else "Recorded inputs are incompatible",
+        f"{compatibility['allowed_scenario_field']} (s): Left {selected['left']:.9g}; Right {selected['right']:.9g}",
+        "",
+    ]
+    reasons = compatibility["reasons"]
+    if reasons:
+        lines.extend(reasons[:5])
+        if len(reasons) > 5:
+            lines.append(f"{len(reasons) - 5} more reasons are in Details.")
+        lines.append("No numerical result is available for incompatible inputs.")
+    elif report["comparison_kind"] == "plant-step":
+        result = report["result"]
+        quantities = result["quantities"]
+        lines.append(f"{'Quantity':28} {'Left':>15} {'Right':>15} {'Right - Left':>15}")
+        rows = [
+            ("World-X velocity (m/s)", quantities["world_x_velocity_mps"]),
+            ("Chassis COM height (m)", quantities["chassis_com_height_m"]),
+            *[
+                (item["wheel"] + " spring length (m)", item)
+                for item in quantities["spring_lengths_m"]
+            ],
+        ]
+        for label, quantity in rows:
+            lines.append(
+                f"{label:28} {quantity['left']:15.9g} {quantity['right']:15.9g} {quantity['right_minus_left']:15.9g}"
+            )
+        context = result["final_observation_context"]
+        lines.extend(
+            (
+                "",
+                f"Stored endpoint state times: Left {context['left']['clocks']['time_s']!r} s; Right {context['right']['clocks']['time_s']!r} s",
+                "Cached computed/applied forces retain their own origins in Details; no simultaneous force alignment is inferred.",
+            )
+        )
+        criterion = result["criterion"]
+        outcome = (
+            " · " + ("passed" if criterion["passed"] else "failed")
+            if "passed" in criterion
+            else ""
+        )
+        lines.append(
+            "Saved-fixture endpoint criterion: " + criterion["status"] + outcome
+        )
+        lines.extend(criterion.get("reasons", ()))
+        lines.append(
+            "This is a criterion on recorded fixture claims, not new native acceptance or a convergence proof."
+        )
+    else:
+        result = report["result"]
+        lines.extend(
+            (
+                f"Exact shared state timestamps: {result['shared']['count']}",
+                f"Unmatched exports: Left {result['left_unmatched']['count']}; Right {result['right_unmatched']['count']}",
+                f"Shared observations match: {'yes' if result['all_shared_observations_equal'] else 'no'}",
+                f"Different shared observations: {result['different_shared_observations']}",
+                "Counts use exact stored state timestamps; no interpolation or index alignment.",
+                "Shared-only agreement does not establish equality of unmatched exports. Field counts and bounded timestamp listings are in Details.",
+            )
+        )
+    lines.extend(("", "Current implementation-file inspection:"))
+    for role in ("left", "right"):
+        inspection = report["inputs"][role]["inspection"]
+        lines.append(
+            f"{role.title()}: {inspection['checks']['current_implementation_files']}"
+        )
+    recipe = report["comparison_recipe"]
+    identifier = recipe["recipe_id"]
+    lines.extend(
+        (
+            f"Comparison recipe: {recipe['status']} · ID {identifier[:12] if identifier else 'unavailable'}",
+            "Recipe covers explicit comparison/validation source files; not a complete environment fingerprint or executable attestation.",
+            f"Comparison report {report['report_id'][:12]} · comparison receipt {report['receipt_id'][:12]}",
+            "Full IDs, observed source statuses and all API claims are in read-only Details. Filenames are display context.",
+            "",
+            report["scope"],
+        )
+    )
+    return "\n".join(lines)
 
 
 def recorded_model_claim(record):
@@ -88,8 +190,12 @@ class NativeRecordViewer:
         self.load_lock = threading.Lock()
         self.busy = False
         self.generation = 0
+        self.active_job = None
         self.results = Queue(maxsize=1)
         self.worker = None
+        self.comparison_window = self.comparison_report = None
+        self.comparison_details_window = None
+        self.comparison_json = None
         self.record = self.summary = self.selected_sample = None
         self.path = None
         self.index = tk.IntVar(value=0)
@@ -142,6 +248,14 @@ class NativeRecordViewer:
             state="disabled",
         )
         self.details_button.pack(side="left")
+        self.compare_button = tk.Button(
+            actions,
+            text="Compare saved record…",
+            command=self.open_comparison,
+            font=FONT,
+            state="disabled",
+        )
+        self.compare_button.pack(side="left", padx=(8, 0))
         tk.Label(
             actions, text="Force channel", background=bg, foreground=fg, font=FONT
         ).pack(side="left", padx=(24, 4))
@@ -285,12 +399,15 @@ class NativeRecordViewer:
     def load_path(self, path):
         if self.closed or self.busy:
             return False
+        self.close_comparison()
         self.generation += 1
         generation = self.generation
+        self.active_job = generation
         self.busy = True
         self.record = self.summary = self.selected_sample = None
         self.path = Path(path)
         self.open_button.configure(state="disabled")
+        self.compare_button.configure(state="disabled")
         for widget in (
             self.details_button,
             self.previous_button,
@@ -317,70 +434,355 @@ class NativeRecordViewer:
         try:
             record = read_study_record(path)
             summary = inspect_study_record(record)
-            result = (generation, record, summary, None)
-        except Exception as error:
-            result = (generation, None, None, str(error))
+            value, error = (record, summary), None
+        except Exception as failure:
+            value, error = None, str(failure)
+        self._publish(generation, "record", value, error)
+
+    def _publish(self, generation, kind, value, error):
         with self.load_lock:
             if not self.stopped.is_set():
                 with suppress(Full):
-                    self.results.put_nowait(result)
+                    self.results.put_nowait((generation, kind, value, error))
+
+    def _sync_comparison_controls(self):
+        self.open_button.configure(state="disabled" if self.busy else "normal")
+        self.compare_button.configure(
+            state="normal" if self.record is not None else "disabled"
+        )
+        if self.comparison_window is not None:
+            self.comparison_choose_button.configure(
+                state="normal"
+                if not self.busy and self.comparison_kind.get() in KINDS
+                else "disabled"
+            )
+            self.comparison_details_button.configure(
+                state="normal" if self.comparison_report is not None else "disabled"
+            )
+
+    def _accept_result(self, generation, kind, value, error):
+        # A dismissed view invalidates publication, not ownership of its worker.
+        # Release only the matching owner, even when its result is now stale.
+        if generation != self.active_job:
+            return
+        self.active_job = None
+        self.busy = False
+        if generation == self.generation:
+            if kind == "record":
+                self._show_record(value, error)
+            else:
+                self._show_comparison(value, error)
+        self._sync_comparison_controls()
 
     def _poll(self):
         if self.closed:
             return
         try:
-            generation, record, summary, error = self.results.get_nowait()
+            result = self.results.get_nowait()
         except Empty:
             pass
         else:
-            if generation == self.generation:
-                self.busy = False
-                self.open_button.configure(state="normal")
-                if error:
-                    self.checks.set("Record was not opened; no telemetry is displayed")
-                    self.status.set("Open failed: " + error)
-                else:
-                    assert self.path is not None
-                    self.record, self.summary = record, summary
-                    self.identity.set(
-                        f"{self.path.name} · saved content {record['content_id'][:12]} · integrity and stored structure checked"
-                    )
-                    self.model_claim.set(recorded_model_claim(record))
-                    self.checks.set(
-                        "Current implementation: "
-                        + summary["checks"]["current_implementation_files"]
-                        + " · fresh native replay not run · calibration not established"
-                    )
-                    self.slider.configure(
-                        to=len(record["payload"]["samples"]) - 1, state="normal"
-                    )
-                    self.details_button.configure(state="normal")
-                    try:
-                        self._draw_record()
-                        self.select(0)
-                    except (ValueError, OverflowError) as error:
-                        self.record = self.summary = self.selected_sample = None
-                        self.model_claim.set(recorded_model_claim({}))
-                        for widget in (
-                            self.details_button,
-                            self.previous_button,
-                            self.next_button,
-                            self.slider,
-                        ):
-                            widget.configure(state="disabled")
-                        self._empty_plot()
-                        self.clocks.set("")
-                        self.values.set("")
-                        self.wheel_values.set("")
-                        self.sample_label.set("No sample")
-                        self.checks.set(
-                            "Saved structure checked; channel ranges could not be plotted"
-                        )
-                        self.status.set("Open failed: " + str(error))
-                    else:
-                        if self.force_plot_available:
-                            self.status.set(SAVED_STATUS)
+            self._accept_result(*result)
         self.poll_id = self.window.after(80, self._poll)
+
+    def _show_record(self, value, error):
+        if error is not None:
+            self.checks.set("Record was not opened; no telemetry is displayed")
+            self.status.set("Open failed: " + error)
+        else:
+            assert self.path is not None
+            record, summary = value
+            self.record, self.summary = record, summary
+            self.identity.set(
+                f"{self.path.name} · saved content {record['content_id'][:12]} · integrity and stored structure checked"
+            )
+            self.model_claim.set(recorded_model_claim(record))
+            self.checks.set(
+                "Current implementation: "
+                + summary["checks"]["current_implementation_files"]
+                + " · fresh native replay not run · calibration not established"
+            )
+            self.slider.configure(
+                to=len(record["payload"]["samples"]) - 1, state="normal"
+            )
+            self.details_button.configure(state="normal")
+            try:
+                self._draw_record()
+                self.select(0)
+            except (ValueError, OverflowError) as failure:
+                self.record = self.summary = self.selected_sample = None
+                self.model_claim.set(recorded_model_claim({}))
+                for widget in (
+                    self.details_button,
+                    self.previous_button,
+                    self.next_button,
+                    self.slider,
+                ):
+                    widget.configure(state="disabled")
+                self._empty_plot()
+                self.clocks.set("")
+                self.values.set("")
+                self.wheel_values.set("")
+                self.sample_label.set("No sample")
+                self.checks.set(
+                    "Saved structure checked; channel ranges could not be plotted"
+                )
+                self.status.set("Open failed: " + str(failure))
+            else:
+                if self.force_plot_available:
+                    self.status.set(SAVED_STATUS)
+
+    def open_comparison(self):
+        if self.closed or self.record is None or self.path is None:
+            return None
+        if self.comparison_window is not None:
+            self.comparison_window.lift()
+            return self.comparison_window
+        window = self.comparison_window = tk.Toplevel(self.window)
+        window.title("LapSim · Compare saved native studies")
+        window.geometry("860x680")
+        window.minsize(720, 520)
+        window.configure(background=self.background)
+        window.columnconfigure(0, weight=1)
+        window.rowconfigure(4, weight=1)
+        tk.Label(
+            window,
+            text="Compare saved native studies",
+            font=("Segoe UI", 16, "bold"),
+            background=self.background,
+            foreground=self.foreground,
+            anchor="w",
+        ).grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 6))
+        self.comparison_left = tk.StringVar(
+            value=f"Left: {_bounded_claim(self.path.name)} · saved content {self.record['content_id'][:12]}\n{recorded_model_claim(self.record)}"
+        )
+        self._label(window, self.comparison_left).grid(
+            row=1, column=0, sticky="ew", padx=12
+        )
+        controls = tk.Frame(window, background=self.background)
+        controls.grid(row=2, column=0, sticky="ew", padx=12, pady=8)
+        tk.Label(
+            controls,
+            text="Recorded difference",
+            font=FONT,
+            background=self.background,
+            foreground=self.foreground,
+        ).pack(side="left", padx=(0, 8))
+        self.comparison_kind = tk.StringVar(value="")
+        self.comparison_kind_buttons = []
+        for label, kind in (
+            ("Plant step", "plant-step"),
+            ("Logging period", "logging-period"),
+        ):
+            button = tk.Radiobutton(
+                controls,
+                text=label,
+                value=kind,
+                variable=self.comparison_kind,
+                command=self._reset_comparison,
+                font=FONT,
+                background=self.background,
+                foreground=self.foreground,
+                activebackground=self.background,
+                activeforeground=self.foreground,
+                selectcolor=self.background,
+            )
+            button.pack(side="left", padx=(0, 8))
+            self.comparison_kind_buttons.append(button)
+        self.comparison_choose_button = tk.Button(
+            controls,
+            text="Choose second record…",
+            command=self.choose_comparison,
+            font=FONT,
+            state="disabled",
+        )
+        self.comparison_choose_button.pack(side="left", padx=(8, 0))
+        self.comparison_right = tk.StringVar(value="Right: no record selected")
+        self._label(window, self.comparison_right).grid(
+            row=3, column=0, sticky="ew", padx=12
+        )
+        panel = tk.Frame(window, background=self.background)
+        panel.grid(row=4, column=0, sticky="nsew", padx=12, pady=8)
+        self.comparison_text = tk.Text(
+            panel,
+            wrap="word",
+            padx=10,
+            pady=10,
+            font=("Consolas", 10),
+            background=self.background,
+            foreground=self.foreground,
+        )
+        scroll = tk.Scrollbar(panel, command=self.comparison_text.yview)
+        scroll.pack(side="right", fill="y")
+        self.comparison_text.configure(yscrollcommand=scroll.set)
+        self.comparison_text.pack(fill="both", expand=True)
+        actions = tk.Frame(window, background=self.background)
+        actions.grid(row=5, column=0, sticky="ew", padx=12, pady=(0, 10))
+        self.comparison_details_button = tk.Button(
+            actions,
+            text="Comparison details…",
+            command=self.inspect_comparison,
+            font=FONT,
+            state="disabled",
+        )
+        self.comparison_details_button.pack(side="left")
+        tk.Button(actions, text="Close", command=self.close_comparison, font=FONT).pack(
+            side="right"
+        )
+        window.protocol("WM_DELETE_WINDOW", self.close_comparison)
+        window.bind("<Escape>", lambda _event: self.close_comparison())
+        window.bind("<Destroy>", self._on_comparison_destroy, add="+")
+        self._set_comparison_text(
+            "A previous request is finishing. Choose again when it completes."
+            if self.busy
+            else "Choose Plant step or Logging period, then choose a second record.\nOnly saved observations and recorded claims are compared."
+        )
+        self.comparison_kind_buttons[0].focus_set()
+        return window
+
+    def _set_comparison_text(self, content):
+        self.comparison_text.configure(state="normal")
+        self.comparison_text.delete("1.0", "end")
+        self.comparison_text.insert("1.0", content)
+        self.comparison_text.configure(state="disabled")
+
+    def _clear_comparison_details(self):
+        details = self.comparison_details_window
+        self.comparison_details_window = None
+        if details is not None:
+            with suppress(tk.TclError):
+                details.destroy()
+
+    def _reset_comparison(self):
+        self.generation += 1
+        self.comparison_report = self.comparison_json = None
+        self._clear_comparison_details()
+        if self.comparison_window is not None:
+            self.comparison_right.set("Right: no record selected")
+            self._set_comparison_text(
+                "The previous request is finishing and its result will be discarded. Choose a second record when it completes."
+                if self.busy
+                else "Choose a second record for this explicit comparison kind.\nOnly saved observations and recorded claims are compared."
+            )
+            self._sync_comparison_controls()
+
+    def choose_comparison(self):
+        if self.closed or self.busy or self.comparison_kind.get() not in KINDS:
+            return
+        chosen = filedialog.askopenfilename(
+            parent=self.comparison_window, filetypes=(("Native study JSON", "*.json"),)
+        )
+        if chosen:
+            self.compare_path(Path(chosen))
+
+    def compare_path(self, path):
+        if (
+            self.closed
+            or self.busy
+            or self.record is None
+            or self.comparison_window is None
+            or self.comparison_kind.get() not in KINDS
+        ):
+            return False
+        self._reset_comparison()
+        generation = self.generation
+        self.active_job = generation
+        self.busy = True
+        path = Path(path)
+        self.comparison_right.set("Opening Right: " + _bounded_claim(path.name))
+        self._set_comparison_text(
+            "Checking the second record and comparing saved observations…\nNo physics or replay is running."
+        )
+        self._sync_comparison_controls()
+        self.worker = threading.Thread(
+            target=self._load_comparison,
+            args=(self.record, path, self.comparison_kind.get(), generation),
+            daemon=True,
+        )
+        self.worker.start()
+        return True
+
+    def _load_comparison(self, left, path, kind, generation):
+        try:
+            right = read_study_record(path)
+            report = compare_study_records(left, right, kind=kind)
+            value = (
+                report,
+                comparison_summary(report),
+                json.dumps(report, indent=2, allow_nan=False),
+                f"Right: {_bounded_claim(path.name)} · saved content {right['content_id'][:12]}\n{recorded_model_claim(right)}",
+            )
+            error = None
+        except Exception as failure:
+            value, error = None, str(failure)
+        self._publish(generation, "comparison", value, error)
+
+    def _show_comparison(self, value, error):
+        if self.comparison_window is None:
+            return
+        if error is not None:
+            self.comparison_report = self.comparison_json = None
+            self.comparison_right.set("Right: record was not opened")
+            self._set_comparison_text(
+                "Comparison failed: "
+                + _bounded_claim(error, 320)
+                + "\nNo comparison result is displayed. The primary saved record is unchanged."
+            )
+        else:
+            self.comparison_report, text, self.comparison_json, right = value
+            self.comparison_right.set(right)
+            self._set_comparison_text(text)
+
+    def inspect_comparison(self):
+        if (
+            self.closed
+            or self.comparison_window is None
+            or self.comparison_report is None
+        ):
+            return None
+        self._clear_comparison_details()
+        window = self.comparison_details_window = tk.Toplevel(self.comparison_window)
+        window.title(
+            "Saved comparison details · " + self.comparison_report["report_id"][:12]
+        )
+        window.geometry("850x620")
+        text = tk.Text(
+            window,
+            wrap="word",
+            padx=12,
+            pady=12,
+            font=("Consolas", 10),
+            background=self.background,
+            foreground=self.foreground,
+        )
+        scroll = tk.Scrollbar(window, command=text.yview)
+        scroll.pack(side="right", fill="y")
+        text.configure(yscrollcommand=scroll.set)
+        text.pack(fill="both", expand=True)
+        text.insert("1.0", self.comparison_json)
+        text.configure(state="disabled")
+        return window
+
+    def _on_comparison_destroy(self, event):
+        if event.widget is self.comparison_window:
+            self.close_comparison()
+
+    def close_comparison(self):
+        window = self.comparison_window
+        if window is None:
+            return "break"
+        self.generation += 1
+        self.comparison_window = None
+        self.comparison_report = self.comparison_json = None
+        self.comparison_left.set("")
+        self.comparison_right.set("Right: no record selected")
+        self.comparison_kind.set("")
+        self._clear_comparison_details()
+        with suppress(tk.TclError):
+            window.destroy()
+            if not self.closed:
+                self.compare_button.focus_set()
+        return "break"
 
     def _draw_record(self):
         if self.record is None:
@@ -639,11 +1041,13 @@ class NativeRecordViewer:
         if self.closed:
             return
         self.closed = True
+        self.close_comparison()
         with self.load_lock:
             self.stopped.set()
             while not self.results.empty():
                 self.results.get_nowait()
         self.generation += 1
+        self.active_job = None
         self.record = self.summary = self.selected_sample = None
         with suppress(tk.TclError):
             self.window.after_cancel(self.poll_id)

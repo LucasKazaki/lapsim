@@ -1,0 +1,154 @@
+{
+  "schema": "lapsim.saved-native-pair-viewer-pure-verification.v1",
+  "date_local": "2026-10-17 America/New_York",
+  "scope": "Viewer-local saved-pair summary/details implementation and pure tests only. No Tk root/window, actual display oracle, visual/keyboard acceptance, installed pair workflow, native physics/replay, build, full suite, WSL, browser, push, PR or integration performed for this follow-up.",
+  "base_commit": "c8bf5816903c5fcc1e032bf380130f5dcad826bd",
+  "branch": "enme408/native-saved-pair-viewer-20261017",
+  "candidate_hash_scope": "Listed source/test bytes with CRLF normalized to LF. Pure candidate was tested before the coherent commit; exact hashes identify that candidate, without embedding the receipt own commit SHA.",
+  "candidate_files_sha256": {
+    "src/lapsim/ui/native_record_viewer.py": "8ee84c27dacde6bb3fceee1aa823403bf079d79dcbbc7a848d55a1be724499df",
+    "tests/test_native_comparison_presentation.py": "2bc0da03e691677de3d1813a734107efd0338608cda81ea57c126df7485ca6e6",
+    "tests/test_native_comparison_viewer.py": "3a1921a44ea8d1ef9609305d5cac5e121a2abce33606b8dcd9116c1b87741f36"
+  },
+  "native_comparison_cli_and_lab_sources_unchanged_from_base": {
+    "src/lapsim/dynamics/native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+    "src/lapsim/dynamics/chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+    "src/lapsim/experiments/suspension_study.py": "66574226863b6c05f0fe130d121cc5ee89ff3086305a60ffbd1b9fd3c8b0581b",
+    "src/lapsim/experiments/suspension_compare.py": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7",
+    "src/lapsim/desktop.py": "de97d578cc6a93bfd7e864790af845e5965e264d5f19fc1729dc6c5b980feed7",
+    "src/lapsim/ui/dynamics_lab.py": "77935c4b8c621697158ad34590de77ecfd060e321c05e950112a9b225180cb45"
+  },
+  "environment": {
+    "execution": "Owner native Windows PC; existing ordinary project environment",
+    "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+    "pytest": "9.1.1",
+    "ruff_formatter": "0.17.0",
+    "thread_pools": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "process_budget_bytes": 209715200,
+    "headroom_floor_gib": 8,
+    "timeout_s": 60,
+    "resource_scope": "Own process lifetime peak and whole-machine sampled headroom; parent-owned acceptance may run concurrently, so these are not isolated performance claims."
+  },
+  "retained_before_implementation_regression": {
+    "command": [
+      "{baseline_python}",
+      "work/native-comparison-viewer/run_pure.py",
+      "baseline",
+      "tests/test_native_comparison_presentation.py",
+      "-q"
+    ],
+    "source_commit": "c8bf5816903c5fcc1e032bf380130f5dcad826bd",
+    "original_git_status": "?? tests/test_native_comparison_presentation.py\n",
+    "source_files_sha256": {
+      "src/lapsim/ui/native_record_viewer.py": "c25c7179a5fa82e7ca24865f626a621d044388aee6fc4dcf253ce1af7d1a722d",
+      "tests/test_native_comparison_presentation.py": "146f6ab73e40be1f26f0ba80fc985c6c3c69ac8f82139b86b412aa01f5251c6b",
+      "src/lapsim/experiments/suspension_compare.py": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7"
+    },
+    "test_snapshot": "work/native-comparison-viewer/baseline-contract.py",
+    "failure": "Two expected missing presentation/ownership interfaces: comparison_summary ImportError and _accept_result AttributeError. Frozen base viewer was unmodified.",
+    "exit_code": 1,
+    "counts": {
+      "passed": 0,
+      "failed": 2,
+      "error": 0,
+      "skipped": 0,
+      "deselected": 0
+    },
+    "whole_call_wall_s": 1.682683699997142,
+    "process_lifetime_peak_working_set_bytes": 128950272
+  },
+  "pure_focused_candidate": {
+    "command": [
+      "{baseline_python}",
+      "work/native-comparison-viewer/run_pure.py",
+      "focused-complete",
+      "tests/test_native_comparison_presentation.py",
+      "tests/test_suspension_compare.py",
+      "tests/test_suspension_compare_provenance.py",
+      "-q"
+    ],
+    "equivalent_test_command": [
+      "python",
+      "-m",
+      "pytest",
+      "tests/test_native_comparison_presentation.py",
+      "tests/test_suspension_compare.py",
+      "tests/test_suspension_compare_provenance.py",
+      "-q"
+    ],
+    "candidate_source_commit": "c8bf5816903c5fcc1e032bf380130f5dcad826bd",
+    "working_state": "Base commit plus prepared viewer/tests/docs changes; tested implementation is identified by file hashes above.",
+    "exit_code": 0,
+    "counts": {
+      "passed": 75,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0,
+      "deselected": 0
+    },
+    "new_pure_cases": 24,
+    "existing_comparator_cases": 51,
+    "whole_call_wall_s": 4.1389626000018325,
+    "process_lifetime_peak_working_set_bytes": 145027072,
+    "minimum_headroom_gib": {
+      "physical_gib": 12.112384796142578,
+      "commit_gib": 16.90285873413086
+    },
+    "stop_reason": null
+  },
+  "pure_contracts": [
+    "Independent saved endpoint values and Right-minus-Left signs/units; exact set-intersection/shared-only count wording.",
+    "Explicit incompatibility/no numerical result, fixture criterion passed/failed/not-applied wording and unavailable/incomplete recipes.",
+    "Bounded escaped visible claims, complete unchanged read-only API JSON/IDs/clocks, no input byte/mtime changes.",
+    "Backend imports/processes/Tk constructors/physics/replay blocked during pair worker exercise.",
+    "Malformed/oversized input and finite subtraction overflow remain queued failures.",
+    "Matching current worker publishes and releases; stale completion releases its own ownership without publication; nonowner completion cannot release another job.",
+    "Kind reset/close clear report/details/role claims while an existing worker retains ownership; normal primary inspection controls remain available."
+  ],
+  "required_source_catalog_refresh": {
+    "command": [
+      "{baseline_python}",
+      "docs/simulator_flowchart/generate_inventory.py"
+    ],
+    "exit_code": 0,
+    "wall_s": 0.9451094999967609,
+    "process_lifetime_peak_working_set_bytes": 102199296,
+    "minimum_headroom_gib": {
+      "physical_gib": 12.663158416748047,
+      "commit_gib": 17.544048309326172
+    },
+    "generated_raw_sha256": "c7800411ad9b15a7ebe9b652fbd395c93f8987ab42ed7e26d1bdb802b0d684c5",
+    "scope": "Required stdlib AST source catalog refresh only; no simulator import or GUI."
+  },
+  "deferred_actual_tk": {
+    "test_file": "tests/test_native_comparison_viewer.py",
+    "source_sha256": "3a1921a44ea8d1ef9609305d5cac5e121a2abce33606b8dcd9116c1b87741f36",
+    "syntax": "Parsed with stdlib AST only; not imported, collected or executed as Tk tests.",
+    "written_cases": 13,
+    "state": "not run; requires parent allocation",
+    "contracts": "Normal chooser/explicit kind, read-only Details/passivity, failed input recovery, unavailable/incompatible claims, kind/primary reset, delayed close/kind publication, parent close, four size/theme layouts and Escape/primary cursor."
+  },
+  "acceptance_boundary": "Pure success is not actual Tk, visual, genuine-record display, frozen/installed workflow or new physics acceptance. Existing desktop self-test flags and single-record scope remain unchanged. Parent owns later exact-head review and allocated gates.",
+  "artifact_hashes": {
+    "baseline-contract.py": "146f6ab73e40be1f26f0ba80fc985c6c3c69ac8f82139b86b412aa01f5251c6b",
+    "baseline.json": "96c7c416e7ed7d5cd9bc896662a0469e83c0058dd903f105193a8c46a37babfb",
+    "baseline.log": "25219b3d4e8473e1834d4016777a81260ad94544f170775da8abccc9d0f207f1",
+    "focused-complete.json": "dac87fc9aea8e4120b14a33b83a59706e5a04098ca3cb52ec85cb6a29131cff6",
+    "focused-complete.log": "d74379696dd9c7ab1e69b6dc2f801320da5ff9a9e5996c476623ea0cc663042a",
+    "focused-expanded.json": "295deadb2e234a54a785beb8f04bea7e8408333926b2c04a4b32cc64f80a01cb",
+    "focused-expanded.log": "e46b797e25b5cafd8d30af938ee623fbfbe75cc88ada9cb8680a38ea2e258cf0",
+    "focused-final.json": "a0e12711a55749b1eac8b66031d74babe33c451807f15af86c22f2be8f7a3dcd",
+    "focused-final.log": "c18ea09e0d51f0c6c0c9713ff0fb4f15868c1267961f6ddd4c06c4ca1abef76c",
+    "focused-initial.json": "9756b3836838ccb28c9506d5bba688f574bf094aec7a9bc7a125f5d2e7e29175",
+    "focused-initial.log": "3251a439eaf420074405113236df804a09ae5c0383b2a37edb3f1466f72d4bbc",
+    "inventory-generation.json": "582680a7f16d08c982172cef2627a32eaebddf344c885dfc6106dd8d7c99ad20",
+    "run_inventory.py": "5ad84e31f2df0db46f15209aabb135f3c0c072c74a42f18cb1674b6ded61f1b9",
+    "run_pure.py": "f472646060ce7c52cbc3f348d8f8546162b89abf6530dfe7ece036262dfedb73"
+  },
+  "retention": "Raw test snapshots/helpers/receipts/logs are retained in ignored work/native-comparison-viewer; {baseline_python} is the existing ordinary project interpreter. Historical PR100/c8 and earlier provenance/static evidence are unchanged."
+}

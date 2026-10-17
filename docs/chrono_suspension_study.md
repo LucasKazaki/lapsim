@@ -105,6 +105,48 @@ the input reports this saved-record scope as `not_requested`; an empty-viewer
 check alone does not establish packaged saved-record acceptance. This QA option
 does not run native physics or provide board timing evidence.
 
+### Review a saved pair in the viewer
+
+The local viewer follow-up adds **Compare saved record…** after a primary record
+has opened. It opens one modeless window with that record as **Left**. Choose
+the explicit recorded difference, **Plant step** or **Logging period**, then
+**Choose second record…** for **Right**. Closing the picker preserves an existing
+comparison. The primary sample cursor and force selection remain usable while
+the bounded background comparison finishes.
+
+The summary uses the same comparison API below. Plant-step rows show final
+world-X velocity, chassis COM height and four spring lengths with units and
+**Right - Left** differences. It labels the saved-fixture endpoint criterion as
+passed, failed or not applied. Logging-period summaries show exact shared and
+unmatched export counts; agreement of shared observations is not equality of
+unmatched exports. Incompatible recorded inputs show reasons without a numerical
+result. No paired charts, interpolated observations or synchronized force
+cursors are added. Each record's force and geometry clocks remain separate in
+the complete report.
+
+**Comparison details…** displays the full, read-only API report, including input
+content/receipt IDs, calculation and comparison receipt IDs, observed recipe
+readability and its limited source scope. Visible filenames and profile claims
+are bounded and escaped; filenames provide display context. Missing local
+sources do not borrow recorded hashes or establish a complete recipe. A saved
+comparison does not establish a fresh replay, authenticity, timing performance
+or vehicle calibration.
+
+Choosing a different kind or second file clears the previous comparison and
+its Details. A failed second-file load clears that comparison while retaining
+the primary record. Opening another primary record closes the comparison view.
+Closing the comparison, Escape or closing its parent discards late results;
+the bounded worker retains ownership until it finishes, so parsing is not
+force-cancelled and a second worker cannot overlap it. The comparison window
+uses native keyboard controls; Escape returns to the primary viewer action.
+
+This follow-up currently has pure presentation/worker/ownership checks only.
+The real Tk workflow, independent genuine-record display oracle, visual review
+and installed normal workflow are pending separate acceptance. The existing
+desktop self-test options retain their single-record scope; no pair QA flags
+are introduced. See the [local implementation receipt](research/evidence/chrono-pair-viewer-pure-20261017.json)
+for the retained failure and the exact limits of the checks performed.
+
 ## Compare two supplied saved studies
 
 The ordinary environment also provides a read-only saved-pair API and CLI:

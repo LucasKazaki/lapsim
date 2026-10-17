@@ -77,6 +77,13 @@ outside the calculation identity and inside the full receipt. This follow-up
 changes neither native replay identity nor the physical/criterion calculations;
 its pure saved-fixture checks are separate from native and package acceptance.
 
+A further local E16 follow-up exposes the saved-pair API from the existing
+native record viewer: one explicit-kind/second-file review window, read-only
+summary/details and unchanged primary sample/force inspection. Pure contracts
+cover presentation and bounded worker ownership; actual Tk, independent saved
+data oracles, visual review and installed pair-workflow acceptance remain
+pending. It adds no native run/replay path, paired cursor, model or QA flag.
+
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity
 settling, handling signs, suspension/contact telemetry and timestep comparisons.
