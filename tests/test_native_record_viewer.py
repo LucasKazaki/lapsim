@@ -360,7 +360,16 @@ def test_open_inspect_scrub_are_passive_and_preserve_input(root, saved, monkeypa
 def test_bad_load_clears_old_result_and_fresh_load_recovers(
     root, saved, tmp_path, monkeypatch, failure
 ):
-    viewer = make_viewer(root, saved)
+    prior = json.loads(saved.read_bytes())
+    prior["payload"]["model"]["profile_id"] = "previous_record_fixture"
+    prior["content_id"] = study._content_id(prior["payload"])
+    prior["receipt_id"] = study._content_id(
+        {key: value for key, value in prior.items() if key != "receipt_id"}
+    )
+    prior_path = tmp_path / "previous-profile.json"
+    prior_path.write_text(json.dumps(prior))
+    viewer = make_viewer(root, prior_path)
+    assert viewer.model_claim.get() == "Recorded model claim: previous_record_fixture"
     bad = tmp_path / "invalid.json"
     bad.write_text("{invalid")
     renderer = viewer._draw_record
@@ -375,11 +384,13 @@ def test_bad_load_clears_old_result_and_fresh_load_recovers(
     assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     wait(root, lambda: not viewer.busy)
     assert "Open failed" in viewer.status.get()
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     assert viewer.details_button.cget("state") == "disabled"
     monkeypatch.setattr(viewer, "_draw_record", renderer)
     viewer.load_path(saved)
     wait(root, lambda: not viewer.busy)
     assert viewer.record is not None
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     viewer.close()
 
 
