@@ -314,6 +314,20 @@ invalid inputs or a failed replacement preserve an existing destination.
 This is a saved-record conversion: no physics, calibration or replay is
 performed. There is no CSV viewer control or frozen-executable command.
 
+The [local CSV verification receipt](research/evidence/chrono-native-csv-20261017.json)
+records all 43 focused cases and seven genuine saved-record conversions:
+7,831 data rows and 783,100 cells checked against an independent projection.
+At source `7eaf99f`, both installed formats also passed three normal conversions
+and two alias rejections each; their CSV bytes matched the source exports.
+The first package attempt stopped at its unchanged memory guard. A complete
+fresh second attempt passed; the stopped attempt remains separate evidence.
+
+Broader checks covered all 98 repository modules, the existing WSL source and
+POSIX checks, browser/map checks, and the existing copied-executable saved-record
+self-test. Broad lint/type debt, eight security-analysis fixpoint warnings and 36 browser
+accessibility entries requiring manual review remain visible in the receipt.
+These checks add no physics validation, CSV viewer control or frozen CSV command.
+
 ## Install separately from ordinary startup
 
 Use official micromamba 2.5.0-2 on Windows; its flat package cache avoids the

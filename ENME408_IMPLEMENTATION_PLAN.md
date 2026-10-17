@@ -149,9 +149,25 @@ Unsupported frame/unit claims are rejected before atomic destination replacement
 The tests-only baseline at `2a6069c` retained 41 missing-module setup errors.
 The pre-repair `8796e1a` run passed those 41 cases and failed only the two new
 path-resolution contracts; the repair at `3823d37` passed all 43 focused cases
-with zero failures, errors or skips. Genuine seven-record exports and broader
-repository/package acceptance remain pending for this CSV increment; prior native
-and CLI gate results do not establish those scopes.
+with zero failures, errors or skips. At `7eaf99f`, genuine seven-record conversions
+passed an independent 100-column oracle across 7,831 data rows (783,100 cells).
+The full 98-module observed run passed: 2,439 reported JUnit cases, 1,429 raw
+case elements, no failures/errors and one expected POSIX-only skip on Windows; the
+separate WSL POSIX compiler case passed. The unchanged type budget, critical
+lint, security, inventory and all three static-map entrypoints passed with
+existing broad debt, two advisory test-style findings and scan limitations retained.
+Browser checks covered four
+layouts, 12 accessibility states and 10 focused cases; 36 incomplete accessibility
+entries still require manual review. Both installed formats passed three CSV
+conversions and two alias rejections each, with CSV bytes matching source exports.
+The first package attempt stopped at the unchanged commit-headroom guard; the
+complete fresh second attempt passed. Existing copied-executable single-record
+and alias checks also passed; there is no CSV UI or frozen CSV command. The
+[CSV verification receipt](docs/research/evidence/chrono-native-csv-20261017.json)
+binds these distinct scopes and the stopped attempt. Normal integration and
+post-merge verification are tracked separately in
+[issue #19](https://github.com/LucasKazaki/lapsim/issues/19). Historical native/CLI
+evidence is linked without claiming new physics.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity
