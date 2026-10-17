@@ -2,19 +2,20 @@
 
 from __future__ import annotations
 
-from contextlib import suppress
 import json
+import threading
+import tkinter as tk
+from contextlib import suppress
 from math import isfinite
 from pathlib import Path
 from queue import Empty, Full, Queue
-import threading
-import tkinter as tk
 from tkinter import filedialog
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from lapsim.experiments.suspension_compare import KINDS, compare_study_records
+from lapsim.experiments.suspension_export import require_native_world_si_claims
 from lapsim.experiments.suspension_study import inspect_study_record, read_study_record
 
 WHEELS = ("FL", "FR", "RL", "RR")
@@ -487,33 +488,39 @@ class NativeRecordViewer:
 
     def _show_record(self, value, error):
         if error is not None:
+            self.identity.set("Saved telemetry · no record open")
+            self.index.set(0)
             self.checks.set("Record was not opened; no telemetry is displayed")
             self.status.set("Open failed: " + error)
         else:
             assert self.path is not None
             record, summary = value
-            self.record, self.summary = record, summary
-            self.identity.set(
-                f"{self.path.name} · saved content {record['content_id'][:12]} · integrity and stored structure checked"
-            )
-            self.model_claim.set(recorded_model_claim(record))
-            self.checks.set(
-                "Current implementation: "
-                + summary["checks"]["current_implementation_files"]
-                + " · fresh native replay not run · calibration not established"
-            )
-            self.slider.configure(
-                to=len(record["payload"]["samples"]) - 1, state="normal"
-            )
-            self.details_button.configure(state="normal")
             try:
+                require_native_world_si_claims(record, context="plots")
+                self.record, self.summary = record, summary
+                self.identity.set(
+                    f"{self.path.name} · saved content {record['content_id'][:12]} · integrity and stored structure checked"
+                )
+                self.model_claim.set(recorded_model_claim(record))
+                self.checks.set(
+                    "Current implementation: "
+                    + summary["checks"]["current_implementation_files"]
+                    + " · fresh native replay not run · calibration not established"
+                )
+                self.slider.configure(
+                    to=len(record["payload"]["samples"]) - 1, state="normal"
+                )
+                self.details_button.configure(state="normal")
                 self._draw_record()
                 self.select(0)
             except (ValueError, OverflowError) as failure:
                 self.record = self.summary = self.selected_sample = None
+                self.identity.set("Saved telemetry · no record open")
+                self.index.set(0)
                 self.model_claim.set(recorded_model_claim({}))
                 for widget in (
                     self.details_button,
+                    self.compare_button,
                     self.previous_button,
                     self.next_button,
                     self.slider,
@@ -525,7 +532,7 @@ class NativeRecordViewer:
                 self.wheel_values.set("")
                 self.sample_label.set("No sample")
                 self.checks.set(
-                    "Saved structure checked; channel ranges could not be plotted"
+                    "Saved structure checked; recorded claims or channel ranges could not be plotted"
                 )
                 self.status.set("Open failed: " + str(failure))
             else:

@@ -1,19 +1,19 @@
 """Passive native-record selection, clock provenance and desktop lifecycle."""
 
 import builtins
-from hashlib import sha256
 import json
 import subprocess
 import sys
 import threading
 import time
 import tkinter as tk
+from hashlib import sha256
 
 import pytest
+from test_suspension_study import ClockPlant
 
 from lapsim.experiments import suspension_study as study
 from lapsim.ui.dynamics_lab import DynamicsLab
-from test_suspension_study import ClockPlant
 
 
 @pytest.fixture

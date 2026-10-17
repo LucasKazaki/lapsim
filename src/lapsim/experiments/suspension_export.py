@@ -93,6 +93,19 @@ def _number(value: float | None) -> str:
     return "" if value is None else repr(value)
 
 
+def require_native_world_si_claims(record: dict[str, Any], *, context: str) -> None:
+    """Require exact saved frame/unit claims before fixed-label presentation.
+
+    This checks claims only, not integrity, current source or physical accuracy.
+    Context is a fixed caller-owned label, never text from the saved record.
+    """
+    payload = record["payload"]
+    if payload["frame"] != _FRAME:
+        raise ValueError(f"Unsupported recorded frame for fixed world-frame {context}")
+    if payload["units"] != _UNITS:
+        raise ValueError(f"Unsupported recorded units for fixed SI {context}")
+
+
 def _inspection_metadata(record: dict[str, Any], inspection: Any) -> str:
     if (
         not isinstance(inspection, dict)
@@ -136,11 +149,8 @@ def format_study_csv(record: dict[str, Any], *, inspection: Any) -> str:
     Its current-source status is retained without observing local files again.
     """
     validate_study_record(record)
+    require_native_world_si_claims(record, context="CSV columns")
     payload = record["payload"]
-    if payload["frame"] != _FRAME:
-        raise ValueError("Unsupported recorded frame for fixed world-frame CSV columns")
-    if payload["units"] != _UNITS:
-        raise ValueError("Unsupported recorded units for fixed SI CSV columns")
     metadata = _inspection_metadata(record, inspection)
 
     def row(kind: str) -> dict[str, str]:
