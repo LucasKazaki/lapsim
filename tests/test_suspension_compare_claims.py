@@ -116,7 +116,9 @@ def test_matching_unsupported_claims_have_no_fixed_label_result(
         report = json.loads(captured.out)
     assert_ineligible(report, pair, field, claim)
     assert [canonical_bytes(record) for record in pair] == before_memory
-    assert [(path.read_bytes(), path.stat().st_mtime_ns) for path in paths] == before_files
+    assert [
+        (path.read_bytes(), path.stat().st_mtime_ns) for path in paths
+    ] == before_files
 
 
 @pytest.mark.parametrize("field", ("frame", "units"))
@@ -161,10 +163,14 @@ def test_equal_opaque_logging_claims_keep_exact_raw_observation_comparison(field
     assert report["status"] == "compared"
     assert result["shared"] == {"count": 12, "times_s": shared, "truncated": False}
     assert result["left_unmatched"] == {
-        "count": 44, "times_s": left_only, "truncated": False
+        "count": 44,
+        "times_s": left_only,
+        "truncated": False,
     }
     assert result["right_unmatched"] == {
-        "count": 11, "times_s": right_only, "truncated": False
+        "count": 11,
+        "times_s": right_only,
+        "truncated": False,
     }
     assert 0.02 in left_only
     assert result["all_shared_observations_equal"] is True
@@ -212,8 +218,11 @@ def test_canonical_analytic_endpoints_keep_literal_signed_wheel_deltas():
         assert context["clocks"] == {
             key: final[key]
             for key in (
-                "time_s", "tire_force_source_time_s", "tire_kinematics_source_time_s",
-                "applied_tire_force_source_time_s", "applied_tire_force_geometry_time_s",
+                "time_s",
+                "tire_force_source_time_s",
+                "tire_kinematics_source_time_s",
+                "applied_tire_force_source_time_s",
+                "applied_tire_force_geometry_time_s",
             )
         }
         assert context["completed_interval_command"] == final["command"]
