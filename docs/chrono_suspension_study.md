@@ -17,6 +17,41 @@ recorded, and its temporary input file is removed when the plant closes.
 No Formula SAE geometry, fitted tire data, motor topology or team measurements
 are implied. Verified team geometry remains a separate E16 dependency.
 
+## Inspect a supplied result in the ordinary environment
+
+Opening a saved result needs only the ordinary project Python environment:
+
+```powershell
+python -m lapsim.experiments.suspension_study --inspect work/native-drive.json
+```
+
+Inspection reads at most 8 MB and checks the record schema, receipt/content
+hashes, scenario, execution-count consistency, finite channel shapes, command
+and observation clocks, wheel order, and completed-interval command phase.
+It prints the saved scenario, clocks, capabilities/topology, provenance, stored
+metrics and historical execution receipt without dumping the sample arrays.
+It does not import PyChrono, construct a plant, launch Git or another process,
+or write a result; `--inspect` cannot be combined with `--replay` or `--output`.
+
+The summary separates checks performed while opening from saved claims.
+Current implementation-file matching uses the same three-file hash scope as
+replay, without checking out a revision. A historical implementation mismatch
+remains inspectable and is labeled explicitly. Missing current source files
+produce an unavailable match status. Native model/asset identities, metrics and
+timing are recorded claims: integrity hashes do not establish authenticity,
+fresh numerical agreement, historical timing validity or vehicle calibration.
+Use the native `--replay` workflow below for a new reproduction; it still
+requires exact implementation hashes and compares the full fresh native payload.
+
+The corresponding APIs are `read_study_record(path)` for a validated saved
+record, `inspect_study_record(record)` for this summary, and
+`validate_study_record(record)` for structural/integrity checks. They preserve
+the supplied IDs and measurements. Earlier v1 records without explicit settling
+sampling metadata remain readable, with that sampling scope marked unrecorded.
+The [inspection verification receipt](research/evidence/chrono-saved-inspection-20261017.json)
+records the focused checks and a guarded read of already-saved native telemetry;
+it contains no new native simulation or calibration evidence.
+
 ## Install separately from ordinary startup
 
 Use official micromamba 2.5.0-2 on Windows; its flat package cache avoids the

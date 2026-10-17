@@ -1,0 +1,151 @@
+{
+  "schema": "lapsim.saved-native-inspection-verification.v1",
+  "date_local": "2026-10-17 America/New_York",
+  "scope": "Engine-free inspection and structural validation of saved records. Instrumented clock fixtures and one already-finished historical native JSON file; no new native physics, fresh replay, calibration or historical timing validation.",
+  "base_commit": "977c0f8f53526e5fa5dde21c23351bead6dc8f16",
+  "source_hash_scope": "listed candidate implementation/test files, UTF-8 bytes with CRLF normalized to LF; not a Git commit or signature",
+  "files_sha256": {
+    "src/lapsim/experiments/suspension_study.py": "66574226863b6c05f0fe130d121cc5ee89ff3086305a60ffbd1b9fd3c8b0581b",
+    "tests/test_suspension_inspection.py": "157b55385c9e4174f36a50cc73e3675f9de277658035dcfaa558251179f656fd",
+    "tests/test_suspension_study.py": "4b9bf310856fd3d6e33b33867eff4c0a86efe5e5bc11cc08bbb35d9d7b88ac83"
+  },
+  "environment": {
+    "execution": "verified owner's native Windows PC; ordinary existing project environment",
+    "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+    "native_backend_imports": "blocked during inspection checks",
+    "resource_budget_bytes": 209715200,
+    "concurrent_work": "parent-owned immutable acceptance jobs active; no isolated performance improvement claim"
+  },
+  "before_implementation_regression": {
+    "source_commit": "977c0f8f53526e5fa5dde21c23351bead6dc8f16",
+    "command": [
+      "{baseline_python}",
+      "-m",
+      "pytest",
+      "tests/test_suspension_inspection.py",
+      "-q"
+    ],
+    "test_file_state": "new first CLI regression only, retained before implementation",
+    "exit_code": 1,
+    "counts": {
+      "failed": 1
+    },
+    "failure": "SystemExit 2 from argparse: --inspect unrecognized"
+  },
+  "additional_retained_regression": {
+    "command": [
+      "{baseline_python}",
+      "-m",
+      "pytest",
+      "tests/test_suspension_inspection.py",
+      "-k",
+      "missing_saved_scenario",
+      "-q"
+    ],
+    "working_candidate_state": "before the exact saved-scenario key check",
+    "exit_code": 1,
+    "counts": {
+      "failed": 1,
+      "deselected": 35
+    },
+    "failure": "DID NOT RAISE ValueError after a resealed saved record omitted default-valued steering",
+    "repair": "Require all and only SuspensionScenario dataclass fields; never fill missing historical inputs from current defaults"
+  },
+  "focused_tests": {
+    "command": [
+      "{baseline_python}",
+      "work/native-record-inspection/check_lightweight.py"
+    ],
+    "helper_sha256": "20131951c16858e037aacc3849dd0b4a987f57cc45a24fb47aed215e1392455f",
+    "equivalent_test_command": [
+      "python",
+      "-m",
+      "pytest",
+      "tests/test_suspension_inspection.py",
+      "tests/test_suspension_study.py",
+      "-q"
+    ],
+    "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+    "pytest_arguments": [
+      "--capture=sys",
+      "tests/test_suspension_inspection.py",
+      "tests/test_suspension_study.py",
+      "-q"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "passed": 90,
+      "failed": 0,
+      "skipped": 0,
+      "error": 0
+    },
+    "whole_pytest_call_wall_s": 3.565702100022463,
+    "process_lifetime_peak_working_set_bytes": 103886848,
+    "budget_bytes": 209715200,
+    "native_physics_executed": false,
+    "original_result_sha256": "aaaffd5859a54908b7216ee2467ac5bb3b0c569b7c3b66647c89c392a20bde37"
+  },
+  "guarded_existing_record_inspection": {
+    "command": [
+      "{baseline_python}",
+      "work/native-record-inspection/inspect_existing_record.py"
+    ],
+    "helper_sha256": "d4699405c2d77e57d13b4b2bfecae5f974e56076e1b18213c942090ea3c586e2",
+    "documented_api_operations": [
+      "read_study_record(path)",
+      "inspect_study_record(record)"
+    ],
+    "exit_code": 0,
+    "input_name": "fresh-native-drive-5c59265.json",
+    "input_bytes": 972843,
+    "input_sha256": "62f6c267c1cd64c12ef22c379c5be6e5af1319026144625e75b34799cb75f7b8",
+    "input_unchanged": true,
+    "content_id": "503c705fdfddff12f47102e6801b7efe00e554367a1502159fc644b364a9ecd8",
+    "receipt_id": "c2f73a21a9107493462c84498c2696144028b0dc2880168777b569586405a2d9",
+    "recorded_source_commit": "5c592654448e067d0f7ca2584f50d91a341a7e25",
+    "exported_samples": 401,
+    "commands": 800,
+    "checks": {
+      "receipt_and_content_integrity": "checked",
+      "stored_structure": "checked; finite channels, counts and sample/command clocks",
+      "current_implementation_files": "mismatch; recorded source required for replay",
+      "authenticity": "not established by content hashes",
+      "fresh_native_replay": "not run",
+      "historical_timing": "recorded claims; not validated",
+      "vehicle_calibration": "not established"
+    },
+    "engine_import_and_subprocess_guards": "active; none attempted",
+    "process_lifetime_peak_working_set_bytes": 94281728,
+    "scope": "inspection of existing historical native telemetry; no fresh physics/replay/timing validation",
+    "summary_sha256": "b531f1980f0d202d0244a9c09c6441ad22fbba1d1801d81ba7e9dfa5a5d81b8f",
+    "original_result_sha256": "f87fcf0c9cf89848b31d5766694ba2ef705315717cf8f9945c8f82258ce693d7",
+    "historical_input_evidence": "docs/research/evidence/chrono-settling-plant-clock-20261017.json"
+  },
+  "static_checks": [
+    {
+      "command": [
+        "python",
+        "docs/simulator_flowchart/generate_inventory.py",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "docs/simulator_flowchart/data/07-planar-model.js"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "retention": "Large historical telemetry and local guard/measurement helper outputs remain in ignored work storage. This tracked manifest retains their exact SHA256 and measurements without installation-specific absolute paths. {baseline_python} identifies the ordinary project Python above. The equivalent focused tests and public inspection APIs are in the reviewed source tree."
+}
