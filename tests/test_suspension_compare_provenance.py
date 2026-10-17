@@ -9,7 +9,7 @@ import subprocess
 
 import pytest
 
-from test_suspension_compare import fixture_record
+from test_suspension_compare import canonical_world_si_claims, fixture_record
 
 
 SCHEMA = "lapsim.native-suspension-comparison.v1"
@@ -22,6 +22,7 @@ FILES = (
     "experiments/dynamics_record.py",
     "experiments/record_io.py",
     "experiments/basic_dynamics.py",
+    "experiments/suspension_export.py",
 )
 
 
@@ -221,16 +222,19 @@ def test_unlisted_document_is_outside_the_declared_recipe_scope(tmp_path, monkey
     assert before["report_id"] == after["report_id"]
 
 
+@pytest.mark.parametrize(
+    "name", ("dynamics/chrono_vehicle.py", "experiments/suspension_export.py")
+)
 @pytest.mark.parametrize("status", ("missing", "unreadable"))
 def test_incomplete_source_is_explicit_and_does_not_block_comparison(
-    status, tmp_path, monkeypatch
+    name, status, tmp_path, monkeypatch
 ):
     from lapsim.experiments import suspension_compare as comparison
 
     left, right = fixture_record(), fixture_record(logging=0.05)
     entry = copy_recipe_sources(tmp_path / "package")
     monkeypatch.setattr(comparison, "__file__", str(entry))
-    target = tmp_path / "package" / "dynamics" / "chrono_vehicle.py"
+    target = tmp_path / "package" / name
     if status == "missing":
         target.unlink()
     else:
@@ -247,9 +251,9 @@ def test_incomplete_source_is_explicit_and_does_not_block_comparison(
     assert report["status"] == "compared"
     assert recipe["status"] == "incomplete"
     assert recipe["recipe_id"] is None
-    assert recipe["files_sha256"]["dynamics/chrono_vehicle.py"] is None
-    assert recipe["file_status"]["dynamics/chrono_vehicle.py"] == status
-    assert sum(value is not None for value in recipe["files_sha256"].values()) == 6
+    assert recipe["files_sha256"][name] is None
+    assert recipe["file_status"][name] == status
+    assert sum(value is not None for value in recipe["files_sha256"].values()) == 7
     assert "private/location" not in json.dumps(report)
     assert report["report_id"] == independent_id(calculation_projection(report))
     assert report["receipt_id"] == independent_id(
@@ -263,7 +267,10 @@ def test_frozen_like_absent_sources_do_not_borrow_recorded_hashes(
     from lapsim.experiments import suspension_compare as comparison
     from lapsim.experiments import suspension_study as study
 
-    left, right = fixture_record(), fixture_record(step=0.0005)
+    left, right = (
+        canonical_world_si_claims(fixture_record()),
+        canonical_world_si_claims(fixture_record(step=0.0005)),
+    )
 
     def unavailable():
         raise OSError("source not present")
@@ -285,7 +292,10 @@ def test_frozen_like_absent_sources_do_not_borrow_recorded_hashes(
 def test_role_order_result_and_comparison_kind_are_bound():
     from lapsim.experiments.suspension_compare import compare_study_records
 
-    left, right = fixture_record(), fixture_record(step=0.0005)
+    left, right = (
+        canonical_world_si_claims(fixture_record()),
+        canonical_world_si_claims(fixture_record(step=0.0005)),
+    )
     right["payload"]["samples"][-1]["velocity_mps"][0] += 0.02
     reseal(right)
     before = compare_study_records(left, right, kind="plant-step")
