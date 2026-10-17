@@ -62,7 +62,8 @@ desktop self-test now checks an empty viewer and optionally a supplied external
 record, keeping absent saved-record scope explicit. The source window and
 copied package require separate workflow checks.
 
-The next local E16 candidate adds an engine-free saved-pair API/CLI for declared
+The engine-free saved-pair API/CLI merged normally through
+[PR #99](https://github.com/LucasKazaki/lapsim/pull/99) at `591728b` for declared
 plant-step or logging-period comparisons. It checks recorded physical/source
 compatibility, keeps exact observation and force clocks, and reports endpoint
 differences or shared/unmatched exports. A named saved-fixture endpoint criterion
@@ -70,12 +71,28 @@ is a calculation on recorded claims, separate from native acceptance, replay,
 historical timing or vehicle calibration. The existing native record schema and
 three implementation-file replay hashes remain unchanged.
 
-A separate local provenance follow-up adds comparison-specific recipe,
-calculation and complete-receipt identities. Its seven-file source scope is
+The separate provenance follow-up merged normally through
+[PR #100](https://github.com/LucasKazaki/lapsim/pull/100) at `0f6cff9`, adding
+comparison-specific recipe, calculation and complete-receipt identities.
+Its seven-file source scope is
 explicitly limited; missing files remain unavailable. Historical timing stays
 outside the calculation identity and inside the full receipt. This follow-up
 changes neither native replay identity nor the physical/criterion calculations;
 its pure saved-fixture checks are separate from native and package acceptance.
+
+A further E16 follow-up exposes the saved-pair API from the existing native
+record viewer: one explicit-kind/second-file review window, read-only
+summary/details and unchanged primary sample/force inspection. At `86ba320`,
+154 focused source checks and 13 independent genuine-record/error/ownership
+cases passed, with four actual Tk layouts reviewed. Initial focus and missing
+radio-arrow failures remain retained in the earlier focused receipt. A later
+source audit at `12136d3` retained one new optional-JSON type diagnostic; the
+explicit non-None capture/guard repair passed the same source checks at
+`86ba320`, without changing tests or the genuine-record helper. That
+evidence covers the source workflow; installed/frozen normal-workflow and
+broader acceptance remain separate gates recorded in the reviewed change and
+canonical issue. No native run/replay path, paired cursor, model or QA flag is
+added.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity
