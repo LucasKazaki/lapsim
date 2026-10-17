@@ -170,7 +170,7 @@ def archive_build(tmp_path, monkeypatch):
                     f'<testcase name="current invocation {number}">{failure}</testcase>'
                     '<testcase name="explicit skip"><skipped/></testcase>'
                     "</testsuite></testsuites>"
-                ).encode("utf-8")
+                ).encode()
                 report.write_bytes(raw)
                 state.fresh_reports.append(raw)
             if state.mode == "failed":
@@ -318,7 +318,7 @@ def test_full_build_bundles_only_its_fresh_report_and_exact_command(archive_buil
 def test_successful_runner_without_fresh_report_cannot_package_ambient_report(archive_build):
     build = archive_build
     build.mode = "missing"
-    with pytest.raises((RuntimeError, FileNotFoundError), match="report|JUnit|verification"):
+    with pytest.raises((RuntimeError, FileNotFoundError), match=r"report|JUnit|verification"):
         build.invoke(skip=False)
     assert build.calls == ["full tests"]
     assert not (build.output / "LapSim-Windows-x64.zip").exists()

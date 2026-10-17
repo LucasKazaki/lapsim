@@ -113,13 +113,17 @@ def test_main_default_or_explicit_output_preserves_real_aggregation(
     aggregate = SafeET.parse(
         report, forbid_dtd=True, forbid_entities=True, forbid_external=True
     ).getroot()
-    assert {name: int(aggregate.get(name)) for name in ("tests", "failures", "errors", "skipped")} == {
+    assert aggregate is not None
+    assert {
+        name: int(aggregate.attrib[name])
+        for name in ("tests", "failures", "errors", "skipped")
+    } == {
         "tests": 3,
         "failures": int(failed),
         "errors": 0,
         "skipped": 1,
     }
-    assert float(aggregate.get("time")) == 2.0
+    assert float(aggregate.attrib["time"]) == 2.0
     assert [case.get("name") for case in aggregate.iter("testcase")] == [
         "alpha",
         "explicit skipped",
