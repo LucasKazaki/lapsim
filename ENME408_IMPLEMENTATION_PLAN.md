@@ -95,10 +95,24 @@ Installed/frozen and broader gates retain their separately recorded scopes in
 the reviewed change and canonical issue. No native run/replay path, paired
 cursor, model or QA flag is added.
 
-The next small E16 increment adds a seventh native acceptance scenario and a
+The E16 native acceptance suite now includes a seventh scenario and a
 twelfth check for settling/final exports between controller and logging ticks.
 The actual noncoincident-clock experiment and separate normal CLI replay passed
-at `6312e8b`; the new candidate still requires its own full 12-check native run.
+at `6312e8b`. The maintained suite subsequently passed at clean source
+`6a4b7da625b8cffc62c55a6fe764b2926286e53e` in the pinned native environment:
+
+```powershell
+python -m pytest quality/test_chrono_native.py -q --junitxml=work/detailed-study/chrono-native-6a4b7da.xml
+```
+
+All 12 checks passed, with zero failures, errors or skips: 71.82 s pytest time
+and 72.69 s outer guarded-command time. The XML is
+`work/detailed-study/chrono-native-6a4b7da.xml`, SHA-256
+`bf8b8cadef71a9dcefdff01c2c542693e7996a7f8fb925e864da26a850cacea3`.
+The [durable verification manifest](docs/research/evidence/chrono-noncoincident-clocks-20261017.json)
+retains measured cases, identities, commands and raw-file hashes. The ignored
+`work/detailed-study/native-full-6a4b7da-independent-proof.json` remains a local
+raw-evidence binding.
 
 The bounded CLI extension exposes all nine existing scenario settings in
 the normal command, with seven additional flags and no new input schema. It
