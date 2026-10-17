@@ -140,7 +140,8 @@ def main() -> int:
     args = parser.parse_args()
     try:
         print(
-            json.dumps(build(args.toolchain_dir.resolve(), args.output_dir), indent=2)
+            # Keep existing short-path/launcher spelling for path-sensitive tools.
+            json.dumps(build(args.toolchain_dir.absolute(), args.output_dir), indent=2)
         )
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         parser.exit(2, str(error) + "\n")
