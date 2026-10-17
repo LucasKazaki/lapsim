@@ -9,7 +9,152 @@ import sys
 import traceback
 
 
-def self_test(report_path: Path) -> dict:
+def _check_self_test_paths(report_path: Path, native_record_path: Path | None) -> None:
+    if native_record_path is not None and (
+        report_path.resolve() == native_record_path.resolve()
+        or (report_path.exists() and report_path.samefile(native_record_path))
+    ):
+        raise ValueError("Self-test report must not overwrite its native record input")
+
+
+def _check_native_record_viewer(root, native_record_path: Path | None = None) -> dict:
+    """Exercise only the passive viewer, optionally against a supplied record."""
+    from hashlib import sha256
+    import time
+    import tkinter as tk
+    from .experiments.suspension_study import MAX_BYTES
+    from .ui.native_record_viewer import NativeRecordViewer
+
+    def bounded_bytes(path):
+        with path.open("rb") as stream:
+            raw = stream.read(MAX_BYTES + 1)
+        if len(raw) > MAX_BYTES:
+            raise ValueError("Native self-test record exceeds the 8 MB limit")
+        return raw
+
+    viewer = NativeRecordViewer(root)
+    try:
+        root.update_idletasks()
+        result = {
+            "empty_viewer_widgets": viewer.window.winfo_exists() == 1,
+            "saved_record": {"status": "not_requested"},
+        }
+        if native_record_path is None:
+            return result
+        before_stat = native_record_path.stat()
+        before = bounded_bytes(native_record_path)
+        expected = json.loads(before)
+        if not viewer.load_path(native_record_path):
+            raise RuntimeError("Native viewer did not accept the load request")
+        deadline = time.monotonic() + 10
+        while viewer.busy and time.monotonic() < deadline:
+            root.update()
+            time.sleep(0.01)
+        if viewer.record is None or viewer.busy:
+            raise RuntimeError(
+                "Native saved-record workflow failed: " + viewer.status.get()
+            )
+        if any(
+            viewer.record[key] != expected[key] for key in ("content_id", "receipt_id")
+        ):
+            raise RuntimeError("Native viewer changed saved record identity")
+        samples = expected["payload"]["samples"]
+        settle_s = expected["payload"]["scenario"]["settle_s"]
+        settle_index = next(
+            index
+            for index, sample in enumerate(samples)
+            if abs(sample["time_s"] - settle_s) <= 1e-9
+        )
+        selected = []
+        for index in dict.fromkeys((0, settle_index, len(samples) - 1)):
+            sample = samples[index]
+            viewer.select(index)
+            if viewer.selected_sample != sample:
+                raise RuntimeError("Native viewer selected a different exported sample")
+            if list(viewer.com_marker.get_xdata()) != [sample["position_m"][0]]:
+                raise RuntimeError("Native viewer COM plot differs from saved sample")
+            for kind, clock_key, force_key in (
+                (
+                    "Applied",
+                    "applied_tire_force_source_time_s",
+                    "applied_wheel_force_world_n",
+                ),
+                ("Computed", "tire_force_source_time_s", "wheel_force_world_n"),
+            ):
+                viewer.force_kind.set(kind)
+                viewer.change_force()
+                root.update()
+                if not viewer.force_plot_available:
+                    raise RuntimeError(
+                        "Native self-test force channel could not be plotted"
+                    )
+                for wheel, marker in enumerate(viewer.force_markers):
+                    clock = sample[clock_key]
+                    if marker.get_visible() != (clock is not None):
+                        raise RuntimeError("Native viewer fabricated a force timestamp")
+                    if clock is not None and (
+                        list(marker.get_xdata()) != [clock]
+                        or list(marker.get_ydata()) != [sample[force_key][wheel][2]]
+                    ):
+                        raise RuntimeError(
+                            "Native force plot differs from stored force/source clock"
+                        )
+            selected.append(
+                {
+                    "index": index,
+                    "clocks": {
+                        key: sample[key]
+                        for key in (
+                            "time_s",
+                            "tire_force_source_time_s",
+                            "tire_kinematics_source_time_s",
+                            "applied_tire_force_source_time_s",
+                            "applied_tire_force_geometry_time_s",
+                        )
+                    },
+                    "completed_interval_command": sample["command"],
+                }
+            )
+        details = viewer.inspect()
+        if details is None or viewer.summary is None:
+            raise RuntimeError(
+                "Native viewer details or inspection summary are unavailable"
+            )
+        text = next(
+            widget for widget in details.winfo_children() if isinstance(widget, tk.Text)
+        )
+        detail_value = json.loads(text.get("1.0", "end"))
+        if (
+            text.cget("state") != "disabled"
+            or detail_value["selected_sample"] != samples[-1]
+        ):
+            raise RuntimeError(
+                "Native viewer details are not the read-only selected sample"
+            )
+        details.destroy()
+        after = bounded_bytes(native_record_path)
+        after_stat = native_record_path.stat()
+        if before != after or before_stat.st_mtime_ns != after_stat.st_mtime_ns:
+            raise RuntimeError("Native viewer changed its input file")
+        result["saved_record"] = {
+            "status": "passed",
+            "content_id": expected["content_id"],
+            "receipt_id": expected["receipt_id"],
+            "input_sha256": sha256(before).hexdigest(),
+            "input_mtime_ns_before": before_stat.st_mtime_ns,
+            "input_mtime_ns_after": after_stat.st_mtime_ns,
+            "selected_samples": selected,
+            "force_channels": ["Applied", "Computed"],
+            "inspection_checks": viewer.summary["checks"],
+            "scope": "saved telemetry only; no fresh native replay or physics",
+        }
+        return result
+    finally:
+        viewer.close()
+
+
+def self_test(report_path: Path, *, native_record_path: Path | None = None) -> dict:
+    _check_self_test_paths(report_path, native_record_path)
     from .ui._tk_runtime import configure_tk_libraries
     configure_tk_libraries()
     import tkinter as tk
@@ -47,6 +192,10 @@ def self_test(report_path: Path) -> dict:
         lab = DynamicsLab(root, dark=False)
         root.update_idletasks()
         checks["four_wheel_lab_widgets"] = True
+        native_viewer = _check_native_record_viewer(root, native_record_path)
+        checks["native_record_viewer_widgets"] = native_viewer["empty_viewer_widgets"]
+        if native_record_path is not None:
+            checks["native_saved_record_workflow"] = native_viewer["saved_record"]["status"] == "passed"
         basic = BasicDynamicsLab(root)
         root.update_idletasks()
         checks["basic_bicycle_default"] = basic.model_id.get() == "dynamic_bicycle_v1"
@@ -179,7 +328,9 @@ def self_test(report_path: Path) -> dict:
                           "runs_replayed": 2, "backend_id": "python_reference"},
         "component_study": {"run_id": component_record["run_id"],
                             "runs_replayed": 2, "backend_id": "analytic_python"},
+        "native_record_viewer": native_viewer,
     }
+    _check_self_test_paths(report_path, native_record_path)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     return report
@@ -191,10 +342,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="LapSim portable desktop simulator")
     parser.add_argument("--flow-map", action="store_true", help="Open the offline simulator map")
     parser.add_argument("--self-test", type=Path, metavar="REPORT.json", help="Check GUI, assets, simulation, save and replay")
+    parser.add_argument("--self-test-native-record", type=Path, metavar="RECORD.json", help="With --self-test, also check a supplied saved native record without physics")
     args = parser.parse_args()
+    if args.self_test_native_record is not None and args.self_test is None:
+        parser.error("--self-test-native-record requires --self-test")
+    if args.self_test_native_record is not None:
+        try:
+            _check_self_test_paths(args.self_test, args.self_test_native_record)
+        except (OSError, ValueError) as error:
+            parser.error(str(error))
     try:
         if args.self_test is not None:
-            return 0 if self_test(args.self_test)["status"] == "passed" else 1
+            return 0 if self_test(args.self_test, native_record_path=args.self_test_native_record)["status"] == "passed" else 1
         if args.flow_map:
             from .resources import open_simulator_map
             return 0 if open_simulator_map() else 1
@@ -206,8 +365,13 @@ def main() -> int:
     except Exception:
         details = traceback.format_exc()
         if args.self_test is not None:
-            args.self_test.parent.mkdir(parents=True, exist_ok=True)
-            args.self_test.write_text(json.dumps({"status": "failed", "error": details}, indent=2), encoding="utf-8")
+            try:
+                _check_self_test_paths(args.self_test, args.self_test_native_record)
+                args.self_test.parent.mkdir(parents=True, exist_ok=True)
+                args.self_test.write_text(json.dumps({"status": "failed", "error": details}, indent=2), encoding="utf-8")
+            except (OSError, ValueError) as error:
+                if sys.stderr:
+                    print("Self-test report was not written: " + str(error), file=sys.stderr)
         else:
             base = Path(os.environ.get("LOCALAPPDATA") or Path.home() / ".lapsim")
             log = base / "LapSim/logs/desktop_startup.log"

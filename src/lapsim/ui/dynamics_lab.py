@@ -224,6 +224,15 @@ class DynamicsLab:
         )
         self.component_study_button.pack(side="right", padx=4)
 
+        saved_actions = tk.Frame(self.window, padx=10, pady=4)
+        saved_actions.pack(fill="x")
+        self.native_record_button = tk.Button(
+            saved_actions, text="Open native record…", command=self._open_native_record,
+            font=FONT, padx=8, pady=4,
+        )
+        self.native_record_button.pack(side="left")
+        tk.Label(saved_actions, text="Saved suspension telemetry · passive inspection", font=FONT).pack(side="left", padx=10)
+
         body = tk.Frame(self.window, padx=10, pady=4)
         body.pack(fill="both", expand=True)
         body.grid_columnconfigure(1, weight=1)
@@ -332,6 +341,12 @@ class DynamicsLab:
         from .component_lab import ComponentLab
         self.latest_component_study = ComponentLab(self.window)
         return self.latest_component_study
+
+    def _open_native_record(self):
+        from .native_record_viewer import NativeRecordViewer
+        self.latest_native_record_viewer = NativeRecordViewer(self.window, dark=self.is_dark.get())
+        self.latest_native_record_viewer.open()
+        return self.latest_native_record_viewer
 
     def _cancel_canvas_callbacks(self, _event=None):
         if self.canvas is None:

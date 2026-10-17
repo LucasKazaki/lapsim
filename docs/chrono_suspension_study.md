@@ -52,6 +52,58 @@ The [inspection verification receipt](research/evidence/chrono-saved-inspection-
 records the focused checks and a guarded read of already-saved native telemetry;
 it contains no new native simulation or calibration evidence.
 
+## View saved telemetry on the desktop
+
+Open **Four-wheel lab → Open native record…**, then choose a saved study JSON.
+This opens a separate passive viewer in the ordinary desktop environment; it
+does not start Chrono, replay physics, change the input file or evaluate the
+planar model. The additional action row keeps the entry visible without adding
+another button to the lab's existing header.
+
+The four panels show the recorded COM path and wheel-center points, COM height,
+four spring lengths, and applied or computed vertical tire forces. The points
+are not suspension hardpoints or wheel orientations; spring length is not wheel
+travel. Force traces use their own stored source timestamps, with unknown
+initial origins omitted. They are not contact-wrench arrows at current wheel
+positions. The selected-sample text retains all state, force, slip and applied
+geometry clocks separately.
+
+Use the slider or **Previous/Next** to select an exact
+exported sample. No intermediate states are simulated or interpolated. The
+focused slider also supports Left/Right and Home/End, with a visible focus ring. The
+displayed command is the request held during the completed interval; a command
+event at the same time starts the next hold. **Record and sample details…**
+opens the read-only inspection summary and the exact selected observation.
+Historical source mismatches and unavailable source files remain labeled as
+reported by the inspector, including in packaged environments.
+
+Loading is bounded by the existing 8 MB reader, with one background worker and
+no overlapping opens. Failed loads clear the previous result; closing discards
+pending results and canvas callbacks. Plotting exported samples does not
+revalidate dense settling acceptance, historical performance or calibration.
+If finite saved values exceed the chart renderer's range, the viewer clears an
+unrenderable record or labels an unavailable force panel. The force panel's
+exact values remain in Details, and selecting a plottable channel recovers it;
+the saved values and validator are unchanged.
+
+The existing desktop integration check always opens and closes an empty viewer.
+To also exercise a supplied saved record in source, wheel or portable-executable
+QA, use the optional input with the existing report option:
+
+```powershell
+python -m lapsim.desktop --self-test work/desktop-check.json --self-test-native-record work/supplied-native-study.json
+# Portable package: LapSim.exe --self-test <report.json> --self-test-native-record <record.json>
+```
+
+The report must be separate from the input, including existing hardlinks. This
+check selects the first, settling-boundary and final samples, checks both force
+channels and their actual clocks, opens read-only Details, and retains the saved
+IDs and input SHA256/mtime. The viewer's current-source availability status is
+reported as observed, including unavailable source in a frozen runtime. Omitting
+the input reports this saved-record scope as `not_requested`; an empty-viewer
+check alone does not establish packaged saved-record acceptance. This QA option
+does not run native physics or provide board timing evidence.
+
 ## Install separately from ordinary startup
 
 Use official micromamba 2.5.0-2 on Windows; its flat package cache avoids the
