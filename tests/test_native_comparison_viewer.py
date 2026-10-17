@@ -6,6 +6,7 @@ import subprocess
 import threading
 import time
 import tkinter as tk
+from hashlib import sha256
 
 import pytest
 
@@ -30,6 +31,27 @@ def saved(tmp_path):
         ("plant", fixture_record(step=0.0005)),
         ("logging", fixture_record(logging=0.05)),
     ):
+        # GUI-only synthetic observations declare their world/SI plotting claims;
+        # these analytic values remain a no-physics fixture, not native evidence.
+        record["payload"]["frame"] = (
+            "right-handed world X initially forward, Y left, Z up; chassis COM"
+        )
+        record["payload"]["units"] = (
+            "SI; steering request normalized, tire slip ratio dimensionless"
+        )
+        record["content_id"] = sha256(
+            json.dumps(
+                record["payload"], sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode("utf-8")
+        ).hexdigest()
+        record["receipt_id"] = sha256(
+            json.dumps(
+                {key: value for key, value in record.items() if key != "receipt_id"},
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest()
         path = tmp_path / (name + ".json")
         path.write_text(json.dumps(record), encoding="utf-8")
         paths[name] = path

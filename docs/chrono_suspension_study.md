@@ -64,6 +64,34 @@ planar model. The additional action row keeps the entry visible without adding
 another button to the lab's existing header.
 The visible model profile is the record's bounded, escaped claim; its full value remains in Details and does not identify a current engine.
 
+The plots use fixed world-frame and SI labels, so they require the same exact
+recorded frame and unit claims as the [CSV projection](#export-a-supplied-saved-record-as-csv).
+Unsupported claims leave the plots and selected values empty, clear the saved
+identity and disable result actions. The inline error identifies the unsupported
+frame or units; **Open native record…** remains available to load another file.
+The reader and inspector still accept opaque claims for archival inspection.
+This presentation check performs no conversion or physical validation.
+
+The [frame/unit presentation receipt](research/evidence/chrono-native-viewer-claims-20261017.json)
+records local acceptance at `caa51fa`: 86 focused checks and a fresh 98-module
+Windows sequence passed, with one expected POSIX-only skip and one previously
+observed Tcl lifetime warning. It retains the earlier failed fixture run and
+separates source-window, installed-package and copied-executable checks. The
+portable ZIP contains an older test report; that attachment is outside current
+full-suite evidence and its selection remains a separate packaging defect.
+
+The first hosted run of [PR #108](https://github.com/LucasKazaki/lapsim/pull/108)
+later timed out during an unchanged test's initial record load. A test-only
+follow-up at `829df7d` scopes renderer fault injection to the class descriptor
+and restores it before recovery, removing an instance-bound method cycle.
+Assertions and waits are unchanged. Its fresh 86 focused checks and 98-module
+Windows sequence passed (2,445 reported JUnit cases / 1,435 raw testcase entries,
+one expected POSIX-only skip). The comparison viewer emitted the same retained
+Tcl lifetime warning. The [fixture follow-up receipt](research/evidence/chrono-native-viewer-fixture-20261017.json)
+preserves the hosted failure, passive diagnostic, local results and formatting
+debt. These passes do not establish the historical timeout's cause or a general
+Tk lifetime fix; production code remains the accepted `caa51fa` version.
+
 The four panels show the recorded COM path and wheel-center points, COM height,
 four spring lengths, and applied or computed vertical tire forces. The points
 are not suspension hardpoints or wheel orientations; spring length is not wheel

@@ -1,0 +1,1172 @@
+{
+  "schema": "lapsim.native-viewer-claim-evidence.v1",
+  "status": "Local acceptance complete with documented Tcl, coverage and historical ZIP-report attachment limitations; normal PR/checks/integration/postmerge pending at this evidence freeze",
+  "drafted_utc": "2026-10-17T15:17:55.760Z",
+  "candidate": {
+    "commit": "caa51fa62c00dd180548071e3b986fd58d471345",
+    "tree": "92ae8b0e10dfcf4a91d828c7eb99162d0917d57d",
+    "clean_observed": true,
+    "presentation_code_commit": "a2f3f00c44de7b2f596936f49fcdad11232e6a0b",
+    "presentation_code_tree": "890229b29bf2bd3f45d7ef83c920b47c7fbadc67",
+    "maintenance_commit": "136c48c957034a4f7c2b78eb3df239998472913e",
+    "GUI_fixture_author_commit": "1552ca3f1a93aa4d62a0c311cf774cb62516d99a",
+    "clean_observed_scope": "Clean exact source/tree was observed at the recorded immutable local gates; later documentation/evidence drafting is outside those measurements."
+  },
+  "implementation": {
+    "purpose": "Passive saved-record eligibility before fixed world-frame/SI telemetry labels.",
+    "claim_boundary": "Shared pure require_native_world_si_claims keeps the exact old CSV frame/unit comparisons. Viewer invokes it inside its caught render block before publishing identity, record, selected/plotted telemetry or controls. Unsupported claims clear old/new data and result actions, keep Open enabled, and use short fixed errors without echoing opaque long/control values; supported reload recovers.",
+    "required_frame": "right-handed world X initially forward, Y left, Z up; chassis COM",
+    "required_units": "SI; steering request normalized, tire slip ratio dimensionless",
+    "archival_boundary": "Reader/schema/inspector still accept structurally valid opaque claims. Supported plotting claims remain viewable with historical source mismatch or unavailable current files, explicitly labeled. This gate performs no conversion or physical validation.",
+    "unchanged": "Reader and bounded/atomic/alias I/O, CSV schema/header/cell serialization and43-case contract, strict replay semantics, native numerical state/clock ownership and comparison thresholds/hash scope. CSV source changes only to share its prior claim check; no CSV byte-format change claimed.",
+    "source_LF_SHA256": {
+      "src/lapsim/experiments/suspension_export.py": "975b58bc89efcb6e5c1a69aa363cd6d4db04a461692c3803802ea39731e62c82",
+      "src/lapsim/ui/native_record_viewer.py": "8d81cbc661ddf0f695bd940392a919183e991b19ff4c3e98a4625a1b6c41fd3b",
+      "tests/test_native_record_viewer.py": "d40ea185d66578bceb11c3941552d5612e33db5419ad1ff05bc80abff2b8fa3f",
+      "tests/test_native_comparison_viewer.py": "1a2b4c5dfb6762e6897fe082153533e9822890f1eb9ff1311be8cbc7bfc84a19"
+    },
+    "seven_recipe_source_files_LF_SHA256": {
+      "experiments/suspension_compare.py": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7",
+      "experiments/suspension_study.py": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe",
+      "dynamics/native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+      "dynamics/chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+      "experiments/dynamics_record.py": "edd2842d0b98c31b805fa5bb830238e66aeaceef9eea983fdd15da933fe25373",
+      "experiments/record_io.py": "32b68f49460f89b83244693b131e15dd7c23dfec36ee9ddca93bf4fd82368a91",
+      "experiments/basic_dynamics.py": "34ff3f7390d322ecb879a357cd53d03150ad0b94edd59608cbb08737625e3ff9"
+    },
+    "three_protected_native_source_files_LF_SHA256": {
+      "dynamics/native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+      "dynamics/chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+      "experiments/suspension_study.py": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe"
+    },
+    "source_file_scope": "Three protected native source files and all seven recipe source files remain byte-identical to accepted main2800d02; hashes use immutable Git bytes with CRLF-to-LF only. No hash scope change."
+  },
+  "completed_phases": {
+    "red29": {
+      "source": "dc7d9c36e69b7c3da157fd40151586bff95bb1cb",
+      "tree": "5386ae0bd720edb493e2c8a427c1423ccf27ebff",
+      "status": "failed baseline preserved",
+      "tests": 29,
+      "passed": 24,
+      "failures": 5,
+      "errors": 0,
+      "skips": 0,
+      "intended_rejection_failures": 4,
+      "historical_controls_passed": 2,
+      "other_unchanged_initial_load_timeouts": 1,
+      "reported_warnings": 5,
+      "pytest_exit": 1,
+      "guard_exit": 1,
+      "timeout": "Old plot-failure test timed out at initial load before render-error injection. Cause remains unproven. Four target tests failed before final recovery/preservation assertions; retained file copies do not replace their execution.",
+      "resources": {
+        "guard_wall_s": 34.674454899999546,
+        "minimum_sampled_whole_machine_headroom_GiB": {
+          "physical_gib": 10.01443099975586,
+          "commit_gib": 12.08416748046875
+        },
+        "peak_kernel_job_committed_bytes": 277860352,
+        "maximum_sequence_s": 90,
+        "owned_active_before_close": 0
+      },
+      "evidence": [
+        "red29_review",
+        "red29_result"
+      ]
+    },
+    "focused72": {
+      "source": "a2f3f00c44de7b2f596936f49fcdad11232e6a0b",
+      "tree": "890229b29bf2bd3f45d7ef83c920b47c7fbadc67",
+      "status": "passed bounded focused checks",
+      "tests": 72,
+      "modules": {
+        "native_record_viewer": 29,
+        "suspension_export": 43
+      },
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "captured_warnings": 0,
+      "guard_exit": 0,
+      "four_rejection_recovery_and_two_historical_controls_completed": true,
+      "retained_inputs": 64,
+      "source_bytes_mtime_preserved": true,
+      "resources": {
+        "guard_wall_s": 31.015248399984557,
+        "minimum_sampled_whole_machine_headroom_GiB": {
+          "physical_gib": 10.08121109008789,
+          "commit_gib": 12.223079681396484
+        },
+        "peak_kernel_job_committed_bytes": 236449792,
+        "maximum_sequence_s": 90,
+        "owned_active_before_close": 0
+      },
+      "evidence": [
+        "focused72_review",
+        "focused72_result"
+      ]
+    },
+    "source_window_visual": {
+      "source": "a2f3f00c44de7b2f596936f49fcdad11232e6a0b",
+      "tree": "890229b29bf2bd3f45d7ef83c920b47c7fbadc67",
+      "status": "programmatic and bounded manual workflow review passed",
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "requested_sizes": [
+        "1180x840",
+        "960x720"
+      ],
+      "combinations": 4,
+      "loads": 20,
+      "per_combination": [
+        "supported",
+        "bad-frame",
+        "supported",
+        "bad-units",
+        "supported"
+      ],
+      "owned_HWND_PNGs": 12,
+      "guard_exit": 0,
+      "callback_errors": 0,
+      "cleanup_errors": 0,
+      "blocked_backend_or_physics_replay_Git_process_calls": 0,
+      "source_proof_genuine_and_derived_input_bytes_mtime_preserved": true,
+      "capture": "Owned wm_frame HWND/PID checked immediately before each window-only capture; requested size, observed client geometry and bitmap dimensions recorded separately. Existing acceptedbc drive and two independently resealed opaque scratch claims; no new physics.",
+      "manual_review": "Coordinator viewed all12 images and original-detail dark units: cleared rejection data/identity/actions, visible concise error and usable Open; supported recovery restores plots and selection. No changed-feedback clipping observed. Complete accessibility/contrast/visual-conformance not established.",
+      "preview_resolution": "Default-detail near-duplicate previews appeared blank with inconsistent filename association. Raw12 hashes were unchanged; decoded frame/unit canvas regions are exact-equal and nonblack. Original-detail review confirms axes. No raw black-canvas/app defect established, no capture-delay/redraw/GC change or rerun.",
+      "resources": {
+        "guard_wall_s": 20.462197100016056,
+        "minimum_sampled_whole_machine_headroom_GiB": {
+          "physical_gib": 9.784507751464844,
+          "commit_gib": 11.829883575439453
+        },
+        "peak_kernel_job_committed_bytes": 176562176,
+        "maximum_sequence_s": 90,
+        "owned_active_before_close": 0
+      },
+      "evidence": [
+        "visual20_closed",
+        "visual20_raw",
+        "visual12_manual_review",
+        "preview_raw_pixel_review"
+      ]
+    },
+    "failed136_full_attempt": {
+      "source": "136c48c957034a4f7c2b78eb3df239998472913e",
+      "tree": "bf9e1267a3a009eab0dbd5423f16650c41fba755",
+      "status": "failed partial, excluded from full acceptance",
+      "planned_modules": 98,
+      "completed_exit0_modules": 49,
+      "failed_module": "test_native_comparison_viewer.py",
+      "failed_tests": 14,
+      "failed_cases": 14,
+      "errors": 0,
+      "skips": 0,
+      "initial_record_None_failures": 13,
+      "separate_5second_initial_load_timeouts": 1,
+      "reported_warnings": 1,
+      "not_attempted_modules": 48,
+      "complete_aggregate": false,
+      "guard_exit": 1,
+      "diagnosis": "GUI inputs imported pure analytic fixtures with opaque frame/abbreviated SI labels. Source proves a deterministic rejection path under fixed native labels; actual status StringVars were not logged. Separate initial timeout and Variable.__del__ warning cause remains unproven.",
+      "retained_artifacts": 231,
+      "retained_actual_inputs": 42,
+      "resources": {
+        "guard_wall_s": 517.7047603999963,
+        "minimum_sampled_whole_machine_headroom_GiB": {
+          "physical_gib": 8.946502685546875,
+          "commit_gib": 10.749164581298828
+        },
+        "peak_kernel_job_committed_bytes": 613117952,
+        "maximum_sequence_s": 1800,
+        "owned_active_before_close": 0
+      },
+      "evidence": [
+        "failed136_partial",
+        "failed136_index",
+        "failed136_diagnosis"
+      ]
+    },
+    "GUI_fixture_only_repair": {
+      "author_commit": "1552ca3f1a93aa4d62a0c311cf774cb62516d99a",
+      "primary_commit": "caa51fa62c00dd180548071e3b986fd58d471345",
+      "status": "reviewed local fixture adaptation",
+      "changed_path": "tests/test_native_comparison_viewer.py",
+      "change": "Before writing left/plant/logging inputs, GUI fixture declares literal canonical world/SI conventions and independently reseals payload content ID then full receipt with finite sorted compact stdlibJSON/SHA256.",
+      "invariance": "Analytic unit-fixture model/engine/no-physics controller, all numeric/clock/source/execution fields and purefactory/API preserved. Remove only sha256 import+four assignments to reproduce old entire module AST: other13functions/decorators, all82assertions/order and5second waits exact. No production whitelist or lifecycle/GC/timeout change.",
+      "evidence": [
+        "GUI_fixture_repair_review",
+        "GUI_fixture_primary_freeze",
+        "failed136_diagnosis",
+        "actual42_GUI_fixture_projection"
+      ],
+      "actual_old_new_fixture_verification": {
+        "record_pairs": 42,
+        "role_counts": {
+          "left": 14,
+          "plant": 14,
+          "logging": 14
+        },
+        "distinct_projection_pairs": 3,
+        "oracle": "Independent .NET canonical JSON/SHA using ordinal keys and preserved finite number/string lexemes; no project helper.",
+        "only_changed_fields": [
+          "payload.frame",
+          "payload.units",
+          "content_id",
+          "receipt_id"
+        ],
+        "every_other_numeric_model_source_clock_execution_value_exact": true,
+        "full_new_canonical_bytes_equal_independent_old_claims_only_reseal": true,
+        "each_of84_old_and_new_files_unchanged_across_review": true,
+        "scope": "Old and new raw files intentionally differ in claims/derived IDs and creation timestamps; this is preservation of each file across review, not old/new byte or mtime equality.",
+        "evidence": "actual42_GUI_fixture_projection"
+      }
+    },
+    "focused86": {
+      "source": "caa51fa62c00dd180548071e3b986fd58d471345",
+      "tree": "92ae8b0e10dfcf4a91d828c7eb99162d0917d57d",
+      "status": "passed bounded focused checks",
+      "reported_cases": 86,
+      "raw_testcase_elements": 86,
+      "modules": {
+        "native_record_viewer": 29,
+        "native_comparison_viewer": 14,
+        "suspension_export": 43
+      },
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "captured_warnings": 0,
+      "stderr_bytes": 0,
+      "launcher_and_guard_exit": 0,
+      "XML_sha256": "77fbaf01a74c0290213b24a0ede8207f2c09127109047f6dccedff54e8cc0239",
+      "source6_bytes_mtime_preserved": true,
+      "retained_fixture_files": 107,
+      "retained_fixture_bytes": 13462716,
+      "before_after_copy_bytes_mtime_equal": true,
+      "prior_timeouts": "Did not recur this attempt; their causes remain unproven, with no wait/assertion/GC/lifecycle fix inferred.",
+      "resources": {
+        "guard_wall_s": 50.316701500007184,
+        "minimum_sampled_whole_machine_headroom_GiB": {
+          "physical_gib": 9.753372192382812,
+          "commit_gib": 11.585643768310547
+        },
+        "peak_kernel_job_committed_bytes": 248123392,
+        "maximum_sequence_s": 180,
+        "owned_active_before_close": 0
+      },
+      "evidence": [
+        "focused86_review",
+        "focused86_root_review",
+        "focused86_guard"
+      ]
+    },
+    "fresh_full98": {
+      "source": "caa51fa62c00dd180548071e3b986fd58d471345",
+      "tree": "92ae8b0e10dfcf4a91d828c7eb99162d0917d57d",
+      "status": "passed one fresh observed98-module sequence with one retained warning and expected Windows POSIX skip",
+      "protocol": "Unchanged check_all.run_module and merge_reports under observer; not uninterrupted check_all CLI.",
+      "modules": 98,
+      "actual_module_exits_zero": 98,
+      "reported_tests": 2445,
+      "raw_testcase_elements": 1435,
+      "failures": 0,
+      "errors": 0,
+      "skips": 1,
+      "count_scope": "Reported JUnit totals and actual raw testcase-element totals are different retained measurements;2445 is not a claim of2445 raw elements. Aggregate raw case text/order matches all module XMLs.",
+      "freshness": {
+        "segments": 1,
+        "previous_modules_at_start": 0,
+        "reused_failed136_reports": 0,
+        "all98_actual_times_argv_and_source_runtime_environment_bindings_verified": true
+      },
+      "skip": {
+        "class": "tests.test_native_closed_loop",
+        "name": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c",
+        "message": "POSIX multicall-symlink regression runs in Linux CI; Windows actual native build is tested above"
+      },
+      "warning": {
+        "reported_count": 1,
+        "kind": "RuntimeWarning",
+        "message": "the Tcl interpreter is leaked because it was deallocated in a thread other than the one it was created in (see gh-83274)",
+        "module": "test_native_comparison_viewer.py",
+        "test_case": "test_normal_picker_flow_details_passivity_and_input_identity[plant-step-plant]",
+        "reported_origin": "src/lapsim/experiments/run_record.py:52",
+        "full_module_outcome": "14 passed, 1 warning in19.31s",
+        "preexisting_accepted_source": "7eaf99ffde225f33661328fcdc584309cbed2e3a",
+        "accepted_module_outcome": "14 passed, 1 warning in18.91s",
+        "same_signature_node_and_normalized_reported_source_line": true,
+        "interpretation": "Evidenced in accepted7e full run, not a newly introduced signature and not a warning-free result. Reported run_record.py52 is where it surfaced, not proof of the deallocated object/thread/GC cause. Lifetime cause and relation to prior timeouts remain unproven; no cleanup/lifecycle fix claimed.",
+        "evidence": [
+          "Tcl_warning_preexistence_triage",
+          "Tcl_warning_root_review"
+        ]
+      },
+      "runtime": {
+        "canonical_identity_sha256": "2d5d89aa71670f3607c14ee87e6cf3288aea5e488c88c528606e7c69c3dcd469",
+        "effective_environment_sha256": "aa154ff6b5f316f6156d2b8f7043e52563afbe42284bb15ebfae0f2f2a73d2a5",
+        "environment_scope": "Full effective values were hashed by the actual observer but are not retained; independent review checks recorded consistency and retained relevant values, not a reconstruction of unretained values",
+        "function_source_hashes": {
+          "run_module": "6a171594e0243e1c6431311c919b625a6f05372b87f90b94d9a091eff5cbde8d",
+          "merge_reports": "011539b90899eaaa3227d3566d0928db9ebf3481dc890d9b04d75eb7f581b5bf"
+        },
+        "runtime_tool_file_hashes_checked": 11,
+        "observer_sha256": "ce8108e6a586bf4adca26cb5485ff2bd42980378333ceeaf89837c16e7d63aae",
+        "guard_sha256": "d111922c7ec5594c07a3bc8afe24856b5a4721651c01ca1aeec9e21bb3e95cab"
+      },
+      "resources": {
+        "guard_exit": 0,
+        "owned_active_before_final_close": 0,
+        "maximum_s": 1800,
+        "guard_wall_s": 838.4004217999754,
+        "fresh_preflight_GiB": {
+          "physical_gib": 10.958045959472656,
+          "commit_gib": 15.473648071289062
+        },
+        "running_floors_GiB": {
+          "physical_gib": 8,
+          "commit_gib": 7
+        },
+        "minimum_GiB": {
+          "physical_gib": 9.29644775390625,
+          "commit_gib": 11.051944732666016
+        },
+        "peak_kernel_job_committed_bytes": 612909056,
+        "scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed."
+      },
+      "preservation": {
+        "indexed_files": 345,
+        "indexed_bytes": 12821229,
+        "observer_files": 316,
+        "guard_files": 4,
+        "source_snapshot_files": 15,
+        "remaining_saved_input_files": 8,
+        "remaining_saved_input_bytes": 11526044,
+        "remaining_inputs_bytes_hash_mtime_preserved": true,
+        "scope": "Earlier full-run pair/viewer temporary directories were cleaned by later modules; focused107/failed42 preserved inputs remain separate and are not substituted for unavailable full-run warning-case inputs.",
+        "focused107_and_failed42_copies_are_separate_not_substitutes": true
+      },
+      "evidence": [
+        "full98_closed_review",
+        "full98_root_closed_review",
+        "full98_module_index",
+        "full98_preserved_inventory",
+        "full98_actual_guard",
+        "Tcl_warning_preexistence_triage",
+        "Tcl_warning_root_review"
+      ]
+    },
+    "WSL_source_inventory_POSIX": {
+      "source": "caa51fa62c00dd180548071e3b986fd58d471345",
+      "tree": "92ae8b0e10dfcf4a91d828c7eb99162d0917d57d",
+      "status": "passed closed WSL source/quality/inventory/POSIX gates with retained debt and analysis limits",
+      "distinct_clean_orchestration_commit": "1552ca3f1a93aa4d62a0c311cf774cb62516d99a",
+      "source_tree_and_tracked_clean_before_after_verified": true,
+      "actual_supervisor_exit": 0,
+      "actual_metadata_collector_exit": 0,
+      "actual_outcomes": {
+        "source_audit_exit": 0,
+        "inventory_check_exit": 0,
+        "posix_compiler_exit": 0
+      },
+      "versions": [
+        "pyright==1.1.414",
+        "pytest==9.1.1",
+        "ruff==0.17.0",
+        "semgrep==1.180.0"
+      ],
+      "type_fingerprints": {
+        "current_errors": 241,
+        "current_warnings": 48,
+        "baseline_errors": 241,
+        "baseline_warnings": 48,
+        "current_files_analyzed": 101,
+        "baseline_files_analyzed": 77,
+        "total_each": 289,
+        "new": 0,
+        "removed": 0,
+        "full_multisets_exact": true,
+        "canonical_fingerprint_multiset_SHA256": "08a46ae6b1cadc62f1dc88b3376bae0fb9e2add564c7f7413b248d99a211067a",
+        "target_python_version": "3.11 static-analysis target; not a newly recorded interpreter version"
+      },
+      "broad_debt": {
+        "broad_Ruff_exit": 1,
+        "broad_findings": 634,
+        "format_exit": 1,
+        "would_reformat": 125,
+        "already_formatted": 100,
+        "critical_Ruff_exit": 0,
+        "unchanged_CSV_test_advisories": [
+          {
+            "rule": "RUF005",
+            "line": 45
+          },
+          {
+            "rule": "RUF043",
+            "line": 525
+          }
+        ],
+        "scope": "Retained reports, no suppression or formatting changes. No clean lint/type certification; no default-Ruff result inferred from this selection."
+      },
+      "Semgrep": {
+        "matches": 0,
+        "errors": 0,
+        "available_code_rules": 225,
+        "rules_run": 219,
+        "scanned_files": 283,
+        "large_file_skips": 4,
+        "semgrepignore_skips": 100,
+        "fixpoint_warnings": 8,
+        "warning_records_exact_accepted7e": true,
+        "warning_records": [
+          {
+            "kind": "Fixpoint timeout",
+            "severity": "warn",
+            "file": "controller/integration/upstream-originals/reference/allocator_cortex_m4_objects.py",
+            "line": 379,
+            "first_rule": "python.boto3.security.hardcoded-token.hardcoded-token"
+          },
+          {
+            "kind": "Fixpoint timeout",
+            "severity": "warn",
+            "file": "controller/reference/allocator_cortex_m4_objects.py",
+            "line": 379,
+            "first_rule": "python.boto3.security.hardcoded-token.hardcoded-token"
+          },
+          {
+            "kind": "Fixpoint timeout",
+            "severity": "warn",
+            "file": "controller/reference/cortex_m4_objects.py",
+            "line": 186,
+            "first_rule": "python.boto3.security.hardcoded-token.hardcoded-token"
+          },
+          {
+            "kind": "Fixpoint timeout",
+            "severity": "warn",
+            "file": "controller/reference/cortex_m4_objects.py",
+            "line": 314,
+            "first_rule": "python.boto3.security.hardcoded-token.hardcoded-token"
+          },
+          {
+            "kind": "Fixpoint timeout",
+            "severity": "warn",
+            "file": "controller/reference/guard_cortex_m4_objects.py",
+            "line": 74,
+            "first_rule": "python.boto3.security.hardcoded-token.hardcoded-token"
+          },
+          {
+            "kind": "Fixpoint timeout",
+            "severity": "warn",
+            "file": "docs/simulator_flowchart/app.js",
+            "line": 1,
+            "first_rule": "typescript.react.security.audit.react-unsanitized-method.react-unsanitized-method"
+          },
+          {
+            "kind": "Fixpoint timeout",
+            "severity": "warn",
+            "file": "quality/run_browser_audit.py",
+            "line": 20,
+            "first_rule": "python.boto3.security.hardcoded-token.hardcoded-token"
+          },
+          {
+            "kind": "Fixpoint timeout",
+            "severity": "warn",
+            "file": "src/lapsim/experiments/dynamics_record.py",
+            "line": 223,
+            "first_rule": "python.boto3.security.hardcoded-token.hardcoded-token"
+          }
+        ],
+        "selected_source_test_path_coverage": {
+          "src/lapsim/ui/native_record_viewer.py": true,
+          "src/lapsim/experiments/suspension_export.py": true,
+          "tests/test_native_record_viewer.py": false,
+          "tests/test_native_comparison_viewer.py": false
+        },
+        "limitations": "Eight explicit taint-analysis fixpoint warnings persist despite zero top-level errors/findings and approximate parsed-lines report. Excluded/large/nonselected files are not covered; the two GUI test modules are absent from scanned paths. No complete security/taint or test-file coverage inference."
+      },
+      "POSIX": {
+        "tests": 1,
+        "passed": 1,
+        "failures": 0,
+        "errors": 0,
+        "skips": 0,
+        "case": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c"
+      },
+      "resources": {
+        "guard_wall_s": 72.07090330001665,
+        "fresh_preflight_floors_GiB": {
+          "physical_gib": 10,
+          "commit_gib": 8.5
+        },
+        "recorded_headroom_before_GiB": {
+          "physical_gib": 10.872146606445312,
+          "commit_gib": 15.404033660888672
+        },
+        "runtime_floors_GiB": {
+          "physical_gib": 8,
+          "commit_gib": 7
+        },
+        "minimum_GiB": {
+          "physical_gib": 8.140430450439453,
+          "commit_gib": 12.24532699584961
+        },
+        "recorded_headroom_after_GiB": {
+          "physical_gib": 8.685462951660156,
+          "commit_gib": 12.9180908203125
+        },
+        "deadline_s": 180,
+        "stop_reason": null,
+        "scope": "Direct held Windows child exited0; normal Linux phase waits/watchers/traps retained. No kernel active-process census, measured owned peak or ownership0 inferred. End physical8.685GiB was above runtime8 but below fresh10 floor; it does not authorize a next launch."
+      },
+      "WSL_environment": {
+        "recorded_CPU_visible": 32,
+        "device_used": "CPU",
+        "GPU_device_node_available": true,
+        "GPU_scope": "Presence of /dev/dxg, not evidence of GPU computation or native physics.",
+        "guest_memory_snapshot_KiB": {
+          "MemTotal": "15937664",
+          "MemAvailable": "15221084"
+        },
+        "cgroup_memory_max": null,
+        "memory_scope": "Guest/proc snapshot is distinct from sampled Windows whole-machine headroom; null cgroup max does not establish unlimited memory.",
+        "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+      },
+      "artifact_scope": {
+        "collector_indexed_raw_files": 48,
+        "independent_indexed_packet_files": 51,
+        "all51_current_hashes_match_review_index": true,
+        "root_closure_review_sha256": "a72f5a364a4cf5d207e737aaa9f043b7cd9990cdcec61d3d51eafd1b77337239",
+        "no_auxiliary_overwrite_or_mismatch_established": true
+      },
+      "evidence": [
+        "WSL_closed_review",
+        "WSL_root_closed_review",
+        "WSL_independent51_file_index"
+      ]
+    },
+    "installed_wheel_and_sdist": {
+      "source": "caa51fa62c00dd180548071e3b986fd58d471345",
+      "tree": "92ae8b0e10dfcf4a91d828c7eb99162d0917d57d",
+      "status": "Closed actual package checks passed; independently reviewed",
+      "actual_guard_exit": 0,
+      "formats": 2,
+      "reference_tests_per_format": 538,
+      "reference_failures_errors_skips_per_format": 0,
+      "original_probe_and_gates": "Original PROBE literal hash6f6e8106 preserved as an exact normalized prefix of extended installed probe; original C/reference/bootstrap/offline, source-through-sdist, supplied-record, normal-pair and configured-CLI gates retained.",
+      "archives": {
+        "wheel": {
+          "regular_file_entries": 940,
+          "verified_source_resource_FILES": 834,
+          "bytes": 4533292,
+          "sha256": "49e70ca6b7ae126d5f8ef05fbea30075ff2c7eec95553012eae78549159da87b"
+        },
+        "sdist": {
+          "regular_file_entries": 842,
+          "verified_source_snapshot_FILES": 834,
+          "bytes": 3628624,
+          "sha256": "15eec689da75c24074fd67ed8a9038817b5954bac6413a3fed948b8b6a02e6b9"
+        }
+      },
+      "archive_identity_scope": "Wheel uses installed resource build-info; sdist uses .lapsim-source-info.json with original source paths. Both834-file source inventories and shared source identity match; source archive is not represented as an installed bundle.",
+      "saved_RECORDS": {
+        "count": 3,
+        "roles": {
+          "drive": {
+            "csv_sha256": "2fb1fa4b118da9303cd0bda2f986180fbc256428bdeae08402f70bf8ef9705ac",
+            "columns": 100,
+            "counts": {
+              "metadata": 1,
+              "sample": 401,
+              "controller_event": 800
+            },
+            "exact_bytes_equal_accepted_source_all_cell_oracle": true,
+            "input_sha256": "65d1cd9f23e448c48e23e55f8bd06c6b264f9b2cca1a028f3a0f9f6e55213f38",
+            "input_content_id": "62386b59d501a23132e53b2f39448e7d756cbada9e6063c2db8ffe16c9327291",
+            "input_receipt_id": "2335a00b34f76775bb36bbccf660a5b91470e9d9f4ddae2b38937077ae525a25"
+          },
+          "plant_half_step_partner": {
+            "csv_sha256": "adbd9d4f75e21e6adef9ced0773f11f2c97749523349a7b1781b0ccdc6246d06",
+            "columns": 100,
+            "counts": {
+              "metadata": 1,
+              "sample": 401,
+              "controller_event": 800
+            },
+            "exact_bytes_equal_accepted_source_all_cell_oracle": true,
+            "input_sha256": "13ab1943bc0a99a1179b8e27d28f4a3e92f449eed71682d63bf2409b58823fd1",
+            "input_content_id": "11011d4d8708987c35b83061561fd664280a1ca0306a03005054dbbfe0444c6d",
+            "input_receipt_id": "234799f4fb97d1486258403ca48db09497b9f1375061266699affeb7e5cfe4fe"
+          },
+          "sparse_logging_partner": {
+            "csv_sha256": "1247eeec6c04ebaea8cde70e57216eee96be4db314de76d00383cb0485608262",
+            "columns": 100,
+            "counts": {
+              "metadata": 1,
+              "sample": 161,
+              "controller_event": 800
+            },
+            "exact_bytes_equal_accepted_source_all_cell_oracle": true,
+            "input_sha256": "3762c7b29fb4e42d143eb838872fa22c9ee6f0d6348e8216e9fc873ff6688b8b",
+            "input_content_id": "d5caa07dd492c0f9a83cf146f05e57a1ee72f02b3c39f2bbdbb0078f2bad0160",
+            "input_receipt_id": "cdad0dc7d73cb45e398e0212f6ad96d26f317eff51f24ad4bb1c5dddb566312a"
+          }
+        },
+        "scope": "Three previously accepted saved synthetic native records read in each format; distinct from seven comparison recipe source FILES and834 source/resource FILES."
+      },
+      "CSV_verification": "Each format: three actual isolated normal CSV commands exit0;100 labeled columns and ordered row-kind counts independently checked. Actual CSV bytes equal accepted7e source outputs already checked by the all-cell oracle; no source/installed seven-record scope expansion.",
+      "alias_rejections_per_format": 2,
+      "alias_actual_exit": 1,
+      "original_input_and_alias_destination_bytes_mtime_preserved": true,
+      "unsupported_plot_claims": {
+        "processes_per_format": 2,
+        "actual_exit": 1,
+        "frame": {
+          "terminal_error": "RuntimeError: Native saved-record workflow failed: Open failed: Unsupported recorded frame for fixed world-frame plots",
+          "content_id": "53b70df9c4562f0caf5406328f5092480da665324b2447fd17aee691311763a3",
+          "receipt_id": "ec69078f1634c41ee1829255fb7f48ffa4b5150b162f7ab2e2aa444f92af072b"
+        },
+        "units": {
+          "terminal_error": "RuntimeError: Native saved-record workflow failed: Open failed: Unsupported recorded units for fixed SI plots",
+          "content_id": "c1c17d21a27144a81d54d52182f1a607e82e409565fb44d9489e47d01c6cba35",
+          "receipt_id": "8b506448f95a0548698baffe14d439e236f62dd611952e2dfc100f0fa365305e"
+        },
+        "scope": "Only one intended frame/units claim and derived IDs changed. Independent full canonical reseal, saved bytes/mtime/IDs and fresh failed-report timestamp within actual guard verified. These are separate ordinary desktop processes, not same-process recovery or child-import instrumentation."
+      },
+      "loaded_viewer_and_exporter_LF_hashes_match_archive_and_working_source": true,
+      "loaded_paths_inside_observed_installed_prefix": true,
+      "installed_prefix_limit": "Temporary prefixes were normally removed after closure; recorded loaded paths/hashes are bound to archive bytes rather than claimed current installed-file access.",
+      "unchanged_comparison_recipe_source_FILES": 7,
+      "comparison_recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b",
+      "recipe_calculation_full_receipt_IDs_independently_recomputed_and_equal_between_formats": true,
+      "actual_normal_pair_cases_per_format": 13,
+      "actual_configured_CLI_cases_per_format": 4,
+      "non_ASCII_bootstrap_offline_repeat_sdist_identity_preserved": true,
+      "legacy_fast_model_replays_per_format": {
+        "bicycle": 2,
+        "component": 2
+      },
+      "replay_scope": "These legacy fast-model replay checks did execute. No fresh PyChrono physics or native saved-study replay ran.",
+      "preserved_original_saved_RECORDS": 3,
+      "original_input_bytes_mtime_IDs_preserved": true,
+      "artifacts_published": false,
+      "metadata_review_corrections": {
+        "retained_attempts": 3,
+        "scope": "Metadata-only assumptions about custom-preflight key, base versus extended probe, and sdist layout were corrected from immutable actual receipts/source. All failed reviewer attempts retained; no project rerun, raw overwrite or gate waiver."
+      },
+      "resources": {
+        "guard_wall_s": 328.8185523999855,
+        "minimum_sampled_whole_machine_headroom_GiB": {
+          "physical_gib": 9.030532836914062,
+          "commit_gib": 10.974388122558594
+        },
+        "peak_kernel_job_committed_bytes": 334311424,
+        "owned_active_before_close": 0,
+        "maximum_sequence_s": 900
+      },
+      "evidence": [
+        "package_closed_review",
+        "package_root_review",
+        "package_summary",
+        "package_preserved_inventory",
+        "package_guard"
+      ]
+    },
+    "browser_source_map": {
+      "source": "caa51fa62c00dd180548071e3b986fd58d471345",
+      "tree": "92ae8b0e10dfcf4a91d828c7eb99162d0917d57d",
+      "status": "Closed browser regressions passed; accessibility incomplete records retained",
+      "actual_guard_exit": 0,
+      "layouts": 4,
+      "accessibility_states": 12,
+      "focused_saved_map_cases": 10,
+      "generic_check_records": 68,
+      "detected_violations": 0,
+      "runtime_error_records": 0,
+      "incomplete_records": 36,
+      "incomplete_rule_counts": {
+        "aria-prohibited-attr": 12,
+        "color-contrast": 12,
+        "label-content-name-mismatch": 12
+      },
+      "raw_PNG_files": 14,
+      "CRC_checked_trace_ZIPs": 4,
+      "scope": "Saved browser source-map/layout regression only. Zero detected violations is not complete accessibility;36 actual incomplete records need manual review. Metadata reviewer checked image/trace bytes and dimensions/CRC, not visual conformance. Source-window visual acceptance remains its own bounded12-capture phase.",
+      "resources": {
+        "guard_wall_s": 15.24594849999994,
+        "minimum_sampled_whole_machine_headroom_GiB": {
+          "physical_gib": 9.503192901611328,
+          "commit_gib": 13.98891830444336
+        },
+        "peak_kernel_job_committed_bytes": 877465600,
+        "owned_active_before_close": 0,
+        "maximum_sequence_s": 240
+      },
+      "evidence": [
+        "browser_closed_review",
+        "browser_root_review",
+        "browser_summary",
+        "browser_guard",
+        "browser_artifact_index"
+      ]
+    },
+    "static_map_entrypoints": {
+      "source": "caa51fa62c00dd180548071e3b986fd58d471345",
+      "tree": "92ae8b0e10dfcf4a91d828c7eb99162d0917d57d",
+      "status": "Closed original three normal entrypoints passed",
+      "actual_guard_exit": 0,
+      "normal_command_exits": {
+        "site": 0,
+        "inventory_check": 0,
+        "assembled_graph": 0
+      },
+      "all_stderr_empty": true,
+      "Python_source_inventory_counts": {
+        "data": 1495,
+        "equation": 4327,
+        "modules": 102,
+        "solver": 1193,
+        "variable": 8833
+      },
+      "assembled_JavaScript_graph_counts": {
+        "nodes": 17070,
+        "equations": 410,
+        "sources": 17405,
+        "relatedReferences": 850,
+        "maximumDepth": 9,
+        "topLevelBranches": 11,
+        "emptySummaries": 81
+      },
+      "count_scope": "Python source inventory and assembled JavaScript graph have different grains; their equation/node counts are not interchangeable.",
+      "catalog_LF_sha256": "16093ff3c9a259548d79eb4c3adf73435450c4172e432facc405e3a4b1cc1715",
+      "catalog_bytes_mtime_preserved_by_closed_helper": true,
+      "catalog_scope": "Original helper captured bytes/mtime before all three commands and asserted equality after. Review-time snapshot is distinct; no independent missing pre-run timestamp invented.",
+      "resources": {
+        "guard_wall_s": 2.5665930999966804,
+        "minimum_sampled_whole_machine_headroom_GiB": {
+          "physical_gib": 10.296028137207031,
+          "commit_gib": 14.897880554199219
+        },
+        "peak_kernel_job_committed_bytes": 171081728,
+        "owned_active_before_close": 0,
+        "maximum_sequence_s": 240
+      },
+      "evidence": [
+        "static_map_closed_review",
+        "static_map_root_review",
+        "static_map_summary",
+        "static_map_guard",
+        "static_map_artifact_index"
+      ]
+    },
+    "frozen_and_copied_EXE": {
+      "source": "caa51fa62c00dd180548071e3b986fd58d471345",
+      "tree": "92ae8b0e10dfcf4a91d828c7eb99162d0917d57d",
+      "status": "Current EXE/copied runtime and expected rejection checks passed; independently reviewed with documented archive limitation",
+      "actual_guard_exit": 0,
+      "EXE": {
+        "bytes": 79201336,
+        "sha256": "91a03f15ba662382c95ee6c00f4bb330beac70204960aa2bde36804605c94916"
+      },
+      "ZIP": {
+        "bytes": 86920780,
+        "sha256": "5e9cb62352fa6a30982825cc30e5df0ec45d4f15a921d9bccaee7bab079fcbd1"
+      },
+      "build_scope": "Original actual frozen build/self-test checks retained. Builder ran with --skip-tests after the separate fresh2445/1435 full98 gate; no second fresh suite execution is claimed.",
+      "copied_saved_record_viewer_exit": 0,
+      "copied_input_output_alias_exit": 2,
+      "unsupported_frame_exit": 1,
+      "unsupported_units_exit": 1,
+      "copied_scope": "Outside-checkout EXE copy, System32-only PATH and absent external bundle. Supported supplied saved record opens; two opaque variants produce exact plot-claim failed reports in separate processes. No same-process negative recovery, fresh native simulation/replay or child import census.",
+      "source_and_generated_catalog_bytes_mtime_preserved": true,
+      "ZIP_test_report_attachment": {
+        "entry": "verification/test-results.xml",
+        "bytes": 211303,
+        "sha256": "06afcfe7c50a0c0c613a5146eefc6ca9ab667f27785998a704437544767359d2",
+        "reported_tests": 2260,
+        "raw_testcase_elements": 1250,
+        "fresh_caa_full98": false,
+        "separate_fresh_caa_counts": {
+          "reported_tests": 2445,
+          "raw_testcase_elements": 1435
+        },
+        "scope": "This is the builder's ambient historical test-report attachment, not freshcaa full98 evidence. No source revision inferred from its contents/counts. Current EXE/runtime checks remain separate. Existing builder attachment defect is a follow-up task; no fresh ZIP-contained suite or release claim.",
+        "failures": 0,
+        "errors": 0,
+        "skips": 1,
+        "separate_fresh_caa_full98_XML_SHA256": "47965f90ea43addfa1b324bf80bbc554d18fd70bacfa5c3f610488e2f1ba50b5"
+      },
+      "resources": {
+        "guard_wall_s": 87.07791979998001,
+        "minimum_sampled_whole_machine_headroom_GiB": {
+          "physical_gib": 9.389678955078125,
+          "commit_gib": 11.448070526123047
+        },
+        "peak_kernel_job_committed_bytes": 333701120,
+        "owned_active_before_close": 0,
+        "maximum_sequence_s": 600
+      },
+      "evidence": [
+        "frozen_root_review",
+        "frozen_preservation",
+        "frozen_guard",
+        "frozen_closed_review",
+        "frozen_artifact_index"
+      ],
+      "original_desktop_self_test_checks": 20,
+      "copied_supplied_saved_record_self_test_checks": 21,
+      "source_files_unavailable_supported": true,
+      "archive_validation": {
+        "unique_ZIP_members": 943,
+        "verified_assets": 938,
+        "source_assets_verified_against_current_FILES": 892,
+        "all_member_bytes_streamed_with_CRC": true,
+        "source_snapshot_SHA256": "271df1e05639f758e327dfccdcca779528706786bacd3cce137d09468d1f148e",
+        "scope": "ZIP member/asset/source FILE counts are not saved telemetry RECORD counts."
+      },
+      "metadata_review_corrections": {
+        "retained_attempts": 2,
+        "scope": "Verifier-only expectations about wrapper argument position and package-relative recipe paths were corrected against retained actual data. No actual project rerun or gate waiver."
+      },
+      "legacy_fast_model_replay_scope": "Existing original desktop self-tests did execute their legacy fast-model/replay checks; native saved telemetry remained passive."
+    }
+  },
+  "remaining_gates": {
+    "normal_PR_checks_integration_postmerge": {
+      "status": "Pending as of this local evidence freeze; no PR check, merge, postmerge or release result invented",
+      "tracking": "https://github.com/LucasKazaki/lapsim/issues/19"
+    }
+  },
+  "execution_limits": {
+    "device": "CPU",
+    "model": "Synthetic/analytic fixtures and existing saved synthetic native telemetry only; no calibrated team geometry or private physical-car evidence.",
+    "fresh_preflight_GiB": {
+      "physical": 10,
+      "commit": 8.5
+    },
+    "running_floors_GiB": {
+      "physical": 8,
+      "commit": 7
+    },
+    "resource_scope": "Whole-machine headroom is sampled; kernel-job peak is committed bytes, not physical working set. Whole verification timings are not simulator performance or hardware timing.",
+    "passivity": "Source visual-helper spies cover its own imports/process calls; child internals are not instrumented. Legacy installed-package fast-model replay checks did execute. No fresh PyChrono physics or native saved-study replay, frame/unit conversion, physical validation, achieved-torque/calibration, hardware, deployment or release claim.",
+    "integrity": "Content/receipt hashes bind recorded integrity, not authenticity or physical truth. Red and partial attempts remain failed; later passes do not establish timeout or GC causality.",
+    "frozen_evidence_limit": "Current EXE/copied checks are distinct from the ZIP's ambient historical verification XML. A closed build/runtime result does not make that attached report fresh."
+  },
+  "evidence_bindings": {
+    "red29_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/native-viewer-claim-red-dc7d9c3-independent-review.json",
+      "sha256": "9c3ca0fb26bce261143d2e4b716575a54b7aed4affb1b9d03eafe86e9b060dbb"
+    },
+    "red29_result": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-tests-20261017/baseline-attempt-1-result.json",
+      "sha256": "f1dee4764693cc41198594c07e876f291246f6dcf3a23a63283971791524619b"
+    },
+    "focused72_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-focused-a2f3f00-independent-proof.json",
+      "sha256": "182e68c51b71c6833133319c56e436d2c01fdf2cb28ea3187cf3175b98ac8ff9"
+    },
+    "focused72_result": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-tests-20261017/focused-a2f3f00-attempt-1-result.json",
+      "sha256": "a105e15b5ad3d674f2e32346c578023daf3209ce7f65f8dd08cef912c890780a"
+    },
+    "visual20_closed": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-visual-a2f3f00-attempt-1-closed-summary.json",
+      "sha256": "ddff7211c8f91149e7d9d1cf99c88955f2464d2f210b1dc2f3fe3652430c2866"
+    },
+    "visual20_raw": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-visual-a2f3f00-20261017/summary.json",
+      "sha256": "65793b9e34d7ced061cdc96ef61b48e31cd10348d69beb3287b156dfe792f2f5"
+    },
+    "visual12_manual_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-visual-a2f3f00-root-review.json",
+      "sha256": "e596de6b65f43c3a39b776e43a1295ca9a685526351b3d25b9fadc1cf7048f7e"
+    },
+    "preview_raw_pixel_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/native-viewer-claim-visual-preparation-20261017/raw-png-display-discrepancy-independent-proof.json",
+      "sha256": "ee8a5e3098be2f77ce1a66379aacc900f356ea1b0563cc0e1a368ef6e1c43524"
+    },
+    "failed136_partial": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-claim-failed-partial-136c48c-20261017/failed-partial-proof.json",
+      "sha256": "2522cc4f764560d3069df8ee60b463604b5c13407c19b085ff5ea86e386bd250"
+    },
+    "failed136_index": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-claim-failed-partial-136c48c-20261017/evidence-inventory.json",
+      "sha256": "cdb10a7c0d666bdb5b61b9b2ed07aee3eff34b4a1bf32efb9ca818e022b0543d"
+    },
+    "failed136_diagnosis": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/native-comparison-viewer-fixture-136c48c-independent-diagnosis.json",
+      "sha256": "1651579f30653b9c6dac206ca8314e762d785d854d19aacf325eddc6a3ecbc72"
+    },
+    "GUI_fixture_repair_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/native-comparison-viewer-fixture-1552ca3-independent-review.json",
+      "sha256": "b5e80c4c19e0ecbe6c974ba04265bf248df6c6f70cc38fd812f87f66ecaf831f"
+    },
+    "GUI_fixture_primary_freeze": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-fixture-primary-freeze.json",
+      "sha256": "f7b71cf92bb632b4d27bc8d5e9bfccc7f03d1ec8c33c8b31a8d27aa95a341bb2"
+    },
+    "focused86_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-claim-focused-caa51fa-preservation-20261017/independent-proof.json",
+      "sha256": "4c026d528ac716fa8f98fbbe70f717ffa552b9ef60915c43c18b1b64979d3637"
+    },
+    "focused86_root_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-claim-focused-caa51fa-20261017/root-closed-review.json",
+      "sha256": "4056c915ced46af43fa4505ae6920e731ac554b984f3936e4557d8be2b177d0e"
+    },
+    "focused86_guard": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/native-viewer-claim-focused-caa51fa-attempt-1-job/summary.json",
+      "sha256": "114306feefd29d40963775476f194d7b0a50b560cc1bce7741c9984df3a322dd"
+    },
+    "full98_preparation": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-claim-observed-gate-caa51fa-20261017/launch-plan.json",
+      "sha256": "6bb4b5eaaee85761431fb6ff3b2c63394cf9e241a3e36e2b27332b8b3b089f6b"
+    },
+    "full98_preparation_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-full98-caa51fa-preparation-independent-review.json",
+      "sha256": "737fbc78249cb526f77bc34aab81248dee5ffe7fb6a54e84aaf39bdd3425c5fb"
+    },
+    "remaining_preparation_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-caa-secondary-retarget-independent-review.json",
+      "sha256": "b55f6d822ead1e54c3117f464b7595bb347cb93eacdd86e9e1b7d4e7bc244e7a"
+    },
+    "full98_closed_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-claim-full-caa51fa-preserved-20261017/independent-proof.json",
+      "sha256": "17daea70f6a99b42dcf0f05e3dc62cee60f22906501efe2eb6668274d0e15df6"
+    },
+    "full98_root_closed_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-claim-observed-gate-caa51fa-20261017/root-closed-review.json",
+      "sha256": "fb0197c89bd1f624c355c746fcd21c147e367a3fb8b7a57eb276c5e78a0391c7"
+    },
+    "full98_module_index": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-claim-full-caa51fa-preserved-20261017/verified-module-index.json",
+      "sha256": "42807374faf773e273d0e28b4825240a170fa890cf10d7fc8c42403d4d4ceee4"
+    },
+    "full98_preserved_inventory": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-claim-full-caa51fa-preserved-20261017/evidence-inventory.json",
+      "sha256": "7735526013b8bd96413584162f8de4f555bf9586c9d0a72f21e33c7eeadf3036"
+    },
+    "full98_actual_guard": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/native-viewer-claim-full-caa51fa-segment-1-job/summary.json",
+      "sha256": "4eb4ea5c39ed2575772ec54fb5926a296cce8488f2515f6fe478bb8aede698e9"
+    },
+    "Tcl_warning_preexistence_triage": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-tests-20261017/tcl-warning-triage-caa51fa/triage.json",
+      "sha256": "f61368511fba38f43f996b5b1ad6a4349e866eaae93c2318d343c7531e397baa"
+    },
+    "Tcl_warning_root_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-tcl-warning-root-review.json",
+      "sha256": "a206fba08f8176cebd12ab8e64f1433e929abc010d414279b7cb5c807d8cbd7a"
+    },
+    "WSL_closed_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-wsl-caa51fa-independent-proof.json",
+      "sha256": "7bad1ccb8922f7d0ab53cce19c08280a6450f61e43fae203b8cb897a4bc5d135"
+    },
+    "WSL_root_closed_review": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-static-audit-caa51fa-20261017/root-WSL-closed-review.json",
+      "sha256": "a72f5a364a4cf5d207e737aaa9f043b7cd9990cdcec61d3d51eafd1b77337239"
+    },
+    "WSL_independent51_file_index": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-wsl-caa51fa-independent-artifacts.json",
+      "sha256": "c60eac1d26550b5e42582e0c176baaedd7259f5578036b251dd72fc835bce91b"
+    },
+    "actual42_GUI_fixture_projection": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/native-viewer-claim-fixture-actual-projection-caa51fa.json",
+      "sha256": "aff38c28ce2d63f2842ae32d28737379726d423aa8e567cdf19ad93d4c3d0d78"
+    },
+    "package_actual_fresh_preflight": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-package-caa51fa-attempt-1-preflight.json",
+      "sha256": "6eee203e401c81d16f53e41b689acad40d9d4134e613dacbc4c5b4c47ceed6c5"
+    },
+    "package_closed_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-package-caa51fa-preserved-20261017/independent-proof.json",
+      "bytes": 12315,
+      "sha256": "26ec9881eb290be9b2067b75fc128a7107778bb972db436287b44fb70f530895"
+    },
+    "package_root_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/package-viewer-claim-caa51fa-attempt-1/root-closed-review.json",
+      "bytes": 7028,
+      "sha256": "29732f506cbed30799e395b037367be08086ba4e2a1a9f988c8c668e4c9ade4c"
+    },
+    "package_summary": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/package-viewer-claim-caa51fa-attempt-1/summary.json",
+      "bytes": 66343,
+      "sha256": "c9a1dd42f45933bf5d3d1a40eab7b093d2e326fed8bbf0f9e62993d4f0cb18cf"
+    },
+    "package_preserved_inventory": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-package-caa51fa-preserved-20261017/evidence-inventory.json",
+      "bytes": 39681,
+      "sha256": "d1fb8ae381cfdbd3d5050573e5a60f4ef191eb291dc0ef1201212c14ea1230cf"
+    },
+    "package_guard": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-package-caa51fa-attempt-1-job/summary.json",
+      "bytes": 3295,
+      "sha256": "528d28b92bdd9a316164e27ec94a4641eeb33833b880c472fba461f8a2d5d019"
+    },
+    "package_wheel_archive": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/package-viewer-claim-caa51fa-attempt-1/artifacts/python_lapsim-0.1.0-py3-none-any.whl",
+      "bytes": 4533292,
+      "sha256": "49e70ca6b7ae126d5f8ef05fbea30075ff2c7eec95553012eae78549159da87b"
+    },
+    "package_sdist_archive": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/package-viewer-claim-caa51fa-attempt-1/artifacts/python_lapsim-0.1.0.tar.gz",
+      "bytes": 3628624,
+      "sha256": "15eec689da75c24074fd67ed8a9038817b5954bac6413a3fed948b8b6a02e6b9"
+    },
+    "browser_closed_review": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-tests-20261017/browser-caa51fa-independent-review/proof.json",
+      "bytes": 20910,
+      "sha256": "1b3a2a4c2f468d505122472fc0c91c0630860bf9ad210b12710ebbc1c8899e94"
+    },
+    "browser_root_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/browser-cli-caa51fa/root-closed-review.json",
+      "bytes": 1251,
+      "sha256": "ed0f122fc1c4ba20950a6ad7eb91c98f90342626d6b91ee326ce7e292062f2fc"
+    },
+    "browser_summary": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/browser-cli-caa51fa/summary.json",
+      "bytes": 1870,
+      "sha256": "0cd5d3632c7fc217c6c335b1a994e624e811eaa9ff3c6591d9084c7310bbf457"
+    },
+    "browser_guard": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-browser-caa51fa-attempt-1-job/summary.json",
+      "bytes": 2479,
+      "sha256": "7f4f7c3e0c265ff1601389dbddc3fc1a0a4d57860aa53b907872308ffe0d44ff"
+    },
+    "browser_artifact_index": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-tests-20261017/browser-caa51fa-independent-review/artifacts.json",
+      "bytes": 9965,
+      "sha256": "e695252dba370b44a66dade30321f53befa143629517f1bc1c3f2cbb544f4453"
+    },
+    "static_map_closed_review": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-tests-20261017/static-map-caa51fa-independent-review/proof.json",
+      "bytes": 9239,
+      "sha256": "9469de757faa33846a8fce2d750608c9f1dd14f1c490b89d24f70b6284b0842b"
+    },
+    "static_map_root_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/cli-static-map-caa51fa/root-closed-review.json",
+      "bytes": 1225,
+      "sha256": "87d2ce1df93f204f75ce54be1cc2dc2225fa8abb638d61cf79f7035f5c5b8987"
+    },
+    "static_map_summary": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/cli-static-map-caa51fa/summary.json",
+      "bytes": 2352,
+      "sha256": "6c3a5d3b48af7edee80c4569a4ac06e7bf57aa24824dcff73fa4e7d1479b972d"
+    },
+    "static_map_guard": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-static-map-caa51fa-attempt-1-job/summary.json",
+      "bytes": 2448,
+      "sha256": "314cd80db2d14746bc3102b8e36762b763abcd6ad2073a88ef9ac97b83c1e101"
+    },
+    "static_map_artifact_index": {
+      "checkout_role": "backend",
+      "relative_path": "work/native-viewer-claim-tests-20261017/static-map-caa51fa-independent-review/artifacts.json",
+      "bytes": 6814,
+      "sha256": "147b620407db3b0f62485af6129df1a41c8002b27cdd8346fdaa3cb804a96303"
+    },
+    "frozen_closed_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-frozen-caa51fa-independent-proof.json",
+      "bytes": 6121,
+      "sha256": "94d8fcdbdce1301e73d2fcb672b1b32101047e9f22684642dbc79a1a09f2ec47"
+    },
+    "frozen_artifact_index": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-frozen-caa51fa-independent-artifacts.json",
+      "bytes": 9610,
+      "sha256": "3a30ea764c7ddea85eabad20c5e7a78e2fd58ab56fbe585d5ca325fdefabfb41"
+    },
+    "frozen_root_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/frozen-viewer-caa51fa/root-closed-review.json",
+      "bytes": 1426,
+      "sha256": "e5c68ea0308076602fc095af3550722512c3fc5f8589009a4e401d75541669a7"
+    },
+    "frozen_preservation": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/frozen-viewer-caa51fa/native-viewer-preservation.json",
+      "bytes": 8372,
+      "sha256": "2c4787c5f389e9f44feeb241a1e85f97ba3a544e0ce29ca42479d64c443b1171"
+    },
+    "frozen_guard": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer-claim-frozen-caa51fa-attempt-1-job/summary.json",
+      "bytes": 2577,
+      "sha256": "5964bef6b8697edfa7885f403dc235509e33b70736d9f3e97915224daf20b5d7"
+    },
+    "frozen_ZIP": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/frozen-viewer-caa51fa/LapSim-Windows-x64.zip",
+      "bytes": 86920780,
+      "sha256": "5e9cb62352fa6a30982825cc30e5df0ec45d4f15a921d9bccaee7bab079fcbd1"
+    },
+    "frozen_EXE": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/frozen-viewer-caa51fa/LapSim.exe",
+      "bytes": 79201336,
+      "sha256": "91a03f15ba662382c95ee6c00f4bb330beac70204960aa2bde36804605c94916"
+    }
+  },
+  "retention": "Compact acceptance manifest. Role-relative paths and SHA256 bind evidence retained in ignored local verification storage; no telemetry arrays, private absolute paths, raw logs/stacks or asset bytes are duplicated here. Hashes are not signatures or physical attestation. All allocated local jobs closed; normal integration/postmerge is separate, and the historical ZIP-report limitation is explicit.",
+  "supersedes_draft_sha256": "7ade56e22f974e947dec63e1617065b77e2ad8a4ebe9f615c6b915caecacbcaf",
+  "saved_record_roles": {
+    "existing_saved_native_drive": "Previously accepted synthetic native drive read by the visual supplement; no fresh physics.",
+    "analytic_pair_GUI_inputs": "Separate left, plant-step partner and logging-period partner analytic saved records; unit-fixture model/engine/controller claims retained, no plant advancement.",
+    "opaque_claim_scratch_inputs": "Independent copies resealed after changing only a stored frame or unit claim; archival inspection accepts them, fixed-label plotting rejects them.",
+    "installed_saved_native_RECORDS": "Three prior accepted records: drive, half-step drive partner and sparse-log drive partner. Read by both installed formats; seven recipe source FILES and834 source/resource FILES are separate counts.",
+    "installed_and_frozen_opaque_RECORDS": "Frame/units variants are independently resealed copies of the existing drive; negative commands are separate processes. No new native simulation."
+  },
+  "finalization_scope": {
+    "derived_from_local_draft_sha256": "967bdfde8ba6156cce00ff4ce9fb1dfe98611ee5c853ee7f59f515c110455c69",
+    "changes": "Only public manifest status/retention wording and explicit frame/unit conversion scope; all measurements, source/artifact bindings and completed phases are preserved.",
+    "runtime_acceptance_source": "caa51fa62c00dd180548071e3b986fd58d471345",
+    "integration": "Normal PR, hosted checks and local post-merge results belong to later integration evidence, not this runtime source acceptance."
+  }
+}

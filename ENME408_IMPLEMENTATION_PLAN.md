@@ -62,6 +62,39 @@ desktop self-test now checks an empty viewer and optionally a supplied external
 record, keeping absent saved-record scope explicit. The source window and
 copied package require separate workflow checks.
 
+The viewer and CSV projection share an exact saved frame/unit claim check before
+using fixed world-frame and SI labels. Rejection clears plotted and selected
+telemetry, identity and result actions while keeping Open available. Supported
+historical source mismatches and unavailable source files remain viewable; the
+reader, inspector, native replay scope and numerical code stay unchanged.
+Acceptance covers independently resealed unsupported claims, bounded feedback,
+input preservation and supported reload, with actual installed and copied
+runtime checks kept separate from source-window tests.
+
+Local acceptance at clean `caa51fa` is recorded in the
+[viewer frame/unit receipt](docs/research/evidence/chrono-native-viewer-claims-20261017.json):
+86 focused checks and a fresh 98-module Windows sequence passed (2,445 reported
+JUnit cases, 1,435 raw testcase elements, one expected POSIX-only skip). That
+compiler case passed separately on local WSL. One evidenced pre-existing Tcl
+lifetime warning remains unresolved. The failed earlier GUI-fixture run is
+retained; only its world/SI claims and independently derived IDs changed for the
+successful fresh run. Installed, browser, source-map and copied-executable
+checks have their own recorded scope. The ZIP's older bundled full-suite report
+is not current acceptance evidence. Repairing build-owned verification
+attachments is the next bounded dependency; normal PR integration and local
+post-merge checks remain separate from this source acceptance.
+
+PR #108's first hosted native shard later failed an unchanged initial-load wait.
+The test-only follow-up at `829df7d` removes the fault-injection fixture's
+instance-bound method cycle while preserving assertions and waits. A fresh
+86-case focused run and 98-module Windows sequence passed with the same full
+counts and expected skip; the comparison viewer's Tcl warning remains open.
+The [follow-up receipt](docs/research/evidence/chrono-native-viewer-fixture-20261017.json)
+retains the failure and independent local checks without attributing its cause.
+Runtime code and the earlier installed/browser/frozen acceptance scope remain
+unchanged. Fresh hosted checks, normal integration and post-merge verification
+remain separate gates.
+
 The engine-free saved-pair API/CLI merged normally through
 [PR #99](https://github.com/LucasKazaki/lapsim/pull/99) at `591728b` for declared
 plant-step or logging-period comparisons. It checks recorded physical/source
@@ -253,7 +286,10 @@ Refresh these against live GitHub before making changes. A dated SHA is an audit
 
 | Surface | Reviewed identity | Meaning |
 |---|---|---|
-| LapSim main before this documentation update | `466f612f88bcaf9fe88f61e1e1ccfafed540245d` | October 14 integrated application |
+| LapSim main at the original October 14 handoff | `466f612f88bcaf9fe88f61e1e1ccfafed540245d` | Historical integrated application |
+| LapSim main refreshed October 17 for viewer acceptance | `2800d02232057fc92e16fe9f5bda1e60921f7e9a` | CSV follow-up integrated normally through [#107](https://github.com/LucasKazaki/lapsim/pull/107) |
+| Viewer frame/unit local acceptance source, October 17 | `caa51fa62c00dd180548071e3b986fd58d471345` | Tested source; PR integration and post-merge verification tracked separately |
+| Viewer renderer test-fixture follow-up, October 17 | `829df7d8ea12ad42c85f4bc05f2cca180f2f4e79` | Fresh focused86/full98; runtime unchanged, prior hosted failure and Tcl warning retained; PR #108 integration pending |
 | [LapSim #13](https://github.com/LucasKazaki/lapsim/pull/13) | `24698ed5e590f2d2e0d6bfa51a78c5446e436928` | Torque-replay viewer, based on main |
 | [LapSim #15](https://github.com/LucasKazaki/lapsim/pull/15) | `41eb82d9513b9dc23256fb9a441f6a6b6bfb8ae2` | Timestep convergence repair, based on #13 |
 | [LapSim #17](https://github.com/LucasKazaki/lapsim/pull/17) | `30ae5f0de261b82f61fe405b470038761de96ca5` | Battery interval-charge/preflight repair, based on #15 |
