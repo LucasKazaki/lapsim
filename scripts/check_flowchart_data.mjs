@@ -43,7 +43,8 @@ assert(data && data.root && data.meta, "Data scripts did not assemble LAPSIM_FLO
 assert(data.root.id === "lapsim", `Unexpected root id: ${data.root.id}`);
 assert(data.meta.repository === "LucasKazaki/lapsim", "Repository metadata is incorrect.");
 assert(Array.isArray(data.root.children), "The root must contain top-level branches.");
-assert(data.root.children.length === 10, `Expected 10 top-level branches, found ${data.root.children.length}.`);
+assert(data.root.children.length === 11, `Expected 11 top-level branches, found ${data.root.children.length}.`);
+assert(data.root.children.some(branch => branch.id === "native-suspension"), "The optional native suspension study must be a distinct model branch.");
 assert(data.meta.sourceCatalog?.modules >= 79, "Full source catalog is missing.");
 
 const validStatuses = new Set([

@@ -12,7 +12,38 @@ PR/issue state before treating a candidate as merged. Public release and site
 deployment are deferred by the owner; physical PIL remains unavailable. The
 contracts below retain the acceptance work and staged future scope.
 
-## Overnight implementation window (16 October 2026)
+## Active local native-backend cycle (16–17 October 2026)
+
+The owner's new continuous engineering request supersedes the completed window
+below. The old coordinator released its lease and its scheduler remains paused;
+no new scheduler is required for the active chat. Current main was refreshed at
+`139a02fca52aaf6b0fb7ad9d8963e5dc74177d8a` before branching. Existing licensing
+PRs are separate work and are not incorporated by this feature.
+
+E16's smallest increment is a headless, explicitly synthetic native suspension
+and rear-driveshaft study. The engineering user needs reproducible gravity
+settling, handling signs, suspension/contact telemetry and timestep comparisons.
+Inputs come from the pinned official PyChrono 10.0.0 synthetic Sedan, with an
+explicit upstream shaft-brake variant; they are not Formula SAE measurements.
+Chrono alone owns physical state, while an integer-tick runner holds driver
+requests and logs cached tire-force timings. The existing fast models remain
+available. Native physics runs on the verified local Windows PC CPU; no GPU
+physics is inferred from installed CUDA dependencies.
+
+Acceptance requires actual native equilibrium/symmetry, torque/steering signs,
+adjacent-step sensitivity, logging invariance, reset, cancellation and checked
+replay; plus the applicable stable-tree repository checks and independent review.
+Failed short-settling, Simple-brake and mismatched tire-clock attempts remain
+local evidence. Do not widen tolerances or call this physically validated.
+The [native guide](docs/chrono_suspension_study.md) and
+[source register](docs/research/chrono_backend.md) explain the model boundaries.
+Restart state and bounded local evidence are in ignored
+`work/detailed-study/checkpoint.json`. Check `work/detailed-study/STOP` before
+each job. Public release, site deployment and physical hardware remain outside
+this cycle. Team geometry/correlation, full powertrain limits and presentation
+expansion follow the accepted headless increment.
+
+## Completed overnight implementation window (16 October 2026)
 
 Start: **2026-10-16 00:56:04 America/New_York**. Fixed cutoff:
 **2026-10-16 09:00:00 America/New_York**. Resumes retain this cutoff.
@@ -28,7 +59,7 @@ The expanded team scope uses the next unused IDs, after E01–E14:
 | ID | Bounded deliverable | Prerequisite / acceptance |
 |---|---|---|
 | E15 | Material/geometry cards and an analytic beam/shaft study | After integrated bicycle/controller baseline; SI units, provenance, uncertainty, boundary conditions, hand calculations, mass/inertia; keep stiffness separate from lap predictions |
-| E16 | Suspension kinematics/compliance slice | Verified geometry and supported interfaces; benchmark a small reproducible case before selecting an optional specialist backend |
+| E16 | Native synthetic suspension/control slice, then team geometry/compliance | Accept one reproducible native fixture first; verified team geometry remains a separate requirement for team-car studies |
 | E17 | Imported aero-map validity slice | Declared axes/reference area/interpolation domain and source permissions; no invented CFD |
 | E18 | Battery/thermal derating slice | Reuse existing power/energy ownership; version thermal assumptions and verify balances; no invented temperature correlation |
 | E19 | Shared subteam examples and technical case study | Shared configuration IDs, solver/source revisions, runnable commands, actual evidence and unavailable-capability labels; held-out correlation follows authorized data |

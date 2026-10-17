@@ -82,6 +82,15 @@ They never silently fall back to Python. See the [control lab guide](docs/closed
 for commands, source identities, physics/transport contracts and the separate
 limits of host execution, emulation and physical testing.
 
+## Optional native suspension study
+
+A separate headless CPU Chrono::Vehicle study provides synthetic double-wishbone
+suspension, dynamic contact loads and a bounded rear-driveshaft baseline.
+Its passenger-size upstream fixture is explicitly separate from the Formula SAE
+team profile. It uses an isolated native environment and saves checked replay
+records; ordinary desktop, browser and fast-model startup remain available.
+Follow the [installation, commands and validity limits](docs/chrono_suspension_study.md).
+
 ## Component materials study
 
 Open **Four-wheel lab → Component materials** on desktop. Compare two versioned
