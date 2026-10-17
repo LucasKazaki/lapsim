@@ -272,6 +272,53 @@ def test_parent_close_discards_pending_pair_and_callbacks(root, saved, monkeypat
     assert viewer.record is viewer.comparison_window is viewer.comparison_report is None
 
 
+def test_kind_arrows_wrap_once_clear_old_report_and_preserve_native_space_tab(
+    root, saved
+):
+    viewer = viewer_with_left(root, saved)
+    open_pair(root, viewer, saved["plant"], "plant-step")
+    details = viewer.inspect_comparison()
+    selected = viewer.selected_sample
+    first, second = viewer.comparison_kind_buttons
+    first.focus_force()
+    root.update()
+    first.event_generate("<Right>")
+    root.update()
+    assert viewer.comparison_kind.get() == "logging-period"
+    assert first.focus_get() is second
+    assert viewer.comparison_report is None and not details.winfo_exists()
+    second.event_generate("<Right>")
+    root.update()
+    assert viewer.comparison_kind.get() == "plant-step" and first.focus_get() is first
+    first.event_generate("<Left>")
+    root.update()
+    assert (
+        viewer.comparison_kind.get() == "logging-period" and first.focus_get() is second
+    )
+    second.event_generate("<Up>")
+    root.update()
+    assert viewer.comparison_kind.get() == "plant-step"
+    first.event_generate("<Down>")
+    root.update()
+    assert viewer.comparison_kind.get() == "logging-period"
+    first.focus_force()
+    first.event_generate("<space>")
+    root.update()
+    assert viewer.comparison_kind.get() == "plant-step"
+    first.event_generate("<Tab>")
+    root.update()
+    focus = first.focus_get()
+    assert focus is not None and focus.winfo_toplevel() is viewer.comparison_window
+    focus.event_generate("<Shift-Tab>")
+    root.update()
+    assert (
+        first.focus_get() is not None
+        and first.focus_get().winfo_toplevel() is viewer.comparison_window
+    )
+    assert viewer.selected_sample is selected
+    viewer.close()
+
+
 @pytest.mark.parametrize("dark", (False, True))
 @pytest.mark.parametrize("size", ("960x720", "1180x840"))
 def test_actions_resize_and_escape_keeps_primary_keyboard_cursor(

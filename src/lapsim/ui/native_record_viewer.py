@@ -571,9 +571,11 @@ class NativeRecordViewer:
         ).pack(side="left", padx=(0, 8))
         self.comparison_kind = tk.StringVar(value="")
         self.comparison_kind_buttons = []
-        for label, kind in (
-            ("Plant step", "plant-step"),
-            ("Logging period", "logging-period"),
+        for index, (label, kind) in enumerate(
+            (
+                ("Plant step", "plant-step"),
+                ("Logging period", "logging-period"),
+            )
         ):
             button = tk.Radiobutton(
                 controls,
@@ -588,6 +590,18 @@ class NativeRecordViewer:
                 activeforeground=self.foreground,
                 selectcolor=self.background,
             )
+            for key, direction in (
+                ("<Left>", -1),
+                ("<Up>", -1),
+                ("<Right>", 1),
+                ("<Down>", 1),
+            ):
+                button.bind(
+                    key,
+                    lambda _event, at=index, step=direction: self._comparison_kind_key(
+                        at, step
+                    ),
+                )
             button.pack(side="left", padx=(0, 8))
             self.comparison_kind_buttons.append(button)
         self.comparison_choose_button = tk.Button(
@@ -640,6 +654,15 @@ class NativeRecordViewer:
         )
         self.comparison_kind_buttons[0].focus_set()
         return window
+
+    def _comparison_kind_key(self, index, direction):
+        if not self.closed and self.comparison_window is not None:
+            target = self.comparison_kind_buttons[
+                (index + direction) % len(self.comparison_kind_buttons)
+            ]
+            target.focus_set()
+            target.invoke()
+        return "break"
 
     def _set_comparison_text(self, content):
         self.comparison_text.configure(state="normal")

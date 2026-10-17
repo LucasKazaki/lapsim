@@ -367,6 +367,25 @@ def test_busy_comparison_does_not_disable_primary_sample_inspection():
     }
 
 
+def test_radio_arrows_are_local_wrap_and_return_break_without_extra_selection():
+    viewer = worker_viewer()
+    viewer.closed = False
+    viewer.comparison_window = object()
+    calls = []
+    viewer.comparison_kind_buttons = [
+        SimpleNamespace(
+            focus_set=lambda at=index: calls.append((at, "focus")),
+            invoke=lambda at=index: calls.append((at, "select")),
+        )
+        for index in range(2)
+    ]
+    assert viewer._comparison_kind_key(1, 1) == "break"
+    assert calls == [(0, "focus"), (0, "select")]
+    calls.clear()
+    assert viewer._comparison_kind_key(0, -1) == "break"
+    assert calls == [(1, "focus"), (1, "select")]
+
+
 @pytest.mark.parametrize("kind", ("record", "comparison"))
 def test_current_completion_releases_and_publishes_only_matching_owner(kind):
     viewer = worker_viewer()
@@ -432,7 +451,9 @@ def test_close_invalidates_comparison_without_cancelling_other_ownership():
     viewer.comparison_details_window = SimpleNamespace(
         destroy=lambda: destroyed.append("details")
     )
-    viewer.compare_button = SimpleNamespace(focus_force=lambda: destroyed.append("focus"))
+    viewer.compare_button = SimpleNamespace(
+        focus_force=lambda: destroyed.append("focus")
+    )
     viewer.comparison_left = Value("old left identity")
     viewer.comparison_right = Value("old right identity")
     viewer.comparison_kind = Value("plant-step")
