@@ -28,9 +28,9 @@ from lapsim.dynamics.powered_planar import (
 )
 from lapsim.resources import build_identity, repository_root
 
-from .basic_dynamics import decode_json
 from .controller_backend import PythonController, controller_source_identity
 from .dynamics_record import _canonical_json, _content_id, _runtime_identity
+from .record_io import read_json_bounded, write_text_atomic
 
 SCHEMA = "lapsim.closed-loop.record.v3"
 MODEL_ID = "independent_wheel_planar_v1"
@@ -782,9 +782,9 @@ def main() -> int:
             )
         ):
             raise ValueError("output must not overwrite input")
-        if source and source.stat().st_size > 20_000_000:
-            raise ValueError("closed-loop input exceeds the size limit")
-        value = decode_json(source.read_bytes()) if source else None
+        value = (
+            read_json_bounded(source, maximum_bytes=20_000_000) if source else None
+        )
         if args.replay:
             if not isinstance(value, dict):
                 raise ValueError("closed-loop replay requires a record object")
@@ -839,7 +839,7 @@ def main() -> int:
         )
         encoded = _canonical_json(result) + "\n"
         if args.output:
-            args.output.write_text(encoded, encoding="utf-8")
+            write_text_atomic(args.output, encoded)
         else:
             print(encoded)
     except (ValueError, OSError, TypeError) as error:
