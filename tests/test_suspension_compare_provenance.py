@@ -76,7 +76,7 @@ def test_report_provenance_matches_independent_canonical_oracle():
         for name in FILES
     }
     assert recipe["files_sha256"] == expected
-    assert recipe["file_status"] == {name: "readable" for name in FILES}
+    assert recipe["file_status"] == dict.fromkeys(FILES, "readable")
     assert recipe["recipe_id"] == independent_id(
         {key: value for key, value in recipe.items() if key != "recipe_id"}
     )
