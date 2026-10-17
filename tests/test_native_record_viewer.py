@@ -83,6 +83,57 @@ def make_viewer(root, saved):
     return viewer
 
 
+def test_recorded_model_claim_displays_actual_synthetic_profile():
+    from lapsim.ui.native_record_viewer import recorded_model_claim
+
+    record = {
+        "payload": {
+            "model": {"profile_id": "chrono10_synthetic_sedan_shafts_brakes_v1"}
+        }
+    }
+    assert (
+        recorded_model_claim(record)
+        == "Recorded model claim: chrono10_synthetic_sedan_shafts_brakes_v1"
+    )
+
+
+@pytest.mark.parametrize(
+    "model",
+    (
+        {},
+        {"profile_id": None},
+        {"profile_id": 4},
+        {"profile_id": []},
+        {"profile_id": ""},
+    ),
+)
+def test_recorded_model_claim_missing_or_nonstring_is_not_recorded(model):
+    from lapsim.ui.native_record_viewer import recorded_model_claim
+
+    assert (
+        recorded_model_claim({"payload": {"model": model}})
+        == "Recorded model claim: not recorded"
+    )
+
+
+def test_recorded_model_claim_bounds_and_escapes_untrusted_text():
+    from lapsim.ui.native_record_viewer import recorded_model_claim
+
+    profile = "A\nB\rC\tD\x00E\x1bF\x7f\u2028\u202e"
+    record = {"payload": {"model": {"profile_id": profile}}}
+    assert (
+        recorded_model_claim(record)
+        == r"Recorded model claim: A\nB\rC\tD\u0000E\u001bF\u007f\u2028\u202e"
+    )
+    assert record["payload"]["model"]["profile_id"] == profile
+    long_profile = "x" * 8_000_000
+    record["payload"]["model"]["profile_id"] = long_profile
+    display = recorded_model_claim(record)
+    assert display == "Recorded model claim: " + "x" * 77 + "…"
+    assert len(display) == 100
+    assert record["payload"]["model"]["profile_id"] is long_profile
+
+
 def test_dynamics_lab_exposes_native_open_without_crowding_header(root, monkeypatch):
     monkeypatch.setattr("tkinter.filedialog.askopenfilename", lambda **kwargs: "")
     lab = DynamicsLab(root)
@@ -104,6 +155,7 @@ def test_dynamics_lab_exposes_native_open_without_crowding_header(root, monkeypa
 
 def test_saved_selection_uses_exact_sample_and_distinct_clocks(root, saved):
     viewer = make_viewer(root, saved)
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     boundary = next(
         i
         for i, s in enumerate(viewer.record["payload"]["samples"])
@@ -138,6 +190,7 @@ def test_historical_mismatch_remains_viewable_and_explicit(
     root, tmp_path, saved_record
 ):
     record = json.loads(json.dumps(saved_record))
+    record["payload"]["model"]["profile_id"] = "historical_clock_fixture_only"
     record["payload"]["source"]["files_sha256"]["suspension_study.py"] = "0" * 64
     record["content_id"] = study._content_id(record["payload"])
     record["receipt_id"] = study._content_id(
@@ -146,6 +199,10 @@ def test_historical_mismatch_remains_viewable_and_explicit(
     path = tmp_path / "historical.json"
     path.write_text(json.dumps(record))
     viewer = make_viewer(root, path)
+    assert (
+        viewer.model_claim.get()
+        == "Recorded model claim: historical_clock_fixture_only"
+    )
     assert "mismatch" in viewer.checks.get()
     assert "fresh native replay not run" in viewer.checks.get()
     viewer.close()
@@ -315,6 +372,7 @@ def test_bad_load_clears_old_result_and_fresh_load_recovers(
         monkeypatch.setattr(viewer, "_draw_record", reject_plot)
     viewer.load_path(bad if failure == "json" else saved)
     assert viewer.record is None
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     wait(root, lambda: not viewer.busy)
     assert "Open failed" in viewer.status.get()
     assert viewer.details_button.cget("state") == "disabled"

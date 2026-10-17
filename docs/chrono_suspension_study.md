@@ -59,6 +59,7 @@ This opens a separate passive viewer in the ordinary desktop environment; it
 does not start Chrono, replay physics, change the input file or evaluate the
 planar model. The additional action row keeps the entry visible without adding
 another button to the lab's existing header.
+The visible model profile is the record's bounded, escaped claim; its full value remains in Details and does not identify a current engine.
 
 The four panels show the recorded COM path and wheel-center points, COM height,
 four spring lengths, and applied or computed vertical tire forces. The points

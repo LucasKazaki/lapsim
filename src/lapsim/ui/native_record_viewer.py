@@ -22,6 +22,28 @@ FONT = ("Segoe UI", 10)
 SAVED_STATUS = "Saved samples only · settling metrics and historical timings remain recorded claims · Focus slider: Left/Right select, Home/End jump"
 
 
+def recorded_model_claim(record):
+    """Bound and escape a saved profile claim; never infer a current model."""
+    prefix = "Recorded model claim: "
+    model = record.get("payload", {}).get("model", {})
+    profile = model.get("profile_id") if isinstance(model, dict) else None
+    if not isinstance(profile, str) or not profile:
+        return prefix + "not recorded"
+    budget = 100 - len(prefix)
+    parts, size = [], 0
+    # Examine only a display-sized prefix, including for an 8 MB input string.
+    # JSON escapes also make Unicode line and direction controls visible.
+    for character in profile[:budget]:
+        part = json.dumps(character, ensure_ascii=True)[1:-1]
+        if size + len(part) > budget - 1:
+            break
+        parts.append(part)
+        size += len(part)
+    if len(parts) < len(profile):
+        parts.append("…")
+    return prefix + "".join(parts)
+
+
 def force_samples(samples, wheel, kind):
     """Keep the selected force's actual source clock; omit unknown origins."""
     if kind == "Applied":
@@ -76,6 +98,7 @@ class NativeRecordViewer:
             value="Open a saved native study · viewing never reproduces physics"
         )
         self.identity = tk.StringVar(value="Saved telemetry · no record open")
+        self.model_claim = tk.StringVar(value=recorded_model_claim({}))
         self.checks = tk.StringVar(
             value="Integrity and structure will be checked; native replay and calibration are not established by opening."
         )
@@ -133,7 +156,7 @@ class NativeRecordViewer:
         self.force_menu.pack(side="left")
         evidence = tk.Frame(self.window, background=bg, padx=12, pady=5)
         evidence.grid(row=2, column=0, sticky="ew")
-        for variable in (self.identity, self.checks):
+        for variable in (self.identity, self.model_claim, self.checks):
             self._label(evidence, variable).pack(fill="x", anchor="w")
         self.figure = Figure(
             figsize=(10, 5), dpi=100, constrained_layout=True, facecolor=bg
@@ -276,6 +299,7 @@ class NativeRecordViewer:
         ):
             widget.configure(state="disabled")
         self.identity.set("Opening " + self.path.name)
+        self.model_claim.set(recorded_model_claim({}))
         self.checks.set("Checking saved integrity, structure and clocks…")
         self.clocks.set("")
         self.values.set("")
@@ -321,6 +345,7 @@ class NativeRecordViewer:
                     self.identity.set(
                         f"{self.path.name} · saved content {record['content_id'][:12]} · integrity and stored structure checked"
                     )
+                    self.model_claim.set(recorded_model_claim(record))
                     self.checks.set(
                         "Current implementation: "
                         + summary["checks"]["current_implementation_files"]
