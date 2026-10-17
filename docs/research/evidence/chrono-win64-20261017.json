@@ -1,0 +1,298 @@
+{
+  "schema": "lapsim.historical-native-verification.v1",
+  "scope": "Historical local Windows verification and fresh-prefix reproduction before the settling gate was moved from exported-sample cadence to every plant boundary. Numerical verification of an upstream synthetic fixture, not physical validation or acceptance of later source revisions.",
+  "retention": "This tracked manifest retains command arguments, exits, timing receipts, source/config identities and SHA256 hashes of the original JSON/XML/log bytes. Large telemetry/logs stay in ignored local work storage; the manifest does not embed them or act as a signature. Installation-specific absolute paths alone are replaced by explicit role bindings; all other arguments and measurements are unchanged.",
+  "working_directory": "repository root",
+  "path_bindings": {
+    "{micromamba}": "official micromamba 2.5.0-2 executable; SHA256 baf6d56a31a63a75f0c77bdce27fefea57b1bdc8aa25b50a1be45696c0e737e7",
+    "{original_prefix}": "isolated original prefix, created from environments/chrono-win64.lock.txt and chrono-pip.lock.txt",
+    "{fresh_prefix}": "different fresh prefix, recreated from both locks and editable project --no-deps",
+    "{cache}": "isolated short package cache; MAMBA_ROOT_PREFIX selected in the process environment before invocation"
+  },
+  "machine": {
+    "os": "Windows 11 Home 10.0.26300 x64",
+    "cpu": "AMD Ryzen 9 7950X3D, 16 cores / 32 logical processors",
+    "usable_ram_gib": 31.16,
+    "gpu": "NVIDIA RTX 5080, unused by headless physics and rendering",
+    "gpu_physics": false
+  },
+  "measurement_conditions": "CPU numerical thread pools limited to one; another independent correctness suite was active during fresh-prefix command measurements. Outer wall time includes launcher, imports and export. Study timing excludes interpreter/import startup, receipt envelope and disk export; peak working set is process lifetime.",
+  "native_suite": {
+    "command_receipt": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-r",
+        "{cache}",
+        "-p",
+        "{original_prefix}",
+        "python",
+        "-m",
+        "pytest",
+        "quality/test_chrono_native.py",
+        "-q",
+        "--tb=short",
+        "--junitxml=work/detailed-study/chrono-native-0514215.xml"
+      ],
+      "commit": "0514215fcf6763eff3f21d1e56ffd7256c36b237",
+      "tree_before": "",
+      "started_utc": "2026-10-17T04:27:12.299419+00:00",
+      "execution": "verified local native Windows PC",
+      "state": "finished",
+      "thread_pools": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "wall_time_s": 65.21757499998785,
+      "finished_utc": "2026-10-17T04:28:17.517967+00:00",
+      "commit_after": "0514215fcf6763eff3f21d1e56ffd7256c36b237",
+      "tree_after": "",
+      "original_command_receipt_sha256": "f8dddc4b5f26d2ad5fa57e06ff5a12d324934c47421e1fbaf90d8abd034cb83c",
+      "original_log_sha256": "365ec75101c887e62d109c3ff1b3e49fb82a22e54a2bd2586c59e06af1626088"
+    },
+    "junit_sha256": "65f9f4fa032775324ebfc181ea4f2225d62c2e28a94065229f6117f13e184357",
+    "junit_counts": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "pytest_seconds": 64.49
+  },
+  "fresh_prefix_drive": {
+    "command_receipt": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{fresh_prefix}",
+        "python",
+        "-m",
+        "lapsim.experiments.suspension_study",
+        "--scenario",
+        "drive",
+        "--stop-file",
+        "work/detailed-study/STOP",
+        "--output",
+        "work/detailed-study/fresh-native-drive-5db439d.json"
+      ],
+      "commit": "5db439d8e40958f4879fff36c2fc37d4ebedef7a",
+      "tree_before": "",
+      "started_utc": "2026-10-17T04:46:21.717778+00:00",
+      "execution": "verified local native Windows PC",
+      "state": "finished",
+      "thread_pools": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "wall_time_s": 16.092317500006175,
+      "finished_utc": "2026-10-17T04:46:37.810515+00:00",
+      "commit_after": "5db439d8e40958f4879fff36c2fc37d4ebedef7a",
+      "tree_after": "",
+      "original_command_receipt_sha256": "726d28ac1325797821e69886ee0fa56a7de0fc6b380bb614fcf2db4ed76d860d",
+      "original_log_sha256": "c1717cc8d1d5c21f560a87d81ed604fa9e968865545975963a123ffa17f943f7"
+    },
+    "result_sha256": "68574c93640a04d073e22fe4ff9afab1b3af5e668df093a5ea4a9a12793d8844",
+    "schema": "lapsim.native-suspension-study.v1",
+    "content_id": "6ffbd3b0a13c0292620e44164e453e61d1e941985e54212ccdc9b5931edf5ad7",
+    "receipt_id": "5b979c399c2b81b92a4f11fba08a136b5953ce3b867d7e7d792fe0dfc01f59f6",
+    "execution": {
+      "controller_calls": 800,
+      "device": "CPU",
+      "gpu_physics": false,
+      "initialization_wall_s": 0.1392733999819029,
+      "logging_samples": 401,
+      "plant_steps": 16000,
+      "platform": "Windows",
+      "process_cpu_s": 7.984375,
+      "process_lifetime_peak_working_set_bytes": 140959744,
+      "python": "3.12.15",
+      "simulated_time_s": 8.0,
+      "stepping_and_record_wall_s": 7.928613299998688,
+      "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export",
+      "total_wall_s": 8.06788669998059
+    },
+    "source": {
+      "code_commit": "5db439d8e40958f4879fff36c2fc37d4ebedef7a",
+      "dirty_worktree": false,
+      "files_sha256": {
+        "chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+        "native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+        "suspension_study.py": "f741e887e8130fe2799a60584aa2cc3d2b3e472679bb002447a16966ac16f68d"
+      },
+      "hash_scope": "three study implementation files; UTF-8 bytes with CRLF normalized to LF"
+    },
+    "scenario": {
+      "controller_period_s": 0.01,
+      "driveshaft_torque_nm": 40.0,
+      "logging_period_s": 0.02,
+      "maneuver_s": 2.0,
+      "plant_step_s": 0.0005,
+      "scenario_id": "drive",
+      "settle_braking": 0.2,
+      "settle_s": 6.0,
+      "steering": 0.06
+    },
+    "model": {
+      "assets_sha256": {
+        "derived/synthetic_sedan_shafts.json": "2ec10b9acacf1a7511b773bf7bc3409c280b483a328ddb131a59f8e7f8fa6a1a",
+        "sedan/brake/Sedan_BrakeShafts.json": "59e6f5f834b834a337518412bfb0e9f0af2512000bf71f27708537d2441c0c1e",
+        "sedan/chassis/Sedan_Chassis.json": "18ffc5935cc49ef06fcb49f88d5e84d198da922d5a14d72961885c310deadd09",
+        "sedan/driveline/Sedan_Driveline2WD.json": "80dd661a9c20ed7eb3e00cda148ccbe0ad4a0150f49b97dafa9d98a755696457",
+        "sedan/steering/Sedan_RackPinion.json": "828071b626be2ef9b0f63d2ff06097b22372a1739fa902583519801cfe8bca02",
+        "sedan/suspension/Sedan_DoubleWishbone.json": "7fe4624e1ea9f367cda41780f1c255a4c7da579fd29f073d7ab55d11dad0bbf5",
+        "sedan/tire/Sedan_Pac02Tire.json": "93f8945e5fea8a03364e1549791683292bc446dd8eb1585e782e67628b3a811f",
+        "sedan/tire/Sedan_Pac02Tire.tir": "ef4c08a321d06927616416d6af2eb3c6db41fa8461927650b194c0ed79ac4af1",
+        "sedan/vehicle/Sedan_Vehicle.json": "6605c1fa5798e80b3c62fd16dc7d25bd5ed9f0321129ddddd0dc2c5e8ee7821e",
+        "sedan/wheel/Sedan_Wheel.json": "cb272839e50b8b45b150c902d9e7a24b8cefed67e770d2f866a3a44e23c13f2a"
+      },
+      "engine": {
+        "build": "py312h418371c_0",
+        "name": "pychrono",
+        "native_modules_sha256": {
+          "_core.pyd": "2b700d253e4f359d0a508094de9f857f469c2362a04d8cc249f5f7251ed002e9",
+          "_vehicle.pyd": "08b30f00a398f0e2d0042248eb41f2cda23e00ba843bb587a963982b60c7226e"
+        },
+        "sha256": "8429923678c714c8b49f0a04c92990b1002457396c0765cfc250ac46fa34d92e",
+        "subdir": "win-64",
+        "version": "10.0.0"
+      },
+      "gpu_physics": false,
+      "gravity_mps2": 9.81,
+      "initial_height_m": 0.7,
+      "limitations": [
+        "Upstream synthetic passenger Sedan; no Formula SAE geometry or vehicle calibration",
+        "Ideal requested driveshaft torque; no motor, inverter, battery, regen, or traction controller",
+        "Rigid links/chassis; no flexible structure, aero, thermal model or physical validation",
+        "Pac02 parameter provenance is upstream synthetic data; no fitted team tire coefficients",
+        "Selected TIR uses linear vertical stiffness/damping; no tire bottoming, rolling resistance or pressure dependence"
+      ],
+      "observation_phase": "chassis COM after Advance; cached tire force carries its separate input-state time",
+      "orientation_representation": "Cardan XYZ radians plus world XY heading of the chassis forward axis",
+      "profile_id": "chrono10_synthetic_sedan_shafts_brakes_v1",
+      "solver": {
+        "max_iterations": 150,
+        "threads": 1,
+        "tolerance": 1e-10,
+        "type": "ChSolverBB"
+      },
+      "terrain": {
+        "friction": 0.9,
+        "size_m": [
+          100,
+          30
+        ],
+        "type": "flat rigid"
+      },
+      "tire_force_coupling": "one plant-step cached tire force delay; contact frame/gating uses interval-start geometry",
+      "tire_internal_step_policy": "Pac02 low-speed Dahl bristle step equals each actual plant step; normal-speed handling slip is instantaneous",
+      "torque_scope": "reported differential wheel output; excludes tire/brake torque and exact shaft-body connector inertia",
+      "vehicle_variant": {
+        "base": "sedan/vehicle/Sedan_Vehicle.json",
+        "brake_model": "torque-limited shaft clutch; upstream max 2000 N m, shaft inertia 0.4 kg m^2 per brake",
+        "brake_reaction_telemetry": "unavailable through selected public API; request is not achieved brake torque",
+        "ideal_brake_locking": false,
+        "only_definition_override": "all four brake inputs use upstream Sedan_BrakeShafts.json"
+      },
+      "wheel_signs": "wheel-local +Y omega and driveline wheel torque are positive propulsion; native axle-shaft omega uses opposite axis"
+    },
+    "metrics": {
+      "final_chassis_com_height_m": 0.9295144073754011,
+      "final_heading_rad": 2.2641148428526927e-06,
+      "final_speed_mps": 0.5605165108366339,
+      "settle_acceptance": {
+        "force_relative_limit": 0.01,
+        "left_right_relative_limit": 0.01,
+        "passed": true,
+        "vertical_speed_limit_mps": 0.01
+      },
+      "settle_max_left_right_load_relative_difference": 0.00010559475665644515,
+      "settle_max_vertical_force_relative_error": 0.00043358700555525887,
+      "settle_max_vertical_speed_mps": 0.00023465139342067877,
+      "settle_samples": 26,
+      "settle_window_s": [
+        5.5,
+        6.0
+      ]
+    }
+  },
+  "separate_process_replay": {
+    "command_receipt": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{fresh_prefix}",
+        "python",
+        "-m",
+        "lapsim.experiments.suspension_study",
+        "--replay",
+        "work/detailed-study/fresh-native-drive-5db439d.json",
+        "--stop-file",
+        "work/detailed-study/STOP",
+        "--output",
+        "work/detailed-study/fresh-native-replay-5db439d.json"
+      ],
+      "commit": "5db439d8e40958f4879fff36c2fc37d4ebedef7a",
+      "tree_before": "",
+      "started_utc": "2026-10-17T04:46:37.999786+00:00",
+      "execution": "verified local native Windows PC",
+      "state": "finished",
+      "thread_pools": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "wall_time_s": 9.703339800005779,
+      "finished_utc": "2026-10-17T04:46:47.703619+00:00",
+      "commit_after": "5db439d8e40958f4879fff36c2fc37d4ebedef7a",
+      "tree_after": "",
+      "original_command_receipt_sha256": "8a79690d300e0124853d9140355c961c1f032d01470f465b92d060610d9b3294",
+      "original_log_sha256": "08b4b52a0521011e745491b10a1dfcd95c3afc10fd97310081555c46eded3816"
+    },
+    "result_sha256": "fc986b1c2f290834327100e83dbffcd64fb8b665d778b23e9eed6aa72dbc2731",
+    "content_id": "6ffbd3b0a13c0292620e44164e453e61d1e941985e54212ccdc9b5931edf5ad7",
+    "receipt_id": "1c921fe34d3bce74ec4a26af580abd2e9b244fa6f580720aa7b798764c81e680",
+    "content_matches_original": true
+  },
+  "earlier_fixture_replay": {
+    "command_receipt": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{fresh_prefix}",
+        "python",
+        "-m",
+        "lapsim.experiments.suspension_study",
+        "--replay",
+        "work/detailed-study/native-checks/9d40529397044c6986d2547b36d1b7a6/drive.json",
+        "--stop-file",
+        "work/detailed-study/STOP"
+      ],
+      "commit": "5db439d8e40958f4879fff36c2fc37d4ebedef7a",
+      "tree_before": "",
+      "started_utc": "2026-10-17T04:47:41.268091+00:00",
+      "execution": "verified local native Windows PC",
+      "state": "finished",
+      "thread_pools": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "wall_time_s": 9.382327600003919,
+      "finished_utc": "2026-10-17T04:47:50.650802+00:00",
+      "commit_after": "5db439d8e40958f4879fff36c2fc37d4ebedef7a",
+      "tree_after": "",
+      "original_command_receipt_sha256": "750b8028f4b368dfcd74a903bb3f72b5e21fa468070a3ccc15e1044bb8f3e49c",
+      "original_log_sha256": "7b6d27467938af4eaba691925b3d5608c26f9318ce2cac04e0dffa05bc82377f"
+    },
+    "input_sha256": "4b884aa3624af21d368eecd1d5891dae4f7396e296c84e22b9f536af7b61deca"
+  }
+}

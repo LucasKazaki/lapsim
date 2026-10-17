@@ -1,0 +1,556 @@
+{
+  "schema": "lapsim.native-settling-repair-verification.v1",
+  "scope": "Actual local Windows PyChrono verification of the every-plant-boundary settling gate at clean source5c592654448e067d0f7ca2584f50d91a341a7e25. No surrogate physics, calibration, hardware, GPU physics or deadline claim.",
+  "retention": "This tracked manifest retains command arguments, exits, timing receipts, source/config identities and SHA256 hashes of the original JSON/XML/log bytes. Large telemetry/logs stay in ignored local work storage; the manifest does not embed them or act as a signature. Installation-specific absolute paths alone are replaced by explicit role bindings; all other arguments and measurements are unchanged.",
+  "working_directory": "repository root",
+  "path_bindings": {
+    "{micromamba}": "official micromamba 2.5.0-2 executable; SHA256 baf6d56a31a63a75f0c77bdce27fefea57b1bdc8aa25b50a1be45696c0e737e7",
+    "{original_prefix}": "isolated original prefix, created from environments/chrono-win64.lock.txt and chrono-pip.lock.txt",
+    "{fresh_prefix}": "different fresh prefix, recreated from both locks and editable project --no-deps",
+    "{cache}": "isolated short package cache; MAMBA_ROOT_PREFIX selected in the process environment before invocation"
+  },
+  "machine": {
+    "os": "Windows 11 Home 10.0.26300 x64",
+    "cpu": "AMD Ryzen 9 7950X3D, 16 cores / 32 logical processors",
+    "usable_ram_gib": 31.16,
+    "gpu": "NVIDIA RTX 5080, unused by headless physics and rendering",
+    "gpu_physics": false
+  },
+  "measurement_conditions": "One numerical thread; an independent local WSL static audit was active. Do not compare these outer wall times with an earlier command as an isolated performance improvement.",
+  "native_suite": {
+    "command_receipt": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{fresh_prefix}",
+        "python",
+        "-m",
+        "pytest",
+        "quality/test_chrono_native.py",
+        "-q",
+        "--tb=short",
+        "--junitxml=work/detailed-study/chrono-native-5c59265.xml"
+      ],
+      "commit": "5c592654448e067d0f7ca2584f50d91a341a7e25",
+      "tree_before": "",
+      "started_utc": "2026-10-17T05:05:20.679848+00:00",
+      "execution": "verified local native Windows PC",
+      "state": "finished",
+      "thread_pools": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "wall_time_s": 76.65687880001497,
+      "finished_utc": "2026-10-17T05:06:37.337188+00:00",
+      "commit_after": "5c592654448e067d0f7ca2584f50d91a341a7e25",
+      "tree_after": "",
+      "original_command_receipt_sha256": "1972af017d245150cce4ab6252599a939455a5df67b9f327786b118ea1ba9cc7",
+      "original_log_sha256": "f0a6da1deb96ef71d63aa8d2cc295a046fe01b115c271203e0e13d14c0882d84"
+    },
+    "junit_sha256": "a7cf9d2faa086923ced5f33b4b46e1475ca64dd7c21b3bf6471229d46aedf817",
+    "junit_counts": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "pytest_seconds": 75.48
+  },
+  "fresh_drive": {
+    "command_receipt": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{fresh_prefix}",
+        "python",
+        "-m",
+        "lapsim.experiments.suspension_study",
+        "--scenario",
+        "drive",
+        "--stop-file",
+        "work/detailed-study/STOP",
+        "--output",
+        "work/detailed-study/fresh-native-drive-5c59265.json"
+      ],
+      "commit": "5c592654448e067d0f7ca2584f50d91a341a7e25",
+      "tree_before": "",
+      "started_utc": "2026-10-17T05:06:48.801823+00:00",
+      "execution": "verified local native Windows PC",
+      "state": "finished",
+      "thread_pools": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "wall_time_s": 9.705555799999274,
+      "finished_utc": "2026-10-17T05:06:58.507911+00:00",
+      "commit_after": "5c592654448e067d0f7ca2584f50d91a341a7e25",
+      "tree_after": "",
+      "original_command_receipt_sha256": "78e0f195ef96a39395ef5d4eaf0c41611b958521ee5e862b050702343cbf1891",
+      "original_log_sha256": "36b6afc70d4a164fa0e044654705a6128a559a39a8454ebdd6e1b6ce9ee9c443"
+    },
+    "result_sha256": "62f6c267c1cd64c12ef22c379c5be6e5af1319026144625e75b34799cb75f7b8",
+    "schema": "lapsim.native-suspension-study.v1",
+    "content_id": "503c705fdfddff12f47102e6801b7efe00e554367a1502159fc644b364a9ecd8",
+    "receipt_id": "c2f73a21a9107493462c84498c2696144028b0dc2880168777b569586405a2d9",
+    "execution": {
+      "controller_calls": 800,
+      "device": "CPU",
+      "gpu_physics": false,
+      "initialization_wall_s": 0.11639449998619966,
+      "logging_samples": 401,
+      "plant_steps": 16000,
+      "platform": "Windows",
+      "process_cpu_s": 8.21875,
+      "process_lifetime_peak_working_set_bytes": 141094912,
+      "python": "3.12.15",
+      "simulated_time_s": 8.0,
+      "stepping_and_record_wall_s": 8.205016099993372,
+      "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export",
+      "total_wall_s": 8.321410599979572
+    },
+    "source": {
+      "code_commit": "5c592654448e067d0f7ca2584f50d91a341a7e25",
+      "dirty_worktree": false,
+      "files_sha256": {
+        "chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+        "native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+        "suspension_study.py": "23438b186974a92e97f9febdf610bebb09e2c82456c68ff4f24c60d2ba0eb2df"
+      },
+      "hash_scope": "three study implementation files; UTF-8 bytes with CRLF normalized to LF"
+    },
+    "scenario": {
+      "controller_period_s": 0.01,
+      "driveshaft_torque_nm": 40.0,
+      "logging_period_s": 0.02,
+      "maneuver_s": 2.0,
+      "plant_step_s": 0.0005,
+      "scenario_id": "drive",
+      "settle_braking": 0.2,
+      "settle_s": 6.0,
+      "steering": 0.06
+    },
+    "model": {
+      "assets_sha256": {
+        "derived/synthetic_sedan_shafts.json": "2ec10b9acacf1a7511b773bf7bc3409c280b483a328ddb131a59f8e7f8fa6a1a",
+        "sedan/brake/Sedan_BrakeShafts.json": "59e6f5f834b834a337518412bfb0e9f0af2512000bf71f27708537d2441c0c1e",
+        "sedan/chassis/Sedan_Chassis.json": "18ffc5935cc49ef06fcb49f88d5e84d198da922d5a14d72961885c310deadd09",
+        "sedan/driveline/Sedan_Driveline2WD.json": "80dd661a9c20ed7eb3e00cda148ccbe0ad4a0150f49b97dafa9d98a755696457",
+        "sedan/steering/Sedan_RackPinion.json": "828071b626be2ef9b0f63d2ff06097b22372a1739fa902583519801cfe8bca02",
+        "sedan/suspension/Sedan_DoubleWishbone.json": "7fe4624e1ea9f367cda41780f1c255a4c7da579fd29f073d7ab55d11dad0bbf5",
+        "sedan/tire/Sedan_Pac02Tire.json": "93f8945e5fea8a03364e1549791683292bc446dd8eb1585e782e67628b3a811f",
+        "sedan/tire/Sedan_Pac02Tire.tir": "ef4c08a321d06927616416d6af2eb3c6db41fa8461927650b194c0ed79ac4af1",
+        "sedan/vehicle/Sedan_Vehicle.json": "6605c1fa5798e80b3c62fd16dc7d25bd5ed9f0321129ddddd0dc2c5e8ee7821e",
+        "sedan/wheel/Sedan_Wheel.json": "cb272839e50b8b45b150c902d9e7a24b8cefed67e770d2f866a3a44e23c13f2a"
+      },
+      "engine": {
+        "build": "py312h418371c_0",
+        "name": "pychrono",
+        "native_modules_sha256": {
+          "_core.pyd": "2b700d253e4f359d0a508094de9f857f469c2362a04d8cc249f5f7251ed002e9",
+          "_vehicle.pyd": "08b30f00a398f0e2d0042248eb41f2cda23e00ba843bb587a963982b60c7226e"
+        },
+        "sha256": "8429923678c714c8b49f0a04c92990b1002457396c0765cfc250ac46fa34d92e",
+        "subdir": "win-64",
+        "version": "10.0.0"
+      },
+      "gpu_physics": false,
+      "gravity_mps2": 9.81,
+      "initial_height_m": 0.7,
+      "limitations": [
+        "Upstream synthetic passenger Sedan; no Formula SAE geometry or vehicle calibration",
+        "Ideal requested driveshaft torque; no motor, inverter, battery, regen, or traction controller",
+        "Rigid links/chassis; no flexible structure, aero, thermal model or physical validation",
+        "Pac02 parameter provenance is upstream synthetic data; no fitted team tire coefficients",
+        "Selected TIR uses linear vertical stiffness/damping; no tire bottoming, rolling resistance or pressure dependence"
+      ],
+      "observation_phase": "chassis COM after Advance; cached tire force carries its separate input-state time",
+      "orientation_representation": "Cardan XYZ radians plus world XY heading of the chassis forward axis",
+      "profile_id": "chrono10_synthetic_sedan_shafts_brakes_v1",
+      "solver": {
+        "max_iterations": 150,
+        "threads": 1,
+        "tolerance": 1e-10,
+        "type": "ChSolverBB"
+      },
+      "terrain": {
+        "friction": 0.9,
+        "size_m": [
+          100,
+          30
+        ],
+        "type": "flat rigid"
+      },
+      "tire_force_coupling": "one plant-step cached tire force delay; contact frame/gating uses interval-start geometry",
+      "tire_internal_step_policy": "Pac02 low-speed Dahl bristle step equals each actual plant step; normal-speed handling slip is instantaneous",
+      "torque_scope": "reported differential wheel output; excludes tire/brake torque and exact shaft-body connector inertia",
+      "vehicle_variant": {
+        "base": "sedan/vehicle/Sedan_Vehicle.json",
+        "brake_model": "torque-limited shaft clutch; upstream max 2000 N m, shaft inertia 0.4 kg m^2 per brake",
+        "brake_reaction_telemetry": "unavailable through selected public API; request is not achieved brake torque",
+        "ideal_brake_locking": false,
+        "only_definition_override": "all four brake inputs use upstream Sedan_BrakeShafts.json"
+      },
+      "wheel_signs": "wheel-local +Y omega and driveline wheel torque are positive propulsion; native axle-shaft omega uses opposite axis"
+    },
+    "metrics": {
+      "final_chassis_com_height_m": 0.9295144073754011,
+      "final_heading_rad": 2.2641148428526927e-06,
+      "final_speed_mps": 0.5605165108366339,
+      "settle_acceptance": {
+        "force_relative_limit": 0.01,
+        "left_right_relative_limit": 0.01,
+        "passed": true,
+        "vertical_speed_limit_mps": 0.01
+      },
+      "settle_max_left_right_load_relative_difference": 0.00010589156227290847,
+      "settle_max_vertical_force_relative_error": 0.00043488936199037067,
+      "settle_max_vertical_speed_mps": 0.000235791870017707,
+      "settle_samples": 1001,
+      "settle_sampling": {
+        "clock": "every plant-tick boundary in the inclusive settling window",
+        "first_time_s": 5.499999999999671,
+        "force_channel": "applied_wheel_force_world_n",
+        "last_time_s": 5.999999999999394,
+        "period_s": 0.0005
+      },
+      "settle_window_s": [
+        5.5,
+        6.0
+      ]
+    }
+  },
+  "separate_process_replay": {
+    "command_receipt": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{fresh_prefix}",
+        "python",
+        "-m",
+        "lapsim.experiments.suspension_study",
+        "--replay",
+        "work/detailed-study/fresh-native-drive-5c59265.json",
+        "--stop-file",
+        "work/detailed-study/STOP",
+        "--output",
+        "work/detailed-study/fresh-native-replay-5c59265.json"
+      ],
+      "commit": "5c592654448e067d0f7ca2584f50d91a341a7e25",
+      "tree_before": "",
+      "started_utc": "2026-10-17T05:07:06.888894+00:00",
+      "execution": "verified local native Windows PC",
+      "state": "finished",
+      "thread_pools": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "wall_time_s": 9.58183799998369,
+      "finished_utc": "2026-10-17T05:07:16.471118+00:00",
+      "commit_after": "5c592654448e067d0f7ca2584f50d91a341a7e25",
+      "tree_after": "",
+      "original_command_receipt_sha256": "4ae2065a4776ccb316472357108d5b57916d3b2e6007d7fa923a1eaf67323b02",
+      "original_log_sha256": "892c41aa784b4c0f5b26daa25f66a0067cd14efb2bc65e17906134fff1325b6b"
+    },
+    "result_sha256": "304aca68268af1ce5b814cf78a2ef00600a702b892314d6240962bf1cbd33337",
+    "content_id": "503c705fdfddff12f47102e6801b7efe00e554367a1502159fc644b364a9ecd8",
+    "receipt_id": "c3ee07e2e4c0e92eed565af50043ecc58e3c3459c88792422514303e29bca29a",
+    "content_matches_original": true
+  },
+  "before_after_native_trace_comparison": {
+    "scope": "All exported sample values and commands compare exactly at each of six identical native scenarios; acceptance summaries now use dense plant-boundary observations and may differ from prior decimated maxima.",
+    "prior_source": "0514215fcf6763eff3f21d1e56ffd7256c36b237",
+    "cases": {
+      "drive": {
+        "commands_and_samples_identical": true,
+        "before_result_sha256": "4b884aa3624af21d368eecd1d5891dae4f7396e296c84e22b9f536af7b61deca",
+        "after_result_sha256": "3bbd50d89ea052fa0b14badc2a73fcf22ca6eed70dc7ec5c153301b860bbc44f",
+        "metrics": {
+          "settle_window_s": [
+            5.5,
+            6.0
+          ],
+          "settle_samples": 1001,
+          "settle_sampling": {
+            "clock": "every plant-tick boundary in the inclusive settling window",
+            "period_s": 0.0005,
+            "first_time_s": 5.499999999999671,
+            "last_time_s": 5.999999999999394,
+            "force_channel": "applied_wheel_force_world_n"
+          },
+          "settle_max_vertical_force_relative_error": 0.00043488936199037067,
+          "settle_max_left_right_load_relative_difference": 0.00010589156227290847,
+          "settle_max_vertical_speed_mps": 0.000235791870017707,
+          "settle_acceptance": {
+            "passed": true,
+            "force_relative_limit": 0.01,
+            "left_right_relative_limit": 0.01,
+            "vertical_speed_limit_mps": 0.01
+          },
+          "final_speed_mps": 0.5605165108366339,
+          "final_heading_rad": 2.2641148428526927e-06,
+          "final_chassis_com_height_m": 0.9295144073754011
+        },
+        "execution": {
+          "python": "3.12.15",
+          "platform": "Windows",
+          "initialization_wall_s": 0.028131700004450977,
+          "stepping_and_record_wall_s": 8.001467900001444,
+          "total_wall_s": 8.029599600005895,
+          "process_cpu_s": 8.0,
+          "process_lifetime_peak_working_set_bytes": 152731648,
+          "plant_steps": 16000,
+          "simulated_time_s": 8.0,
+          "controller_calls": 800,
+          "logging_samples": 401,
+          "device": "CPU",
+          "gpu_physics": false,
+          "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export"
+        }
+      },
+      "drive_half_step": {
+        "commands_and_samples_identical": true,
+        "before_result_sha256": "eb888455add9683e36656fa164b76377f4561902fb3cf5f5eb811705b1fc72e5",
+        "after_result_sha256": "90f3cd6c0bd3e045322728ca36232f40d8d9bbaed00b1aa02de3fad7cd3349e6",
+        "metrics": {
+          "settle_window_s": [
+            5.5,
+            6.0
+          ],
+          "settle_samples": 2001,
+          "settle_sampling": {
+            "clock": "every plant-tick boundary in the inclusive settling window",
+            "period_s": 0.00025,
+            "first_time_s": 5.500000000000976,
+            "last_time_s": 6.000000000001587,
+            "force_channel": "applied_wheel_force_world_n"
+          },
+          "settle_max_vertical_force_relative_error": 0.0003918793137990408,
+          "settle_max_left_right_load_relative_difference": 0.00012047718347136984,
+          "settle_max_vertical_speed_mps": 0.0002122344122827859,
+          "settle_acceptance": {
+            "passed": true,
+            "force_relative_limit": 0.01,
+            "left_right_relative_limit": 0.01,
+            "vertical_speed_limit_mps": 0.01
+          },
+          "final_speed_mps": 0.5605270584076298,
+          "final_heading_rad": 4.719962779901567e-06,
+          "final_chassis_com_height_m": 0.9295139909654264
+        },
+        "execution": {
+          "python": "3.12.15",
+          "platform": "Windows",
+          "initialization_wall_s": 0.028491700009908527,
+          "stepping_and_record_wall_s": 16.148431999987224,
+          "total_wall_s": 16.176923699997133,
+          "process_cpu_s": 16.078125,
+          "process_lifetime_peak_working_set_bytes": 155152384,
+          "plant_steps": 32000,
+          "simulated_time_s": 8.0,
+          "controller_calls": 800,
+          "logging_samples": 401,
+          "device": "CPU",
+          "gpu_physics": false,
+          "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export"
+        }
+      },
+      "drive_sparse_log": {
+        "commands_and_samples_identical": true,
+        "before_result_sha256": "1a83068b7e82cdbf02e383e1d0c796f3aed2932c576c952d7b85844cabe8a8a1",
+        "after_result_sha256": "d52f6d4a37415525a1c05a0e85a6e7c51d3a8acc1504fd4168e571e64de14603",
+        "metrics": {
+          "settle_window_s": [
+            5.5,
+            6.0
+          ],
+          "settle_samples": 1001,
+          "settle_sampling": {
+            "clock": "every plant-tick boundary in the inclusive settling window",
+            "period_s": 0.0005,
+            "first_time_s": 5.499999999999671,
+            "last_time_s": 5.999999999999394,
+            "force_channel": "applied_wheel_force_world_n"
+          },
+          "settle_max_vertical_force_relative_error": 0.00043488936199037067,
+          "settle_max_left_right_load_relative_difference": 0.00010589156227290847,
+          "settle_max_vertical_speed_mps": 0.000235791870017707,
+          "settle_acceptance": {
+            "passed": true,
+            "force_relative_limit": 0.01,
+            "left_right_relative_limit": 0.01,
+            "vertical_speed_limit_mps": 0.01
+          },
+          "final_speed_mps": 0.5605165108366339,
+          "final_heading_rad": 2.2641148428526927e-06,
+          "final_chassis_com_height_m": 0.9295144073754011
+        },
+        "execution": {
+          "python": "3.12.15",
+          "platform": "Windows",
+          "initialization_wall_s": 0.030492000019876286,
+          "stepping_and_record_wall_s": 8.434036099992227,
+          "total_wall_s": 8.464528100012103,
+          "process_cpu_s": 8.375,
+          "process_lifetime_peak_working_set_bytes": 157544448,
+          "plant_steps": 16000,
+          "simulated_time_s": 8.0,
+          "controller_calls": 800,
+          "logging_samples": 161,
+          "device": "CPU",
+          "gpu_physics": false,
+          "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export"
+        }
+      },
+      "settle": {
+        "commands_and_samples_identical": true,
+        "before_result_sha256": "bbeef09d9be60fe5c913099cb48c62ac9988bd51beb00fbb696f21cdbcc177cc",
+        "after_result_sha256": "3a6e49e7ed0c0cc1c63ae6826dfef706bb1b3ec2c568277ed526f4143deaab0f",
+        "metrics": {
+          "settle_window_s": [
+            5.5,
+            6.0
+          ],
+          "settle_samples": 1001,
+          "settle_sampling": {
+            "clock": "every plant-tick boundary in the inclusive settling window",
+            "period_s": 0.0005,
+            "first_time_s": 5.499999999999671,
+            "last_time_s": 5.999999999999394,
+            "force_channel": "applied_wheel_force_world_n"
+          },
+          "settle_max_vertical_force_relative_error": 0.00043488936199037067,
+          "settle_max_left_right_load_relative_difference": 0.00010589156227290847,
+          "settle_max_vertical_speed_mps": 0.000235791870017707,
+          "settle_acceptance": {
+            "passed": true,
+            "force_relative_limit": 0.01,
+            "left_right_relative_limit": 0.01,
+            "vertical_speed_limit_mps": 0.01
+          },
+          "final_speed_mps": 2.76646666718341e-05,
+          "final_heading_rad": 7.95792495493571e-06,
+          "final_chassis_com_height_m": 0.9301201221681803
+        },
+        "execution": {
+          "python": "3.12.15",
+          "platform": "Windows",
+          "initialization_wall_s": 0.9826841999893077,
+          "stepping_and_record_wall_s": 8.315844199998537,
+          "total_wall_s": 9.298528399987845,
+          "process_cpu_s": 8.390625,
+          "process_lifetime_peak_working_set_bytes": 148512768,
+          "plant_steps": 16000,
+          "simulated_time_s": 8.0,
+          "controller_calls": 800,
+          "logging_samples": 401,
+          "device": "CPU",
+          "gpu_physics": false,
+          "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export"
+        }
+      },
+      "steer_left": {
+        "commands_and_samples_identical": true,
+        "before_result_sha256": "3d73862a70e3a4ec00ce75e73b45407b86229bdfcdc8fa73a260849f515cbacc",
+        "after_result_sha256": "b40caf3ab50e0ecbddc3e9246ccefa1f5257e73bca4f7bf2f528b57d6d0e8c99",
+        "metrics": {
+          "settle_window_s": [
+            5.5,
+            6.0
+          ],
+          "settle_samples": 1001,
+          "settle_sampling": {
+            "clock": "every plant-tick boundary in the inclusive settling window",
+            "period_s": 0.0005,
+            "first_time_s": 5.499999999999671,
+            "last_time_s": 5.999999999999394,
+            "force_channel": "applied_wheel_force_world_n"
+          },
+          "settle_max_vertical_force_relative_error": 0.00043488936199037067,
+          "settle_max_left_right_load_relative_difference": 0.00010589156227290847,
+          "settle_max_vertical_speed_mps": 0.000235791870017707,
+          "settle_acceptance": {
+            "passed": true,
+            "force_relative_limit": 0.01,
+            "left_right_relative_limit": 0.01,
+            "vertical_speed_limit_mps": 0.01
+          },
+          "final_speed_mps": 0.5607254219395909,
+          "final_heading_rad": 0.00611849545554951,
+          "final_chassis_com_height_m": 0.9295247099570924
+        },
+        "execution": {
+          "python": "3.12.15",
+          "platform": "Windows",
+          "initialization_wall_s": 0.029938199993921444,
+          "stepping_and_record_wall_s": 8.280371300003026,
+          "total_wall_s": 8.310309499996947,
+          "process_cpu_s": 8.25,
+          "process_lifetime_peak_working_set_bytes": 160059392,
+          "plant_steps": 16000,
+          "simulated_time_s": 8.0,
+          "controller_calls": 800,
+          "logging_samples": 401,
+          "device": "CPU",
+          "gpu_physics": false,
+          "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export"
+        }
+      },
+      "steer_right": {
+        "commands_and_samples_identical": true,
+        "before_result_sha256": "911b54f1e918f55c0cc8ede3f34fe4b15579db00e83b9473ca8391b4890ff963",
+        "after_result_sha256": "778e4299c37607153aab8c0d61b4e884b755c1b7254cf0dd160bfd0fd66b3808",
+        "metrics": {
+          "settle_window_s": [
+            5.5,
+            6.0
+          ],
+          "settle_samples": 1001,
+          "settle_sampling": {
+            "clock": "every plant-tick boundary in the inclusive settling window",
+            "period_s": 0.0005,
+            "first_time_s": 5.499999999999671,
+            "last_time_s": 5.999999999999394,
+            "force_channel": "applied_wheel_force_world_n"
+          },
+          "settle_max_vertical_force_relative_error": 0.00043488936199037067,
+          "settle_max_left_right_load_relative_difference": 0.00010589156227290847,
+          "settle_max_vertical_speed_mps": 0.000235791870017707,
+          "settle_acceptance": {
+            "passed": true,
+            "force_relative_limit": 0.01,
+            "left_right_relative_limit": 0.01,
+            "vertical_speed_limit_mps": 0.01
+          },
+          "final_speed_mps": 0.560686950139499,
+          "final_heading_rad": -0.006113349891429394,
+          "final_chassis_com_height_m": 0.9295246415627226
+        },
+        "execution": {
+          "python": "3.12.15",
+          "platform": "Windows",
+          "initialization_wall_s": 0.03128850000211969,
+          "stepping_and_record_wall_s": 8.19005120001384,
+          "total_wall_s": 8.22133970001596,
+          "process_cpu_s": 8.125,
+          "process_lifetime_peak_working_set_bytes": 161423360,
+          "plant_steps": 16000,
+          "simulated_time_s": 8.0,
+          "controller_calls": 800,
+          "logging_samples": 401,
+          "device": "CPU",
+          "gpu_physics": false,
+          "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export"
+        }
+      }
+    }
+  }
+}

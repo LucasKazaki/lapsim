@@ -29,10 +29,17 @@ repository root, replacing the executable path with your downloaded copy:
 $mm = 'C:\path\to\micromamba.exe'
 $nativeEnv = 'C:\path\to\short\chrono312'
 $nativeCache = 'C:\path\to\short\chrono-cache'
+$env:MAMBA_ROOT_PREFIX = $nativeCache
 & $mm create -y -r $nativeCache -p $nativeEnv -f environments/chrono-win64.lock.txt
 & $mm run -p $nativeEnv python -m pip install -r environments/chrono-pip.lock.txt
 & $mm run -p $nativeEnv python -m pip install --no-deps -e .
 ```
+
+Set `MAMBA_ROOT_PREFIX` in the current shell before the first invocation, and
+retain it for the run commands below. The local reproduction found that a
+populated default directory could make micromamba fail during startup, before
+it read `-r`. Selecting the isolated project cache through the environment
+resolved this without changing or deleting the default directory.
 
 The explicit conda lock identifies all native package builds and checksums;
 the pip lock pins the Python dependencies. The supported engine is the official
@@ -57,11 +64,19 @@ This increment has a local command-line workflow, without a browser service.
 
 Use `--plant-step 0.00025` for a half-step comparison. The Python API accepts a
 validated `SuspensionScenario` for other bounded settings. Six seconds under
-gravity precede a two-second maneuver by default. Over the final 0.5 s of
-settling, vertical tire reaction must remain within 1% of total weight,
+gravity precede a two-second maneuver by default. At every plant-tick boundary
+in the final 0.5 s of settling, cached applied vertical tire reaction must remain
+within 1% of total weight,
 left/right axle-load difference within 1% of half the weight, and vertical
 chassis speed within 0.01 m/s. A failed settling gate stops before actuation.
-These are numerical fixture criteria, not calibration tolerances.
+The gate observes independently of the logging cadence and retains streaming
+maxima, so an excursion between exported samples cannot be hidden by sparse
+logging. `metrics.settle_samples` counts these acceptance observations;
+`metrics.settle_sampling` records their clock, period, first/last actual sample
+times and force channel. A window edge between plant ticks is not interpolated.
+Exported `samples` remain on the logging grid plus the explicit settling/final
+samples. These are discrete numerical fixture criteria, not continuous-time
+guarantees or calibration tolerances.
 
 Ctrl+C cancels a run. With `--stop-file work/detailed-study/STOP`, creating that
 file also cancels at a plant-tick boundary. No completed record is returned or
@@ -146,6 +161,70 @@ real-time performance from a simulation/wall-time ratio. This backend explicitly
 selects CPU `ChSystemNSC` and `ChSolverBB` (150 iterations, tolerance 1e-10,
 one thread). The RTX 5080 performs no physics or rendering in this headless run.
 
+## Local verification example, 17 October 2026
+
+At `0514215`, all 11 actual native checks passed on Windows 11 with a Ryzen
+7950X3D and 32 GB RAM. The gravity-window maximum reaction imbalance was
+0.0434% of weight; halving the drive step from 0.5 to 0.25 ms changed final
+forward speed by 0.0019%. These quantify this synthetic fixture's numerical
+behavior, not team-car accuracy.
+
+The corrected setup was reproduced from both locks in a fresh prefix at
+`5db439d`, followed by separate export and replay processes. An earlier saved
+native-test record also replayed in that prefix. The 8 s drive used 16,000
+plant steps, 800 driver updates and 401 samples. Its receipt measured 8.07 s
+inside the study, 7.98 s process CPU and a 134.4 MiB lifetime peak working set;
+the outer command took 16.09 s including launcher, imports and export. A
+separate correctness suite was running on another CPU thread during this
+measurement. The implementation hashes are unchanged between these revisions.
+
+The tracked [historical Windows evidence manifest](research/evidence/chrono-win64-20261017.json)
+retains the full scenario, command arguments and exit statuses, timing receipts,
+source and engine identities, result content/receipt IDs, and SHA256 hashes of
+the original output and test-report bytes. Local installation paths are replaced
+by documented role bindings. These measurements precede the repair that moved
+settling acceptance from exported samples to every plant boundary; the recorded
+settling maxima describe the earlier sampling scope and do not verify a later
+revision. The manifest preserves measurement evidence without vendoring engine
+assets or large telemetry logs.
+
 Sources and license: [Chrono evidence register](research/chrono_backend.md).
 No upstream meshes, tire files, binaries or vehicle definitions are vendored;
 the installed dependency supplies them. The project's licensing work is unchanged.
+
+## Settling-clock repair checks — 17 October 2026
+
+At source `135f6ed`, a synthetic clock fixture with a one-plant-tick excursion
+at 0.751 s passed a one-second settling gate at both 10 ms and 25 ms logging.
+The four retained baseline failures cover vertical speed 0.02 m/s and vertical
+reaction 2% above weight; the old gate read only exported logging samples.
+The repaired gate checks the plant clock without changing command or export
+clocks. Four frozen before/after fixture traces, including off-grid window,
+settling and final boundaries, had byte-identical commands and exported samples.
+Their complete trace SHA-256 values are retained as frozen regression contracts
+in `tests/test_suspension_study.py`.
+
+On the owner's native Windows project environment, CPython 3.13.15,
+`python -m pytest tests/test_suspension_study.py tests/test_simulator_flowchart.py -q`
+completed with **66 passed, no skips or failures, in 5.47 s**. These lightweight
+tests include all three settling limits, window endpoints, unlogged clock/NaN
+rejection, dense acceptance counts and sparse export invariance. They use an
+instrumented clock fixture, not surrogate vehicle physics.
+
+At clean source `5c592654448e067d0f7ca2584f50d91a341a7e25`, all 11 actual
+PyChrono checks passed with no skips or failures in 75.48 s (76.66 s outer
+command). The default settling gate measured 1,001 plant boundaries; the
+half-step run measured 2,001. Dense and sparse logging produced identical
+settling summaries, and all six native scenarios retained exactly the earlier
+commands and saved sample values. The dense maximum vertical-force error was
+0.04349% of weight, within the unchanged 1% criterion.
+
+A fresh drive command and separate-process replay also passed at that source.
+The drive measured 8.32 s inside the study, 8.22 s process CPU and a 134.6 MiB
+lifetime peak working set; the outer command took 9.71 s. A local WSL static
+audit was active, and these timings do not establish an isolated performance
+improvement or a deadline. The [plant-clock evidence manifest](research/evidence/chrono-settling-plant-clock-20261017.json)
+retains exact source/configuration identities, commands and exits, receipts,
+result IDs/hashes, all six comparison summaries, and the native test-report
+hash. It records this source revision rather than inferring acceptance of later
+implementation changes.
