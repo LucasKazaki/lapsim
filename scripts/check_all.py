@@ -1,6 +1,7 @@
 """Isolate test processes and emit one aggregate JUnit report."""
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 import os
 import subprocess
@@ -44,9 +45,16 @@ def run_module(path: Path, root: Path, reports: Path, environment: dict[str, str
     return bool(result.returncode) or not report.is_file()
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--output-dir", type=Path,
+        help="Write reports here instead of the repository's work directory",
+    )
+    args = parser.parse_args(argv)
     root = Path(__file__).resolve().parents[1]
-    reports = root / "work" / "test-modules"
+    output = args.output_dir.resolve() if args.output_dir is not None else root / "work"
+    reports = output / "test-modules"
     reports.mkdir(parents=True, exist_ok=True)
     environment = os.environ.copy()
     for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
@@ -74,7 +82,7 @@ def main() -> int:
             module_reports.append(report)
         else:
             failed = True
-    destination = root / "work" / "test-results.xml"
+    destination = output / "test-results.xml"
     totals = merge_reports(module_reports, destination)
     print(f"Complete-suite report: {totals}; {len(module_reports)}/{len(tests)} module reports. {destination}", flush=True)
     return 1 if failed else 0
