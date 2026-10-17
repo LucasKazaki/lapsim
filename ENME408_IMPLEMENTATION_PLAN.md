@@ -130,10 +130,44 @@ single-record/alias checks passed within their recorded scopes. The normal
 main-ancestry merge `4bccac1` preserved all `1129238` runtime/test/catalog bytes;
 fresh normal comparisons there reproduced the installed wheel/sdist IDs. The
 [CLI evidence manifest](docs/research/evidence/chrono-native-cli-20261017.json)
-retains counts, commands, source identities, hashes and coverage limits. Editing
+retains counts, commands, source identities, hashes and coverage limits.
+[PR #106](https://github.com/LucasKazaki/lapsim/pull/106) merged normally as
+`9e4468c` after all 16 hosted checks passed. Separately guarded postmerge native
+CLI/replay and saved-pair checks passed in 17.14 s and 2.59 s, respectively;
+these elapsed times describe verification jobs, not performance benchmarks. Editing
 the existing study module changes its strict three-file replay identity; old
 over-budget scenarios may fail current validation, and historical fixture/criterion
 evidence must not be relabeled.
+
+The passive native CSV handoff accepts an explicitly supplied validated saved
+record and an output path. Its fixed 100-column table groups metadata, samples
+and controller events in their stored order, preserving distinct state/force
+origin clocks, null origins, completed-interval commands and new event requests.
+Recorded model/source/execution claims and supplied inspection statuses remain
+read-only context, not attestation, replay, calibration or physical validation.
+Unsupported frame/unit claims are rejected before atomic destination replacement.
+The tests-only baseline at `2a6069c` retained 41 missing-module setup errors.
+The pre-repair `8796e1a` run passed those 41 cases and failed only the two new
+path-resolution contracts; the repair at `3823d37` passed all 43 focused cases
+with zero failures, errors or skips. At `7eaf99f`, genuine seven-record conversions
+passed an independent 100-column oracle across 7,831 data rows (783,100 cells).
+The full 98-module observed run passed: 2,439 reported JUnit cases, 1,429 raw
+case elements, no failures/errors and one expected POSIX-only skip on Windows; the
+separate WSL POSIX compiler case passed. The unchanged type budget, critical
+lint, security, inventory and all three static-map entrypoints passed with
+existing broad debt, two advisory test-style findings and scan limitations retained.
+Browser checks covered four
+layouts, 12 accessibility states and 10 focused cases; 36 incomplete accessibility
+entries still require manual review. Both installed formats passed three CSV
+conversions and two alias rejections each, with CSV bytes matching source exports.
+The first package attempt stopped at the unchanged commit-headroom guard; the
+complete fresh second attempt passed. Existing copied-executable single-record
+and alias checks also passed; there is no CSV UI or frozen CSV command. The
+[CSV verification receipt](docs/research/evidence/chrono-native-csv-20261017.json)
+binds these distinct scopes and the stopped attempt. Normal integration and
+post-merge verification are tracked separately in
+[issue #19](https://github.com/LucasKazaki/lapsim/issues/19). Historical native/CLI
+evidence is linked without claiming new physics.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity

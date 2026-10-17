@@ -273,6 +273,61 @@ records the retained pre-implementation failure, independent pure-fixture
 contracts and measured resource scope. Broader integration checks remain
 separate from this comparison calculation.
 
+## Export a supplied saved record as CSV
+
+In an ordinary developer environment or an installed wheel/source distribution:
+
+```powershell
+python -m lapsim.experiments.suspension_export INPUT.json --output FILE.csv
+```
+
+The fixed 100-column CSV groups one `metadata` row, the saved `sample` rows,
+then the saved `controller_event` rows. Each group keeps its stored order and
+indices; rows are not interleaved into an inferred timeline. Column names label
+frames, units and wheel order (`FL`, `FR`, `RL`, `RR`). Null values and fields
+that do not apply to a row are blank, not zero or forward-filled values.
+
+`sample_time_s` retains the recorded state clock; `controller_event_time_s`
+retains the logical request clock. Computed-force, kinematics, applied-force
+and applied-geometry source times remain separate, including null origins.
+Sample command columns describe the completed interval. Event request columns
+start the next hold, so a coincident event need not equal the command in the
+sample at that boundary. Both command groups contain saved requests; native
+wheel driveline torque remains a separate recorded channel. Export performs no
+interpolation or clock alignment.
+
+The fixed headers support the exact recorded right-handed world frame: X
+initially forward, Y left, Z up, with chassis position at its COM. The supported
+unit claim is `SI; steering request normalized, tire slip ratio dimensionless`.
+Cardan XYZ angles, world-XY heading, wheel-local Y angular speed and native
+axle-shaft angular speed keep their distinct labels. Unknown frame or unit
+claims are rejected before writing these headers.
+
+`metadata_json` retains the saved IDs, recorded claims and supplied inspection
+context. Source matching, historical metrics and execution timing are context,
+not authenticity, execution attestation or calibration. The CLI prints the input
+IDs, row counts and a SHA-256 of the actual written CSV bytes; platform newline
+handling can affect that hash. The input remains unchanged. Input/output aliases
+are rejected, and validation finishes before atomic destination replacement;
+invalid inputs or a failed replacement preserve an existing destination.
+
+This is a saved-record conversion: no physics, calibration or replay is
+performed. There is no CSV viewer control or frozen-executable command.
+
+The [local CSV verification receipt](research/evidence/chrono-native-csv-20261017.json)
+records all 43 focused cases and seven genuine saved-record conversions:
+7,831 data rows and 783,100 cells checked against an independent projection.
+At source `7eaf99f`, both installed formats also passed three normal conversions
+and two alias rejections each; their CSV bytes matched the source exports.
+The first package attempt stopped at its unchanged memory guard. A complete
+fresh second attempt passed; the stopped attempt remains separate evidence.
+
+Broader checks covered all 98 repository modules, the existing WSL source and
+POSIX checks, browser/map checks, and the existing copied-executable saved-record
+self-test. Broad lint/type debt, eight security-analysis fixpoint warnings and 36 browser
+accessibility entries requiring manual review remain visible in the receipt.
+These checks add no physics validation, CSV viewer control or frozen CSV command.
+
 ## Install separately from ordinary startup
 
 Use official micromamba 2.5.0-2 on Windows; its flat package cache avoids the
