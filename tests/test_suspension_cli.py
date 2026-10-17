@@ -65,30 +65,68 @@ def expected_stdout(record):
     [
         (
             [
-                "--scenario", "drive", "--settle", "6.003", "--maneuver", "0.101",
-                "--plant-step", "0.0005", "--controller-period", "0.01",
-                "--logging-period", "0.025", "--driveshaft-torque", "40",
-                "--steering", "0.06", "--settle-braking", "0.2",
+                "--scenario",
+                "drive",
+                "--settle",
+                "6.003",
+                "--maneuver",
+                "0.101",
+                "--plant-step",
+                "0.0005",
+                "--controller-period",
+                "0.01",
+                "--logging-period",
+                "0.025",
+                "--driveshaft-torque",
+                "40",
+                "--steering",
+                "0.06",
+                "--settle-braking",
+                "0.2",
             ],
             {
-                "scenario_id": "drive", "settle_s": 6.003, "maneuver_s": 0.101,
-                "plant_step_s": 0.0005, "controller_period_s": 0.01,
-                "logging_period_s": 0.025, "driveshaft_torque_nm": 40.0,
-                "steering": 0.06, "settle_braking": 0.2,
+                "scenario_id": "drive",
+                "settle_s": 6.003,
+                "maneuver_s": 0.101,
+                "plant_step_s": 0.0005,
+                "controller_period_s": 0.01,
+                "logging_period_s": 0.025,
+                "driveshaft_torque_nm": 40.0,
+                "steering": 0.06,
+                "settle_braking": 0.2,
             },
         ),
         (
             [
-                "--scenario", "steer", "--settle", "1.003", "--maneuver", "0.203",
-                "--plant-step", "0.001", "--controller-period", "0.007",
-                "--logging-period", "0.025", "--driveshaft-torque", "73.5",
-                "--steering", "-0.12", "--settle-braking", "0.35",
+                "--scenario",
+                "steer",
+                "--settle",
+                "1.003",
+                "--maneuver",
+                "0.203",
+                "--plant-step",
+                "0.001",
+                "--controller-period",
+                "0.007",
+                "--logging-period",
+                "0.025",
+                "--driveshaft-torque",
+                "73.5",
+                "--steering",
+                "-0.12",
+                "--settle-braking",
+                "0.35",
             ],
             {
-                "scenario_id": "steer", "settle_s": 1.003, "maneuver_s": 0.203,
-                "plant_step_s": 0.001, "controller_period_s": 0.007,
-                "logging_period_s": 0.025, "driveshaft_torque_nm": 73.5,
-                "steering": -0.12, "settle_braking": 0.35,
+                "scenario_id": "steer",
+                "settle_s": 1.003,
+                "maneuver_s": 0.203,
+                "plant_step_s": 0.001,
+                "controller_period_s": 0.007,
+                "logging_period_s": 0.025,
+                "driveshaft_torque_nm": 73.5,
+                "steering": -0.12,
+                "settle_braking": 0.35,
             },
         ),
     ],
@@ -124,12 +162,19 @@ def test_fresh_cli_defaults_remain_the_existing_scenario(record, monkeypatch, ca
 
     monkeypatch.setattr(study, "run_study", run)
     assert study.main([]) == 0
-    assert calls == [{
-        "scenario_id": "drive", "settle_s": 6.0, "maneuver_s": 2.0,
-        "plant_step_s": 0.0005, "controller_period_s": 0.01,
-        "logging_period_s": 0.02, "driveshaft_torque_nm": 40.0,
-        "steering": 0.06, "settle_braking": 0.2,
-    }]
+    assert calls == [
+        {
+            "scenario_id": "drive",
+            "settle_s": 6.0,
+            "maneuver_s": 2.0,
+            "plant_step_s": 0.0005,
+            "controller_period_s": 0.01,
+            "logging_period_s": 0.02,
+            "driveshaft_torque_nm": 40.0,
+            "steering": 0.06,
+            "settle_braking": 0.2,
+        }
+    ]
     assert json.loads(capsys.readouterr().out) == expected_stdout(record)
 
 
@@ -150,9 +195,16 @@ def test_fresh_cli_defaults_remain_the_existing_scenario(record, monkeypatch, ca
         ),
         (
             [
-                "--settle", "1.0005", "--maneuver", "0.9995",
-                "--plant-step", "0.0005", "--controller-period", "0.001",
-                "--logging-period", "0.001",
+                "--settle",
+                "1.0005",
+                "--maneuver",
+                "0.9995",
+                "--plant-step",
+                "0.0005",
+                "--controller-period",
+                "0.001",
+                "--logging-period",
+                "0.001",
             ],
             "sample budget",
         ),
@@ -206,9 +258,19 @@ def test_replay_keeps_saved_scenario_output_and_live_stop_callback(
 
     monkeypatch.setattr(study, "run_study", unexpected_work)
     monkeypatch.setattr(study, "replay_study", replay)
-    assert study.main([
-        "--replay", str(source), "--output", str(destination), "--stop-file", str(stop)
-    ]) == 0
+    assert (
+        study.main(
+            [
+                "--replay",
+                str(source),
+                "--output",
+                str(destination),
+                "--stop-file",
+                str(stop),
+            ]
+        )
+        == 0
+    )
     assert calls[0][0] == record
     assert calls[0][0]["payload"]["scenario"]["settle_s"] == 1.0
     assert calls[0][0]["payload"]["scenario"]["plant_step_s"] == 0.001
@@ -292,8 +354,14 @@ def test_help_lists_every_current_scenario_setting_without_native_work(
     assert error.value.code == 0
     help_text = capsys.readouterr().out
     for option in (
-        "--scenario", "--plant-step", "--settle", "--maneuver",
-        "--controller-period", "--logging-period", "--driveshaft-torque",
-        "--steering", "--settle-braking",
+        "--scenario",
+        "--plant-step",
+        "--settle",
+        "--maneuver",
+        "--controller-period",
+        "--logging-period",
+        "--driveshaft-torque",
+        "--steering",
+        "--settle-braking",
     ):
         assert option in help_text

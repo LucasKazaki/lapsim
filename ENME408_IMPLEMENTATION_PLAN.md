@@ -100,6 +100,18 @@ twelfth check for settling/final exports between controller and logging ticks.
 The actual noncoincident-clock experiment and separate normal CLI replay passed
 at `6312e8b`; the new candidate still requires its own full 12-check native run.
 
+The bounded CLI extension exposes all nine existing scenario settings in
+the normal command, with seven additional flags and no new input schema. It
+counts every regular and forced settling/final export against the unchanged
+2,001-sample limit before native initialization. Explicit fresh-study flags are
+rejected in replay/inspection modes; defaults and saved-scenario authority remain
+unchanged. The retained regression baseline at `eb52ef2` reproduced 33 expected
+failures with 103 passing cases. Pure CLI checks, actual native fixtures and
+packaged workflows have separate acceptance scopes. Editing the existing study
+module changes its strict three-file replay identity; old over-budget scenarios
+may fail current validation, and historical fixture/criterion evidence must not
+be relabeled.
+
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity
 settling, handling signs, suspension/contact telemetry and timestep comparisons.

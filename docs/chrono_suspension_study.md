@@ -31,12 +31,14 @@ and observation clocks, wheel order, and completed-interval command phase.
 It prints the saved scenario, clocks, capabilities/topology, provenance, stored
 metrics and historical execution receipt without dumping the sample arrays.
 It does not import PyChrono, construct a plant, launch Git or another process,
-or write a result; `--inspect` cannot be combined with `--replay` or `--output`.
+or write a result; `--inspect` cannot be combined with `--replay`, `--output`
+or explicit fresh-study settings.
 
 The summary separates checks performed while opening from saved claims.
 Current implementation-file matching uses the same three-file hash scope as
 replay, without checking out a revision. A historical implementation mismatch
-remains inspectable and is labeled explicitly. Missing current source files
+remains inspectable when the scenario satisfies the current bounds and is
+labeled explicitly. Missing current source files
 produce an unavailable match status. Native model/asset identities, metrics and
 timing are recorded claims: integrity hashes do not establish authenticity,
 fresh numerical agreement, historical timing validity or vehicle calibration.
@@ -47,7 +49,8 @@ The corresponding APIs are `read_study_record(path)` for a validated saved
 record, `inspect_study_record(record)` for this summary, and
 `validate_study_record(record)` for structural/integrity checks. They preserve
 the supplied IDs and measurements. Earlier v1 records without explicit settling
-sampling metadata remain readable, with that sampling scope marked unrecorded.
+sampling metadata remain readable when their scenarios satisfy current bounds,
+with that sampling scope marked unrecorded.
 The [inspection verification receipt](research/evidence/chrono-saved-inspection-20261017.json)
 records the focused checks and a guarded read of already-saved native telemetry;
 it contains no new native simulation or calibration evidence.
@@ -202,9 +205,10 @@ local paths or historical execution measurements and does not authenticate data.
 index alignment, tolerance or interpolation. It lists shared and unmatched
 counts/times, compares all shared recorded observations exactly, and reports
 differing fields and up to five examples with their own force clocks. Time lists
-are capped at 2,003 entries each with an explicit truncation flag; the existing
-scenario budget bounds every supported input to this limit. A sparse record
-without a 6.02 s observation does not acquire one from the denser record.
+are capped at 2,003 entries each with an explicit truncation flag; the exact
+scenario budget now bounds every supported input to at most 2,001 exports. A
+sparse record without a 6.02 s observation does not acquire one from the denser
+record.
 Null force origins remain null, and sparse exports do not revalidate dense
 settling metrics. All inspection checks and historical timing/metric claims
 remain distinguished; no performance winner is inferred.
@@ -315,10 +319,41 @@ This increment has a local command-line workflow, without a browser service.
 ```
 
 Use `--plant-step 0.00025` for a half-step comparison. The Python API accepts a
-validated `SuspensionScenario` for other bounded settings. Six seconds under
-gravity precede a two-second maneuver by default. At every plant-tick boundary
-in the final 0.5 s of settling, cached applied vertical tire reaction must remain
-within 1% of total weight,
+validated `SuspensionScenario`; the normal CLI exposes the same settings:
+
+| Fresh-study flag | Unit | Default | Accepted range |
+| --- | --- | --- | --- |
+| `--scenario` | named request | `drive` | `settle`, `drive`, `steer` |
+| `--settle` | s | 6 | 1–10 |
+| `--maneuver` | s | 2 | 0.1–10 |
+| `--plant-step` | s | 0.0005 | 0.0001–0.002 |
+| `--controller-period` | s | 0.01 | 0.001–0.1 |
+| `--logging-period` | s | 0.02 | 0.001–0.1 |
+| `--driveshaft-torque` | requested N m | 40 | 0–400 |
+| `--steering` | normalized request | 0.06 | −0.25–0.25 |
+| `--settle-braking` | normalized request | 0.2 | 0–1 |
+
+For example, the noncoincident clocks can be selected directly:
+
+```powershell
+& $mm run -p $nativeEnv python -m lapsim.experiments.suspension_study --scenario drive --settle 6.003 --maneuver 0.101 --plant-step 0.0005 --controller-period 0.01 --logging-period 0.025 --output work/native-noncoincident.json
+```
+
+All numbers must be finite. Durations and controller/logging periods must contain
+whole plant ticks; the existing 100,000-step bound also applies. The 2,001-sample
+budget counts the initial and regular exports plus each distinct forced settling
+and final export. Validation rejects an overrun before constructing a native
+plant; it never drops a boundary or reduces logging to fit the limit.
+
+Fresh-study flags cannot be combined with `--replay` or `--inspect`, even if an
+explicit value equals its default. Earlier versions silently ignored `--scenario`
+and `--plant-step` in those saved-record modes. Replay now unambiguously uses the
+complete saved scenario; inspection remains passive. `--output` is supported for
+fresh runs and replay, while `--stop-file` applies to those executing modes.
+
+Six seconds under gravity precede a two-second maneuver by default. At every
+plant-tick boundary in the final 0.5 s of settling, cached applied vertical tire
+reaction must remain within 1% of total weight,
 left/right axle-load difference within 1% of half the weight, and vertical
 chassis speed within 0.01 m/s. A failed settling gate stops before actuation.
 The gate observes independently of the logging cadence and retains streaming
@@ -411,6 +446,20 @@ native inputs and numerical outputs with relative tolerance 1e-7 and absolute
 tolerance 1e-8 in each channel's SI units; it does not verify historical wall time.
 Use the recorded source revision if implementation hashes differ. Line endings
 are normalized in implementation identities.
+
+The CLI and exact export-budget change modifies `suspension_study.py`, one of
+the three strictly hashed implementation files, despite preserving the physics
+of supported scenarios. Earlier bounded records remain available for passive
+inspection, with the historical source mismatch labeled; replay them at their
+recorded implementation revision. Previously accepted scenarios that require
+more than 2,001 exports now fail scenario validation, including inspection, and
+need their recorded revision to read them. Keep those original records intact.
+Fresh native fixture receipts must establish the new current-source match before
+the saved-fixture endpoint criterion can apply. Its physical-claim fingerprint
+and numerical thresholds are unchanged; they do not include the implementation
+source identity. Historical fixtures are not relabeled as current evidence, and
+strict replay and criterion eligibility checks are not relaxed. Comparison recipe
+identities also change because their source scope includes the study module.
 
 Runtime receipts separate initialization from stepping/recording and identify
 their measurement scope. Peak working set is the process-lifetime high-water
