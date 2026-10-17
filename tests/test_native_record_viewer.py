@@ -1,6 +1,7 @@
 """Passive native-record selection, clock provenance and desktop lifecycle."""
 
 import builtins
+from hashlib import sha256
 import json
 import subprocess
 import sys
@@ -522,3 +523,149 @@ def test_passive_viewer_self_test_reports_optional_scope(root, saved, monkeypatc
     assert result["selected_samples"][1]["completed_interval_command"]["braking"] == 0.2
     assert result["force_channels"] == ["Applied", "Computed"]
     assert result["input_mtime_ns_before"] == result["input_mtime_ns_after"]
+
+
+@pytest.mark.parametrize(
+    "claim,value",
+    (
+        ("frame", "left-handed unknown frame"),
+        ("units", "imperial"),
+        ("frame", "unrecognized\n\t\x00" + "x" * 10_000),
+        ("units", "unrecognized\n\t\x00" + "x" * 10_000),
+    ),
+    ids=("frame", "units", "bounded-frame", "bounded-units"),
+)
+def test_unsupported_plot_claim_clears_telemetry_and_supported_load_recovers(
+    root, saved, tmp_path, saved_record, monkeypatch, claim, value
+):
+    # These are structurally valid opaque saved claims, not a conversion request.
+    # Seal independently so a checksum failure cannot masquerade as a plot guard.
+    record = json.loads(json.dumps(saved_record))
+    record["payload"][claim] = value
+    record["payload"]["model"]["profile_id"] = "incoming_unsupported_claim_fixture"
+    record["content_id"] = sha256(
+        json.dumps(
+            record["payload"], sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")
+    ).hexdigest()
+    record["receipt_id"] = sha256(
+        json.dumps(
+            {key: item for key, item in record.items() if key != "receipt_id"},
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    path = tmp_path / "unsupported-claim.json"
+    path.write_text(json.dumps(record), encoding="utf-8")
+    before = {
+        item: (item.read_bytes(), item.stat().st_mtime_ns) for item in (saved, path)
+    }
+    expected_recovery = json.loads(before[saved][0])
+    assert study.read_study_record(path) == record
+    inspection = study.inspect_study_record(record)
+    assert inspection["checks"]["receipt_and_content_integrity"] == "checked"
+    assert inspection["checks"]["fresh_native_replay"] == "not run"
+    callback_errors = []
+    monkeypatch.setattr(
+        root, "report_callback_exception", lambda *args: callback_errors.append(args)
+    )
+    viewer = make_viewer(root, saved)
+    viewer.select(2)
+    assert viewer.values.get() and viewer.selected_sample is not None
+    try:
+        assert viewer.load_path(path) is True
+        wait(root, lambda: not viewer.busy)
+        viewer.worker.join(timeout=1)
+        assert not viewer.worker.is_alive() and viewer.active_job is None
+        assert callback_errors == []
+        assert viewer.record is None
+        assert viewer.summary is None and viewer.selected_sample is None
+        assert viewer.model_claim.get() == "Recorded model claim: not recorded"
+        assert record["content_id"][:12] not in viewer.identity.get()
+        assert viewer.clocks.get() == viewer.values.get() == viewer.wheel_values.get() == ""
+        assert viewer.sample_label.get() == "No sample"
+        assert viewer.status.get().startswith("Open failed:")
+        assert "unsupported" in viewer.status.get().lower()
+        assert claim in viewer.status.get().lower()
+        assert len(viewer.status.get()) <= 400
+        assert not any(char in viewer.status.get() for char in ("\n", "\t", "\x00"))
+        assert viewer.open_button.cget("state") == "normal"
+        for widget in (
+            viewer.details_button,
+            viewer.compare_button,
+            viewer.previous_button,
+            viewer.next_button,
+            viewer.slider,
+        ):
+            assert widget.cget("state") == "disabled"
+        for axes in (
+            viewer.path_axes,
+            viewer.height_axes,
+            viewer.spring_axes,
+            viewer.force_axes,
+        ):
+            assert len(axes.lines) == 0
+        assert viewer.inspect() is None
+        assert viewer.load_path(saved) is True
+        wait(root, lambda: not viewer.busy)
+        assert viewer.record == expected_recovery
+        viewer.select(2)
+        assert viewer.selected_sample == expected_recovery["payload"]["samples"][2]
+        assert viewer.values.get() and viewer.clocks.get()
+        assert viewer.details_button.cget("state") == "normal"
+        assert viewer.compare_button.cget("state") == "normal"
+        assert "Open failed" not in viewer.status.get()
+        assert callback_errors == []
+    finally:
+        viewer.close()
+    assert {
+        item: (item.read_bytes(), item.stat().st_mtime_ns) for item in (saved, path)
+    } == before
+
+
+@pytest.mark.parametrize("source_status", ("mismatch", "unavailable"))
+def test_supported_plot_claims_keep_historical_source_context_viewable(
+    root, tmp_path, saved_record, monkeypatch, source_status
+):
+    record = json.loads(json.dumps(saved_record))
+    record["payload"]["model"]["profile_id"] = "supported_historical_claim_fixture"
+    record["payload"]["source"]["files_sha256"]["suspension_study.py"] = "0" * 64
+    record["content_id"] = sha256(
+        json.dumps(
+            record["payload"], sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")
+    ).hexdigest()
+    record["receipt_id"] = sha256(
+        json.dumps(
+            {key: item for key, item in record.items() if key != "receipt_id"},
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    path = tmp_path / "historical-supported.json"
+    path.write_text(json.dumps(record), encoding="utf-8")
+    before = path.read_bytes(), path.stat().st_mtime_ns
+    if source_status == "unavailable":
+
+        def unavailable():
+            raise OSError("Current implementation files unavailable in this runtime")
+
+        monkeypatch.setattr(study, "_implementation_source", unavailable)
+    assert study.read_study_record(path) == record
+    inspection = study.inspect_study_record(record)
+    assert inspection["checks"]["current_implementation_files"].startswith(source_status)
+    viewer = make_viewer(root, path)
+    try:
+        assert viewer.record == record
+        assert source_status in viewer.checks.get()
+        assert "fresh native replay not run" in viewer.checks.get()
+        viewer.select(2)
+        assert viewer.selected_sample == record["payload"]["samples"][2]
+        assert viewer.values.get() and viewer.clocks.get()
+        assert viewer.details_button.cget("state") == "normal"
+        assert viewer.compare_button.cget("state") == "normal"
+    finally:
+        viewer.close()
+    assert (path.read_bytes(), path.stat().st_mtime_ns) == before
