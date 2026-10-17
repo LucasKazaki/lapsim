@@ -107,7 +107,7 @@ does not run native physics or provide board timing evidence.
 
 ### Review a saved pair in the viewer
 
-The local viewer follow-up adds **Compare saved record…** after a primary record
+The viewer adds **Compare saved record…** after a primary record
 has opened. It opens one modeless window with that record as **Left**. Choose
 the explicit recorded difference, **Plant step** or **Logging period**, then
 **Choose second record…** for **Right**. Closing the picker preserves an existing
@@ -139,13 +139,24 @@ Closing the comparison, Escape or closing its parent discards late results;
 the bounded worker retains ownership until it finishes, so parsing is not
 force-cancelled and a second worker cannot overlap it. The comparison window
 uses native keyboard controls; Escape returns to the primary viewer action.
+The two kind choices also support widget-local arrows with wraparound; Tab,
+Shift-Tab and Space retain their normal behavior, and slider keys are unchanged.
 
-This follow-up currently has pure presentation/worker/ownership checks only.
-The real Tk workflow, independent genuine-record display oracle, visual review
-and installed normal workflow are pending separate acceptance. The existing
-desktop self-test options retain their single-record scope; no pair QA flags
-are introduced. See the [local implementation receipt](research/evidence/chrono-pair-viewer-pure-20261017.json)
-for the retained failure and the exact limits of the checks performed.
+At `e211aa3`, 154 focused source checks passed on the owner's Windows PC,
+including the real Tk workflow. An external direct-JSON oracle passed 13
+genuine-record/error/ownership cases through normal widget commands and explicit
+test-only file-picker responses. Four owned-window captures were reviewed at
+normal/minimum sizes in both themes. The logging pair retained exactly 81 shared,
+320 left-only and 80 right-only exports; the sparse record has no 6.02 s sample.
+The [focused Tk and genuine-record receipt](research/evidence/chrono-pair-viewer-tk-20261017.json)
+retains source IDs, counts, resource/clock scope, captures and the initial focus
+and radio-keyboard failures. The [earlier pure receipt](research/evidence/chrono-pair-viewer-pure-20261017.json)
+remains the historical pre-implementation/pure-only evidence.
+
+These source checks do not establish an installed or frozen pair workflow.
+Each distributed runtime needs its own normal-workflow verification; broader
+acceptance belongs to the reviewed change and canonical issue. Existing desktop
+self-test options retain their single-record scope; no pair QA flags are added.
 
 ## Compare two supplied saved studies
 
