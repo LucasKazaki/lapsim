@@ -120,6 +120,18 @@ a distinct frozen smoke check. When enabled, full repository tests precede inven
 generation, so the packaged snapshot identity is separate from that test phase;
 this receipt does not attest that both snapshots are identical.
 
+The full-suite XML is retained byte-for-byte and can include the runner's
+hostname or local diagnostic paths. A sanitized JSON receipt does not
+establish that the ZIP/report is free of machine metadata; these internal QA
+artifacts carry no publication or release claim.
+
+Actual full and skipped build artifacts retain source `cb3720b`. Test-only
+successors passed the same 18 focused contracts, most recently at `7ead724`;
+the actual final four-file gate reports no new type/broad findings against
+main `1153e7c`, with existing debt retained. These checks do not rebuild those
+artifacts. See the [local build evidence](research/evidence/portable-build-verification-20261017.json)
+for the retained failed gate and coverage limits.
+
 Frozen read-only resources resolve through `lapsim.resources.repository_root()`
 to the extraction root's `bundle` directory. Source runs resolve to the checkout.
 Installed wheels resolve to `lapsim/_resources` and use captured identity;

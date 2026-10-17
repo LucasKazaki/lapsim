@@ -1,0 +1,523 @@
+{
+  "schema": "lapsim.portable-build-evidence.v1",
+  "date": "2026-10-17",
+  "work_item": "E04",
+  "status": "Local build and test-only quality acceptance complete with documented limitations. Normal integration and postmerge verification are separate and not claimed.",
+  "source": {
+    "commit": "cb3720bb645c8e1aa0aed82e89f23326ab19cfa4",
+    "tree": "aa51dae99f665082da9d11d2c8bdb9b63e84afd4",
+    "packaged_source_sha256": "8145e351c5a1f35f4dee072881b0c3b91e472cb16ee1f9e8079986385f03047a",
+    "native_three_and_current_recipe_seven": "unchanged from main 1153e7c; seven source files, not seven saved records"
+  },
+  "contracts": {
+    "red_9cb3767": {
+      "cases": 18,
+      "passed": 10,
+      "failures": 8,
+      "errors": 0,
+      "skipped": 0
+    },
+    "green_f361290": {
+      "cases": 18,
+      "passed": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "combined_cb3720b": {
+      "cases": 18,
+      "passed": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "scope": "Actual builder/checker contracts with expensive suite/PyInstaller/copied-EXE boundaries stubbed. Poisoned ambient/prior evidence and failure cases retained.",
+    "postpolish_025e3e5": {
+      "commit": "025e3e57037f77c511723b780c1fdca1cb83835e",
+      "tree": "e0ba27b8e80b3f36ac51553cbeb43224da9c019f",
+      "cases": 18,
+      "passed": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "captured_pytest_warning_summary": false,
+      "pytest_console_s": 1.04,
+      "XML_sha256": "7bfb43029f15232efbc8dff17d7421d0202b6945b9371bf72ace8157f21d29f0",
+      "guard": {
+        "actual_exit": 0,
+        "owned_active_at_close": 0,
+        "wall_s": 1.5727692999935243,
+        "peak_owned_job_commit_bytes": 39063552,
+        "minimum_headroom_gib": {
+          "physical_gib": 11.77060317993164,
+          "commit_gib": 15.130622863769531
+        }
+      },
+      "scope": "Same 18 builder/checker contracts with costly external full-suite/PyInstaller/copied-EXE boundaries stubbed; not a new full build."
+    },
+    "loader_7ead724": {
+      "commit": "7ead7245bd6bdfafb63933537436fc083f165946",
+      "tree": "79502f97e223280568b34ddf763c0120c55930a7",
+      "cases": 18,
+      "passed": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "captured_pytest_warning_summary": false,
+      "case_names_and_order_equal_025": true,
+      "XML_sha256": "cc376d943d9d47c2815d387df6aa4199fa8b9d4cf24840a3c028822a2ad33112",
+      "guard": {
+        "actual_exit": 0,
+        "owned_active_at_close": 0,
+        "wall_s": 1.4920181000197772,
+        "peak_owned_job_commit_bytes": 39342080,
+        "minimum_headroom_gib": {
+          "physical_gib": 10.784774780273438,
+          "commit_gib": 14.190773010253906
+        }
+      },
+      "scope": "Same 18 builder/checker contracts with costly external full-suite/PyInstaller/copied-EXE boundaries stubbed; not a new full build."
+    }
+  },
+  "normal_full_build": {
+    "actual_exit": 0,
+    "module_reports": 98,
+    "reported": {
+      "tests": 2455,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "raw_testcase_elements": 1445,
+    "pytest_warning_blocks": 0,
+    "per_module_exit_receipts": "not recorded by ordinary check_all; none invented",
+    "zip_verification_members": [
+      "verification/build-verification.json",
+      "verification/test-results.xml"
+    ],
+    "wall_s": 902.6103653000027,
+    "peak_owned_job_commit_bytes": 645976064,
+    "minimum_headroom_gib": {
+      "physical_gib": 10.815082550048828,
+      "commit_gib": 14.560874938964844
+    }
+  },
+  "normal_skip_build": {
+    "actual_exit": 0,
+    "suite_status": "skipped",
+    "suite_report": null,
+    "suite_totals": null,
+    "zip_verification_members": [
+      "verification/build-verification.json"
+    ],
+    "wall_s": 84.89863829998649,
+    "peak_owned_job_commit_bytes": 347701248,
+    "minimum_headroom_gib": {
+      "physical_gib": 9.953659057617188,
+      "commit_gib": 14.046695709228516
+    }
+  },
+  "both_builds": {
+    "original_smoke_checks": 20,
+    "copied_smoke_checks": 21,
+    "separate_copied_command_exits": [
+      0,
+      2,
+      1,
+      1
+    ],
+    "exit_order": [
+      "valid saved record",
+      "input/report alias",
+      "unsupported recorded frame",
+      "unsupported recorded units"
+    ],
+    "owned_active_at_close": 0,
+    "prior_user_outputs_preserved": 28,
+    "supplied_native_viewing": "passive saved-record selections 0/300/400; null/distinct force-origin clocks retained; frozen current implementation match unavailable",
+    "standard_smoke": "Fast lap/bicycle/control/component calculations and replays execute; no fresh native physics or native saved-study replay."
+  },
+  "quality": {
+    "original_source_audit": {
+      "actual_exit": 0,
+      "inventory_exit": 0,
+      "posix_compiler": {
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "type_errors": 241,
+      "type_warnings": 48,
+      "new_type_findings": 0,
+      "security_matches": 0,
+      "security_errors": 0,
+      "security_files": 283,
+      "broad_lint_exit": 1,
+      "format_review_exit": 1,
+      "wall_s": 72.26876209999318,
+      "type_scope": {
+        "paths": [
+          "src"
+        ],
+        "baseline_commit": "1e8e35ac64093742caafa67c118ca02efa6e6537",
+        "equal_type_fingerprint_count": 289,
+        "limit": "Src-only baseline; this does not establish quality of the four changed scripts/tests."
+      },
+      "security_scope": {
+        "rules_run": 219,
+        "default_test_and_repository_exclusions_retained": true,
+        "files_over_1MB_skipped": 4,
+        "semgrepignore_skipped": 100,
+        "raw_fixpoint_warning_records": 8,
+        "app_js_warning_aggregation": {
+          "file": "docs/simulator_flowchart/app.js",
+          "prior_reported_rule_count": 1,
+          "current_reported_rule_count": 2,
+          "first_named_rule": "typescript.react.security.audit.react-unsanitized-method.react-unsanitized-method",
+          "second_rule_id": "not reported",
+          "exact_old_warning_multiset_equal": "not asserted"
+        },
+        "limit": "Zero matches/top-level errors does not establish complete taint/security coverage. Fixpoint warnings remain coverage limitations."
+      }
+    },
+    "changed_four": {
+      "actual_exit": 0,
+      "critical_exit": 0,
+      "security_matches": 0,
+      "security_errors": 0,
+      "all_four_flat_mapped_files_scanned": true,
+      "type_errors": 20,
+      "same_frozen_9cb_type_errors": 20,
+      "scope": "Historical cb gate matched 20 diagnostics against frozen9cb, which already included the new tests. Independent comparison with actual main1153 has 8 existing errors and identifies 12 introduced errors (9 checker +3 snapshot fixture); no main-preexisting waiver. Exact flat-copy security has path/context limitations.",
+      "actual_MAIN1153_baseline_errors": 8,
+      "introduced_test_type_findings_vs_actual_MAIN1153": 12,
+      "introduced_type_breakdown": {
+        "checker_root_and_required_attributes": 9,
+        "snapshot_fixture_ModuleSpec_loader": 3
+      }
+    },
+    "postpolish_025_failed_quality": {
+      "commit": "025e3e57037f77c511723b780c1fdca1cb83835e",
+      "tree": "e0ba27b8e80b3f36ac51553cbeb43224da9c019f",
+      "baseline_main": "1153e7cfddd0ddc2467236b1403cc23b61f11a6e",
+      "actual_exit": 1,
+      "type_errors": 11,
+      "main_type_errors": 8,
+      "new_type_errors": 3,
+      "new_error_scope": "Required ModuleSpec/loader checks were absent in new archive_build; retained as a genuine failed gate, not main-preexisting debt.",
+      "critical_exit": 0,
+      "new_broad_findings": 0,
+      "checker_format_exit": 0,
+      "all_four_format_exit": 1,
+      "mapped_security_matches": 0,
+      "mapped_security_top_level_errors": 0,
+      "mapped_files_scanned": 4,
+      "mapped_security_rules": 151,
+      "mapped_fixpoint_warnings": 0,
+      "wall_s": 15.519031000003451,
+      "minimum_headroom_gib": {
+        "physical_gib": 9.733177185058594,
+        "commit_gib": 12.817001342773438
+      },
+      "ownership_scope": "Direct Popen process handle only; Linux persistent marker watcher owns each setsid phase process group. No Windows PID tree traversal or ancestry adoption. No kernel census, active-zero or peak metric recorded.",
+      "scope": "The independent failed attempt remains failed; passing focused18 does not satisfy this missing type gate."
+    },
+    "final_7ead_quality": {
+      "status": "passed with independent metadata review closed",
+      "commit": "7ead7245bd6bdfafb63933537436fc083f165946",
+      "tree": "79502f97e223280568b34ddf763c0120c55930a7",
+      "baseline_main": "1153e7cfddd0ddc2467236b1403cc23b61f11a6e",
+      "actual_gate_binding": "final_7ead_quality_summary",
+      "independent_proof_binding": "final_7ead_quality_independent_review",
+      "required_scope": "Actual four-file comparison against main1153 plus additive exact-byte mapped security scan. Independent proof confirms no introduced type/broad fingerprints, critical/checker-format0 and all four scanned. Retained eight type errors/two broad findings and all-four formatting exit1 are existing debt; no clean-type/lint/all-format or complete security claim.",
+      "actual_exit": 0,
+      "type_errors": 8,
+      "actual_main_type_errors": 8,
+      "introduced_type_findings": 0,
+      "current_broad_diagnostics": 2,
+      "main_broad_diagnostics": 2,
+      "new_broad_diagnostics": 0,
+      "checker_format_exit": 0,
+      "critical_exit": 0,
+      "all_four_format_exit": 1,
+      "security_matches": 0,
+      "security_top_level_errors": 0,
+      "mapped_source_files_scanned": 4,
+      "mapped_security_rules": 151,
+      "mapped_security_warning_records": 0,
+      "resources": {
+        "wall_s": 16.018837799987523,
+        "fresh_headroom_gib": {
+          "physical_gib": 11.816566467285156,
+          "commit_gib": 15.450637817382812
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 9.443901062011719,
+          "commit_gib": 12.752845764160156
+        },
+        "running_floors_gib": {
+          "physical_gib": 8,
+          "commit_gib": 7
+        },
+        "sequence_timeout_s": 180,
+        "ownership": "Direct Popen process handle only; Linux persistent marker watcher owns each setsid phase process group. No Windows PID tree traversal or ancestry adoption.",
+        "scope": "Held direct WSL child returned actual0; Linux watcher/waits/traps retain phase process-group ownership. No kernel process census, owned-active-zero or peak-job memory metric claimed."
+      }
+    }
+  },
+  "runtime": {
+    "os": "Windows 11 x64",
+    "python": "3.13.15",
+    "Tcl": "8.6.12",
+    "Tk_compiled": "8.6",
+    "PyInstaller": "6.22.0",
+    "pytest": "9.1.1",
+    "audit_tools": [
+      "pyright==1.1.414",
+      "pytest==9.1.1",
+      "ruff==0.17.0",
+      "semgrep==1.180.0"
+    ]
+  },
+  "limits": {
+    "source_scope": "When run, full repository tests precede inventory generation; packaged snapshot identity is separate.",
+    "resources": "One owned substantial job, pools1; fresh floors10 physical/8.5 commit GiB and running8/7. Windows memory is kernel-job commit, not physical working set; WSL direct-child/group evidence has no kernel-job peak claim. Times describe complete gates, not benchmarks.",
+    "privacy": "Only this JSON and distributed logical-command receipt are sanitized. Exact full-suite JUnit retains machine metadata such as hostname/local diagnostics; the ZIP/report is not established sanitized and carries no publication authorization. Literal argv remains local and excluded from ZIP.",
+    "history": "The earlier stale attachment is retained as historical failure. Historical Tcl lifetime warning/timeout causality remains unresolved; no lifecycle repair or erasure claim.",
+    "acceptance": "No native calibration, physical validation, timing accuracy, same-process recovery, complete accessibility, kernel-wide process/import census, release or publication claim. Build assets may regenerate; protected copied artifacts and inputs have their own preservation proofs."
+  },
+  "bindings": [
+    {
+      "role": "red_contracts",
+      "checkout": "backend",
+      "path": "work/portable-verification-baseline-9cb3767-preserved-r2-20261017/independent-proof.json",
+      "sha256": "ff523bc74fbac00f142ed9b4aff0c952ae455aa493ed5f861cd7c1b8a630aa26"
+    },
+    {
+      "role": "green_contracts",
+      "checkout": "backend",
+      "path": "work/pvf361-green-preserved-20261017/independent-proof.json",
+      "sha256": "8a08382b68f8f1b483f1fccced53c28363fc257105bc396aaac7ad8ed94d85f9"
+    },
+    {
+      "role": "combined_contracts_and_map",
+      "checkout": "primary",
+      "path": "work/detailed-study/packaging-cb3720b-focused-map-independent-review/independent-proof.json",
+      "sha256": "f877ac5f1d8fac887e21223611c900acba8625350ac330fb8e1ed682a24c3f6e"
+    },
+    {
+      "role": "full_build_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-cb3720b-independent-preservation-20261017/independent-proof.json",
+      "sha256": "a9adadf3a9af5e7ba2ef0bcabfa17425e659158cf8936b0c8bdddc013c9a9ab0"
+    },
+    {
+      "role": "skip_build_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-cb3720b-independent-preservation-20261017/independent-proof.json",
+      "sha256": "cd90d1a7823b31b6b1fdac3f96fba82b94f702977168fa388cac9a69e5e325d2"
+    },
+    {
+      "role": "source_posix_audit",
+      "checkout": "primary",
+      "path": "work/portable-verification-static-audit-cb3720b-20261017/wsl-gate-summary.json",
+      "sha256": "9dd490a4f9cdb70ae8e991bf1248341d2b45ef1457d89ad41139820ede2d5b61"
+    },
+    {
+      "role": "changed_four_audit",
+      "checkout": "primary",
+      "path": "work/portable-verification-static-audit-cb3720b-20261017/changed-files/summary.json",
+      "sha256": "852830f351745e775490064aa2fdffa7711a4e03b723048b8e1b10e87fd7c2f8"
+    },
+    {
+      "role": "changed_four_closure",
+      "checkout": "primary",
+      "path": "work/portable-verification-static-audit-cb3720b-20261017/wsl-changed-files-command.json",
+      "sha256": "ca9c4c7f42a26f1dc102127841edbb62252840e9c83f5d25cf6c28c9113b8d07"
+    },
+    {
+      "role": "full_aggregate",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-cb3720b/verification-st9tqayq/test-results.xml",
+      "sha256": "35c25bb7727ae52a85482219ec83f154088133f8aa0d7e5104c65de820862b6a"
+    },
+    {
+      "role": "full_public_receipt",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-cb3720b/verification-st9tqayq/build-verification.json",
+      "sha256": "f97250656662055357add0564738ef11bcb5c34985a4183efa2916d32a50a8e6"
+    },
+    {
+      "role": "skip_public_receipt",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-cb3720b/verification-33dmm9a_/build-verification.json",
+      "sha256": "40f2c679e0d580b95dddf28f35544eb55979104ccf371c2de6e34c8b299effd9"
+    },
+    {
+      "role": "full_local_invocation",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-cb3720b/verification-st9tqayq/full-suite-invocation.json",
+      "sha256": "1e647e68cd08cd935f84082b9c4dd090f1e56737f8306f94bdd90513e392aca0"
+    },
+    {
+      "role": "skip_local_invocation",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-cb3720b/verification-33dmm9a_/full-suite-invocation.json",
+      "sha256": "9f4f8a7fb9871b65e3da7a72438463b91bdd87d1773f2be45b4a41d31e255d51"
+    },
+    {
+      "role": "full_executable",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-cb3720b/LapSim.exe",
+      "sha256": "2c25128ad836f81d2f711a3f718bb45b0359a126c099d813be998ba1be4a34a8"
+    },
+    {
+      "role": "full_zip",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-cb3720b/LapSim-Windows-x64.zip",
+      "sha256": "637708a740cfc92c827360414be85334943e2a9beebeaaddbfd9063399ed40a8"
+    },
+    {
+      "role": "skip_executable",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-cb3720b/LapSim.exe",
+      "sha256": "ef9eefcf289d538f9d94b8e299380689a56e552bf2210799ae7878aa66da9a07"
+    },
+    {
+      "role": "skip_zip",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-cb3720b/LapSim-Windows-x64.zip",
+      "sha256": "0b36f9656768b8a74f2945d9089bb190dbdf87fe738641dd918e9db040a4b3d3"
+    },
+    {
+      "role": "postpolish_025_focused_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-focused-025e3e5-independent-review/independent-proof.json",
+      "sha256": "fca468aa45d667ac8a031381364de3d645b88c080556aa3a57169b42bbc6440f"
+    },
+    {
+      "role": "postpolish_025_failed_quality_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-postpolish-quality-025e3e5-failed-independent-review/independent-proof.json",
+      "sha256": "71c3e6341a7d29fbbbbf758177632f011f05c6ac58e63e2ff58804e80a2480c8"
+    },
+    {
+      "role": "loader_7ead_focused_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-focused-7ead724-independent-review/independent-proof.json",
+      "sha256": "94fb9009497d66b1bd3dd8402048014f72b9b012a19ce5605f085a40c1c4c42d"
+    },
+    {
+      "role": "original_audit_independent_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-original-WSL-cb3720b-independent-review/independent-proof.json",
+      "sha256": "53f6b156363b1f411f4fa6d85c475bb852f3a3762369425fd929cec8f557c3d7"
+    },
+    {
+      "role": "initial_changed_four_independent_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-changed4-cb3720b-independent-review/independent-proof.json",
+      "sha256": "dd537614965ba6e90aa83330ecceca29cc1edc7a6c68b39e19b8e0a5e57f9671"
+    },
+    {
+      "role": "initial_cb_changed_four_type_raw",
+      "checkout": "primary",
+      "path": "work/portable-verification-static-audit-cb3720b-20261017/changed-files/current-pyright.log",
+      "sha256": "77a97f23d0441b3a5bc54f836b9dfe8530c73af5dda693e476f7810aa5b9706c"
+    },
+    {
+      "role": "actual_MAIN1153_four_type_raw",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-postpolish-quality-025e3e5-failed-independent-review/packet/changed-files-025e3e5-attempt-1/baseline_main-pyright.log",
+      "sha256": "ef70ecc052de5837c3c39e5bc8d35e4093fec1e98b0d7c99d623b46facfb1bab"
+    },
+    {
+      "role": "original_cb_security_raw",
+      "checkout": "primary",
+      "path": "work/portable-verification-static-audit-cb3720b-20261017/wsl-static/semgrep.json",
+      "sha256": "32ad8d56ec2d0783b3b843fca1df81cd6920ec66b6595fc43dcd1f8ea046f98d"
+    },
+    {
+      "role": "loader_7ead_freeze",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-loader-test-candidate-freeze.json",
+      "sha256": "8281cd2d4567be396c7b1fff6434f2d151df8eb369fc6a9da6a2157168b36d2b"
+    },
+    {
+      "role": "prior_accepted_caa_security_raw",
+      "checkout": "backend",
+      "path": "work/native-viewer-claim-static-audit-caa51fa-20261017/wsl-static/semgrep.json",
+      "sha256": "bec6d4af151fd52570b882a0905ae60eb9eb299acfd33113d0667390a3122892"
+    },
+    {
+      "role": "final_7ead_quality_summary",
+      "checkout": "backend",
+      "path": "work/portable-verification-post-polish-quality-preparation-r3-20261017/changed-files-7ead724-attempt-1/summary.json",
+      "sha256": "7383c696e35736e213dbeec7fc31c036f07bff80dbd9c66b8cb48c9781df8c44"
+    },
+    {
+      "role": "final_7ead_quality_command",
+      "checkout": "backend",
+      "path": "work/portable-verification-post-polish-quality-preparation-r3-20261017/wsl-post-polish-7ead724-attempt-1-command.json",
+      "sha256": "50d539fe460f95afe29405a60d4ce2d9e739b3f9a320fce09e76bc92ac381120"
+    },
+    {
+      "role": "final_7ead_mapped_security_raw",
+      "checkout": "backend",
+      "path": "work/portable-verification-post-polish-quality-preparation-r3-20261017/changed-files-7ead724-attempt-1/mapped-semgrep.json",
+      "sha256": "85364f47ea790ced44b98b55708ccf92686c629f26812007368359eaa67326df"
+    },
+    {
+      "role": "final_7ead_mapped_security_log",
+      "checkout": "backend",
+      "path": "work/portable-verification-post-polish-quality-preparation-r3-20261017/changed-files-7ead724-attempt-1/mapped-security.log",
+      "sha256": "8eb2bf5f7003147aa3fb855278b301f8072760d0d857db582c8117b2134b2b4d"
+    },
+    {
+      "role": "final_7ead_mapped_source_map",
+      "checkout": "backend",
+      "path": "work/portable-verification-post-polish-quality-preparation-r3-20261017/changed-files-7ead724-attempt-1/flat-source-map.json",
+      "sha256": "19e0860d5a44c0df07a2269388a077b6fe6c9eaa63d55303d1e35709aaf683a9"
+    },
+    {
+      "role": "final_7ead_quality_independent_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-postpolish-quality-7ead724-independent-review/independent-proof.json",
+      "sha256": "cc5620c738037187321ba63712b0139bd238704a2f9ea79ff8545a9af61897f2"
+    },
+    {
+      "role": "final_7ead_quality_inventory",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-postpolish-quality-7ead724-independent-review/inventory.json",
+      "sha256": "cbdb626d4a9728842bef03dd8f3747df58c070faa177a5f656bce03ad944540f"
+    }
+  ],
+  "test_only_successors": {
+    "025e3e5": {
+      "commit": "025e3e57037f77c511723b780c1fdca1cb83835e",
+      "tree": "e0ba27b8e80b3f36ac51553cbeb43224da9c019f",
+      "change": "Two test files only: equivalent UTF-8/default encoding and regex literal, required XML root/attributes and narrow layout polish; no production or packaged artifact rebuild.",
+      "production_scope": {
+        "only2tests_changed_vs_cb": true,
+        "production_builder_checker_native_recipe_exporter_unchanged": true,
+        "old_check_all_module_AST_exact_after_reversing_only_stronger_root_required_attribute_checks": true,
+        "snapshot_module_AST_exact_after_reversing_exactly1_equivalent_encode_default": true,
+        "raw_regex_prefix_same_literal_value": true,
+        "numeric_expected_values_case_order_failure_skip_assertions_preserved": true,
+        "new_explicit_nonnull_and_required_attributes_fail_closed": true
+      }
+    },
+    "7ead724": {
+      "commit": "7ead7245bd6bdfafb63933537436fc083f165946",
+      "tree": "79502f97e223280568b34ddf763c0120c55930a7",
+      "parent": "025e3e57037f77c511723b780c1fdca1cb83835e",
+      "change": "One required ModuleSpec/loader assertion in the new archive fixture; removing that assertion restores the prior whole AST. Production and other-test bytes remain unchanged."
+    },
+    "artifact_scope": "Both actual full/skip EXEs and ZIPs remain cb3720b artifacts. Test-only successor checks do not rebuild or relabel them."
+  },
+  "normal_integration": {
+    "status": "pending as of this local acceptance freeze",
+    "scope": "Normal PR/checks/merge and postmerge verification are tracked separately; no outcome is asserted here."
+  }
+}

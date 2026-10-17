@@ -99,12 +99,21 @@ main, all 21 source desktop self-test checks and the genuine/alias/frame/units
 process exits 0/2/1/1 passed, with the original record and source preserved.
 This adds no fresh native solver or calibration claim.
 
-The next E04 packaging repair gives each build its own persistent suite
-reports and a sanitized verification receipt. Full builds include only their
-own successful aggregate; skipped builds explicitly omit suite evidence.
-The prior stale ZIP attachment and frozen runtime acceptance retain their
-original scope. Focused contract tests passed at `f361290`; actual full and
-skipped builds of the reconciled candidate remain required.
+E04 builds retain persistent build-owned suite reports and sanitized logical
+verification receipts. Actual normal full and skipped builds passed at
+`cb3720b`; the full build produced 98 reports, 2,455 reported / 1,445 raw cases,
+zero failures/errors and one expected POSIX-only skip on Windows. Each build
+passed 20 original and 21 copied smoke checks plus the valid-record, alias
+and two unsupported-claim commands (exits 0/2/1/1). Test-only successor
+`7ead724` passed all 18 focused contracts; final four-file quality against
+main `1153e7c` introduced no type/broad diagnostics, with critical, checker
+formatting and mapped security checks passed. Existing debt and coverage
+limits remain. The [compact build evidence](docs/research/evidence/portable-build-verification-20261017.json)
+binds actual source identities and preserved failures; those focused checks
+do not rebuild the `cb3720b` artifacts. Tests precede inventory generation,
+so tested and packaged identities remain separate. The prior stale attachment
+and historical Tcl warning retain their original scope; sanitized JSON does
+not sanitize exact JUnit or its ZIP, and no release claim is made.
 
 The engine-free saved-pair API/CLI merged normally through
 [PR #99](https://github.com/LucasKazaki/lapsim/pull/99) at `591728b` for declared
