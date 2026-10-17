@@ -71,6 +71,14 @@ and pytest `--capture=sys` for stable Tcl file channels on Windows.
 It collects all module results
 in `work/test-results.xml`; the command above also retains output in
 `work/test-suite.log`. Failures or missing reports produce a nonzero exit.
+To keep another invocation's reports separate, pass
+`--output-dir <report-directory>` to `scripts/check_all.py`. It writes the
+aggregate `test-results.xml` and per-module `test-modules/*.xml` there; the
+default remains `work`. Test discovery, process isolation and aggregation are
+unchanged. The portable builder uses a fresh persistent directory per build
+and includes only its own successful aggregate. A build with `--skip-tests`
+records that omission and does not adopt ambient XML or logs. Its portable
+self-test is separate from full-suite acceptance; see [release](release.md).
 The older `scripts/check_all.ps1` remains available; it configures base Python
 Tcl/Tk paths and stops at the first failing module. Both avoid a shared Tk
 interpreter and keep memory use bounded.

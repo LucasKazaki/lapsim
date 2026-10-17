@@ -97,14 +97,28 @@ map's generated source inventory, builds `dist/LapSim.exe`, and runs that
 executable's self-test from a temporary unrelated directory with Python/Git
 removed from `PATH`, isolated user data, and optional external evidence absent.
 It then produces `dist/LapSim-Windows-x64.zip`, `portable-self-test.json`, and
-`checksums.json`. The ZIP includes the available release verification logs and
-third-party runtime license notices. The output directory can be changed with
+`checksums.json`. The ZIP includes verification produced by this build invocation
+and third-party runtime license notices. The output directory can be changed with
 `--output-dir`; `--skip-tests` is intended only after a separate complete check
 of the same final checkout:
 
 ```powershell
 .\build_lapsim.cmd --output-dir C:\path\to\release
 ```
+
+Each invocation keeps a fresh `verification-*` directory beneath its output,
+including on a failed or missing full-suite report. Its local
+`full-suite-invocation.json` records the literal test command before execution
+and its outcome. The ZIP's `verification/build-verification.json` instead uses
+a sanitized logical command and identifies the packaged source context.
+When full tests pass, only that invocation's exact aggregate is included as
+`verification/test-results.xml`, with its SHA256. Ambient `work` reports/logs
+and earlier output reports are excluded. With `--skip-tests`, the receipt says
+`skipped` and includes no full-suite report; separately retained acceptance
+evidence is not attached automatically. The fresh portable self-test remains
+a distinct frozen smoke check. When enabled, full repository tests precede inventory
+generation, so the packaged snapshot identity is separate from that test phase;
+this receipt does not attest that both snapshots are identical.
 
 Frozen read-only resources resolve through `lapsim.resources.repository_root()`
 to the extraction root's `bundle` directory. Source runs resolve to the checkout.
@@ -127,7 +141,10 @@ other required flows in the verification guide. Preserve skipped-test reasons,
 manual-check scope, hashes, runtime versions, source commit, and dirty-worktree
 state in the release evidence.
 
-Use the final package's report as the source of actual passing totals. Historical
+Use an included full-suite XML for passing totals only when the final package's
+verification receipt says `passed`. A skipped build has no included full-suite
+totals; `portable-self-test.json` describes the separate frozen smoke workflow.
+Keep separately run suite evidence with its own source and hash bindings. Historical
 test counts in the engineering handoff and earlier local logs describe earlier
 runs. Rebuild when code, bundled data, documentation, or map changes, then
 repeat checks affected by those changes. Never describe a source-only sweep as
