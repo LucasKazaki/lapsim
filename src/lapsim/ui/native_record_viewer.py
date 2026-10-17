@@ -360,6 +360,7 @@ class NativeRecordViewer:
                         self.select(0)
                     except (ValueError, OverflowError) as error:
                         self.record = self.summary = self.selected_sample = None
+                        self.model_claim.set(recorded_model_claim({}))
                         for widget in (
                             self.details_button,
                             self.previous_button,

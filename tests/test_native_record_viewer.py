@@ -286,6 +286,7 @@ def test_finite_height_render_failure_clears_result_and_recovers(
     from lapsim.ui.native_record_viewer import NativeRecordViewer
 
     record = json.loads(json.dumps(saved_record))
+    record["payload"]["model"]["profile_id"] = "incoming_finite_height_fixture"
     for sample in record["payload"]["samples"]:
         sample["position_m"][2] = 1e308
     record["content_id"] = study._content_id(record["payload"])
@@ -304,11 +305,13 @@ def test_finite_height_render_failure_clears_result_and_recovers(
     wait(root, lambda: not viewer.busy)
     assert errors == []
     assert viewer.record is None
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     assert "Open failed" in viewer.status.get()
     assert viewer.details_button.cget("state") == "disabled"
     viewer.load_path(saved)
     wait(root, lambda: not viewer.busy)
     assert viewer.record is not None
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     viewer.close()
 
 
