@@ -95,6 +95,7 @@ def archive_build(tmp_path, monkeypatch):
     spec = importlib.util.spec_from_file_location(
         "verification_archive_build", source / "scripts/build_windows.py"
     )
+    assert spec is not None and spec.loader is not None
     builder = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(builder)
     root = tmp_path / "source checkout"
