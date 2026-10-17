@@ -42,7 +42,8 @@
         N("api-skidpad","simulate_skidpad","entry","implemented","Runs the prescribed skidpad path and applies timed-event scoring to the selected laps.",{s:[["src/lapsim/events/api.py","simulate_skidpad"]]})
       ]),
       N("analysis-entrypoints","Analysis scripts and focused studies","entry","implemented","Repository scripts run event studies, validation replays, sweeps, and report generation using the same model APIs.",{s:["analysis/events/","analysis/endurance/","analysis/accel/"]}),
-      N("component-study-cli","Component study CLI / Python API","entry","implemented","python -m lapsim.experiments.component_study calculates a bounded record or paired comparison, writes JSON atomically, and verifies saved input without replacing it.",{s:[["src/lapsim/experiments/component_study.py","main"]],r:["component-study","component-study-record"]})
+      N("component-study-cli","Component study CLI / Python API","entry","implemented","python -m lapsim.experiments.component_study calculates a bounded record or paired comparison, writes JSON atomically, and verifies saved input without replacing it.",{s:[["src/lapsim/experiments/component_study.py","main"]],r:["component-study","component-study-record"]}),
+      N("native-saved-comparison","Compare supplied saved native studies","entry","implemented","Read-only API/CLI compares two validated saved records for an explicit plant-step or logging-period difference. Checks recorded physical/source compatibility, retains cached force clocks and historical claim scope, and reports endpoint differences or exact shared/unmatched timestamps. No native physics or replay.",{s:["src/lapsim/experiments/suspension_compare.py","tests/test_suspension_compare.py","docs/chrono_suspension_study.md"],r:["native-saved-inspection","native-suspension"]})
     ])
   );
 })();
