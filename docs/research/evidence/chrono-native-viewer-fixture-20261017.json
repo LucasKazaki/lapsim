@@ -1,0 +1,205 @@
+{
+  "schema": "lapsim.native-viewer-fixture-followup.v1",
+  "status": "Local test-fixture follow-up complete with retained warning/formatting limits; fresh exact-head hosted checks, normal PR108 integration and postmerge verification pending at freeze",
+  "updated_utc": "2026-10-17T16:28:46.136553+00:00",
+  "source": {
+    "test_repair_commit": "829df7d8ea12ad42c85f4bc05f2cca180f2f4e79",
+    "test_repair_tree": "1b7877ecbe00a8b09d1d20265fe142b56b3db95c",
+    "parent": "fa6deb2eef24bd20b716894c86d1ad40aaca6640",
+    "production_code_commit": "caa51fa62c00dd180548071e3b986fd58d471345",
+    "test_file": "tests/test_native_record_viewer.py",
+    "test_file_LF_sha256": "dea105561886d6ff999d41fded69cbe98930487228a0f9d50140f5c7573f5b22",
+    "current_main_at_freeze": "2800d02232057fc92e16fe9f5bda1e60921f7e9a"
+  },
+  "hosted_failure": {
+    "pull_request": "https://github.com/LucasKazaki/lapsim/pull/108",
+    "head": "fa6deb2eef24bd20b716894c86d1ad40aaca6640",
+    "workflow_run": 39045004525,
+    "job": 117431868541,
+    "checks_successful": 15,
+    "checks_failed": 1,
+    "failed_check": "Native suite / 2",
+    "viewer_cases": {
+      "passed": 28,
+      "failed": 1,
+      "errors": 0,
+      "skips": 0,
+      "reported_warnings": 4
+    },
+    "case": "test_bad_load_clears_old_result_and_fresh_load_recovers[plot]",
+    "failure_scope": "Initial prior-record load timed out at the unchanged five-second wait, before plot-error injection. Hosted Ubuntu Python3.13.16 is distinct from local Windows Python3.13.15. Historical timeout causality remains unproven."
+  },
+  "repair": {
+    "scope": "Test instrumentation only: a short monkeypatch context replaces the class renderer descriptor for the plot-error case and restores it before recovery. JSON-error case no longer assigns an instance-bound renderer.",
+    "reason": "The previous instance restoration retained a bound method pointing back to the viewer; source review and passive close snapshots confirmed that edge. This does not identify the historical timeout cause.",
+    "preserved": "All130 assertions including8 in the repaired function,23 other functions/decorators and original five-second wait; all production, numerical, replay/schema/claim policies and thresholds unchanged.",
+    "draft_encoding_limit": "An unapplied first draft used the Windows default text encoding; strict original-byte checks rejected it before source/staging mutation. Corrected R2 explicitly preserves UTF8/CRLF and the reviewed ASCII patch."
+  },
+  "passive_diagnostic": {
+    "source": "fa6deb2eef24bd20b716894c86d1ad40aaca6640",
+    "passed": 29,
+    "warnings": 0,
+    "observer_errors": 0,
+    "truncation": false,
+    "scope": "One instrumented run; observed Tk finalizers ran on main thread and no historical failure reproduced. Observer allocation/scheduling can shift collection. No forced collection, timeout, threshold or production change."
+  },
+  "rejected_allocation": {
+    "stage": "focused829 attempt1",
+    "physical_headroom_GiB": 6.840610504150391,
+    "required_physical_GiB": 10,
+    "tests_executed": false,
+    "scope": "Preflight stopped before guard launch. Preserved/reviewed; a later fresh allocation followed natural recovery without changing limits or unrelated processes."
+  },
+  "focused": {
+    "reported_cases": 86,
+    "raw_testcase_elements": 86,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "warnings": 0,
+    "protocol": "Normal uninstrumented three-module pytest run",
+    "guard_wall_s": 50.50570080001489,
+    "peak_job_committed_bytes": 234995712,
+    "minimum_headroom_GiB": {
+      "physical_gib": 9.06637954711914,
+      "commit_gib": 10.962486267089844
+    },
+    "owned_active_at_close": 0,
+    "preserved_actual_input_files": 107
+  },
+  "full": {
+    "modules": 98,
+    "actual_module_exit0": 98,
+    "reported_cases": 2445,
+    "raw_testcase_elements": 1435,
+    "failures": 0,
+    "errors": 0,
+    "skips": 1,
+    "warnings": 1,
+    "protocol": "Complete segmented98-module gate using unchanged run_module and merge_reports, with actual exit0 per-module evidence; not an uninterrupted check_all CLI invocation",
+    "fresh_start_modules": 0,
+    "segments": 1,
+    "prior_reports_seeded": false,
+    "aggregate_case_bytes_and_order_exact_all_modules": true,
+    "warning": "Retained comparison-viewer Tcl interpreter lifetime warning at test_normal_picker_flow_details_passivity_and_input_identity[plant-step-plant], reported in experiments/run_record.py:52;14passed1warning. Record-viewer module29passed/no warning. No all-Tk lifetime repair or historical-timeout causality claim.",
+    "skip": "Unchanged POSIX multicall compiler regression; its prior actual local WSL pass retains its caa source scope.",
+    "guard_wall_s": 843.6596624999947,
+    "peak_job_committed_bytes": 612302848,
+    "minimum_headroom_GiB": {
+      "physical_gib": 8.797584533691406,
+      "commit_gib": 10.46847915649414
+    },
+    "owned_active_at_close": 0,
+    "stderr_bytes": 0,
+    "preserved_actual_GUI_input_files": 75,
+    "GUI_retention_scope": "43 pair-viewer and32 record-viewer files from these actual full-run subprocess intervals; exact bytes/hash/mtime. Earlier focused copies are separate."
+  },
+  "lint_followup": {
+    "version": "ruff0.17.0",
+    "actual_strict_admission_guard_exit": 1,
+    "broad_raw_findings": "Both priorfa6/current829 JSON outputs are empty arrays; no new broad findings.",
+    "critical_scope": "Both critical Ruff assertions completed before the final formatting assertion in the retained helper.",
+    "formatting_scope": "Both raw formatter outputs flag the same two unchanged assertions outside the repair; no clean-format claim. The strict helper incorrectly required a clean file despite the repository formatting debt and is preserved as failed, without rerun.",
+    "per_command_exit_receipt_retained": false,
+    "receipt_limit": "Helper aborted before saving its final per-command receipt; raw stdout/stderr, source snapshots and failed guard are retained. Per-command formatter exit codes are not independently retained.",
+    "independent_review": "Only paths and displayed line numbers normalize; formatter diagnostic code/snippets are otherwise byte-identical, with no hunk in the repaired function. The strict guard remains failed."
+  },
+  "unchanged_acceptance_scope": {
+    "receipt": "chrono-native-viewer-claims-20261017.json",
+    "receipt_LF_sha256": "fc803289944d0281cc2f097395d838220b00956b889f7b986d54aa415ee780f5",
+    "scope": "Original caa installed/browser/frozen/native-source/quality evidence is unchanged and keeps its original source and limitations. This follow-up executes no new native physics, installed package, browser or frozen acceptance. No release or deployment. Runtime/scripts/quality/controller/firmware/web/packaging Git contents equal caa."
+  },
+  "evidence_bindings": {
+    "hosted_run": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-hosted-native2-failure-20261017/run.json",
+      "sha256": "b770c7cdea5786b990d734d760b0a7f9f43283761ca40a07aacc690ccdb71bd4"
+    },
+    "hosted_viewer_XML": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-hosted-native2-failure-20261017/artifact/native-2/test_native_record_viewer.xml",
+      "sha256": "a8ecd8448eb85be801fe080c0f81ac76098b94e0a7dfc6c4dd3c5b6d946856dd"
+    },
+    "hosted_job_log": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-hosted-native2-failure-20261017/job-log.txt",
+      "sha256": "4dc76f3e170dc2baee6ef1a0273a079e547ffc88a653020eb1a213d62ace506a"
+    },
+    "passive_diagnostic_summary": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-passive-fa6deb2-attempt-1/summary.json",
+      "sha256": "61095ad8588298153800dfeb532611d2f2382e6e4c79a6340adc6d0df52f9fcb"
+    },
+    "passive_preservation": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-passive-fa6deb2-preserved-20261017/independent-proof.json",
+      "sha256": "d66d61cf1a5b1fb431ba58126d6658152cab666fcc6e7a33758e5cfd73e49eba"
+    },
+    "fixture_repair": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-renderer-fixture-repair-r2-20261017/committed-repair.json",
+      "sha256": "52b4064720eec8786ba1a297054eaf2305e3b5ce5a1031d6ffaf7eea02ec358e"
+    },
+    "rejected_preflight": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-focused-829df7d-attempt-1-rejected-preflight-review/independent-proof.json",
+      "sha256": "2f627ac01dcc5d76d4fba4860349156aa8e0d9bedb5a1de73a48df718af77895"
+    },
+    "focused_preservation": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-focused-829df7d-attempt-2-preserved-20261017/independent-proof.json",
+      "sha256": "7f5b7b6399581d3b59f9174b9f64808a04f3cb5c90d8a33071eb7bc238a9b519"
+    },
+    "focused_XML": {
+      "checkout_role": "primary",
+      "relative_path": "work/native-viewer-renderer-fixture-focused-829df7d-attempt-2-20261017/focused.xml",
+      "sha256": "651d886e22b753afd63755de2911fc5121b8c748e6f2c35bbd92315b5a3c0974"
+    },
+    "full_root_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/viewer108-renderer-full98-829df7d-20261017/root-closed-review.json",
+      "sha256": "677c627944af663b8c0084818bd83f97df1141fb8f83e41db8dc1dd0cf6c905a"
+    },
+    "full_preservation": {
+      "checkout_role": "primary",
+      "relative_path": "work/viewer108-renderer-full98-829df7d-preserved-20261017/independent-proof.json",
+      "sha256": "ca717ccf5db221b01ded8a1072260e20b9581d4ead20ca274240f2ce420be898"
+    },
+    "full_aggregate": {
+      "checkout_role": "primary",
+      "relative_path": "work/viewer108-renderer-full98-829df7d-20261017/observed-gate/segment-1/test-results.xml",
+      "sha256": "98d9bd3b660852ed40d94d9b89e5cb516679a67abc36a477fbb7c9bcda587862"
+    },
+    "full_guard": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-renderer-full-829df7d-segment-1-job/summary.json",
+      "sha256": "ccba01d313bdfde1a4aaef910a64d65374636da1e4f4f48c51b37cc612bf7063"
+    },
+    "full_GUI_input_preservation": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-full829-GUI-input-retention-20261017/independent-proof.json",
+      "sha256": "262e19ce8b4701cd8ab831ec52dadddba81be6e65e80d51816842d9a394445a7"
+    },
+    "strict_lint_guard": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-renderer-lint-829df7d-attempt-1-job/summary.json",
+      "sha256": "380a75f9363afd23818071da55990c497e0a018ce580acc7580843d2094ffd72"
+    },
+    "prior_formatter_output": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-renderer-lint-829df7d/prior/format-stdout.txt",
+      "sha256": "e9c4727313e2006082f0edb04222f3e54a94a521febe703d0050b69e4c54bd88"
+    },
+    "current_formatter_output": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-renderer-lint-829df7d/current/format-stdout.txt",
+      "sha256": "ff75cb699c332c9521c125cc1362c597f187fd35786b3a2597dc8a1951396ee8"
+    },
+    "lint_delta_independent_review": {
+      "checkout_role": "primary",
+      "relative_path": "work/detailed-study/viewer108-renderer-lint-829df7d-independent-review-r2/independent-proof.json",
+      "sha256": "71e01c8de5e30a9e1e37eb09fc80776a2ebdf0ddd522c20d52f3b8227b9d268a"
+    }
+  },
+  "retention": "Role-relative paths bind ignored local evidence. No private paths, telemetry arrays, raw stacks or downloaded assets are published here. Hashes are not signatures or physical validation."
+}

@@ -80,6 +80,18 @@ separates source-window, installed-package and copied-executable checks. The
 portable ZIP contains an older test report; that attachment is outside current
 full-suite evidence and its selection remains a separate packaging defect.
 
+The first hosted run of [PR #108](https://github.com/LucasKazaki/lapsim/pull/108)
+later timed out during an unchanged test's initial record load. A test-only
+follow-up at `829df7d` scopes renderer fault injection to the class descriptor
+and restores it before recovery, removing an instance-bound method cycle.
+Assertions and waits are unchanged. Its fresh 86 focused checks and 98-module
+Windows sequence passed (2,445 reported JUnit cases / 1,435 raw testcase entries,
+one expected POSIX-only skip). The comparison viewer emitted the same retained
+Tcl lifetime warning. The [fixture follow-up receipt](research/evidence/chrono-native-viewer-fixture-20261017.json)
+preserves the hosted failure, passive diagnostic, local results and formatting
+debt. These passes do not establish the historical timeout's cause or a general
+Tk lifetime fix; production code remains the accepted `caa51fa` version.
+
 The four panels show the recorded COM path and wheel-center points, COM height,
 four spring lengths, and applied or computed vertical tire forces. The points
 are not suspension hardpoints or wheel orientations; spring length is not wheel
