@@ -1,0 +1,3668 @@
+{
+  "schema": "lapsim.native-configured-cli-verification.v1",
+  "status": "completed implementation gate evidence",
+  "scope": "Retained completed local phases for configured native CLI/dispatch/bounds. Expected baseline failures are not implementation acceptance. Native and engine-free phases have distinct sources and measurement scopes. No physical calibration, achieved brake torque, authenticity, GPU physics, deadline or unrecorded broader-gate claim.",
+  "retention": "Tracked compact evidence: raw telemetry, logs, archives and XML remain local/ignored and are bound by original-byte hashes. Installation-specific paths are explicit roles. Hashes are not signatures or guaranteed remote availability. No hostname, assets, raw telemetry, unrelated environment values or per-case 2396-row dump is embedded.",
+  "path_bindings": {
+    "{repository}": "primary clean checkout used by the recorded gates",
+    "{standard_python}": "repository ordinary .venv/Scripts/python.exe; engine-free gates and comparison",
+    "{native_prefix}": "existing isolated Windows/Python 3.12 prefix recreated earlier from both locks and editable project --no-deps",
+    "{micromamba}": "official micromamba 2.5.0-2; SHA256 baf6d56a31a63a75f0c77bdce27fefea57b1bdc8aa25b50a1be45696c0e737e7",
+    "{root_prefix}": "short process-level micromamba root selected before invocation",
+    "{ruff}": "ordinary repository .venv/Scripts/ruff.exe",
+    "{comparison_inputs}": "external preserved copies of three fresh bc504d5 native records, identified by raw hashes/content and receipt IDs in comparison.inputs",
+    "{author_checkout}": "isolated author checkout used for ancestry/documentation reconciliation",
+    "{audit_checkout}": "same-PC backend checkout used to orchestrate the retained full/WSL gates",
+    "{task_workspace}": "local task workspace containing isolated build environment, copied EXE and preserved comparison inputs",
+    "{linux_clean_clone}": "fresh local Linux clone from the primary shared Git store, checked out to exact112 commit/tree",
+    "{wsl_tool_runtime}": "existing verified local WSL Semgrep/Python tool runtime; no install/system change by these gates",
+    "{git_cli}": "observed Windows Git executable; content identity retained in full-gate tool metadata",
+    "{node_cli}": "observed Windows Node executable; content identity retained in full-gate tool metadata"
+  },
+  "implementation_source": {
+    "commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+    "tree": "13d8726891202f51a2444776d65fae6a972e5af8",
+    "implementation": {
+      "code_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+      "dirty_worktree": false,
+      "files_sha256": {
+        "chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+        "native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+        "suspension_study.py": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe"
+      },
+      "hash_scope": "three study implementation files; UTF-8 bytes with CRLF normalized to LF"
+    },
+    "model_configuration": {
+      "assets_sha256": {
+        "derived/synthetic_sedan_shafts.json": "2ec10b9acacf1a7511b773bf7bc3409c280b483a328ddb131a59f8e7f8fa6a1a",
+        "sedan/brake/Sedan_BrakeShafts.json": "59e6f5f834b834a337518412bfb0e9f0af2512000bf71f27708537d2441c0c1e",
+        "sedan/chassis/Sedan_Chassis.json": "18ffc5935cc49ef06fcb49f88d5e84d198da922d5a14d72961885c310deadd09",
+        "sedan/driveline/Sedan_Driveline2WD.json": "80dd661a9c20ed7eb3e00cda148ccbe0ad4a0150f49b97dafa9d98a755696457",
+        "sedan/steering/Sedan_RackPinion.json": "828071b626be2ef9b0f63d2ff06097b22372a1739fa902583519801cfe8bca02",
+        "sedan/suspension/Sedan_DoubleWishbone.json": "7fe4624e1ea9f367cda41780f1c255a4c7da579fd29f073d7ab55d11dad0bbf5",
+        "sedan/tire/Sedan_Pac02Tire.json": "93f8945e5fea8a03364e1549791683292bc446dd8eb1585e782e67628b3a811f",
+        "sedan/tire/Sedan_Pac02Tire.tir": "ef4c08a321d06927616416d6af2eb3c6db41fa8461927650b194c0ed79ac4af1",
+        "sedan/vehicle/Sedan_Vehicle.json": "6605c1fa5798e80b3c62fd16dc7d25bd5ed9f0321129ddddd0dc2c5e8ee7821e",
+        "sedan/wheel/Sedan_Wheel.json": "cb272839e50b8b45b150c902d9e7a24b8cefed67e770d2f866a3a44e23c13f2a"
+      },
+      "engine": {
+        "build": "py312h418371c_0",
+        "name": "pychrono",
+        "native_modules_sha256": {
+          "_core.pyd": "2b700d253e4f359d0a508094de9f857f469c2362a04d8cc249f5f7251ed002e9",
+          "_vehicle.pyd": "08b30f00a398f0e2d0042248eb41f2cda23e00ba843bb587a963982b60c7226e"
+        },
+        "sha256": "8429923678c714c8b49f0a04c92990b1002457396c0765cfc250ac46fa34d92e",
+        "subdir": "win-64",
+        "version": "10.0.0"
+      },
+      "gpu_physics": false,
+      "gravity_mps2": 9.81,
+      "initial_height_m": 0.7,
+      "limitations": [
+        "Upstream synthetic passenger Sedan; no Formula SAE geometry or vehicle calibration",
+        "Ideal requested driveshaft torque; no motor, inverter, battery, regen, or traction controller",
+        "Rigid links/chassis; no flexible structure, aero, thermal model or physical validation",
+        "Pac02 parameter provenance is upstream synthetic data; no fitted team tire coefficients",
+        "Selected TIR uses linear vertical stiffness/damping; no tire bottoming, rolling resistance or pressure dependence"
+      ],
+      "observation_phase": "chassis COM after Advance; cached tire force carries its separate input-state time",
+      "orientation_representation": "Cardan XYZ radians plus world XY heading of the chassis forward axis",
+      "profile_id": "chrono10_synthetic_sedan_shafts_brakes_v1",
+      "solver": {
+        "max_iterations": 150,
+        "threads": 1,
+        "tolerance": 1E-10,
+        "type": "ChSolverBB"
+      },
+      "terrain": {
+        "friction": 0.9,
+        "size_m": [
+          100,
+          30
+        ],
+        "type": "flat rigid"
+      },
+      "tire_force_coupling": "one plant-step cached tire force delay; contact frame/gating uses interval-start geometry",
+      "tire_internal_step_policy": "Pac02 low-speed Dahl bristle step equals each actual plant step; normal-speed handling slip is instantaneous",
+      "torque_scope": "reported differential wheel output; excludes tire/brake torque and exact shaft-body connector inertia",
+      "vehicle_variant": {
+        "base": "sedan/vehicle/Sedan_Vehicle.json",
+        "brake_model": "torque-limited shaft clutch; upstream max 2000 N m, shaft inertia 0.4 kg m^2 per brake",
+        "brake_reaction_telemetry": "unavailable through selected public API; request is not achieved brake torque",
+        "ideal_brake_locking": false,
+        "only_definition_override": "all four brake inputs use upstream Sedan_BrakeShafts.json"
+      },
+      "wheel_signs": "wheel-local +Y omega and driveline wheel torque are positive propulsion; native axle-shaft omega uses opposite axis"
+    },
+    "locks_sha256": {
+      "environments/chrono-win64.lock.txt": "e3bcaa4393a31d571cc48e808315440e7139d5c547aefa41ab8ca603bfd0eba4",
+      "environments/chrono-pip.lock.txt": "8ae6902f0833cd34eab8101032ba326962121133b455d50d13db533f4a2b749e"
+    },
+    "relation_to_historical": "native_plant.py and chrono_vehicle.py unchanged from earlier 6a4/6312. suspension_study.py now hashes a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe; original three-file normalized hash scope and schema remain explicit. Earlier 6a4/6312 measurements and identities are not reassigned to this source."
+  },
+  "environment": {
+    "native_python": "3.12.15",
+    "native_platform": "Windows",
+    "native_device": "CPU",
+    "gpu_physics": false,
+    "native_prefix": "{native_prefix}",
+    "MAMBA_ROOT_PREFIX": "{root_prefix}",
+    "numerical_pool_flags": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "runner_flags": {
+      "PYTHONUTF8": "1",
+      "PYTHONUNBUFFERED": "1",
+      "MPLBACKEND": "Agg"
+    },
+    "evidence_scope": "pool/UTF8/backend flags imposed by hash-bound runner, native Python/platform/device from actual saved records; root-prefix role from established native environment, not a fresh install or full package inventory at these phases"
+  },
+  "baseline": {
+    "source": "eb52ef29ff569df75e1775fa6ff268ac6217b299",
+    "tree": "20dbec62e1f679f3bb2311505c04bca9598eaf4d",
+    "scope": "Engine-free clock and dispatch contracts; no native physics run.",
+    "status": "expected regression reproduced, not implementation acceptance",
+    "gate": {
+      "command": [
+        "{standard_python}",
+        "-m",
+        "pytest",
+        "tests/test_suspension_study.py",
+        "tests/test_suspension_cli.py",
+        "tests/test_suspension_inspection.py",
+        "-q",
+        "--junitxml=work/detailed-study/native-cli-baseline-eb52ef2.xml"
+      ],
+      "working_directory": "{repository}",
+      "status": "failed",
+      "source_before": {
+        "commit": "eb52ef29ff569df75e1775fa6ff268ac6217b299",
+        "status_porcelain": ""
+      },
+      "source_after": null,
+      "started_utc": "2026-10-17T06:36:20.728401-04:00",
+      "finished_utc": "2026-10-17T06:36:27.113668-04:00",
+      "exit_code": 1,
+      "stage_wall_s": 6.384926800004905,
+      "outer_guard_wall_s": 6.434444300015457,
+      "maximum_wall_s": 120,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.36612319946289,
+        "commit_gib": 17.14230728149414
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 12.143760681152344,
+        "commit_gib": 16.90756607055664
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 91553792,
+        "peak_job_committed_bytes": 122081280,
+        "total_processes": 122,
+        "active_processes": 0,
+        "cpu_time_s": 5.78125
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "local_guard_binding": "work/detailed-study/native-cli-baseline-eb52ef2-job/summary.json"
+    },
+    "xml_raw": {
+      "path": "work/detailed-study/native-cli-baseline-eb52ef2.xml",
+      "bytes": 96669,
+      "sha256": "641286cfdc9fa02e3ff8f597e3d7e388712cc6cabfb1cda09806548dfb93bb81"
+    },
+    "counts": {
+      "tests": 136,
+      "failures": 33,
+      "errors": 0,
+      "skipped": 0
+    },
+    "terminal_pytest_s": 5.87,
+    "xml_suite_time_s": 5.681,
+    "passed": 103,
+    "expected_failure_categories": {
+      "budget": 3,
+      "new_cli": 30
+    },
+    "all_failures_belong_new_regressions": true,
+    "failed_cases": [
+      {
+        "module": "tests.test_suspension_study",
+        "name": "test_sample_budget_rejects_forced_boundaries_beyond_2001[1.0005-0.9995-0.001]",
+        "result": "failed",
+        "time_s": 0.0,
+        "focused_result": "passed",
+        "focused_time_s": 0.0
+      },
+      {
+        "module": "tests.test_suspension_study",
+        "name": "test_sample_budget_rejects_forced_boundaries_beyond_2001[1.0005-0.999-0.001]",
+        "result": "failed",
+        "time_s": 0.0,
+        "focused_result": "passed",
+        "focused_time_s": 0.0
+      },
+      {
+        "module": "tests.test_suspension_study",
+        "name": "test_sample_budget_rejects_forced_boundaries_beyond_2001[1.0-1.9995-0.0015]",
+        "result": "failed",
+        "time_s": 0.0,
+        "focused_result": "passed",
+        "focused_time_s": 0.0
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_routes_all_nine_scenario_fields_and_keeps_output_contract[options0-expected0]",
+        "result": "failed",
+        "time_s": 0.115,
+        "focused_result": "passed",
+        "focused_time_s": 0.083
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_routes_all_nine_scenario_fields_and_keeps_output_contract[options1-expected1]",
+        "result": "failed",
+        "time_s": 0.004,
+        "focused_result": "passed",
+        "focused_time_s": 0.011
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_validates_before_any_file_or_engine_work[options0-settle_s]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_validates_before_any_file_or_engine_work[options1-maneuver_s]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_validates_before_any_file_or_engine_work[options2-driveshaft_torque_nm]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_validates_before_any_file_or_engine_work[options3-steering]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_validates_before_any_file_or_engine_work[options4-settle_braking]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_validates_before_any_file_or_engine_work[options5-controller_period_s]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_validates_before_any_file_or_engine_work[options6-logging_period_s]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_validates_before_any_file_or_engine_work[options8-plant-step budget]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_fresh_cli_validates_before_any_file_or_engine_work[options9-sample budget]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options0---replay]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options0---inspect]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options1---replay]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options1---inspect]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options2---replay]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options2---inspect]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options3---replay]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options3---inspect]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options4---replay]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options4---inspect]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options5---replay]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options5---inspect]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options6---replay]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options6---inspect]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options7---replay]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options7---inspect]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options8---replay]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_saved_modes_reject_explicit_fresh_options_even_when_they_equal_defaults[run_options8---inspect]",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      },
+      {
+        "module": "tests.test_suspension_cli",
+        "name": "test_help_lists_every_current_scenario_setting_without_native_work",
+        "result": "failed",
+        "time_s": 0.001,
+        "focused_result": "passed",
+        "focused_time_s": 0.001
+      }
+    ],
+    "source_check_scope": "clean before identity retained; nonzero-exit guard path has no source_after observation, so no after identity is invented"
+  },
+  "focused": {
+    "source": "bc504d5fd538847864fd8de6a2074429badf1a10",
+    "tree": "13d8726891202f51a2444776d65fae6a972e5af8",
+    "scope": "Engine-free command dispatch, bounds, integrity, cancellation and file-preservation checks; no native simulation from this gate.",
+    "gate": {
+      "command": [
+        "{standard_python}",
+        "-m",
+        "pytest",
+        "tests/test_suspension_study.py",
+        "tests/test_suspension_cli.py",
+        "tests/test_suspension_inspection.py",
+        "-q",
+        "--junitxml=work/detailed-study/native-cli-focused-bc504d5.xml"
+      ],
+      "working_directory": "{repository}",
+      "status": "passed",
+      "source_before": {
+        "commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T06:43:34.490464-04:00",
+      "finished_utc": "2026-10-17T06:43:39.640865-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 5.14996060001431,
+      "outer_guard_wall_s": 5.2031990000105,
+      "maximum_wall_s": 120,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.369930267333984,
+        "commit_gib": 17.080623626708984
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 12.208175659179688,
+        "commit_gib": 16.857540130615234
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 86593536,
+        "peak_job_committed_bytes": 116817920,
+        "total_processes": 122,
+        "active_processes": 0,
+        "cpu_time_s": 4.40625
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "local_guard_binding": "work/detailed-study/native-cli-focused-bc504d5-job/summary.json"
+    },
+    "junit": {
+      "raw": {
+        "path": "work/detailed-study/native-cli-focused-bc504d5.xml",
+        "bytes": 21799,
+        "sha256": "96ce4105886c477cd64b3cb266b676a5b53a88c7f7a60d059bd9263512e78dfd"
+      },
+      "counts": {
+        "tests": 136,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "xml_suite_time_s": 4.422,
+      "time_scope": "durations assigned by pytest XML, including fixture allocation; distinct from terminal total, outer command and individual engine timing",
+      "module_counts": [
+        {
+          "module": "tests.test_suspension_cli",
+          "tests": 39,
+          "passed": 39,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "module": "tests.test_suspension_inspection",
+          "tests": 36,
+          "passed": 36,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "module": "tests.test_suspension_study",
+          "tests": 61,
+          "passed": 61,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "case_detail_scope": "All 136 results are counted above; the 33 baseline failures have named baseline/focused results under baseline.failed_cases. Full 136 case names/times stay in the hash-bound local XML, without embedding unrelated pass cases here."
+    },
+    "terminal_pytest_s": 4.6,
+    "whole_cli_test_AST_equal_failing_baseline": true,
+    "budget_regression_bytes_equal_failing_baseline": true,
+    "timing_scope": "terminal 4.60s and XML 4.422s are different measured pytest scopes; neither is outer 5.203199s"
+  },
+  "native_suite": {
+    "source": "bc504d5fd538847864fd8de6a2074429badf1a10",
+    "tree": "13d8726891202f51a2444776d65fae6a972e5af8",
+    "gate": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{native_prefix}",
+        "python",
+        "-m",
+        "pytest",
+        "quality/test_chrono_native.py",
+        "-q",
+        "--junitxml=work/detailed-study/chrono-native-bc504d5.xml"
+      ],
+      "working_directory": "{repository}",
+      "status": "passed",
+      "source_before": {
+        "commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T06:44:07.6616-04:00",
+      "finished_utc": "2026-10-17T06:45:19.300392-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 71.63838459999533,
+      "outer_guard_wall_s": 71.69219790000352,
+      "maximum_wall_s": 180,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.378955841064453,
+        "commit_gib": 17.054092407226562
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 12.119857788085938,
+        "commit_gib": 16.732852935791016
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 133087232,
+        "peak_job_committed_bytes": 175288320,
+        "total_processes": 40,
+        "active_processes": 0,
+        "cpu_time_s": 70.84375
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "local_guard_binding": "work/detailed-study/native-full-bc504d5-job/summary.json"
+    },
+    "junit": {
+      "raw": {
+        "path": "work/detailed-study/chrono-native-bc504d5.xml",
+        "bytes": 1851,
+        "sha256": "55df7afcdccd66c0806b517c0cf9335b77c52984ebf4e2c852911017229b3bb4"
+      },
+      "counts": {
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "xml_suite_time_s": 70.779,
+      "cases": [
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_gravity_equilibrium_and_static_left_right_symmetry",
+          "result": "passed",
+          "time_s": 61.625
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_positive_rear_drive_has_correct_authority_and_forward_response",
+          "result": "passed",
+          "time_s": 0.0
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_steering_sign_and_mirrored_yaw_response",
+          "result": "passed",
+          "time_s": 0.0
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_timestep_refinement_changes_small_physical_quantities_by_less_than_one_percent",
+          "result": "passed",
+          "time_s": 0.0
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_logging_is_side_effect_free_and_does_not_change_the_physical_trace",
+          "result": "passed",
+          "time_s": 0.001
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_force_and_tire_kinematics_timestamps_expose_cached_coupling",
+          "result": "passed",
+          "time_s": 0.003
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_noncoincident_exports_preserve_held_commands_and_force_clocks",
+          "result": "passed",
+          "time_s": 0.012
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_reset_is_repeatable_and_observe_does_not_advance",
+          "result": "passed",
+          "time_s": 0.038
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_native_tire_clock_matches_each_actual_plant_interval",
+          "result": "passed",
+          "time_s": 0.029
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_native_record_replays_through_same_engine",
+          "result": "passed",
+          "time_s": 7.157
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_actual_cancel_cleans_up_and_does_not_poison_next_native_initialization",
+          "result": "passed",
+          "time_s": 0.061
+        },
+        {
+          "module": "quality.test_chrono_native",
+          "name": "test_insufficient_settle_is_rejected_before_maneuver",
+          "result": "passed",
+          "time_s": 0.998
+        }
+      ],
+      "time_scope": "durations assigned by pytest XML, including fixture allocation; distinct from terminal total, outer command and individual engine timing"
+    },
+    "terminal_pytest_s": 70.78,
+    "records": {
+      "settle": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/986b074e272d473ebe5eea5bfd0047b3/settle.json",
+          "bytes": 1015504,
+          "sha256": "34bee5e1eabc8e090f12abbfab0e37135d15098385d620b73243022546c5c25c"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "e688aba72e03eb232f53e8eaa20a131dc7c9571afdec9e609e9f2cff70f3a0cd",
+        "receipt_id": "2ecf7050814dd4a45d3c9dd55d821711fe68a640db21204e1bd356d359b623cc",
+        "source_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "scenario": {
+          "scenario_id": "settle",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 1001
+      },
+      "drive": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/986b074e272d473ebe5eea5bfd0047b3/drive.json",
+          "bytes": 1026781,
+          "sha256": "65d1cd9f23e448c48e23e55f8bd06c6b264f9b2cca1a028f3a0f9f6e55213f38"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "62386b59d501a23132e53b2f39448e7d756cbada9e6063c2db8ffe16c9327291",
+        "receipt_id": "2335a00b34f76775bb36bbccf660a5b91470e9d9f4ddae2b38937077ae525a25",
+        "source_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "scenario": {
+          "scenario_id": "drive",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 1001
+      },
+      "drive_half_step": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/986b074e272d473ebe5eea5bfd0047b3/drive_half_step.json",
+          "bytes": 1026995,
+          "sha256": "13ab1943bc0a99a1179b8e27d28f4a3e92f449eed71682d63bf2409b58823fd1"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "11011d4d8708987c35b83061561fd664280a1ca0306a03005054dbbfe0444c6d",
+        "receipt_id": "234799f4fb97d1486258403ca48db09497b9f1375061266699affeb7e5cfe4fe",
+        "source_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "scenario": {
+          "scenario_id": "drive",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.00025,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 32000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 2001
+      },
+      "drive_sparse_log": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/986b074e272d473ebe5eea5bfd0047b3/drive_sparse_log.json",
+          "bytes": 461218,
+          "sha256": "3762c7b29fb4e42d143eb838872fa22c9ee6f0d6348e8216e9fc873ff6688b8b"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "d5caa07dd492c0f9a83cf146f05e57a1ee72f02b3c39f2bbdbb0078f2bad0160",
+        "receipt_id": "cdad0dc7d73cb45e398e0212f6ad96d26f317eff51f24ad4bb1c5dddb566312a",
+        "source_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "scenario": {
+          "scenario_id": "drive",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.05,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 161,
+        "settling_observations": 1001
+      },
+      "steer_left": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/986b074e272d473ebe5eea5bfd0047b3/steer_left.json",
+          "bytes": 1027668,
+          "sha256": "b854fae59bca23a1b3e8130ba2ccef35ae500a1c3ead049b4745e581556617cf"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "15ccd9e0898edeeb1ec6a1b2f70b44b962d12dd9588f5b11001369e45ed5e35a",
+        "receipt_id": "d6383271e112c523f3049d2d90148a7bf6ba2f57594304339b48fd0baaf2be83",
+        "source_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "scenario": {
+          "scenario_id": "steer",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 1001
+      },
+      "steer_right": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/986b074e272d473ebe5eea5bfd0047b3/steer_right.json",
+          "bytes": 1028257,
+          "sha256": "0bc4ca3818e4b45aa851968c740a74ba0c8940f800b3b4696be7f4bfa856b41d"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "f00b105a9a2124a1b99d61c6b9e60033f29013f1b20f2a9132049c2e4e5e3ccb",
+        "receipt_id": "314c9e481e8b947531606e3ae23f511caa0e56a8136596eaee99a10e20a9c55d",
+        "source_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "scenario": {
+          "scenario_id": "steer",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": -0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 1001
+      },
+      "drive_noncoincident_clocks": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/986b074e272d473ebe5eea5bfd0047b3/drive_noncoincident_clocks.json",
+          "bytes": 640189,
+          "sha256": "c410dd69ecd5538e9f9f72943732add1097e769030cdc69ff165681badaa4213"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "20fc58e5ff185ff808f3aa374de7bed0bfe8b046a0065540f5f8368340f65651",
+        "receipt_id": "ec747e0522b79620c3f479915552e38112770034cd930e30c88b059b4d1b46aa",
+        "source_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "scenario": {
+          "scenario_id": "drive",
+          "settle_s": 6.003,
+          "maneuver_s": 0.101,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.025,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 12208,
+        "controller_events": 611,
+        "exported_samples": 247,
+        "settling_observations": 1001
+      }
+    },
+    "prior_six_comparison": {
+      "prior_source": "885a7d9bc27d8692f980c926b6ebbcec43508f45",
+      "cases": {
+        "settle": {
+          "after_record": "native_suite.records.settle",
+          "fields_exactly_equal": [
+            "scenario",
+            "model",
+            "capabilities",
+            "controller",
+            "commands",
+            "samples",
+            "metrics"
+          ]
+        },
+        "drive": {
+          "after_record": "native_suite.records.drive",
+          "fields_exactly_equal": [
+            "scenario",
+            "model",
+            "capabilities",
+            "controller",
+            "commands",
+            "samples",
+            "metrics"
+          ]
+        },
+        "drive_half_step": {
+          "after_record": "native_suite.records.drive_half_step",
+          "fields_exactly_equal": [
+            "scenario",
+            "model",
+            "capabilities",
+            "controller",
+            "commands",
+            "samples",
+            "metrics"
+          ]
+        },
+        "drive_sparse_log": {
+          "after_record": "native_suite.records.drive_sparse_log",
+          "fields_exactly_equal": [
+            "scenario",
+            "model",
+            "capabilities",
+            "controller",
+            "commands",
+            "samples",
+            "metrics"
+          ]
+        },
+        "steer_left": {
+          "after_record": "native_suite.records.steer_left",
+          "fields_exactly_equal": [
+            "scenario",
+            "model",
+            "capabilities",
+            "controller",
+            "commands",
+            "samples",
+            "metrics"
+          ]
+        },
+        "steer_right": {
+          "after_record": "native_suite.records.steer_right",
+          "fields_exactly_equal": [
+            "scenario",
+            "model",
+            "capabilities",
+            "controller",
+            "commands",
+            "samples",
+            "metrics"
+          ]
+        }
+      },
+      "scope": "New bc direct saved-field comparison against prior 885 fixture; detailed prior-record identities remain in the hash-bound local native proof/historical manifest, rather than duplicating old native evidence here."
+    },
+    "new_scenario_payload_except_source_equal_standalone_6312": true,
+    "scope": "Actual native CPU tests with synthetic upstream Sedan; numerical checks and command clocks do not establish calibration, achieved brake torque, GPU physics or deadlines.",
+    "chronology": "original native-suite proof retains its initial pending placeholders; later configured CLI/replay and static phases below are separate retained observations, not edits to that proof"
+  },
+  "configured_cli": {
+    "source": "bc504d5fd538847864fd8de6a2074429badf1a10",
+    "gate": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{native_prefix}",
+        "python",
+        "-m",
+        "lapsim.experiments.suspension_study",
+        "--scenario",
+        "drive",
+        "--settle",
+        "6.003",
+        "--maneuver",
+        "0.101",
+        "--plant-step",
+        "0.0005",
+        "--controller-period",
+        "0.01",
+        "--logging-period",
+        "0.025",
+        "--driveshaft-torque",
+        "40",
+        "--steering",
+        "0.06",
+        "--settle-braking",
+        "0.2",
+        "--output",
+        "work/detailed-study/native-configured-cli-bc504d5.json",
+        "--stop-file",
+        "work/detailed-study/STOP"
+      ],
+      "working_directory": "{repository}",
+      "status": "passed",
+      "source_before": {
+        "commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T06:46:06.000268-04:00",
+      "finished_utc": "2026-10-17T06:46:13.539804-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 7.539168899995275,
+      "outer_guard_wall_s": 7.589472999999998,
+      "maximum_wall_s": 180,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.261383056640625,
+        "commit_gib": 16.939247131347656
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 12.021995544433594,
+        "commit_gib": 16.735824584960938
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 101732352,
+        "peak_job_committed_bytes": 148701184,
+        "total_processes": 12,
+        "active_processes": 0,
+        "cpu_time_s": 7.078125
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "local_guard_binding": "work/detailed-study/native-configured-cli-bc504d5-job/summary.json"
+    },
+    "record": {
+      "raw": {
+        "path": "work/detailed-study/native-configured-cli-bc504d5.json",
+        "bytes": 605817,
+        "sha256": "a806b6e68fa7a54e1bb569210199dcf868debdb29d1429417849f3a7ed117c5b"
+      },
+      "schema": "lapsim.native-suspension-study.v1",
+      "content_id": "20fc58e5ff185ff808f3aa374de7bed0bfe8b046a0065540f5f8368340f65651",
+      "receipt_id": "cc4ddf3e4d527980b4455514d493eff75e42de9b102e55dfff5e57befb15c6a8",
+      "source_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+      "scenario": {
+        "controller_period_s": 0.01,
+        "driveshaft_torque_nm": 40.0,
+        "logging_period_s": 0.025,
+        "maneuver_s": 0.101,
+        "plant_step_s": 0.0005,
+        "scenario_id": "drive",
+        "settle_braking": 0.2,
+        "settle_s": 6.003,
+        "steering": 0.06
+      },
+      "plant_steps": 12208,
+      "controller_events": 611,
+      "exported_samples": 247,
+      "settling_observations": 1001
+    },
+    "execution": {
+      "controller_calls": 611,
+      "device": "CPU",
+      "gpu_physics": false,
+      "initialization_wall_s": 0.10915850001038052,
+      "logging_samples": 247,
+      "plant_steps": 12208,
+      "platform": "Windows",
+      "process_cpu_s": 6.0625,
+      "process_lifetime_peak_working_set_bytes": 139370496,
+      "python": "3.12.15",
+      "simulated_time_s": 6.104,
+      "stepping_and_record_wall_s": 6.0277109000016935,
+      "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export",
+      "total_wall_s": 6.136869400012074
+    },
+    "all_nine_explicit_fields_match_expected": true,
+    "entire_payload_equal_fresh_native_fixture": true,
+    "before_replay_binding": {
+      "sha256": "a806b6e68fa7a54e1bb569210199dcf868debdb29d1429417849f3a7ed117c5b",
+      "mtime_ns": 1792233973314957200,
+      "content_id": "20fc58e5ff185ff808f3aa374de7bed0bfe8b046a0065540f5f8368340f65651",
+      "receipt_id": "cc4ddf3e4d527980b4455514d493eff75e42de9b102e55dfff5e57befb15c6a8",
+      "entire_payload_equal_native_fixture": true
+    },
+    "separate_replay": {
+      "gate": {
+        "command": [
+          "{micromamba}",
+          "run",
+          "-p",
+          "{native_prefix}",
+          "python",
+          "-m",
+          "lapsim.experiments.suspension_study",
+          "--replay",
+          "work/detailed-study/native-configured-cli-bc504d5.json",
+          "--output",
+          "work/detailed-study/native-configured-cli-replayed-bc504d5.json",
+          "--stop-file",
+          "work/detailed-study/STOP"
+        ],
+        "working_directory": "{repository}",
+        "status": "passed",
+        "source_before": {
+          "commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+          "status_porcelain": ""
+        },
+        "source_after": {
+          "commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+          "status_porcelain": ""
+        },
+        "started_utc": "2026-10-17T06:46:42.751361-04:00",
+        "finished_utc": "2026-10-17T06:46:50.313854-04:00",
+        "exit_code": 0,
+        "stage_wall_s": 7.562092599982861,
+        "outer_guard_wall_s": 7.619383899989771,
+        "maximum_wall_s": 180,
+        "runtime_headroom_floor_gib": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        },
+        "recorded_headroom_before_gib": {
+          "physical_gib": 12.192924499511719,
+          "commit_gib": 16.857521057128906
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 11.893131256103516,
+          "commit_gib": 16.369773864746094
+        },
+        "kernel_job_metrics": {
+          "peak_single_process_committed_bytes": 102170624,
+          "peak_job_committed_bytes": 149237760,
+          "total_processes": 12,
+          "active_processes": 0,
+          "cpu_time_s": 7.03125
+        },
+        "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+        "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+        "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+        "local_guard_binding": "work/detailed-study/native-configured-cli-replay-bc504d5-job/summary.json"
+      },
+      "record": {
+        "raw": {
+          "path": "work/detailed-study/native-configured-cli-replayed-bc504d5.json",
+          "bytes": 605813,
+          "sha256": "fd15ecc4ede84c098f0db96bdcd245712c23b142c7b55db50a21ea3bdfcb844b"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "20fc58e5ff185ff808f3aa374de7bed0bfe8b046a0065540f5f8368340f65651",
+        "receipt_id": "917f54802c9e8ded60f3ee2c47075c9cea0a4777989800d087fb1cd65f79d0a5",
+        "source_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+        "scenario": {
+          "controller_period_s": 0.01,
+          "driveshaft_torque_nm": 40.0,
+          "logging_period_s": 0.025,
+          "maneuver_s": 0.101,
+          "plant_step_s": 0.0005,
+          "scenario_id": "drive",
+          "settle_braking": 0.2,
+          "settle_s": 6.003,
+          "steering": 0.06
+        },
+        "plant_steps": 12208,
+        "controller_events": 611,
+        "exported_samples": 247,
+        "settling_observations": 1001
+      },
+      "execution": {
+        "controller_calls": 611,
+        "device": "CPU",
+        "gpu_physics": false,
+        "initialization_wall_s": 0.12209790002088994,
+        "logging_samples": 247,
+        "plant_steps": 12208,
+        "platform": "Windows",
+        "process_cpu_s": 6.0,
+        "process_lifetime_peak_working_set_bytes": 140062720,
+        "python": "3.12.15",
+        "simulated_time_s": 6.104,
+        "stepping_and_record_wall_s": 5.939987799996743,
+        "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export",
+        "total_wall_s": 6.062085700017633
+      },
+      "input_bytes_and_mtime_preserved": true,
+      "entire_payload_equal_direct_cli": true,
+      "content_id_equal": true
+    },
+    "scope": "Actual configured native CPU CLI and independent process replay; no physical calibration or timing guarantee."
+  },
+  "static": {
+    "source": "bc504d5fd538847864fd8de6a2074429badf1a10",
+    "ruff_sha256": "234eb7d1d79a7505e9986ff63ec65ba409bc5087d0e823d6841a92781d0f7c38",
+    "results": [
+      {
+        "command": [
+          "{ruff}",
+          "check",
+          "--select",
+          "E9,F63,F7,F82",
+          "src/lapsim/experiments/suspension_study.py",
+          "tests/test_suspension_study.py",
+          "tests/test_suspension_cli.py"
+        ],
+        "exit_code": 0,
+        "stdout": "All checks passed!\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "{ruff}",
+          "format",
+          "--check",
+          "tests/test_suspension_cli.py"
+        ],
+        "exit_code": 0,
+        "stdout": "1 file already formatted\n",
+        "stderr": ""
+      }
+    ],
+    "scope": "critical Ruff selectors on three changed Python files and formatting of the new CLI test file only"
+  },
+  "inventory_only_candidate": {
+    "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+    "tree": "7b0a18404f7de7cb738c89c99e0f5db3df141bd7",
+    "parent_runtime_source": "bc504d5fd538847864fd8de6a2074429badf1a10",
+    "only_changed_path_from_bc": "docs/simulator_flowchart/data/source-inventory.js",
+    "generation_proof": {
+      "source": "bc504d5fd538847864fd8de6a2074429badf1a10",
+      "operation": "Unchanged repository inventory generator, normal write mode",
+      "only_tracked_output": "docs/simulator_flowchart/data/source-inventory.js",
+      "old_git_blob_sha256": "c0f8a4e4d032e577e36681b660374bbd34e84aef8aa116c62f9a9374fc5e9ae5",
+      "new_working_bytes_sha256": "ca97fc422b68dfaa7b2a084ce0d4954440b338da65af5db656dbf74ac044d24d",
+      "changed_source_entries": [
+        {
+          "before": {
+            "path": "src/lapsim/experiments/suspension_study.py",
+            "sha256": "66574226863b6c05f0fe130d121cc5ee89ff3086305a60ffbd1b9fd3c8b0581b"
+          },
+          "after": {
+            "path": "src/lapsim/experiments/suspension_study.py",
+            "sha256": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe"
+          }
+        }
+      ],
+      "new_counts": {
+        "modules": 101,
+        "equation": 4306,
+        "variable": 8782,
+        "data": 1487,
+        "solver": 1187
+      },
+      "all_other_100_source_entries_equal": true
+    },
+    "scope": "read-only Git diff confirmed only generated inventory differs from bc; all runtime/test bytes preserved; no other gate inferred"
+  },
+  "comparison": {
+    "source": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+    "gate": {
+      "command": [
+        "{standard_python}",
+        "-X",
+        "utf8",
+        "work/detailed-study/verify_comparison_cli_candidate.py",
+        "1129238ee50b12fbaf7419863c36299d20f5eab0"
+      ],
+      "working_directory": "{repository}",
+      "status": "passed",
+      "source_before": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T06:54:19.794683-04:00",
+      "finished_utc": "2026-10-17T06:54:22.306479-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 2.511426400014898,
+      "outer_guard_wall_s": 2.5623143000120763,
+      "maximum_wall_s": 90,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.215034484863281,
+        "commit_gib": 16.789913177490234
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 12.112262725830078,
+        "commit_gib": 16.63733673095703
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 71544832,
+        "peak_job_committed_bytes": 92995584,
+        "total_processes": 10,
+        "active_processes": 0,
+        "cpu_time_s": 1.984375
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "local_guard_binding": "work/detailed-study/cli-comparison-1129238-job/summary.json"
+    },
+    "scope": "normal saved-record CLI only, no native simulation/replay in this phase",
+    "inputs": [
+      {
+        "name": "drive.json",
+        "sha256": "65d1cd9f23e448c48e23e55f8bd06c6b264f9b2cca1a028f3a0f9f6e55213f38",
+        "mtime_ns": 1792233865038915600,
+        "content_id": "62386b59d501a23132e53b2f39448e7d756cbada9e6063c2db8ffe16c9327291",
+        "receipt_id": "2335a00b34f76775bb36bbccf660a5b91470e9d9f4ddae2b38937077ae525a25"
+      },
+      {
+        "name": "drive_half_step.json",
+        "sha256": "13ab1943bc0a99a1179b8e27d28f4a3e92f449eed71682d63bf2409b58823fd1",
+        "mtime_ns": 1792233880632968500,
+        "content_id": "11011d4d8708987c35b83061561fd664280a1ca0306a03005054dbbfe0444c6d",
+        "receipt_id": "234799f4fb97d1486258403ca48db09497b9f1375061266699affeb7e5cfe4fe"
+      },
+      {
+        "name": "drive_sparse_log.json",
+        "sha256": "3762c7b29fb4e42d143eb838872fa22c9ee6f0d6348e8216e9fc873ff6688b8b",
+        "mtime_ns": 1792233888466389800,
+        "content_id": "d5caa07dd492c0f9a83cf146f05e57a1ee72f02b3c39f2bbdbb0078f2bad0160",
+        "receipt_id": "cdad0dc7d73cb45e398e0212f6ad96d26f317eff51f24ad4bb1c5dddb566312a"
+      }
+    ],
+    "inputs_unchanged": true,
+    "independent_expected_values": "direct stdlib JSON endpoint arithmetic and exact stored timestamp sets",
+    "recipe": {
+      "schema": "lapsim.native-suspension-comparison-recipe.v1",
+      "hash_scope": "Explicit comparison/validation/source-match files; source bytes with CRLF normalized to LF only; not a complete transitive environment fingerprint",
+      "status": "complete",
+      "files_sha256": {
+        "experiments/suspension_compare.py": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7",
+        "experiments/suspension_study.py": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe",
+        "dynamics/native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+        "dynamics/chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+        "experiments/dynamics_record.py": "edd2842d0b98c31b805fa5bb830238e66aeaceef9eea983fdd15da933fe25373",
+        "experiments/record_io.py": "32b68f49460f89b83244693b131e15dd7c23dfec36ee9ddca93bf4fd82368a91",
+        "experiments/basic_dynamics.py": "34ff3f7390d322ecb879a357cd53d03150ad0b94edd59608cbb08737625e3ff9"
+      },
+      "file_status": {
+        "experiments/suspension_compare.py": "readable",
+        "experiments/suspension_study.py": "readable",
+        "dynamics/native_plant.py": "readable",
+        "dynamics/chrono_vehicle.py": "readable",
+        "experiments/dynamics_record.py": "readable",
+        "experiments/record_io.py": "readable",
+        "experiments/basic_dynamics.py": "readable"
+      },
+      "criterion_reference": "quality/test_chrono_native.py::test_timestep_refinement_changes_small_physical_quantities_by_less_than_one_percent",
+      "reference_physical_claim_sha256": "1670f90e9defdd392372e4952e632a085dcd66d01f292edea17a0f90f7e6a6d9",
+      "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b"
+    },
+    "reports": {
+      "plant-step": {
+        "raw": {
+          "path": "work/detailed-study/comparison-cli-candidate-1129238/plant-step.json",
+          "bytes": 27698,
+          "sha256": "c7570f89e2488cd61c63ca76f2714019805c69a10aa3f12d64aafe6f0cbd1eb1"
+        },
+        "schema": "lapsim.native-suspension-comparison.v1",
+        "status": "compared",
+        "report_id": "0c193289ea01bf1e2ec0f35ae1599ba32c490ae82b0b1ebb51f70734eb7030c6",
+        "receipt_id": "f3be987ddbfc2a52f8d57ca6552889c440751786cd9741c82151bffd26534364",
+        "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b",
+        "compatibility": {
+          "compatible_recorded_claims": true,
+          "reasons": [],
+          "allowed_scenario_field": "plant_step_s",
+          "selected_field": {
+            "left": 0.0005,
+            "right": 0.00025
+          },
+          "git_identity_claims": {
+            "left": {
+              "code_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+              "dirty_worktree": false
+            },
+            "right": {
+              "code_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+              "dirty_worktree": false
+            },
+            "equal": true
+          },
+          "git_policy": "Git claims are shown separately; recorded implementation hash scope/files must match"
+        },
+        "actual_normal_command_from_hash_bound_helper": [
+          "{standard_python}",
+          "-X",
+          "utf8",
+          "-m",
+          "lapsim.experiments.suspension_compare",
+          "{comparison_inputs}/drive.json",
+          "{comparison_inputs}/drive_half_step.json",
+          "--kind",
+          "plant-step"
+        ],
+        "exit_scope": "retained helper asserts each normal command returned 0 before publishing its summary and raw report",
+        "current_implementation_files": "match",
+        "fresh_native_replay": "not run",
+        "recorded_fixture_criterion": {
+          "name": "quality/test_chrono_native.py::test_timestep_refinement_changes_small_physical_quantities_by_less_than_one_percent",
+          "status": "applied to recorded fixture claims",
+          "scope": "Static fixture endpoint criterion on saved claims; not a new native acceptance run, convergence proof or physical validation.",
+          "fine_reference": "right",
+          "reference_physical_claim_sha256": "1670f90e9defdd392372e4952e632a085dcd66d01f292edea17a0f90f7e6a6d9",
+          "velocity_policy": "abs(coarse - fine) <= max(0.01 * abs(fine), 1e-12); height and springs use absolute 0.001 m only",
+          "checks": [
+            {
+              "quantity": "world_x_velocity_mps",
+              "absolute_difference": 1.0546567793867645E-05,
+              "limit": 0.005605266310474239,
+              "passed": true
+            },
+            {
+              "quantity": "chassis_com_height_m",
+              "absolute_difference": 4.1640997472391916E-07,
+              "limit": 0.001,
+              "passed": true
+            },
+            {
+              "quantity": "spring_length_m.FL",
+              "absolute_difference": 2.2498301677220667E-07,
+              "limit": 0.001,
+              "passed": true
+            },
+            {
+              "quantity": "spring_length_m.FR",
+              "absolute_difference": 2.308267645356743E-07,
+              "limit": 0.001,
+              "passed": true
+            },
+            {
+              "quantity": "spring_length_m.RL",
+              "absolute_difference": 2.1529675547915517E-07,
+              "limit": 0.001,
+              "passed": true
+            },
+            {
+              "quantity": "spring_length_m.RR",
+              "absolute_difference": 2.212218565555979E-07,
+              "limit": 0.001,
+              "passed": true
+            }
+          ],
+          "passed": true
+        }
+      },
+      "logging-period": {
+        "raw": {
+          "path": "work/detailed-study/comparison-cli-candidate-1129238/logging-period.json",
+          "bytes": 37008,
+          "sha256": "ef9531cb116730f994d14176e5db32c74077551fe051a280fdb5d4702692d896"
+        },
+        "schema": "lapsim.native-suspension-comparison.v1",
+        "status": "compared",
+        "report_id": "a61fc5d414538cece77fd6745673e13a1c5a18f43d618af7b6a9f2676cc93745",
+        "receipt_id": "452633dff02b5660a19b6df637058766944b20f57edc1004b5b3fac54244c5e7",
+        "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b",
+        "compatibility": {
+          "compatible_recorded_claims": true,
+          "reasons": [],
+          "allowed_scenario_field": "logging_period_s",
+          "selected_field": {
+            "left": 0.02,
+            "right": 0.05
+          },
+          "git_identity_claims": {
+            "left": {
+              "code_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+              "dirty_worktree": false
+            },
+            "right": {
+              "code_commit": "bc504d5fd538847864fd8de6a2074429badf1a10",
+              "dirty_worktree": false
+            },
+            "equal": true
+          },
+          "git_policy": "Git claims are shown separately; recorded implementation hash scope/files must match"
+        },
+        "actual_normal_command_from_hash_bound_helper": [
+          "{standard_python}",
+          "-X",
+          "utf8",
+          "-m",
+          "lapsim.experiments.suspension_compare",
+          "{comparison_inputs}/drive.json",
+          "{comparison_inputs}/drive_sparse_log.json",
+          "--kind",
+          "logging-period"
+        ],
+        "exit_scope": "retained helper asserts each normal command returned 0 before publishing its summary and raw report",
+        "current_implementation_files": "match",
+        "fresh_native_replay": "not run",
+        "exact_saved_timestamp_counts": {
+          "shared": 81,
+          "left_unmatched": 320,
+          "right_unmatched": 80,
+          "all_shared_observations_equal": true,
+          "scope": "exact saved timestamps, no interpolation; sparse 6.02 sample absent as independently asserted by retained helper"
+        }
+      }
+    },
+    "identity_scope": "comparison algorithm/criterion reference/tolerances remain unchanged. The explicit seven-file recipe retains its limited scope; changed study source makes its observed recipe identity different from prior source. Historical input claims and receipt identity remain separate."
+  },
+  "local_raw_artifacts_sha256": {
+    "work/detailed-study/native-cli-baseline-eb52ef2-proof.json": "3f1aafc0ca641e738ae8cc5fced213a666bdb68534b26f0bf580c84031c68fed",
+    "work/detailed-study/native-cli-focused-bc504d5-proof.json": "c30447d65e18f60a75e756853d00b71e2e9e30f9e61a5359967928a3b46f973d",
+    "work/detailed-study/native-full-bc504d5-independent-proof.json": "1cd7228a185ea3544e065587e7073f8084825ace81993dc403bd859658a5492c",
+    "work/detailed-study/native-configured-cli-bc504d5-proof.json": "f515d6284fbef5a445be7073729cd3d7edd8ae76d6868a225843df785e6588cc",
+    "work/detailed-study/native-configured-cli-bc504d5-before-replay.json": "37cfe7f6ed2e60091a418577768ebfa45b17f2e34c9f1308862d2e37341ba7da",
+    "work/detailed-study/native-cli-static-bc504d5.json": "715aa9a7e7b6841bf3d254767495f9e1c9fe0a5e51e36bad49b65085d878804f",
+    "work/detailed-study/native-cli-inventory-generation-proof.json": "cf669958f611e949eda2e9514e96cd54c729c8c2feb479599799e9c6b2c9f307",
+    "work/detailed-study/comparison-cli-candidate-1129238/summary.json": "978a4910ebdaefa64b107959c8db478408f31da9c680b7413bb7e06079107ce7",
+    "work/detailed-study/verify_comparison_cli_candidate.py": "cc548f0e415797db1aab325023786b832891476fa016a4555c53e638401659e1",
+    "work/detailed-study/verify_native_full_bc504d5.py": "ef0b6b709613b19b2720f6e03b581c1a366d77e64b794ca541a7cd0f45944b3b",
+    "work/detailed-study/run_owned_job.py": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+    "work/detailed-study/native-cli-baseline-eb52ef2-job/summary.json": "3b3cd705e17a02dfb7fb99684487350eae430d9e979e8f8b584e8839984cc49c",
+    "work/detailed-study/native-cli-baseline-eb52ef2-job/native-cli-baseline-eb52ef2-command.json": "45f59257c3c9444183545f9d3b1749882208fdf34b0d4179384cc80587c50fa6",
+    "work/detailed-study/native-cli-baseline-eb52ef2-job/native-cli-baseline-eb52ef2-stdout.txt": "79a51ce090e5bbbdd50564c90cfeff6a5b1fd4667a63481fad401d4bf074bf4b",
+    "work/detailed-study/native-cli-baseline-eb52ef2-job/native-cli-baseline-eb52ef2-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "work/detailed-study/native-cli-focused-bc504d5-job/summary.json": "f99b1aca08b1c8fada3170d0de26199eae7595362a762142cfdabd314302fce1",
+    "work/detailed-study/native-cli-focused-bc504d5-job/native-cli-focused-bc504d5-command.json": "74d666a5a05ef6f9f0eb27693d46cf91e56f78414268a8fc1a4c1eaf5f9a09ed",
+    "work/detailed-study/native-cli-focused-bc504d5-job/native-cli-focused-bc504d5-stdout.txt": "91f12b42a1e0e19a4aa6a19a3536e0b31c12eb227caab709f01ac21610a9a0e8",
+    "work/detailed-study/native-cli-focused-bc504d5-job/native-cli-focused-bc504d5-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "work/detailed-study/native-full-bc504d5-job/summary.json": "9b94299837bdd4c45098ecb8a627d299fbbb384b287d8383bf4bfbb75120cdcc",
+    "work/detailed-study/native-full-bc504d5-job/native-full-bc504d5-command.json": "fa9abe04780290193607424bad663de9b8c88d22af6d8cd2237439628c46fba0",
+    "work/detailed-study/native-full-bc504d5-job/native-full-bc504d5-stdout.txt": "d01c5f3998f14222c160d71966eca151647b3aff9a89dd2ea8ccc534a147586c",
+    "work/detailed-study/native-full-bc504d5-job/native-full-bc504d5-stderr.txt": "be278b4c60eb5eca15d8a76338fc7a37d341ffec1728b456f40b945bc233add0",
+    "work/detailed-study/native-configured-cli-bc504d5-job/summary.json": "036659ac0af43cce0512afab5e052afb670c4d2f6d0ca65c932adf3a04895131",
+    "work/detailed-study/native-configured-cli-bc504d5-job/native-configured-cli-bc504d5-command.json": "645de0de5fb760e60fa2b8d1f5bf46f1626f72f9ef3168e288353344b4a22c18",
+    "work/detailed-study/native-configured-cli-bc504d5-job/native-configured-cli-bc504d5-stdout.txt": "34293ba09fe681d00740b3f0bd7da0cba0f1232badabcf26957602908d3c4f7d",
+    "work/detailed-study/native-configured-cli-bc504d5-job/native-configured-cli-bc504d5-stderr.txt": "680f3984eba1e3de26eacd256180cfc320ab5c91bdd18b83b08e25ca7785c462",
+    "work/detailed-study/native-configured-cli-replay-bc504d5-job/summary.json": "aacccf01002fb7df25a614ef2245b2fd679b9317ef7291627581548848a2f6e6",
+    "work/detailed-study/native-configured-cli-replay-bc504d5-job/native-configured-cli-replay-bc504d5-command.json": "7440fe13b929f2ed4ec02ed25e8fef95b59e9eea58b190e0c86b8cfebe2fdcfe",
+    "work/detailed-study/native-configured-cli-replay-bc504d5-job/native-configured-cli-replay-bc504d5-stdout.txt": "66a0bf214d83b0735120fa0188828c0c0a5513da6ccb6636ce439ca255bdbdad",
+    "work/detailed-study/native-configured-cli-replay-bc504d5-job/native-configured-cli-replay-bc504d5-stderr.txt": "3ea759c5c674464938391c7c92279f38cc6e0c2a501ec42690628859ec9aa6f3",
+    "work/detailed-study/cli-comparison-1129238-job/summary.json": "977c18ecd7fc074b868466aed8b4a5f5525ee1f02f8767cd889c1e640dacb8a3",
+    "work/detailed-study/cli-comparison-1129238-job/cli-comparison-1129238-command.json": "1d7d8e02973fe9660db9ec6ce2a0bdfb2076a379bd2d261d3ba3dc689d7e9007",
+    "work/detailed-study/cli-comparison-1129238-job/cli-comparison-1129238-stdout.txt": "ab44e1444353e30a4aa312d9b8e1b94516bd444f29cf8a2c86033f79c240e65d",
+    "work/detailed-study/cli-comparison-1129238-job/cli-comparison-1129238-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "work/detailed-study/cli-full-1129238-independent-proof.json": "304bd2dfcb1b8f68f6c624be10773e807fd920c8b228ce25e96caf17e921db42",
+    "work/detailed-study/cli-wsl-1129238-independent-proof.json": "58d863ea8a2d997493b91127e86b45e37c0f176bd95518479752a991194b43a8",
+    "work/detailed-study/cli-package-1129238-independent-proof.json": "9883dc598c3f2fb8e487817db824d67de55968dc4a79b5e1a422f60e4b172311",
+    "work/detailed-study/cli-browser-frozen-1129238-independent-proof.json": "647e73e2996da6aef551c2af2a3e58895695a440fcdc60a3e2f7d61628c1d06a",
+    "work/detailed-study/native-cli-1129238-root-visual-review.json": "62e3eb8cd6cb4d06f1ebef2e9173cb048f9c3d983dc58994313dc41d37f4847a"
+  },
+  "historical_native_clock_evidence": {
+    "path": "docs/research/evidence/chrono-noncoincident-clocks-20261017.json",
+    "git_blob_sha256": "e42c354d6cd910698ba5b0d99c175a317a6d3ac0319bb2fda0bf4a0a2a6b62d4",
+    "accepted_manifest_source": "8f3e67d678d9ee0233b6f63df449bdfb9d74aa22",
+    "normal_main_merge": "8802edf4bcfacde7524ed282c066a122612f69b2",
+    "tree": "af06857026cf62d4100911e4825c08218841f83a",
+    "scope": "Prior 6a4 native suite and 6312 observer experiment remain historical there; this CLI evidence does not duplicate or reassign their instrumentation."
+  },
+  "reconciled_source": {
+    "commit": "4bccac1c3caa4e1f5ce5988ece63efb373255f23",
+    "tree": "b798078b7b691797447d3bed24c0cda7f19ed769",
+    "parents": [
+      "1129238ee50b12fbaf7419863c36299d20f5eab0",
+      "8802edf4bcfacde7524ed282c066a122612f69b2"
+    ],
+    "conflicts": [],
+    "changed_paths_vs_112": [
+      "M\tENME408_IMPLEMENTATION_PLAN.md",
+      "M\tdocs/chrono_suspension_study.md",
+      "A\tdocs/research/evidence/chrono-noncoincident-clocks-20261017.json"
+    ],
+    "non_document_entries": 885,
+    "non_document_entries_exact": true,
+    "byte_identity_scope": "All committed Git tree entries outside the three explicitly listed documentation paths, including mode/type/blob object IDs. Equal blob IDs bind exact committed file bytes; working-checkout CRLF normalization is not confused with Git blob bytes.",
+    "prior_branch_refs_preserved": true,
+    "raw": {
+      "path": "{author_checkout}/work/detailed-study/native-cli-ancestry-1129238-main8802edf-20261017/reconciliation-proof.json",
+      "bytes": 2648,
+      "sha256": "b91ce74ce37b41fb1329be9c0998a2f8efe7a6c62cebf0e79f3890f549db2e9c"
+    },
+    "scope": "Normal local ancestry/documentation merge only. The measured 112 runtime/test/catalog and actual bc physics bytes remain unchanged."
+  },
+  "full_windows_suite": {
+    "proof": {
+      "path": "{repository}/work/detailed-study/cli-full-1129238-independent-proof.json",
+      "bytes": 249278,
+      "sha256": "304bd2dfcb1b8f68f6c624be10773e807fd920c8b228ce25e96caf17e921db42"
+    },
+    "status": "passed",
+    "source": {
+      "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+      "tree": "7b0a18404f7de7cb738c89c99e0f5db3df141bd7",
+      "status_porcelain": ""
+    },
+    "scope": "All97 fresh actual exit-zero module processes in one observed segment using unchanged check_all run_module/merge_reports; not an uninterrupted check_all CLI invocation.",
+    "module_count": 97,
+    "seeded_reports": false,
+    "reported_junit_totals": {
+      "tests": 2396,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "raw_xml_element_counts": {
+      "testcase_elements": 1386,
+      "failure_elements": 0,
+      "error_elements": 0,
+      "skipped_elements": 1
+    },
+    "count_scope": "Reported JUnit suite counts are the canonical runner totals; raw testcase elements are separately measured and may differ because unittest/subtest reporting uses a different representation.",
+    "expected_skip": "POSIX compiler case skipped on Windows; actual POSIX case is recorded separately in WSL",
+    "modules": [
+      {
+        "module": "test_adapter_grid_parity.py",
+        "reported_tests": 8,
+        "raw_testcase_elements": 8,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "7ba37ebe3f39a748c8da92bb9a485555dd7157aa2c25c97cd44fff28567fc944"
+      },
+      {
+        "module": "test_aero.py",
+        "reported_tests": 11,
+        "raw_testcase_elements": 11,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "5425bd805a37780a9228b3f999884f43d61803a6af7ecd9f78a4169c618a9250"
+      },
+      {
+        "module": "test_ai_desktop.py",
+        "reported_tests": 36,
+        "raw_testcase_elements": 36,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "1d2cb319e61288215e73d085dbee99a812c6e2c4907b8a513250bc1d917701e1"
+      },
+      {
+        "module": "test_ai_grid_stability.py",
+        "reported_tests": 14,
+        "raw_testcase_elements": 14,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "2a3610d31a77ea719b831de6524b17ff7b527b93ed322b8f2ba54f7d918f4d7e"
+      },
+      {
+        "module": "test_ai_profile_e2e.py",
+        "reported_tests": 2,
+        "raw_testcase_elements": 2,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "0d700894f407c7f02c1aff3eb62da82d730c5ecca623bf717a8e16f92867a759"
+      },
+      {
+        "module": "test_basic_dynamics_record.py",
+        "reported_tests": 15,
+        "raw_testcase_elements": 15,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "f71fdb7fb92cd542ec8416459c9790241a47a6ead0c96780ac5aead1b797370c"
+      },
+      {
+        "module": "test_basic_dynamics_ui.py",
+        "reported_tests": 4,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "f3e8386a32061d115768f5da36a3322330498813f9fbb5f3a3156fd5007a3275"
+      },
+      {
+        "module": "test_battery_charge_budget.py",
+        "reported_tests": 54,
+        "raw_testcase_elements": 54,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "3563cd0cb186404116f92bd59b2bb06242083b079e445448cd0f775d18edc31d"
+      },
+      {
+        "module": "test_bench_viewer.py",
+        "reported_tests": 10,
+        "raw_testcase_elements": 10,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "af296102010ae6aac5b6a261118179224606253b22d552981da3c597a188dcd7"
+      },
+      {
+        "module": "test_bootstrap.py",
+        "reported_tests": 17,
+        "raw_testcase_elements": 17,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "46d3a0dc0ed456725548929462a3c45f0d655bcc0b6725fb3f75b272279a58c1"
+      },
+      {
+        "module": "test_brake_ceiling_guard.py",
+        "reported_tests": 6,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "ae167b430f9692dd6d81f981d4be2ca53c1ed64533447a8713546b73846e3680"
+      },
+      {
+        "module": "test_brakes.py",
+        "reported_tests": 11,
+        "raw_testcase_elements": 7,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "18682b91217c00af7ae756786ab79a3c124240828ee45a16ad5c70bcf749c8cf"
+      },
+      {
+        "module": "test_browser_release_allowlist.py",
+        "reported_tests": 21,
+        "raw_testcase_elements": 21,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "9d7827f5f5127a67f0a8825818fa24cd2cfc557a073f7ef0d3baa016e67a4ff2"
+      },
+      {
+        "module": "test_calculation_progress_ui.py",
+        "reported_tests": 5,
+        "raw_testcase_elements": 5,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "ee5397c0fa38c60f79ad628917e12202dfc039649d72c55cb7361810882666ea"
+      },
+      {
+        "module": "test_cell_road_grip.py",
+        "reported_tests": 15,
+        "raw_testcase_elements": 15,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "a1257985c2258e09925fcc5f25d3d1b302ec8aad80c41b820fd85d38672b64ab"
+      },
+      {
+        "module": "test_cell_size_desktop.py",
+        "reported_tests": 1,
+        "raw_testcase_elements": 1,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "a58ee0a22a8c0df5e7d7bb5359b55e71dad34177fcdc94f40e782c1f98a10820"
+      },
+      {
+        "module": "test_check_all.py",
+        "reported_tests": 3,
+        "raw_testcase_elements": 3,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "adc7fcef16d2f0f1de6247efcc6336c8e0f6d92d67290abad8361bd8ac7ba6b8"
+      },
+      {
+        "module": "test_closed_loop.py",
+        "reported_tests": 29,
+        "raw_testcase_elements": 29,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "bf16197f69191e48a8c2e29dc22304e7d5d0b7f39cfae72935f8b124e1d49448"
+      },
+      {
+        "module": "test_component_extensibility.py",
+        "reported_tests": 3,
+        "raw_testcase_elements": 3,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "6092f45e6d3069381b9f69819deb4dd61eea5e55715d05bd497fe1e5627d7c9e"
+      },
+      {
+        "module": "test_component_study.py",
+        "reported_tests": 42,
+        "raw_testcase_elements": 42,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "df8e992c9f0fca31cee3d7124325054a47bde31c9f8ae4b1fd990b2e4c80ba57"
+      },
+      {
+        "module": "test_component_validation.py",
+        "reported_tests": 235,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "8f1514ef0a2f507566935f9f47ae878e7daf9c32747c234106846458efd61684"
+      },
+      {
+        "module": "test_constrained_actuation.py",
+        "reported_tests": 15,
+        "raw_testcase_elements": 15,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "a6471e25d31b7aee2aeeabdfe9094e306869ba9193fd8d5ba8174e827f433ec4"
+      },
+      {
+        "module": "test_constraint_progress.py",
+        "reported_tests": 5,
+        "raw_testcase_elements": 5,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "77e78ba9a776f47e4fdec5765c2e5d79cc306d812964a566050e361ca178d668"
+      },
+      {
+        "module": "test_control_record_io.py",
+        "reported_tests": 14,
+        "raw_testcase_elements": 14,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "1fb12711da1d56bd1ba8dc8d05e0cb93cae3b8283f4057cfa550371b0641d754"
+      },
+      {
+        "module": "test_control_study.py",
+        "reported_tests": 27,
+        "raw_testcase_elements": 27,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "c7b4613138e82cca9ce5f598a20373becc258a2b4e943d00193b42ff6ad79f68"
+      },
+      {
+        "module": "test_control_study_ui.py",
+        "reported_tests": 6,
+        "raw_testcase_elements": 6,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "485bdcc7f60458b32b622319758766b89a820f2ae8568e5ac9e3068b2b6ba10e"
+      },
+      {
+        "module": "test_controller_import_inventory.py",
+        "reported_tests": 4,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "e71835b7b516b4e72db195c82f74f76be6233b43aadfc7bf287c3f5372451ba0"
+      },
+      {
+        "module": "test_corner_cell_exit.py",
+        "reported_tests": 7,
+        "raw_testcase_elements": 7,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "2dcefab5667845be49a8d359629938caa10148e1063f7e212791d701588a9fa7"
+      },
+      {
+        "module": "test_course_bundle.py",
+        "reported_tests": 39,
+        "raw_testcase_elements": 39,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "acbcef1999ee7a932be2f7aaf0cc4e635396ce5453fd4d57017113737f3aed15"
+      },
+      {
+        "module": "test_course_catalog.py",
+        "reported_tests": 27,
+        "raw_testcase_elements": 27,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "d253cfca480e34ea3e9bb8e022605ccef6c8a36949eed72cac860996e0a05b27"
+      },
+      {
+        "module": "test_course_import_desktop.py",
+        "reported_tests": 5,
+        "raw_testcase_elements": 5,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "b72059d3d1e8d98ba42addea1ffb6656f2ecbdbc7d2438965b752eef9e928b48"
+      },
+      {
+        "module": "test_create_course_bundle.py",
+        "reported_tests": 20,
+        "raw_testcase_elements": 20,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "f745ee3693d603690b3ea7fb97a5d745688bf5267824291ef051b6bf3d347df8"
+      },
+      {
+        "module": "test_desktop_profiles.py",
+        "reported_tests": 3,
+        "raw_testcase_elements": 3,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "b77ef3425984ad839285baf5d614777aface4fecca10c33aea6a78da5dbecf05"
+      },
+      {
+        "module": "test_desktop_simulation.py",
+        "reported_tests": 31,
+        "raw_testcase_elements": 13,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "9125ab2669d046c1eee7d3b7dc4eff367bf9c703b0c4a6e08ea0ab79350d2e74"
+      },
+      {
+        "module": "test_driver_view.py",
+        "reported_tests": 23,
+        "raw_testcase_elements": 23,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "4bc67c4874551693b7dc791c87f16994e789e70de5f5fb30f009e69105976cbb"
+      },
+      {
+        "module": "test_drivetrain.py",
+        "reported_tests": 16,
+        "raw_testcase_elements": 10,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "2df2417af2c25e987f57fd69b985cae4d0089ecf5c1c80e903eb0fc96d5ee137"
+      },
+      {
+        "module": "test_dynamic_bicycle.py",
+        "reported_tests": 23,
+        "raw_testcase_elements": 23,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "6c680b6eeac36864089c43d19cf983dbe7c1531589dde56d2a2836360b953a08"
+      },
+      {
+        "module": "test_dynamics_lab.py",
+        "reported_tests": 5,
+        "raw_testcase_elements": 5,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "3c797fee3e9ed6c0b1ef6e20a81cef37585b9b4c539e552ee489c24b4b37f9c2"
+      },
+      {
+        "module": "test_dynamics_record.py",
+        "reported_tests": 7,
+        "raw_testcase_elements": 7,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "e52e74995e1b341f07ec2a616f26f7e5e589ad63851e84d44452cfc95eecc18a"
+      },
+      {
+        "module": "test_endurance_optimizer.py",
+        "reported_tests": 1,
+        "raw_testcase_elements": 1,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "916dd15ad2e56ab77d8f5e8a56962afc38390f287d14d5b074908b2453e00504"
+      },
+      {
+        "module": "test_endurance_scoring.py",
+        "reported_tests": 4,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "d59b14ea5adb452aff640a80107e49e92cb529a5bae6dabb812c9bc4b21803e4"
+      },
+      {
+        "module": "test_endurance_simulator.py",
+        "reported_tests": 628,
+        "raw_testcase_elements": 20,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "88e8ebbae3275a25a2f5ee89b9b2783c25167031bdd4a333a570e6a63802ba4d"
+      },
+      {
+        "module": "test_events.py",
+        "reported_tests": 8,
+        "raw_testcase_elements": 8,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "9a028d6e3fd8e4333a5676dab859c916fd7ee64f75c185ad58428f68fba9ab70"
+      },
+      {
+        "module": "test_grip_detour.py",
+        "reported_tests": 9,
+        "raw_testcase_elements": 9,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "5ad4043c4f358018c65b2226185ad68686b9eea0ffcef664cb849a844c96dae7"
+      },
+      {
+        "module": "test_grip_detour_desktop.py",
+        "reported_tests": 1,
+        "raw_testcase_elements": 1,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "d08176dcd39878e7274fb942d653f87a6ea4ec8b3a8bb3c760174626de60bddd"
+      },
+      {
+        "module": "test_incremental_controller_backend.py",
+        "reported_tests": 3,
+        "raw_testcase_elements": 3,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "ae2e76f1bd37894a7593cbfdb6fd9586be083c8a99190d401c6df68609aa0e3f"
+      },
+      {
+        "module": "test_lap_replay.py",
+        "reported_tests": 47,
+        "raw_testcase_elements": 47,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "5fa8af1afcaaca8b2cddf2c6aa00d684011c6c33e4de3d5d984579d3922813f2"
+      },
+      {
+        "module": "test_native_closed_loop.py",
+        "reported_tests": 10,
+        "raw_testcase_elements": 10,
+        "skipped": 1,
+        "actual_process_exit": 0,
+        "xml_sha256": "7290d81b831e6458e43cbc29c00df83e070fc76d37bc35b8507cfb02d6363acf"
+      },
+      {
+        "module": "test_native_comparison_presentation.py",
+        "reported_tests": 25,
+        "raw_testcase_elements": 25,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "d486de7c62d19be0d50d615db690ed81eea418a3077953c50e6afbcb0fd3dcfc"
+      },
+      {
+        "module": "test_native_comparison_viewer.py",
+        "reported_tests": 14,
+        "raw_testcase_elements": 14,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "f92e397c11f3c3a7e61dc3ab6024b5fe5b38abc626022fb3b6720adac32cd22a"
+      },
+      {
+        "module": "test_native_record_viewer.py",
+        "reported_tests": 23,
+        "raw_testcase_elements": 23,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "64d52bf8cd211823ca2144af11de1823ed851ca7aaacfd8962667af85fe5abc0"
+      },
+      {
+        "module": "test_ocv_pack_battery.py",
+        "reported_tests": 116,
+        "raw_testcase_elements": 17,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "19132bdb606ff1706b12813a41a45d6314749f6a85a30ea55b40e4afc889f762"
+      },
+      {
+        "module": "test_path_constraint_convergence.py",
+        "reported_tests": 6,
+        "raw_testcase_elements": 6,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "728a7a60fe227f477988cbf1aa3e5e33fb4eef1185786312843b50269ea78204"
+      },
+      {
+        "module": "test_planar_conditions.py",
+        "reported_tests": 14,
+        "raw_testcase_elements": 14,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "966c56ce7d669bd732c2de4784b179b688a26125cdbef41d4ea76445b6dcf751"
+      },
+      {
+        "module": "test_planar_dynamics.py",
+        "reported_tests": 14,
+        "raw_testcase_elements": 14,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "18e25114f4bfd58524f744feb1b30e90a5e9334c623d654202b34d10ccf1fd72"
+      },
+      {
+        "module": "test_portable_resources.py",
+        "reported_tests": 4,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "333c9577fcf0fd610305b5d365c63ae7bbc196fdad6785e326067556a088f9e2"
+      },
+      {
+        "module": "test_pose_driver.py",
+        "reported_tests": 48,
+        "raw_testcase_elements": 48,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "7a0c6f3c0e171f87edfa5c25e3dda70f3e3960c04825590c29830e8ec3d8011c"
+      },
+      {
+        "module": "test_pose_preview_ui.py",
+        "reported_tests": 40,
+        "raw_testcase_elements": 40,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "7fa7ba7b32afe48dc7a88dc22a8582fab23b9cec19752c21d53c144b0518e245"
+      },
+      {
+        "module": "test_pose_run_record.py",
+        "reported_tests": 9,
+        "raw_testcase_elements": 9,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "cbf296a9fafb8f6c309ab69f821b3f0985f9673fd9e55f4f7fe457ee976c965a"
+      },
+      {
+        "module": "test_pose_status_ui.py",
+        "reported_tests": 4,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "4464beb79d88dd20596965eb7a92281a948bd42ce2f80d5fe182b81f23116df5"
+      },
+      {
+        "module": "test_powered_planar.py",
+        "reported_tests": 9,
+        "raw_testcase_elements": 9,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "eb9accaaaa98541569ac589dc5e07d257b77017808626bfbfb7f212e99b3a362"
+      },
+      {
+        "module": "test_prescribed_path_corner_exit.py",
+        "reported_tests": 3,
+        "raw_testcase_elements": 3,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "3a4078d3f49155a999874a2ed64af004d509e669d2b520ada9a2660052c66e6c"
+      },
+      {
+        "module": "test_profiles.py",
+        "reported_tests": 2,
+        "raw_testcase_elements": 2,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "8ea3b15ae0b35ea22f06eb345327f04fc43581c1e9a599c20ecbe33724dcac4c"
+      },
+      {
+        "module": "test_racing_line.py",
+        "reported_tests": 59,
+        "raw_testcase_elements": 59,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "f6ae039f1ad7134f2a39657e58d0a83f9f23d24e5e242576a81be993d055d344"
+      },
+      {
+        "module": "test_recorded_control_adapter.py",
+        "reported_tests": 4,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "e32def0a21d2cd658817fde4c431a7a45079a5c572262f9d3dec6f8eaaeb29d0"
+      },
+      {
+        "module": "test_replay.py",
+        "reported_tests": 3,
+        "raw_testcase_elements": 3,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "dd4120d97a690c375ee12e81d3f9c78d16047b2fe0d6c1a92067e91d946746e6"
+      },
+      {
+        "module": "test_replay_cancellation.py",
+        "reported_tests": 4,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "16134000f06f9a6e96ae8ea71d7eb3b02bbb74339fe088b74e89b548222acbdc"
+      },
+      {
+        "module": "test_road_grip_schedule.py",
+        "reported_tests": 19,
+        "raw_testcase_elements": 19,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "dccc689fc350242a15058d3091f5c093065b4752b65bef3e2806c7843d20f784"
+      },
+      {
+        "module": "test_run_record.py",
+        "reported_tests": 38,
+        "raw_testcase_elements": 18,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "f073da25f74607164bf15017040031ec355baab33198f842dbc66e988fd5cd3e"
+      },
+      {
+        "module": "test_saved_run_evidence_ui.py",
+        "reported_tests": 7,
+        "raw_testcase_elements": 7,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "d430323f85a394749d9e32843552da8d29268899c577126289eb77eb85b2fda6"
+      },
+      {
+        "module": "test_simulator_flowchart.py",
+        "reported_tests": 22,
+        "raw_testcase_elements": 22,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "ebdc59b187188da9a9701c5ca8c58aaa2a233209a0a34887b6f492e91487072c"
+      },
+      {
+        "module": "test_snapshot_build.py",
+        "reported_tests": 5,
+        "raw_testcase_elements": 5,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "76bb788cddb90a3b20d7306bf12d9eb36ed3815cf75738d0846d11fafed94acb"
+      },
+      {
+        "module": "test_solver_integration.py",
+        "reported_tests": 11,
+        "raw_testcase_elements": 4,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "bc4ab58abb8a6bfcbd68a99604133ff746d857e7c577c9df48d2b206b1a3cb78"
+      },
+      {
+        "module": "test_source_profiles.py",
+        "reported_tests": 10,
+        "raw_testcase_elements": 10,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "0313bb6cead8fa6979fa9e27df91520ab29682b2f868aa13b81b68e3ccd99748"
+      },
+      {
+        "module": "test_spatial.py",
+        "reported_tests": 6,
+        "raw_testcase_elements": 6,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "abbe3486678b21761cd20be796c1a8d1230147142aec46d00a7fed9ff49ea8c4"
+      },
+      {
+        "module": "test_spatial_track.py",
+        "reported_tests": 27,
+        "raw_testcase_elements": 20,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "27e8ea4273554d19a3ea3980d73a4f4a1314e8fec99dac695d6804c335611c9f"
+      },
+      {
+        "module": "test_speed_periodic_lap.py",
+        "reported_tests": 13,
+        "raw_testcase_elements": 13,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "e9fa9079f0e62bc88499dca0d2b73b2b0194f425c72af4c83f4945b4a6c496e2"
+      },
+      {
+        "module": "test_speed_periodic_progress.py",
+        "reported_tests": 1,
+        "raw_testcase_elements": 1,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "c6a873383c460e3c01096692aef9197e4fbc443a94fb59339c18a5651b399a12"
+      },
+      {
+        "module": "test_state_update.py",
+        "reported_tests": 18,
+        "raw_testcase_elements": 18,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "546c36dbc86b377fa3e344fd9d34d3dd47444bd1e18ea2f5179bd855b06b253c"
+      },
+      {
+        "module": "test_stm32_bench_build.py",
+        "reported_tests": 1,
+        "raw_testcase_elements": 1,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "cf1060cc37c2a48cde79aa0014833458a725f99c23ef4a40332397d79365d0dd"
+      },
+      {
+        "module": "test_stm32_bench_protocol.py",
+        "reported_tests": 9,
+        "raw_testcase_elements": 9,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "05bbbd55acfe6a072686815db2c69f5a5cf4a089c862bbd3d6489683bd53d5dc"
+      },
+      {
+        "module": "test_straight_spatial_replay.py",
+        "reported_tests": 2,
+        "raw_testcase_elements": 2,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "5b82b7863791bae42dd4ecc3714cd3ba111c20f0df929fced2497ddaaba49ecf"
+      },
+      {
+        "module": "test_suspension.py",
+        "reported_tests": 11,
+        "raw_testcase_elements": 9,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "01c7f9cd6a849aa197c9b7bd77d7e7ab518f83f34228b4dc9827abf6487d71cf"
+      },
+      {
+        "module": "test_suspension_cli.py",
+        "reported_tests": 39,
+        "raw_testcase_elements": 39,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "c63ee0886a3ef6681cdf65c052a8d810d2fc337034d36684b6086be728be80f4"
+      },
+      {
+        "module": "test_suspension_compare.py",
+        "reported_tests": 32,
+        "raw_testcase_elements": 32,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "25d9ac1792026704aa4e8088ef6fe378fc82b6423ef9fd1251aa25ad6336f4ad"
+      },
+      {
+        "module": "test_suspension_compare_provenance.py",
+        "reported_tests": 19,
+        "raw_testcase_elements": 19,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "a0b8376ac1e8a8c4af5a0bb720423755e2c1eeea5bf15cf3e49c279b4d55e219"
+      },
+      {
+        "module": "test_suspension_inspection.py",
+        "reported_tests": 36,
+        "raw_testcase_elements": 36,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "22af29cabedcf4110883d290931a9037cc0efb3b23a70fc5524b256d955e2e60"
+      },
+      {
+        "module": "test_suspension_study.py",
+        "reported_tests": 61,
+        "raw_testcase_elements": 61,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "95e5464d1b7c3bcea52192c176fca10c33243720517ce7db08a2a07a1749f29d"
+      },
+      {
+        "module": "test_synthetic_practice_wiring.py",
+        "reported_tests": 2,
+        "raw_testcase_elements": 2,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "41ea03a3d0b1d3e144c3b050f16002e9a550bd11f9c0254cff2f71d224075537"
+      },
+      {
+        "module": "test_telemetry.py",
+        "reported_tests": 5,
+        "raw_testcase_elements": 5,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "873649a94934b3e11957b75718b3b2cea385b97b0c3784a1e4dc09ad27a036ad"
+      },
+      {
+        "module": "test_timestep_convergence.py",
+        "reported_tests": 5,
+        "raw_testcase_elements": 5,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "a76a4380ed0fecdc6b766483e5eb330c0000ea0431a9490685f05051f5d52a06"
+      },
+      {
+        "module": "test_tire.py",
+        "reported_tests": 24,
+        "raw_testcase_elements": 18,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "284205c4da705938eb9053652ee591a48c197dfbeaccd0915011691b85cdd982"
+      },
+      {
+        "module": "test_tk_lifecycle.py",
+        "reported_tests": 1,
+        "raw_testcase_elements": 1,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "2b3704c152dcab5e0e267e4809a459920b150a26be605fb4a0d329033393baae"
+      },
+      {
+        "module": "test_torque_profile.py",
+        "reported_tests": 1,
+        "raw_testcase_elements": 1,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "8330b4a3cbb936873346078525916a236337a4f10b8c67a1825c3a6d9fc2514e"
+      },
+      {
+        "module": "test_track.py",
+        "reported_tests": 2,
+        "raw_testcase_elements": 2,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "1cf678bd800e287e18d0538a47b53ca5805c87f780fc2945e6322bb8f48ab9e0"
+      },
+      {
+        "module": "test_track_refinement.py",
+        "reported_tests": 9,
+        "raw_testcase_elements": 9,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "9cc3d737131acc43dbf19de7049dcf8ffa7de1e08ec8a19d51b7c23f998239e0"
+      },
+      {
+        "module": "test_web_bridge.py",
+        "reported_tests": 29,
+        "raw_testcase_elements": 29,
+        "skipped": 0,
+        "actual_process_exit": 0,
+        "xml_sha256": "af42da595bbfdbf7cf3d2131b2b1e6e28c4cba820f5ae9b4a081a6359cb81dcd"
+      }
+    ],
+    "modules_with_reported_raw_difference": [
+      "test_brake_ceiling_guard.py",
+      "test_brakes.py",
+      "test_component_validation.py",
+      "test_desktop_simulation.py",
+      "test_drivetrain.py",
+      "test_endurance_simulator.py",
+      "test_ocv_pack_battery.py",
+      "test_run_record.py",
+      "test_solver_integration.py",
+      "test_spatial_track.py",
+      "test_suspension.py",
+      "test_tire.py"
+    ],
+    "runtime_identity_sha256": "cd6d6c64aad30054a8f69c2185e6b9e308c06fbf8a76557bc0fe2b6bf882a9fb",
+    "runtime": {
+      "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "pytest": "9.1.1",
+      "defusedxml": "0.7.1",
+      "pip": "26.2.1",
+      "tool_files": {
+        "python_launcher": {
+          "path": "{repository}/.venv/Scripts/python.exe",
+          "sha256": "6975311631e93d9e28c5c209b4869b66d9283853211fea5acc4eef2b8b018eb9"
+        },
+        "base_python": {
+          "path": "{repository}/work/python-runtime/cpython-3.13.15-windows-x86_64-none/python.exe",
+          "sha256": "d7d8f0813d9d4002839b775ed13fc7eb57a756bdcb102e85ab61537003ef8616"
+        },
+        "tkinter_extension": {
+          "path": "{repository}/work/python-runtime/cpython-3.13.15-windows-x86_64-none/DLLs/_tkinter.pyd",
+          "sha256": "6356d7bc0fc0c8472065feb859d39922e04d8adb766aad5ceb130f098de248f3"
+        },
+        "check_all": {
+          "path": "{audit_checkout}/scripts/check_all.py",
+          "sha256": "96a62972158d2e444f3bdc4e3655c3298ad7520975a2284a3ea735c587a8cc08"
+        },
+        "pytest_main": {
+          "path": "{repository}/.venv/Lib/site-packages/_pytest/main.py",
+          "sha256": "8ee2725057ff1811e2ae9ebdf1befb7518195f8f333f9f8ca024d76a4b80780e"
+        },
+        "pytest_config": {
+          "path": "{repository}/.venv/Lib/site-packages/_pytest/config/__init__.py",
+          "sha256": "98b05c2c37d09e1d5c05975efc2d9af98d4aff6ea47de410a8e93956420873c1"
+        },
+        "defusedxml": {
+          "path": "{repository}/.venv/Lib/site-packages/defusedxml/ElementTree.py",
+          "sha256": "18b4aaa42cf9f285c63c6cb37ff1f296c3d2f7f75c1953f948de1d2bbcafc8fc"
+        },
+        "TCL_LIBRARY": {
+          "path": "{repository}/work/python-runtime/cpython-3.13.15-windows-x86_64-none/tcl/tcl8.6/init.tcl",
+          "sha256": "331bcf0f9f635bd57c3384f2237260d074708b0975c700cfcbdb285f5f59ab1f"
+        },
+        "TK_LIBRARY": {
+          "path": "{repository}/work/python-runtime/cpython-3.13.15-windows-x86_64-none/tcl/tk8.6/tk.tcl",
+          "sha256": "0f617d96cbf213296d7a5f7fcffbb4ae1149840d7d045211ef932e8dd66683e9"
+        }
+      },
+      "available_toolchain_files": {
+        "git": {
+          "path": "{git_cli}",
+          "sha256": "851535ccc041bed536a23b17200cd51e7b06e266a527f4eaf8338b5c256c6466"
+        },
+        "node": {
+          "path": "{node_cli}",
+          "sha256": "3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237"
+        }
+      },
+      "relevant_environment": {
+        "PYTHONPATH": "{audit_checkout}/src",
+        "PYTHONHOME": null,
+        "VIRTUAL_ENV": null,
+        "TCL_LIBRARY": "{repository}/work/python-runtime/cpython-3.13.15-windows-x86_64-none/tcl/tcl8.6",
+        "TK_LIBRARY": "{repository}/work/python-runtime/cpython-3.13.15-windows-x86_64-none/tcl/tk8.6",
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1",
+        "MPLBACKEND": "Agg",
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "LAPSIM_JOB_COMMIT_HEADROOM_GIB": "7.0"
+      },
+      "recorded_full_environment_sha256": "96ba0bd72b036d429666a66c5a718f2e8f616daaae70e58f6364f01e6a57915d",
+      "environment_scope": "Retained relevant values checked independently; undisclosed full environment values cannot be reconstructed. The full environment hash is a consistent recorded binding, not complete environment attestation."
+    },
+    "function_sources_sha256": {
+      "run_module": "6a171594e0243e1c6431311c919b625a6f05372b87f90b94d9a091eff5cbde8d",
+      "merge_reports": "011539b90899eaaa3227d3566d0928db9ebf3481dc890d9b04d75eb7f581b5bf"
+    },
+    "check_all_git_blob_sha256": "35aaa41af7436977dbe886447f2c3c5471de014d939fed30e2c17338a0867f81",
+    "aggregate_sha256": "88711ea5b53551dd25451b9ea64de330b96bf3ec0e8e492650948f550b87d09b",
+    "aggregate_reconstructed_byte_exact": true,
+    "curated_archive": {
+      "all_indexed_artifacts_rehashed": 314,
+      "all_raw_gate_helper_guard_copies_equal": true,
+      "zip_members_verified_without_extraction": 315,
+      "zip_sha256": "78a52a0a4a5c2cbffdb2ed8f49f63bc302ef04f679ded66235103f6967c1576d",
+      "manifest_sha256": "8ae2d8e63011b54d10361e40caa4fd9a7d0c4d7ce64e9684c1afaac36eabba81",
+      "curated_summary_sha256": "c71181c12466da264a746263e3c38123c62748eeccea173c7b6094ede7cc2e6a"
+    },
+    "launch_command": [
+      "{repository}/.venv/Scripts/python.exe",
+      "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/run_owned_job.py",
+      "native-study-cli-observed-1129238-segment-1",
+      "1129238ee50b12fbaf7419863c36299d20f5eab0",
+      "1800",
+      "{repository}/.venv/Scripts/python.exe",
+      "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/observed_module_gate.py",
+      "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/gate",
+      "segment-1"
+    ],
+    "gate": {
+      "command": [
+        "{repository}/.venv/Scripts/python.exe",
+        "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/observed_module_gate.py",
+        "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/gate",
+        "segment-1"
+      ],
+      "working_directory": "{audit_checkout}",
+      "status": "passed",
+      "source_before": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T06:56:52.176099-04:00",
+      "finished_utc": "2026-10-17T07:10:37.923659-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 825.7471668999933,
+      "outer_guard_wall_s": 825.799116500013,
+      "maximum_wall_s": 1800,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.099983215332031,
+        "commit_gib": 16.71735382080078
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 10.68756103515625,
+        "commit_gib": 12.700580596923828
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 591904768,
+        "peak_job_committed_bytes": 612212736,
+        "total_processes": 3006,
+        "active_processes": 0,
+        "cpu_time_s": 775.609375
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "59fc4056d66a4624d08219b2ffbf30a78f8c2f0d4576e274b51d2ece7bd7ee1b",
+      "raw": {
+        "path": "{audit_checkout}/work/detailed-study/native-study-cli-observed-1129238-segment-1-job/summary.json",
+        "bytes": 2863,
+        "sha256": "de8a990e53758f0988a67db9457beb87612c4a15e42831f289b350b3561f3145"
+      }
+    },
+    "selected_raw_bindings": {
+      "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/gate/segment-1/complete-summary.json": "10b360fd95f24bec47f6e55a00ef29dc1b90b8ad5e11571053630202f141677b",
+      "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/gate/segment-1/runtime-identity.json": "8270d5b067e1c732f9fcf80ef7f2b4d5f014daea681b32cc0ff69192d556f8a7",
+      "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/launch-environment-segment-1.json": "5613295f046d061eb6e1ff7e6e3a553aa6c0758b362ead75b92accd15c3afa64",
+      "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/completed-observed-gate/gate/segment-1/complete-summary.json": "10b360fd95f24bec47f6e55a00ef29dc1b90b8ad5e11571053630202f141677b",
+      "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/completed-observed-gate/gate/segment-1/runtime-identity.json": "8270d5b067e1c732f9fcf80ef7f2b4d5f014daea681b32cc0ff69192d556f8a7",
+      "{audit_checkout}/work/native-study-cli-observed-gate-1129238-20261017/completed-observed-gate/helpers/launch-environment-segment-1.json": "5613295f046d061eb6e1ff7e6e3a553aa6c0758b362ead75b92accd15c3afa64"
+    },
+    "all_module_failure_and_error_counts_zero": true
+  },
+  "wsl_source_audit_and_posix": {
+    "proof": {
+      "path": "{repository}/work/detailed-study/cli-wsl-1129238-independent-proof.json",
+      "bytes": 19457,
+      "sha256": "58d863ea8a2d997493b91127e86b45e37c0f176bd95518479752a991194b43a8"
+    },
+    "status": "passed",
+    "source": {
+      "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+      "tree": "7b0a18404f7de7cb738c89c99e0f5db3df141bd7",
+      "clean_before": true,
+      "tracked_clean_after": true
+    },
+    "index_sha256": "1b2daef2887e1ec72a5794438572ddd503c30847f9d0eac67e15418ce9460e46",
+    "summary_sha256": "ad64575bff1ddd4d202fdafdf336c421201f158158f045e714475bf4b7f7d4e1",
+    "indexed_artifacts_rehashed": 41,
+    "command": [
+      "wsl.exe",
+      "-d",
+      "Ubuntu",
+      "--",
+      "bash",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/run-wsl-source-audit.sh"
+    ],
+    "actual_outer_exit": 0,
+    "actual_phase_exits": {
+      "source_audit_exit": 0,
+      "inventory_check_exit": 0,
+      "posix_compiler_exit": 0
+    },
+    "actual_tool_exits": {
+      "ruff-review": 1,
+      "format-review": 1,
+      "ruff-runtime-gate": 0,
+      "pyright": 1,
+      "pyright-baseline": 1,
+      "semgrep": 0
+    },
+    "versions": [
+      "pyright==1.1.414",
+      "pytest==9.1.1",
+      "ruff==0.17.0",
+      "semgrep==1.180.0"
+    ],
+    "source_audit_policy": "Unchanged quality/run_source_audit.py and baseline/type budget; only existing semgrep --jobs1 resource flag. Broad lint/type findings remain visible.",
+    "posix": {
+      "counts": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "xml_sha256": "74fc67176c6efe32323a82f30e9374b884a603d0de11c83362c0b2705e7921af",
+      "case": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c"
+    },
+    "type": {
+      "current_errors": 241,
+      "current_warnings": 48,
+      "baseline_errors": 241,
+      "baseline_warnings": 48,
+      "identical_fingerprint_multisets": true,
+      "fingerprints_sha256": "c927dd12dc17a55a701f8026401e2691e06090fb472020cae647e97f8e062e11",
+      "new_findings": [],
+      "scope": "Fingerprint includes relative file/rule/message/severity and multiplicity, matching unchanged source audit; line/range positions intentionally excluded."
+    },
+    "security": {
+      "matches": 0,
+      "top_level_errors": 0,
+      "scanned_files": 282,
+      "fixpoint_warning_records": [
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/integration/upstream-originals/reference/allocator_cortex_m4_objects.py:379:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/integration/upstream-originals/reference/allocator_cortex_m4_objects.py",
+            "start": {
+              "line": 379,
+              "col": 5,
+              "offset": 18840
+            },
+            "end": {
+              "line": 379,
+              "col": 10,
+              "offset": 18845
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/reference/allocator_cortex_m4_objects.py:379:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/reference/allocator_cortex_m4_objects.py",
+            "start": {
+              "line": 379,
+              "col": 5,
+              "offset": 18840
+            },
+            "end": {
+              "line": 379,
+              "col": 10,
+              "offset": 18845
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/reference/cortex_m4_objects.py:186:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/reference/cortex_m4_objects.py",
+            "start": {
+              "line": 186,
+              "col": 5,
+              "offset": 8805
+            },
+            "end": {
+              "line": 186,
+              "col": 13,
+              "offset": 8813
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/reference/cortex_m4_objects.py:314:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/reference/cortex_m4_objects.py",
+            "start": {
+              "line": 314,
+              "col": 5,
+              "offset": 14112
+            },
+            "end": {
+              "line": 314,
+              "col": 10,
+              "offset": 14117
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/reference/guard_cortex_m4_objects.py:74:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/reference/guard_cortex_m4_objects.py",
+            "start": {
+              "line": 74,
+              "col": 5,
+              "offset": 3174
+            },
+            "end": {
+              "line": 74,
+              "col": 10,
+              "offset": 3179
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at docs/simulator_flowchart/app.js:1:0 [rules: 1, first: typescript.react.security.audit.react-unsanitized-method.react-unsanitized-method]",
+          "location": {
+            "path": "docs/simulator_flowchart/app.js",
+            "start": {
+              "line": 1,
+              "col": 1,
+              "offset": 0
+            },
+            "end": {
+              "line": 1,
+              "col": 1,
+              "offset": 0
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at quality/run_browser_audit.py:20:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "quality/run_browser_audit.py",
+            "start": {
+              "line": 20,
+              "col": 5,
+              "offset": 453
+            },
+            "end": {
+              "line": 20,
+              "col": 9,
+              "offset": 457
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at src/lapsim/experiments/dynamics_record.py:223:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "src/lapsim/experiments/dynamics_record.py",
+            "start": {
+              "line": 223,
+              "col": 5,
+              "offset": 8521
+            },
+            "end": {
+              "line": 223,
+              "col": 33,
+              "offset": 8549
+            }
+          }
+        }
+      ],
+      "prior_1506_report_sha256": "b8b01d3e29e545d36dec49a27e553c9e2a1a8022818a0a8a822a0ad43c68833a",
+      "prior_fixpoint_warning_count": 8,
+      "affected_file_rule_multisets_identical_to_1506": true,
+      "added_file_rule_counts": [],
+      "removed_file_rule_counts": [],
+      "study_and_new_cli_test_in_warnings": false,
+      "scope": "Zero measured results/top-level errors does not imply complete taint-analysis coverage; all8 raw fixpoint warnings retained."
+    },
+    "broad_debt": {
+      "ruff_total": 632,
+      "ruff_changed_python": 12,
+      "ruff_exit": 1,
+      "format_exit": 1,
+      "critical_ruff_exit": 0,
+      "scope": "Broad lint/format debt retained; no clean-lint/type certification."
+    },
+    "inventory_kind_counts": {
+      "data": 1487,
+      "equation": 4306,
+      "modules": 101,
+      "solver": 1187,
+      "variable": 8782
+    },
+    "wall_time_s": 69.56777020002482,
+    "resources": {
+      "preflight_floors_gib": {
+        "physical_gib": 10,
+        "commit_gib": 8.5
+      },
+      "initial_headroom_gib": {
+        "physical_gib": 12.003372192382812,
+        "commit_gib": 16.674911499023438
+      },
+      "running_floors_gib": {
+        "physical_gib": 8,
+        "commit_gib": 7
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 9.423816680908203,
+        "commit_gib": 13.578773498535156
+      },
+      "bound_s": 180,
+      "scope": "Whole-machine samples, not isolated per-job memory/performance."
+    },
+    "cleanup_scope": "Held direct WSL child completed with exit0; normal shell phase waits, watcher termination and traps are retained in reviewed source. No independent post-exit process census or kernel active-process metric was recorded; do not claim owned0 from absent fields.",
+    "artifact_sha256": {
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/evidence-sha256.json": "1b2daef2887e1ec72a5794438572ddd503c30847f9d0eac67e15418ce9460e46",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/broad-review-scope.json": "70b6153642519c55322f787f054553d7e93715a4fb82b3ce870d4f620f664e80",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/collect-wsl-evidence.py": "5f2cda1b59feceb67dac309e35eb1f1a0643f69844b0864f45b192a4e7b5bcec",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/collect-wsl-evidence.py.diff.patch": "25995adaa89ca1d7b32476e861b74c26fff45770565d0d25044f2827ec15f889",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/inventory-check.log": "51ad2c98421e297469dd2391136a637a73115df2ef2686ea1a9237865b124617",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/launch-attempt-1.log": "d85432be0a099f6caf1c672c2abda7d99fd0da96def4dc48f469c52f4c58a330",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/posix-compiler.xml": "74fc67176c6efe32323a82f30e9374b884a603d0de11c83362c0b2705e7921af",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/preparation.json": "95f78206f83965882cbf1ebcec4d3944a3791b5405384e613f10e4641c134c4e",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/prior-reviewed-collect-wsl-evidence.py": "fdf4f645bf6709a9b680b257cba218dc79dc35a89ccabd35ab1fdc901fe1e888",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/prior-reviewed-run-wsl-source-audit.sh": "9bf82c9de3464055a19ea0987aaaabfc0dffdc2f049fd4304349230186f9866d",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/prior-reviewed-run_check_job.py": "b52a5fa6b995861593135f137fd9823706582b2bf9b55f2d4cc0b27a4efef71b",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/prior-reviewed-wsl-source-audit-wrapper.py": "cb10374d198de0bdc109963553c51e866a3b096f7e0d621d4592030dcc1c84f7",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/run-wsl-source-audit.sh": "3384799b48fed7f46affb8f842c7ccb755fe7da4ff63f4d2ec350bb08738b93a",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/run-wsl-source-audit.sh.diff.patch": "e4c172c9f44385c55181272c041eabc5387e4e6e3fbb2619ac37d2033de85005",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/run_check_job.py": "0b77123d5a719191dba20b7d05d65b4918614e7158b6c41fae0bf6413e4b9a2f",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/run_check_job.py.diff.patch": "83f87897c4293e0241f85176a7eea5d7d737d7184bf52218d00146149aaa461c",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/supervisor-preparation.json": "4b7e86fb39140af8f738777d4e44a21b7afbecf64248677b6d750dd5498a20af",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-clone-path.txt": "2ce94471044b3ae5732557c8bd996b095fcc5f7afcbee5e8707fc788ae2d6cea",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-environment.json": "1c31f87e1fed10293d7459dc31f92b4b13ee3c2f5831f66307b30db1610bc94c",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-gate-summary.json": "ad64575bff1ddd4d202fdafdf336c421201f158158f045e714475bf4b7f7d4e1",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-gates-command.json": "1b70a8bab228a1fab607aaddde3482c7fe912bea28de2f9b6c2510ac9eb69d2d",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-gates.log": "8197cc124a7460771ca6dbd801276875eacc1f00a6f971580baf4c3c08885bf9",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-outcomes.json": "af170e2602733a48e2d72e22e8fa978ebda5f5fcc34384b62fb4c55f1cac7e10",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-source-audit-wrapper.py": "cb10374d198de0bdc109963553c51e866a3b096f7e0d621d4592030dcc1c84f7",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-source-audit-wrapper.py.diff.patch": "46aef56440bf2034e5fa8658feb17364530aaffd56322b9538951f2977a319c1",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-source-before.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-source-commit-after.txt": "b198b52c31c89504450334b9879d620a97d2c4a28044f069b40ddaabf4501bd2",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-source-commit.txt": "b198b52c31c89504450334b9879d620a97d2c4a28044f069b40ddaabf4501bd2",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-source-tree-after.txt": "8b66793d7691da160d02ec73fd8d51a1b1207536be4b8c908f5abcdb0cdd317a",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-source-tree.txt": "8b66793d7691da160d02ec73fd8d51a1b1207536be4b8c908f5abcdb0cdd317a",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/commit.txt": "b198b52c31c89504450334b9879d620a97d2c4a28044f069b40ddaabf4501bd2",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/format-review.log": "28cdd7f5708096656d12f2a26cf5a276c56dc68f664d79c1e56538db99db3fdd",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/new-type-findings.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/pyright-baseline.log": "867f31c015d49e0b5dc876d2be7dbe73050865b178eae58bac4361c59f1b3f0e",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/pyright.log": "74a9c18b258624eeee3e22355f478b92bd7f78c8024acb8d0415b0cdf16a5af1",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/ruff-review.log": "a6977dac7d46fa5b476c6c2ef84d38082d5a770a2c05cec6b7803893838a25a4",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/ruff-runtime-gate.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/semgrep.json": "6a5c84699d41572920cedb84e08f8926680a2075c012a0238afbeaab26a6edab",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/semgrep.log": "f4a09c68ac2909849db678bf3a5bc45b1325d96817a5e569d4770a9e884475d4",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/summary.json": "75dca66c9a6e9dfe4e4e1567b8313b7c71c6e9e71d2f0dce8ca553de2be09930",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-static/versions.txt": "caf61932441a81560eff9393c4d9a99556cdbf2bba2ac11bcbb9bf0d2c95d4a6",
+      "{audit_checkout}/work/native-study-cli-static-audit-1129238-20261017/wsl-tracked-source-after.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "{audit_checkout}/work/native-pair-static-audit-1506df8-20261017/wsl-static/semgrep.json": "b8b01d3e29e545d36dec49a27e553c9e2a1a8022818a0a8a822a0ad43c68833a"
+    }
+  },
+  "installed_wheel_sdist": {
+    "proof": {
+      "path": "{repository}/work/detailed-study/cli-package-1129238-independent-proof.json",
+      "bytes": 30393,
+      "sha256": "9883dc598c3f2fb8e487817db824d67de55968dc4a79b5e1a422f60e4b172311"
+    },
+    "status": "passed",
+    "source": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+    "tree": "7b0a18404f7de7cb738c89c99e0f5db3df141bd7",
+    "actual_outer_exit": 0,
+    "gate": {
+      "command": [
+        "{task_workspace}/work/build-env/Scripts/python.exe",
+        "{repository}/work/detailed-study/run_package_with_cli_settings.py",
+        "{repository}/work/detailed-study/package-cli-1129238",
+        "{task_workspace}/work/comparison-package-input-cli-bc504d5-20261017/drive.json",
+        "{task_workspace}/work/comparison-package-input-cli-bc504d5-20261017/drive_half_step.json",
+        "{task_workspace}/work/comparison-package-input-cli-bc504d5-20261017/drive_sparse_log.json",
+        "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "{repository}/work/detailed-study/verify_pair_desktop_pinned_e211.py"
+      ],
+      "working_directory": "{repository}",
+      "status": "passed",
+      "source_before": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T07:16:12.045856-04:00",
+      "finished_utc": "2026-10-17T07:21:10.353481-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 298.30727079999633,
+      "outer_guard_wall_s": 298.35860069998307,
+      "maximum_wall_s": 900,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.12826156616211,
+        "commit_gib": 16.774559020996094
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 10.455055236816406,
+        "commit_gib": 12.523567199707031
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 302403584,
+        "peak_job_committed_bytes": 330948608,
+        "total_processes": 588,
+        "active_processes": 0,
+        "cpu_time_s": 194.484375
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "raw": {
+        "path": "{repository}/work/detailed-study/package-cli-1129238-job/summary.json",
+        "bytes": 3154,
+        "sha256": "e4b1ab49256d5fa8cc79ea931f902475c8a3a159d530df492a5a348a6a2fed31"
+      }
+    },
+    "immutable_git_source_blobs_sha256": {
+      "quality/run_package_runtime.py": "8e18f41e54fcd6934009590e7a9c06b8a84f94636b41879b3bb649f42451df22",
+      "src/lapsim/experiments/suspension_compare.py": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7",
+      "src/lapsim/experiments/suspension_study.py": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe",
+      "src/lapsim/dynamics/native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+      "src/lapsim/dynamics/chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+      "src/lapsim/experiments/dynamics_record.py": "edd2842d0b98c31b805fa5bb830238e66aeaceef9eea983fdd15da933fe25373",
+      "src/lapsim/experiments/record_io.py": "32b68f49460f89b83244693b131e15dd7c23dfec36ee9ddca93bf4fd82368a91",
+      "src/lapsim/experiments/basic_dynamics.py": "34ff3f7390d322ecb879a357cd53d03150ad0b94edd59608cbb08737625e3ff9",
+      "src/lapsim/ui/native_record_viewer.py": "f535ddc7f250660f79cd58a14e9f25be240bee517ec2212c47e423ddec4eef31"
+    },
+    "original_probe_sha256": "6f6e81068a6d0c2e1ad45791e231f6b6591161a00f360f6a08f6fd7bba6d0d6b",
+    "original_probe_retained": true,
+    "artifact_source_manifest_count": 832,
+    "artifacts": {
+      "wheel": {
+        "artifact_sha256": "e0eb02d768660575c852707ac64cb26f2b8e4df340189bd7050e6b32828d8350",
+        "declared_resources_verified": 832,
+        "source_sha256": "d39943cf47c51f6f633ca1b8f2874da3801f317944fc91665678ac945592a2e9"
+      },
+      "sdist": {
+        "artifact_sha256": "84f3d2b10264b5d0121116f8ff3dfabbc3f5a157f218d6c59159162bf86cc270",
+        "declared_resources_verified": 832,
+        "source_sha256": "d39943cf47c51f6f633ca1b8f2874da3801f317944fc91665678ac945592a2e9"
+      }
+    },
+    "formats": {
+      "wheel": {
+        "diagnostic_status": "passed",
+        "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b",
+        "identities": {
+          "plant-step": {
+            "report_id": "0c193289ea01bf1e2ec0f35ae1599ba32c490ae82b0b1ebb51f70734eb7030c6",
+            "receipt_id": "f3be987ddbfc2a52f8d57ca6552889c440751786cd9741c82151bffd26534364",
+            "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b"
+          },
+          "logging-period": {
+            "report_id": "a61fc5d414538cece77fd6745673e13a1c5a18f43d618af7b6a9f2676cc93745",
+            "receipt_id": "452633dff02b5660a19b6df637058766944b20f57edc1004b5b3fac54244c5e7",
+            "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b"
+          }
+        },
+        "reference_tests": 538,
+        "normal_pair_cases": 13,
+        "configured_cli_exits": [
+          0,
+          1,
+          1,
+          1
+        ],
+        "pair_captures": [
+          {
+            "file": "pair-860x680-light.png",
+            "sha256": "f07ca6baee0ded809ab89d84e5284a657806042a0d67cfebac1e52a4defc727f"
+          },
+          {
+            "file": "pair-720x520-light.png",
+            "sha256": "f80d548eabfbe6d3698cd459a5a53964025f5a0f88e05e44bc94282dde1beb01"
+          },
+          {
+            "file": "pair-860x680-dark.png",
+            "sha256": "add7ce135af58ea34806fccae84243231e5ec3cbb28695c8f84795292e76fc33"
+          },
+          {
+            "file": "pair-720x520-dark.png",
+            "sha256": "3015f0026083b36b96257a5f34305a2f5a6229c7a226601b90c59bdeb780319c"
+          }
+        ],
+        "loaded_source_sha256": {
+          "viewer": "f535ddc7f250660f79cd58a14e9f25be240bee517ec2212c47e423ddec4eef31",
+          "comparison": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7",
+          "study": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe"
+        },
+        "input_preservation": {
+          "drive": {
+            "bytes_sha256_unchanged": true,
+            "mtime_unchanged": true
+          },
+          "half": {
+            "bytes_sha256_unchanged": true,
+            "mtime_unchanged": true
+          },
+          "sparse": {
+            "bytes_sha256_unchanged": true,
+            "mtime_unchanged": true
+          }
+        }
+      },
+      "sdist": {
+        "diagnostic_status": "passed",
+        "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b",
+        "identities": {
+          "plant-step": {
+            "report_id": "0c193289ea01bf1e2ec0f35ae1599ba32c490ae82b0b1ebb51f70734eb7030c6",
+            "receipt_id": "f3be987ddbfc2a52f8d57ca6552889c440751786cd9741c82151bffd26534364",
+            "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b"
+          },
+          "logging-period": {
+            "report_id": "a61fc5d414538cece77fd6745673e13a1c5a18f43d618af7b6a9f2676cc93745",
+            "receipt_id": "452633dff02b5660a19b6df637058766944b20f57edc1004b5b3fac54244c5e7",
+            "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b"
+          }
+        },
+        "reference_tests": 538,
+        "normal_pair_cases": 13,
+        "configured_cli_exits": [
+          0,
+          1,
+          1,
+          1
+        ],
+        "pair_captures": [
+          {
+            "file": "pair-860x680-light.png",
+            "sha256": "f07ca6baee0ded809ab89d84e5284a657806042a0d67cfebac1e52a4defc727f"
+          },
+          {
+            "file": "pair-720x520-light.png",
+            "sha256": "f80d548eabfbe6d3698cd459a5a53964025f5a0f88e05e44bc94282dde1beb01"
+          },
+          {
+            "file": "pair-860x680-dark.png",
+            "sha256": "add7ce135af58ea34806fccae84243231e5ec3cbb28695c8f84795292e76fc33"
+          },
+          {
+            "file": "pair-720x520-dark.png",
+            "sha256": "3015f0026083b36b96257a5f34305a2f5a6229c7a226601b90c59bdeb780319c"
+          }
+        ],
+        "loaded_source_sha256": {
+          "viewer": "f535ddc7f250660f79cd58a14e9f25be240bee517ec2212c47e423ddec4eef31",
+          "comparison": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7",
+          "study": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe"
+        },
+        "input_preservation": {
+          "drive": {
+            "bytes_sha256_unchanged": true,
+            "mtime_unchanged": true
+          },
+          "half": {
+            "bytes_sha256_unchanged": true,
+            "mtime_unchanged": true
+          },
+          "sparse": {
+            "bytes_sha256_unchanged": true,
+            "mtime_unchanged": true
+          }
+        }
+      }
+    },
+    "input_records": {
+      "drive": {
+        "sha256": "65d1cd9f23e448c48e23e55f8bd06c6b264f9b2cca1a028f3a0f9f6e55213f38",
+        "mtime_ns": 1792233865038915600,
+        "content_id": "62386b59d501a23132e53b2f39448e7d756cbada9e6063c2db8ffe16c9327291",
+        "receipt_id": "2335a00b34f76775bb36bbccf660a5b91470e9d9f4ddae2b38937077ae525a25",
+        "sample_count": 401
+      },
+      "half": {
+        "sha256": "13ab1943bc0a99a1179b8e27d28f4a3e92f449eed71682d63bf2409b58823fd1",
+        "mtime_ns": 1792233880632968500,
+        "content_id": "11011d4d8708987c35b83061561fd664280a1ca0306a03005054dbbfe0444c6d",
+        "receipt_id": "234799f4fb97d1486258403ca48db09497b9f1375061266699affeb7e5cfe4fe",
+        "sample_count": 401
+      },
+      "sparse": {
+        "sha256": "3762c7b29fb4e42d143eb838872fa22c9ee6f0d6348e8216e9fc873ff6688b8b",
+        "mtime_ns": 1792233888466389800,
+        "content_id": "d5caa07dd492c0f9a83cf146f05e57a1ee72f02b3c39f2bbdbb0078f2bad0160",
+        "receipt_id": "cdad0dc7d73cb45e398e0212f6ad96d26f317eff51f24ad4bb1c5dddb566312a",
+        "sample_count": 161
+      }
+    },
+    "direct_oracles": "Stored endpoints/springs, completed-interval command and force clocks, exact timestamp sets81/320/80, reversed report/receipt projections, finite canonical seven-file recipe hashes.",
+    "scope": "Actual installed wheel/sdist guarded APIs, normal comparison/inspection CLI,13 normal Tk pair cases each and four early configured CLI commands each; all original runtime/native-C/538 references/desktop/bootstrap/offline gates retained. Not a frozen executable, fresh installed native physics, calibration/authenticity or historical timing validation.",
+    "preservation_scope": "Three supplied inputs independently rehashed with retained mtime/IDs. Executed wrapper asserts global input and protected-output bytes/mtime. Normal chooser Cancel and delayed-close recovery covered; installed replay aliases/mid-replay cancellation were not separately invoked here and remain separate accepted regression evidence.",
+    "visual_scope": "Capture bytes/dimensions verified; this independent review did not view windows. Parent separately viewed wheel860light and720dark captures.",
+    "source_identity_preserved_through_sdist": true,
+    "source_bootstrap_from_non_ascii_snapshot": true,
+    "offline_readonly_repeat": true,
+    "artifacts_published": false,
+    "summary_raw": {
+      "path": "{repository}/work/detailed-study/package-cli-1129238/summary.json",
+      "bytes": 45973,
+      "sha256": "b14cd723350db237866c073dead8865d9502c90e13642e676251764c2fcc7b9d"
+    }
+  },
+  "browser": {
+    "proof": {
+      "path": "{repository}/work/detailed-study/cli-browser-frozen-1129238-independent-proof.json",
+      "bytes": 14390,
+      "sha256": "647e73e2996da6aef551c2af2a3e58895695a440fcdc60a3e2f7d61628c1d06a"
+    },
+    "status": "passed",
+    "source": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+    "tree": "7b0a18404f7de7cb738c89c99e0f5db3df141bd7",
+    "gate": {
+      "command": [
+        "{repository}/.venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "{repository}/work/detailed-study/run_cli_browser_candidate.py",
+        "1129238ee50b12fbaf7419863c36299d20f5eab0"
+      ],
+      "working_directory": "{repository}",
+      "status": "passed",
+      "source_before": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T07:21:55.114134-04:00",
+      "finished_utc": "2026-10-17T07:22:10.194044-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 15.07955779999611,
+      "outer_guard_wall_s": 15.184560599998804,
+      "maximum_wall_s": 240,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 11.82291030883789,
+        "commit_gib": 16.505176544189453
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 10.972537994384766,
+        "commit_gib": 15.6075439453125
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 424968192,
+        "peak_job_committed_bytes": 906309632,
+        "total_processes": 34,
+        "active_processes": 0,
+        "cpu_time_s": 24.546875
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "raw": {
+        "path": "{repository}/work/detailed-study/browser-cli-1129238-job/summary.json",
+        "bytes": 2430,
+        "sha256": "c13126501d956b4ab53824a13d639110fd0aa0537c223e030ccde85a7af7f9e9"
+      }
+    },
+    "measurements": {
+      "layouts": 4,
+      "accessibility_states": 12,
+      "violations": 0,
+      "runtime_errors": 0,
+      "focused_cases": 10,
+      "accessibility_incomplete_rule_entries": 36,
+      "scope": "Measured automated browser checks, not complete accessibility or visual conformance."
+    },
+    "fresh_generic_artifacts": {
+      "commit.txt": {
+        "bytes": 42,
+        "sha256": "db1c6e61bddd13d9ca2f1f358824d3e24a5ad2b29f2a4eed45fec8a7a3757322"
+      },
+      "chromium-results.json": {
+        "bytes": 2542025,
+        "sha256": "d39be13136cbd0bd326cec0ae0cac328175d3dccb33876eeb10062ae2a8992f3"
+      },
+      "chromium-1440-light.png": {
+        "bytes": 924864,
+        "sha256": "b6efa14ad90065c070eef70a3dcb321fa3bc102bb96dcf9e8a75764e79d374c3"
+      },
+      "chromium-1440-light-trace.zip": {
+        "bytes": 2097361,
+        "sha256": "a26067cb1ca49c93d19d1b408aca785ce92e257d7ba627fae46a0320956d3740"
+      },
+      "chromium-1440-dark.png": {
+        "bytes": 926695,
+        "sha256": "b0747909a19dc28a5063fc50e12da0c9ea7de71e36488e459a3818fdef07ab4e"
+      },
+      "chromium-1440-dark-trace.zip": {
+        "bytes": 2308658,
+        "sha256": "f17fbd4cc4fb9678784d384eb7904e77d12371f528b53fb40594ee8eeb10eea2"
+      },
+      "chromium-390-light.png": {
+        "bytes": 532884,
+        "sha256": "1a6594e7b2e6202b5de7261f6888c478bb846812c596a98a1e35fe847773e31a"
+      },
+      "chromium-390-light-trace.zip": {
+        "bytes": 1691695,
+        "sha256": "b44b7231c472cd4fe656ffa9c67e5328af1581ac9f0c70ba3c4e5e1ccd496008"
+      },
+      "chromium-390-dark.png": {
+        "bytes": 535521,
+        "sha256": "86511cc7f70cdfc1dab5bb8377d814fde6235006f783a77efee01a19a479a7ff"
+      },
+      "chromium-390-dark-trace.zip": {
+        "bytes": 1775724,
+        "sha256": "d2d2641e4e94d6e91020fe387b35b3ed1e6fc9e8e988e618a7ccd8db25314d5b"
+      }
+    },
+    "focused_results_sha256": "46cfe0140840c0685a6a01e49971177025dbc43ae47a122d180382aabc721ecf",
+    "inner_wrapper_wall_s": 14.8182539,
+    "review_scope": "Metadata/hash/Git/XML/ZIP reads only; no project imports, browser/GUI/native/build/tests or raw evidence edits."
+  },
+  "frozen_single_record": {
+    "status": "passed",
+    "source": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+    "tree": "7b0a18404f7de7cb738c89c99e0f5db3df141bd7",
+    "gate": {
+      "command": [
+        "{repository}/.venv/Scripts/python.exe",
+        "{repository}/work/detailed-study/verify_frozen_native_viewer.py",
+        "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "{task_workspace}/work/copied-cli-exe-1129238"
+      ],
+      "working_directory": "{repository}",
+      "status": "passed",
+      "source_before": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T07:22:58.880336-04:00",
+      "finished_utc": "2026-10-17T07:24:11.240311-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 72.35961289997795,
+      "outer_guard_wall_s": 72.40970680001192,
+      "maximum_wall_s": 600,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 11.807064056396484,
+        "commit_gib": 16.516803741455078
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 10.480731964111328,
+        "commit_gib": 12.56939697265625
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 302596096,
+        "peak_job_committed_bytes": 333836288,
+        "total_processes": 56,
+        "active_processes": 0,
+        "cpu_time_s": 54.796875
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "raw": {
+        "path": "{repository}/work/detailed-study/frozen-cli-1129238-job/summary.json",
+        "bytes": 2514,
+        "sha256": "517ad2e2c2856e88fda7c803bf62e4d55ba8096ff27d4df5c9b554682bab0dd5"
+      }
+    },
+    "measurements": {
+      "original_build_selftest": "passed; empty native viewer only",
+      "copied_supplied_record_selftest": "passed",
+      "same_input_report_alias_rejection_exit": 2,
+      "exe_sha256": "cb0f6d858bce66d36fefba56d82b86c2136fa50b720e29ad97a75fded182f885",
+      "zip_sha256": "528473e3ba3974be48b787403fb5171003502fb3c7ecb0aba520205a8b07eae6",
+      "zip_resource_members_verified": 933,
+      "embedded_source_sha256": "336f13bdd24a18850ad5c4702f83fb626a61fb6614445400b35ebd67a6f91a0c",
+      "input_sha256": "65d1cd9f23e448c48e23e55f8bd06c6b264f9b2cca1a028f3a0f9f6e55213f38",
+      "input_mtime_ns_preserved": 1792233865038915600,
+      "saved_content_id": "62386b59d501a23132e53b2f39448e7d756cbada9e6063c2db8ffe16c9327291",
+      "saved_receipt_id": "2335a00b34f76775bb36bbccf660a5b91470e9d9f4ddae2b38937077ae525a25",
+      "selected_indices": [
+        0,
+        300,
+        400
+      ],
+      "inspection_checks": {
+        "receipt_and_content_integrity": "checked",
+        "stored_structure": "checked; finite channels, counts and sample/command clocks",
+        "current_implementation_files": "unavailable; current implementation files could not be read",
+        "authenticity": "not established by content hashes",
+        "fresh_native_replay": "not run",
+        "historical_timing": "recorded claims; not validated",
+        "vehicle_calibration": "not established"
+      },
+      "generated_map_before_after": {
+        "sha256": "ca97fc422b68dfaa7b2a084ce0d4954440b338da65af5db656dbf74ac044d24d",
+        "bytes": 9644633,
+        "mtime_ns": 1792234170964827100,
+        "crlf_count": 0,
+        "lf_count": 2
+      },
+      "scope": "Actual built/copied Windows EXE single-record QA and same-path alias rejection only. No new frozen normal-pair workflow, replay, physics, calibration/authenticity, release or deployment claim. Environment restrictions derive from reviewed executed helper source and passed guarded command; no independent full child environment dump retained."
+    },
+    "build_command": [
+      "{task_workspace}/work/build-env/Scripts/python.exe",
+      "scripts/build_windows.py",
+      "--skip-tests",
+      "--output-dir",
+      "{repository}/work/detailed-study/frozen-viewer-1129238"
+    ],
+    "copied_supplied_record_command": [
+      "{task_workspace}/work/copied-cli-exe-1129238/LapSim.exe",
+      "--self-test",
+      "{task_workspace}/work/copied-cli-exe-1129238/native-viewer-self-test.json",
+      "--self-test-native-record",
+      "{task_workspace}/work/copied-cli-exe-1129238/drive.json"
+    ],
+    "copied_supplied_record_exit": 0,
+    "alias_rejection_command": [
+      "{task_workspace}/work/copied-cli-exe-1129238/LapSim.exe",
+      "--self-test",
+      "{task_workspace}/work/copied-cli-exe-1129238/drive.json",
+      "--self-test-native-record",
+      "{task_workspace}/work/copied-cli-exe-1129238/drive.json"
+    ],
+    "alias_rejection_exit": 2,
+    "inner_total_wall_s": 71.97825360001298,
+    "inner_extra_wall_s": 13.927656499989098,
+    "extra_timing_scope": "Verification process sequence including valid saved-record self-test and same-input/output rejection; not a runtime benchmark",
+    "raw": {
+      "path": "{repository}/work/detailed-study/frozen-viewer-1129238/native-viewer-preservation.json",
+      "bytes": 5113,
+      "sha256": "96f5e664164917f5900d35efb92397332aed5666ca35aec6b39c1efa7cc2f4dc"
+    },
+    "scope": "Original actual Windows build uses --skip-tests because full 97 is recorded separately; original empty-viewer self-test plus copied supplied-record self-test and same-path alias rejection. No new normal-pair frozen workflow, replay, native physics or publication claimed."
+  },
+  "root_visual_review": {
+    "source": "1129238ee50b12fbaf7419863c36299d20f5eab0",
+    "captures": [
+      {
+        "path": "work/detailed-study/package-cli-1129238/wheel-normal-pair-workflow/pair-860x680-light.png",
+        "sha256": "f07ca6baee0ded809ab89d84e5284a657806042a0d67cfebac1e52a4defc727f",
+        "scope": "Fresh actual installed wheel normal-pair light/default layout",
+        "root_visual_inspection": "Passed: readable text and controls, no overlap or horizontal overflow; small views retain scroll access."
+      },
+      {
+        "path": "work/detailed-study/package-cli-1129238/wheel-normal-pair-workflow/pair-720x520-dark.png",
+        "sha256": "3015f0026083b36b96257a5f34305a2f5a6229c7a226601b90c59bdeb780319c",
+        "scope": "Fresh actual installed wheel normal-pair dark/minimum layout",
+        "root_visual_inspection": "Passed: readable text and controls, no overlap or horizontal overflow; small views retain scroll access."
+      },
+      {
+        "path": "work/detailed-study/browser-native-comparison-1129238/native-native-saved-comparison-1440.png",
+        "sha256": "411a00334a7b7fa26104e97a2a3c853ec21d9be46b220ae0e25b3c00572e5cc9",
+        "scope": "Fresh desktop native comparison source-map node",
+        "root_visual_inspection": "Passed: readable text and controls, no overlap or horizontal overflow; small views retain scroll access."
+      },
+      {
+        "path": "work/detailed-study/browser-native-comparison-1129238/native-native-saved-comparison-390.png",
+        "sha256": "63b35b7ece661b34c0e288739a1a907ba8c1cac881a56a13215848df28fe2435",
+        "scope": "Fresh phone native comparison source-map node",
+        "root_visual_inspection": "Passed: readable text and controls, no overlap or horizontal overflow; small views retain scroll access."
+      }
+    ],
+    "scope": "Four actual retained captures inspected by root; no claim to inspect all four wheel or all browser captures."
+  },
+  "reconciled_source_installed_ID_equality": {
+    "source": "4bccac1c3caa4e1f5ce5988ece63efb373255f23",
+    "status": "passed",
+    "gate": {
+      "command": [
+        "{repository}/.venv/Scripts/python.exe",
+        "{repository}/work/detailed-study/verify_cli_provenance_candidate.py",
+        "4bccac1c3caa4e1f5ce5988ece63efb373255f23",
+        "{repository}/work/detailed-study/package-cli-1129238/summary.json"
+      ],
+      "working_directory": "{repository}",
+      "status": "passed",
+      "source_before": {
+        "commit": "4bccac1c3caa4e1f5ce5988ece63efb373255f23",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "4bccac1c3caa4e1f5ce5988ece63efb373255f23",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T07:28:45.165083-04:00",
+      "finished_utc": "2026-10-17T07:28:47.682885-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 2.517433600005461,
+      "outer_guard_wall_s": 2.619990199978929,
+      "maximum_wall_s": 180,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 11.86440658569336,
+        "commit_gib": 16.63174057006836
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 11.792205810546875,
+        "commit_gib": 16.573654174804688
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 72785920,
+        "peak_job_committed_bytes": 96657408,
+        "total_processes": 10,
+        "active_processes": 0,
+        "cpu_time_s": 2.015625
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "raw": {
+        "path": "{repository}/work/detailed-study/cli-provenance-4bccac1-job/summary.json",
+        "bytes": 2552,
+        "sha256": "1dc989f95c93802c7f2e6b352217af5c8160d0160207dfab6d83192c53509da4"
+      }
+    },
+    "normal_CLI_modes": [
+      "plant-step",
+      "logging-period"
+    ],
+    "independent_expected_values": "direct stdlib JSON endpoint arithmetic and exact stored timestamp sets",
+    "inputs": [
+      {
+        "name": "drive.json",
+        "sha256": "65d1cd9f23e448c48e23e55f8bd06c6b264f9b2cca1a028f3a0f9f6e55213f38",
+        "mtime_ns": 1792233865038915600,
+        "content_id": "62386b59d501a23132e53b2f39448e7d756cbada9e6063c2db8ffe16c9327291",
+        "receipt_id": "2335a00b34f76775bb36bbccf660a5b91470e9d9f4ddae2b38937077ae525a25"
+      },
+      {
+        "name": "drive_half_step.json",
+        "sha256": "13ab1943bc0a99a1179b8e27d28f4a3e92f449eed71682d63bf2409b58823fd1",
+        "mtime_ns": 1792233880632968500,
+        "content_id": "11011d4d8708987c35b83061561fd664280a1ca0306a03005054dbbfe0444c6d",
+        "receipt_id": "234799f4fb97d1486258403ca48db09497b9f1375061266699affeb7e5cfe4fe"
+      },
+      {
+        "name": "drive_sparse_log.json",
+        "sha256": "3762c7b29fb4e42d143eb838872fa22c9ee6f0d6348e8216e9fc873ff6688b8b",
+        "mtime_ns": 1792233888466389800,
+        "content_id": "d5caa07dd492c0f9a83cf146f05e57a1ee72f02b3c39f2bbdbb0078f2bad0160",
+        "receipt_id": "cdad0dc7d73cb45e398e0212f6ad96d26f317eff51f24ad4bb1c5dddb566312a"
+      }
+    ],
+    "inputs_unchanged": true,
+    "current_implementation_files": "match",
+    "fresh_native_replay": "not run",
+    "provenance": {
+      "status": "passed",
+      "independent_oracle": "Explicit seven source files with LF normalization, stdlib canonical finite JSON/hash, declared calculation projection and complete receipt projection",
+      "identities": {
+        "plant-step": {
+          "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b",
+          "report_id": "0c193289ea01bf1e2ec0f35ae1599ba32c490ae82b0b1ebb51f70734eb7030c6",
+          "receipt_id": "f3be987ddbfc2a52f8d57ca6552889c440751786cd9741c82151bffd26534364"
+        },
+        "logging-period": {
+          "recipe_id": "88b6be549214e382aaec0478e8ef0357e1f765edfa415e1bcc63cb2abd6b092b",
+          "report_id": "a61fc5d414538cece77fd6745673e13a1c5a18f43d618af7b6a9f2676cc93745",
+          "receipt_id": "452633dff02b5660a19b6df637058766944b20f57edc1004b5b3fac54244c5e7"
+        }
+      },
+      "source_and_installed_wheel_sdist_IDs_equal": true,
+      "scope": "Observed declared source recipe and saved-claim calculations; no full transitive environment identity, execution attestation or fresh physics"
+    },
+    "raw": {
+      "path": "{repository}/work/detailed-study/comparison-cli-candidate-4bccac1/summary.json",
+      "bytes": 2568,
+      "sha256": "658b593c740822f1a7e7e872e082a9c54288a23e808b7a16cb2551f86e16e808"
+    },
+    "helper_sha256": "1c53a6db198d4a8351a2a9a08029a1a2a23a917e24138aa7a4d5372360f1f5be",
+    "scope": "Engine-free normal comparisons and independent seven-file recipe/calculation/full-receipt projections at clean 4bcc match actual installed 112 wheel/sdist IDs; no physics was run in this phase."
+  },
+  "static_map_entrypoints": {
+    "status": "passed",
+    "source": "98f2e9868df84c2c10cdceb754b101241b2bdb3e",
+    "tree": "834c9bc78274d8b71761401a69d6aa8fe8917ea6",
+    "source_clean_before_after": true,
+    "commands": [
+      {
+        "name": "site",
+        "argv": [
+          "{standard_python}",
+          "scripts/check_flowchart_site.py"
+        ],
+        "exit": 0,
+        "stdout": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/site-stdout.txt",
+          "bytes": 88,
+          "sha256": "800812ce537c4f8b0b1a986b8a68edf7df8593b11ed6791743ecb627b3424d00"
+        },
+        "stderr": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/site-stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "inventory",
+        "argv": [
+          "{standard_python}",
+          "docs/simulator_flowchart/generate_inventory.py",
+          "--check"
+        ],
+        "exit": 0,
+        "stdout": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/inventory-stdout.txt",
+          "bytes": 84,
+          "sha256": "93b9b2daae1a222c7cefce904d8d8c003d332954d2df82f39e48b7327faef858"
+        },
+        "stderr": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/inventory-stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "graph",
+        "argv": [
+          "{node_cli}",
+          "scripts/check_flowchart_data.mjs"
+        ],
+        "exit": 0,
+        "stdout": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/graph-stdout.txt",
+          "bytes": 169,
+          "sha256": "b966755291217b055be986e93c4b66f0255373b3eb17af4105c1e358c940523e"
+        },
+        "stderr": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/graph-stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "environment": {
+      "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+      "node_version": "v24.19.0",
+      "node_executable_sha256": "3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237",
+      "scope": "Observed ordinary repository Python and Windows Node for these three local static entrypoints; no environment attestation."
+    },
+    "entrypoint_sha256": {
+      "scripts/check_flowchart_site.py": "d17f02a545adbe4d5196fe43ed6d83f16a8300e82dfb5441143c6c8d002a3612",
+      "docs/simulator_flowchart/generate_inventory.py": "28a3efc7aeab88c8a2d284e74133829d3aa4bce0f819c93290bb14fe1fb32295",
+      "scripts/check_flowchart_data.mjs": "154669c3e0496b170dd572f1dff420d1be655a5c641aa9a45408c8db9ad89c8e"
+    },
+    "catalog": {
+      "path": "docs/simulator_flowchart/data/source-inventory.js",
+      "sha256": "da03b978f9519c73e3b6e59fc39661dbd60acc3c38da9536bd003c7863a2d88b",
+      "bytes_mtime_preserved": true
+    },
+    "execution": {
+      "argv": [
+        "{standard_python}",
+        "{repository}/work/detailed-study/verify_cli_static_map.py",
+        "98f2e9868df84c2c10cdceb754b101241b2bdb3e"
+      ],
+      "cwd": "{repository}",
+      "exit": 0,
+      "started_utc": "2026-10-17T07:47:16.978717-04:00",
+      "finished_utc": "2026-10-17T07:47:19.56942-04:00",
+      "outer_wall_time_s": 2.590732399985427,
+      "stage_wall_time_s": 2.534933599992655,
+      "maximum_wall_time_s": 240,
+      "required_preflight_floors_gib": {
+        "physical_gib": 10,
+        "commit_gib": 8.5
+      },
+      "preflight_headroom_gib": {
+        "physical_gib": 11.623218536376953,
+        "commit_gib": 16.321399688720703
+      },
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 11.500896453857422,
+        "commit_gib": 16.235252380371094
+      },
+      "job_metrics_before_final_close": {
+        "peak_single_process_committed_bytes": 150585344,
+        "peak_job_committed_bytes": 170708992,
+        "total_processes": 18,
+        "active_processes": 0,
+        "cpu_time_s": 2.171875
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a"
+    },
+    "raw": {
+      "summary": {
+        "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/summary.json",
+        "bytes": 2352,
+        "sha256": "e8fbb039cb2f1beb050575e75bb0b57b4ccaf58df14a8dbc93d56e51d2a6d028"
+      },
+      "commands": {
+        "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/commands.json",
+        "bytes": 1222,
+        "sha256": "4b468df07c91a78caaa7078dcf5a4768cd00cfc0b1c278453230d3f3d970be72"
+      },
+      "guard": {
+        "path": "{repository}/work/detailed-study/cli-static-map-98f2e98-job/summary.json",
+        "bytes": 2398,
+        "sha256": "37857485313d5199fe804ea0bcfa1e936f7fd4edcf252b44990c0a27091884e8"
+      },
+      "preflight": {
+        "path": "{repository}/work/detailed-study/cli-static-map-98f2e98-preflight.json",
+        "bytes": 925,
+        "sha256": "0ffebb9c0054d5bf13188055488a6c12df3e4a4fe7fdec618ec648e4a7ad2ece"
+      },
+      "helper": {
+        "path": "{repository}/work/detailed-study/verify_cli_static_map.py",
+        "bytes": 2628,
+        "sha256": "c56a154e68f389c5925d5a6faaef32a7af3cc4aef409f63fbc6ac98c4d1e65d8"
+      }
+    },
+    "scope": "Local HTML/asset structure, generated Python-source inventory and assembled JavaScript graph checks; no browser simulation, build or publication."
+  }
+}
