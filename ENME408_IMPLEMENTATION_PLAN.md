@@ -1,6 +1,6 @@
 # ENME408 implementation and team-delivery plan
 
-Updated: **16 October 2026**. Tracking: [issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
+Updated: **17 October 2026**. Tracking: [issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
 
 **Status, 16 October implementation:** the consolidated main baseline includes
 the controller source closure, source/resource repairs and the real dynamic
@@ -19,6 +19,15 @@ below. The old coordinator released its lease and its scheduler remains paused;
 no new scheduler is required for the active chat. Current main was refreshed at
 `139a02fca52aaf6b0fb7ad9d8963e5dc74177d8a` before branching. Existing licensing
 PRs are separate work and are not incorporated by this feature.
+
+The record-I/O repair (#84) and source-inventory performance repair (#85) are
+now merged through `c3008c2`. Their combined native-candidate tree passed all
+88 Windows test modules (2,165 reported cases, zero failures/errors, one
+POSIX-only skip); that compiler regression passed separately on local WSL.
+E16's 11 actual native checks and the local static/security gate also passed.
+The fresh native setup/export/replay path was reproduced after selecting the
+project cache through `MAMBA_ROOT_PREFIX`. E16 remains a draft until the remaining
+package/artifact gates and normal exact-head PR checks permit integration.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity

@@ -153,6 +153,23 @@ real-time performance from a simulation/wall-time ratio. This backend explicitly
 selects CPU `ChSystemNSC` and `ChSolverBB` (150 iterations, tolerance 1e-10,
 one thread). The RTX 5080 performs no physics or rendering in this headless run.
 
+## Local verification example, 17 October 2026
+
+At `0514215`, all 11 actual native checks passed on Windows 11 with a Ryzen
+7950X3D and 32 GB RAM. The gravity-window maximum reaction imbalance was
+0.0434% of weight; halving the drive step from 0.5 to 0.25 ms changed final
+forward speed by 0.0019%. These quantify this synthetic fixture's numerical
+behavior, not team-car accuracy.
+
+The corrected setup was reproduced from both locks in a fresh prefix at
+`5db439d`, followed by separate export and replay processes. An earlier saved
+native-test record also replayed in that prefix. The 8 s drive used 16,000
+plant steps, 800 driver updates and 401 samples. Its receipt measured 8.07 s
+inside the study, 7.98 s process CPU and a 134.4 MiB lifetime peak working set;
+the outer command took 16.09 s including launcher, imports and export. A
+separate correctness suite was running on another CPU thread during this
+measurement. The implementation hashes are unchanged between these revisions.
+
 Sources and license: [Chrono evidence register](research/chrono_backend.md).
 No upstream meshes, tire files, binaries or vehicle definitions are vendored;
 the installed dependency supplies them. The project's licensing work is unchanged.
