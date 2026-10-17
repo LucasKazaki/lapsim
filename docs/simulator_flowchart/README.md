@@ -124,7 +124,12 @@ After changing source behavior:
    its sources. Update the root README overview if a subsystem boundary changed.
 
 Use `python docs/simulator_flowchart/generate_inventory.py --check` as a read-only
-freshness gate. `node docs/simulator_flowchart/browser_check.cjs` is an optional
+freshness gate. The generator caches UTF-8 parser lines once per file; the
+coverage check independently uses `ast.get_source_segment` on each expression's
+line span. UTF-8 columns, multiline text, and line endings remain exact without
+repeatedly scanning the rest of the file.
+
+`node docs/simulator_flowchart/browser_check.cjs` is an optional
 real-browser regression check requiring Playwright and installed Microsoft Edge.
 It verifies an offline `file://` load, individual units, source search, keyboard
 focus/hierarchy, reduced motion, complete expansion, bounded overview DOM size,

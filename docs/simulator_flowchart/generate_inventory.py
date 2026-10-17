@@ -10,6 +10,7 @@ import argparse
 import ast
 import hashlib
 import json
+import re
 from collections import Counter, OrderedDict
 from pathlib import Path
 
@@ -75,6 +76,10 @@ def targets(target: ast.AST) -> list[str]:
 class Catalog:
     def __init__(self, path: str, source: str):
         self.path, self.source = path, source
+        # AST columns are UTF-8 byte offsets. Split parser line boundaries
+        # once; str.splitlines() also splits form feeds and Unicode separators.
+        self._source_lines = re.findall(rb".*?(?:\r\n|\n|\r|$)", source.encode("utf-8"))
+        self._declaration_lines = source.splitlines()
         self.counts = Counter()
         self.bindings: dict[tuple[str, str], str] = {}
 
@@ -85,7 +90,22 @@ class Catalog:
                 "sources": [{"path": self.path, "symbol": scope or "module", "line": line or 1}], **extra}
 
     def snippet(self, node: ast.AST) -> str:
-        return ast.get_source_segment(self.source, node) or ast.unparse(node)
+        try:
+            if node.end_lineno is None or node.end_col_offset is None:
+                return ast.unparse(node)
+            start, end = node.lineno - 1, node.end_lineno - 1
+            first, last = node.col_offset, node.end_col_offset
+        except AttributeError:
+            return ast.unparse(node)
+        if start == end:
+            segment = self._source_lines[start][first:last]
+        else:
+            segment = b"".join([
+                self._source_lines[start][first:],
+                *self._source_lines[start + 1:end],
+                self._source_lines[end][:last],
+            ])
+        return segment.decode("utf-8") or ast.unparse(node)
 
     def scope(self, body: list[ast.stmt], scope: str, parameters: list[dict] | None = None) -> list[dict]:
         variables: OrderedDict[str, dict] = OrderedDict()
@@ -188,7 +208,7 @@ class Catalog:
             kind = "solver"
         doc = ast.get_docstring(definition) or "No source docstring; inspect the declaration and exact definitions below."
         return self.node(scope, label, kind, doc, definition.lineno,
-                         declaration=self.source.splitlines()[definition.lineno - 1].strip(), children=children)
+                         declaration=self._declaration_lines[definition.lineno - 1].strip(), children=children)
 
 
 def source_files() -> list[Path]:

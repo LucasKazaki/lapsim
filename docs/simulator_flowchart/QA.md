@@ -58,3 +58,37 @@ A team member can still inspect every child through search and branch buttons.
 These are implementation, source-consistency, numerical-notation, and interface
 checks. They do not constitute tire/battery/vehicle predictive validation.
 
+## Source inventory maintenance — 2026-10-17
+
+Checked the generator optimization on the owner's native Windows PC, using the
+existing project environment with CPython 3.13.15 and source baseline
+`139a02fca52aaf6b0fb7ad9d8963e5dc74177d8a`. Generator and test changes do not alter
+the catalog schema, source selection, or source/equation text.
+
+One sequential full-catalog run measured the original generator at **5.621 s
+wall / 5.125 s CPU**, and the optimized generator at **0.490 s wall / 0.484 s
+CPU**. These are single local observations, not a general performance guarantee.
+The repeated full-file line scans were confirmed separately with `cProfile` on
+a small frozen fixture. This generator cost does not establish the cause of a
+previous long pytest failure: stale multi-megabyte catalog comparisons also
+caused pytest to attempt a very large assertion diff. Freshness still uses exact
+equality, with a bounded failure message.
+
+The original output, optimized output, and frozen checked-in catalog were
+byte-identical after checkout CRLF normalization: **8,853,676 bytes**, SHA-256
+`dc98e0e08504a1503ed806876f04f63172fc2a757d5f569bd60ee925a1f25801`.
+Counts stayed at 95 modules, 1,084 solvers, 8,039 variables, 3,966 equations, and
+1,364 data nodes. No generated file was changed.
+
+- `python -m pytest tests/test_simulator_flowchart.py -q`: **12 passed**, no skips
+  or failures, in 1.98 s.
+- `python docs/simulator_flowchart/generate_inventory.py --check`: **exit 0**.
+- `git diff --check`: **exit 0**.
+
+The fixtures independently compare both optimized source extraction and the
+coverage oracle with whole-source `ast.get_source_segment`, including UTF-8 byte
+columns, LF/CRLF/bare CR, multiline expressions, final-newline variants, and
+non-newline control/Unicode separators. Frozen synthetic catalog byte parity was
+also checked with installed CPython 3.12. Browser rendering was not changed or
+retested in this maintenance tranche.
+
