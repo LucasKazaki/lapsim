@@ -158,6 +158,59 @@ an error. The CLI writes only a JSON report to stdout: exit 0 means comparison
 completed, even if its named numerical criterion failed; invalid/incompatible
 inputs exit 1. Existing native record schema and replay source scope are unchanged.
 
+New reports add schema `lapsim.native-suspension-comparison.v1`,
+`comparison_recipe`, `report_id` and `receipt_id` without replacing the existing
+fields. Earlier unversioned comparison outputs remain historical outputs; they
+are not silently upgraded or assigned new identities.
+
+The comparison recipe observes these seven package-relative source files:
+
+| File | Included behavior |
+| --- | --- |
+| `experiments/suspension_compare.py` | Comparison, criterion and report identity |
+| `experiments/suspension_study.py` | Scenario, validation, inspection and native-source matching |
+| `dynamics/native_plant.py` | Saved command and observation contracts |
+| `dynamics/chrono_vehicle.py` | Source bytes read for native-match eligibility; the backend is not imported |
+| `experiments/dynamics_record.py` | Canonical JSON and content hashing |
+| `experiments/record_io.py` | Bounded file reading |
+| `experiments/basic_dynamics.py` | Strict JSON decoding |
+
+Hashes normalize CRLF to LF only. Each file has an observed `readable`, `missing`
+or `unreadable` status; missing/unreadable hashes are null. `recipe_id` hashes the
+complete recipe descriptor except itself only when all seven files are
+readable. Otherwise it is null and the recipe is explicitly incomplete.
+This also applies in frozen or installed contexts: recorded input hashes are
+never substituted for missing local files. Comparisons remain available, with
+the existing criterion's source-availability restrictions intact.
+
+This limited source scope is not a complete transitive environment fingerprint,
+an executable attestation or a fresh native test. Python, third-party packages
+and native binaries are outside it. The named native quality test is a reference,
+not an executed dependency; the comparator contains the static criterion policy.
+
+`report_id` hashes a canonical calculation projection: report schema and kind,
+scope, ordered left/right input content IDs, the observed recipe descriptor,
+comparison status, compatibility decision/selected field, and the full numerical
+result including its clocks and criterion applicability. Compatibility reasons
+are sorted only for this calculation projection; the displayed report is retained.
+Input receipt IDs, historical execution/timing claims and other inspection
+context are excluded. No ambient Git identity, paths, timestamps or runtime
+measurements are collected for the calculation identity. A timing-only change
+to an otherwise identical valid input receipt therefore preserves `report_id`.
+
+`receipt_id` hashes the complete emitted report except itself, binding
+`report_id`, both input receipts and every displayed claim. Timing-only changes
+alter this full receipt identity. Incomplete recipes still have calculation and
+receipt identities for the report actually produced; they do not acquire a
+complete recipe identity. These hashes establish content identity, not
+authenticity, calibration or new numerical validation. The native study schema
+and its separate three-file replay identity remain unchanged.
+
+The [local verification receipt](research/evidence/chrono-comparison-provenance-20261017.json)
+records the retained pre-implementation failure, independent pure-fixture
+contracts and measured resource scope. Broader integration checks remain
+separate from this comparison calculation.
+
 ## Install separately from ordinary startup
 
 Use official micromamba 2.5.0-2 on Windows; its flat package cache avoids the

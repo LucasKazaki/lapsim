@@ -11,7 +11,7 @@ from math import isfinite
 from pathlib import Path
 import sys
 
-from .dynamics_record import _canonical_json
+from .dynamics_record import _canonical_json, _content_id
 from .suspension_study import (
     SOURCE_HASH_SCOPE,
     SuspensionScenario,
@@ -39,6 +39,79 @@ SCOPE = (
     "no fresh native replay, authenticity, vehicle calibration, physical validation, "
     "performance winner, or historical timing verification."
 )
+REPORT_SCHEMA = "lapsim.native-suspension-comparison.v1"
+RECIPE_SCHEMA = "lapsim.native-suspension-comparison-recipe.v1"
+RECIPE_HASH_SCOPE = (
+    "Explicit comparison/validation/source-match files; source bytes with CRLF "
+    "normalized to LF only; not a complete transitive environment fingerprint"
+)
+RECIPE_FILES = (
+    "experiments/suspension_compare.py",
+    "experiments/suspension_study.py",
+    "dynamics/native_plant.py",
+    "dynamics/chrono_vehicle.py",
+    "experiments/dynamics_record.py",
+    "experiments/record_io.py",
+    "experiments/basic_dynamics.py",
+)
+
+
+def _comparison_recipe() -> dict:
+    """Identify observed source files, without importing a backend or using Git."""
+    package = Path(__file__).parent.parent
+    hashes: dict[str, str | None] = {}
+    statuses: dict[str, str] = {}
+    for name in RECIPE_FILES:
+        try:
+            raw = (package / name).read_bytes()
+        except FileNotFoundError:
+            hashes[name], statuses[name] = None, "missing"
+        except OSError:
+            hashes[name], statuses[name] = None, "unreadable"
+        else:
+            hashes[name] = sha256(raw.replace(b"\r\n", b"\n")).hexdigest()
+            statuses[name] = "readable"
+    complete = all(status == "readable" for status in statuses.values())
+    recipe: dict = {
+        "schema": RECIPE_SCHEMA,
+        "hash_scope": RECIPE_HASH_SCOPE,
+        "status": "complete" if complete else "incomplete",
+        "files_sha256": hashes,
+        "file_status": statuses,
+        "criterion_reference": CRITERION,
+        "reference_physical_claim_sha256": REFERENCE_PHYSICAL_CLAIM_SHA256,
+    }
+    recipe["recipe_id"] = _content_id(recipe) if complete else None
+    return recipe
+
+
+def _calculation_projection(report) -> dict:
+    """Exclude historical receipts/timing and ambient identity from calculation ID."""
+    return {
+        "schema": report["schema"],
+        "comparison_kind": report["comparison_kind"],
+        "scope": report["scope"],
+        "input_content_ids": {
+            role: report["inputs"][role]["inspection"]["saved_content_id"]
+            for role in ("left", "right")
+        },
+        "comparison_recipe": report["comparison_recipe"],
+        "status": report["status"],
+        "compatibility": {
+            key: (
+                sorted(report["compatibility"][key])
+                if key == "reasons"
+                else report["compatibility"][key]
+            )
+            for key in (
+                "compatible_recorded_claims",
+                "reasons",
+                "allowed_scenario_field",
+                "selected_field",
+            )
+        },
+        "result": report["result"],
+    }
 
 
 def _saved_equal(left, right):
@@ -312,6 +385,7 @@ def compare_study_records(left, right, *, kind):
         for payload in (a, b)
     ]
     report = {
+        "schema": REPORT_SCHEMA,
         "kind": "saved native suspension comparison",
         "comparison_kind": kind,
         "scope": SCOPE,
@@ -348,6 +422,9 @@ def compare_study_records(left, right, *, kind):
             if kind == "plant-step"
             else _logging_result(a, b)
         )
+    report["comparison_recipe"] = _comparison_recipe()
+    report["report_id"] = _content_id(_calculation_projection(report))
+    report["receipt_id"] = _content_id(report)
     return report
 
 

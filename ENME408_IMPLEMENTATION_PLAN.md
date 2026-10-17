@@ -70,6 +70,13 @@ is a calculation on recorded claims, separate from native acceptance, replay,
 historical timing or vehicle calibration. The existing native record schema and
 three implementation-file replay hashes remain unchanged.
 
+A separate local provenance follow-up adds comparison-specific recipe,
+calculation and complete-receipt identities. Its seven-file source scope is
+explicitly limited; missing files remain unavailable. Historical timing stays
+outside the calculation identity and inside the full receipt. This follow-up
+changes neither native replay identity nor the physical/criterion calculations;
+its pure saved-fixture checks are separate from native and package acceptance.
+
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity
 settling, handling signs, suspension/contact telemetry and timestep comparisons.
