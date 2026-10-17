@@ -432,7 +432,7 @@ def test_close_invalidates_comparison_without_cancelling_other_ownership():
     viewer.comparison_details_window = SimpleNamespace(
         destroy=lambda: destroyed.append("details")
     )
-    viewer.compare_button = SimpleNamespace(focus_set=lambda: destroyed.append("focus"))
+    viewer.compare_button = SimpleNamespace(focus_force=lambda: destroyed.append("focus"))
     viewer.comparison_left = Value("old left identity")
     viewer.comparison_right = Value("old right identity")
     viewer.comparison_kind = Value("plant-step")

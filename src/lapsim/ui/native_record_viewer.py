@@ -539,6 +539,7 @@ class NativeRecordViewer:
             self.comparison_window.lift()
             return self.comparison_window
         window = self.comparison_window = tk.Toplevel(self.window)
+        window.transient(self.window)
         window.title("LapSim · Compare saved native studies")
         window.geometry("860x680")
         window.minsize(720, 520)
@@ -781,7 +782,7 @@ class NativeRecordViewer:
         with suppress(tk.TclError):
             window.destroy()
             if not self.closed:
-                self.compare_button.focus_set()
+                self.compare_button.focus_force()
         return "break"
 
     def _draw_record(self):
