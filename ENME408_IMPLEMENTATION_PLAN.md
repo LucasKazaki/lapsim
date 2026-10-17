@@ -80,6 +80,16 @@ outside the calculation identity and inside the full receipt. This follow-up
 changes neither native replay identity nor the physical/criterion calculations;
 its pure saved-fixture checks are separate from native and package acceptance.
 
+Plant-step endpoint reporting requires the exact recorded world/SI claims used
+by the passive viewer and CSV exporter before doing endpoint arithmetic.
+Matching unsupported labels produce role-labeled incompatibility reasons and
+no numerical result; equal opaque labels remain supported for logging's raw
+timestamp/equality comparison. The current recipe retains those original seven
+source files and adds the shared exporter guard as an eighth, changing new
+recipe/calculation/receipt identities without rewriting historical reports or
+the seven saved native records. Native-three replay identity, physical-claim
+fingerprint and numerical criterion limits remain unchanged.
+
 A further E16 follow-up exposes the saved-pair API from the existing native
 record viewer: one explicit-kind/second-file review window, read-only
 summary/details and unchanged primary sample/force inspection. At `86ba320`,

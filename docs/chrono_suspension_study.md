@@ -183,11 +183,21 @@ agree. Git commit/dirty claims are shown separately. Missing profile/engine/asse
 claims or an unsupported source scope block numerical comparison. No engine,
 replay, new run, input write or automatic fallback is involved.
 
-`plant-step` reports signed right-minus-left final world-X velocity, COM height
-and four spring-length differences. Each observation's actual accumulated time,
-completed-interval command and computed/applied force values and source clocks
-remain separate; these are not simultaneous force differences. Unrepresentable
-subtraction of finite inputs is an explicit error.
+`plant-step` requires each record's exact frame claim
+`right-handed world X initially forward, Y left, Z up; chassis COM` and units
+claim `SI; steering request normalized, tire slip ratio dimensionless` before
+calculating endpoint differences. Matching unsupported claims on both records
+are still ineligible: the report retains both inspections, fixed role-labeled
+compatibility reasons and `result: null`. The CLI emits that report and exits 1.
+Arbitrary claim text is retained only as inspection data, not copied into the
+reasons. This checks recorded labels, without conversion or physical validation.
+
+Eligible `plant-step` inputs report signed right-minus-left final world-X
+velocity, COM height and four spring-length differences. Each observation's
+actual accumulated time, completed-interval command and computed/applied force
+values and source clocks remain separate; these are not simultaneous force
+differences. Unrepresentable subtraction of eligible finite inputs is an explicit
+error.
 
 The existing native test's **saved fixture endpoint criterion** is applied only
 to the recorded default drive scenario at 0.0005/0.00025 s, the accepted synthetic
@@ -209,6 +219,9 @@ are capped at 2,003 entries each with an explicit truncation flag; the exact
 scenario budget now bounds every supported input to at most 2,001 exports. A
 sparse record without a 6.02 s observation does not acquire one from the denser
 record.
+Equal opaque frame/unit claims remain supported for this raw timestamp/equality
+comparison; their meaning is not validated and no fixed-label endpoint quantities
+or criterion are calculated. Different claims remain incompatible.
 Null force origins remain null, and sparse exports do not revalidate dense
 settling metrics. All inspection checks and historical timing/metric claims
 remain distinguished; no performance winner is inferred.
@@ -225,7 +238,7 @@ New reports add schema `lapsim.native-suspension-comparison.v1`,
 fields. Earlier unversioned comparison outputs remain historical outputs; they
 are not silently upgraded or assigned new identities.
 
-The comparison recipe observes these seven package-relative source files:
+The comparison recipe observes these eight package-relative source files:
 
 | File | Included behavior |
 | --- | --- |
@@ -236,14 +249,21 @@ The comparison recipe observes these seven package-relative source files:
 | `experiments/dynamics_record.py` | Canonical JSON and content hashing |
 | `experiments/record_io.py` | Bounded file reading |
 | `experiments/basic_dynamics.py` | Strict JSON decoding |
+| `experiments/suspension_export.py` | Shared canonical frame/unit claim eligibility for plant-step quantities |
 
 Hashes normalize CRLF to LF only. Each file has an observed `readable`, `missing`
 or `unreadable` status; missing/unreadable hashes are null. `recipe_id` hashes the
-complete recipe descriptor except itself only when all seven files are
+complete recipe descriptor except itself only when all eight files are
 readable. Otherwise it is null and the recipe is explicitly incomplete.
 This also applies in frozen or installed contexts: recorded input hashes are
 never substituted for missing local files. Comparisons remain available, with
 the existing criterion's source-availability restrictions intact.
+
+Earlier seven-file recipes and their reports remain historical. Including the
+shared guard changes new recipe, calculation and receipt identities, including
+logging reports whose compared observations are unchanged. Source-file counts
+are separate from the seven saved records in the dated native evidence; no
+historical record or report is rewritten.
 
 This limited source scope is not a complete transitive environment fingerprint,
 an executable attestation or a fresh native test. Python, third-party packages
