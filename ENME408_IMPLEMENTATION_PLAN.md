@@ -51,16 +51,16 @@ modules and local WSL static/POSIX gates at `8e60ba1`, then merged through
 acceptance update in [PR #89](https://github.com/LucasKazaki/lapsim/pull/89).
 Those cancellation checks remain distinct from E16's numerical claims.
 
-The local E16 viewer candidate adds a passive desktop viewer for validated saved
-native records through the Four-wheel lab. It selects exact exported samples,
+The E16 desktop viewer opens validated saved native records through the
+Four-wheel lab. It selects exact exported samples,
 plots recorded COM/wheel-center points, spring lengths and force channels with
 their own source clocks, and preserves the inspector's historical-source and
 stored-claim distinctions. Its focused desktop checks are separate from native
 physics and portable-package acceptance; it introduces no new vehicle model,
 record schema, native dependency or physical-device connection. The existing
 desktop self-test now checks an empty viewer and optionally a supplied external
-record, keeping absent saved-record scope explicit. Actual-window and copied
-package acceptance remain separate pending gates.
+record, keeping absent saved-record scope explicit. The source window and
+copied package require separate workflow checks.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity
