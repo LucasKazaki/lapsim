@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import ast
 import importlib.util
+import io
 import json
 import re
 import shutil
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -30,10 +32,77 @@ def inventory():
     return inventory_module.build_catalog()
 
 
-def test_source_catalog_is_current(inventory):
-    assert inventory_module.TARGET.read_text(encoding="utf-8") == inventory_module.serialize(inventory), (
-        "Source catalog is stale; run python docs/simulator_flowchart/generate_inventory.py"
+def bounded_stdlib_segment(lines, node):
+    """Keep the independent stdlib oracle without rescanning unrelated lines."""
+    start = node.lineno - 1
+    span = "".join(lines[start:node.end_lineno])
+    location = SimpleNamespace(
+        lineno=1,
+        end_lineno=node.end_lineno - start,
+        col_offset=node.col_offset,
+        end_col_offset=node.end_col_offset,
     )
+    return ast.get_source_segment(span, location)
+
+
+@pytest.mark.parametrize("newline", ("\n", "\r\n", "\r"))
+@pytest.mark.parametrize("trailing_newline", (False, True))
+def test_source_segments_match_stdlib_with_utf8_and_multiline_source(
+    newline, trailing_newline
+):
+    # Columns count UTF-8 bytes, not characters. The non-newline separators
+    # inside a string must not become parser line boundaries.
+    text = (
+        "π = 3; value = π + 1\n"
+        "class Sample:\n"
+        "    def compute(self, café=2):\n"
+        "        text = '''é\f\v\u0085\u2028\u2029\n"
+        "        😀'''\n"
+        "        result = (\n"
+        "            café + π\n"
+        "        )\n"
+        "        return result, text\n"
+    ).replace("\n", newline)
+    if not trailing_newline:
+        text = text.removesuffix(newline)
+    catalog = inventory_module.Catalog("fixture.py", text)
+    lines = list(io.StringIO(text, newline=""))
+    for node in ast.walk(ast.parse(text)):
+        if getattr(node, "end_lineno", None) is not None:
+            expected = ast.get_source_segment(text, node)
+            assert catalog.snippet(node) == (expected or ast.unparse(node))
+            assert bounded_stdlib_segment(lines, node) == expected
+    # Definitions keep the original declaration-line behavior as well.
+    children = catalog.scope(ast.parse(text).body, "")
+    for node in walk({"children": children}):
+        if "declaration" in node:
+            assert node["declaration"] == text.splitlines()[node["sources"][0]["line"] - 1].strip()
+
+
+def test_source_segment_falls_back_for_nodes_without_locations():
+    catalog = inventory_module.Catalog("fixture.py", "value = 1\n")
+    node = ast.Name(id="generated", ctx=ast.Load())
+    assert catalog.snippet(node) == ast.unparse(node)
+
+
+def test_source_catalog_is_current(inventory):
+    # A stale catalog can be several megabytes. Keep the equality check exact
+    # without asking pytest to compute an enormous character-by-character diff.
+    if inventory_module.TARGET.read_text(encoding="utf-8") != inventory_module.serialize(inventory):
+        pytest.fail(
+            "Source catalog is stale; run python docs/simulator_flowchart/generate_inventory.py",
+            pytrace=False,
+        )
+
+
+def test_stale_catalog_failure_has_a_bounded_diagnostic(tmp_path, monkeypatch):
+    target = tmp_path / "source-inventory.js"
+    target.write_text("saved source expression\n" * 1000, encoding="utf-8")
+    monkeypatch.setattr(inventory_module, "TARGET", target)
+    monkeypatch.setattr(inventory_module, "serialize", lambda _: "updated source expression\n" * 1000)
+    with pytest.raises(pytest.fail.Exception, match="Source catalog is stale") as failure:
+        test_source_catalog_is_current({})
+    assert len(str(failure.value)) < 150
 
 
 def test_source_catalog_covers_all_modules_declarations_and_exact_expressions(inventory):
@@ -50,15 +119,16 @@ def test_source_catalog_covers_all_modules_declarations_and_exact_expressions(in
     for file in files:
         path = file.relative_to(REPO).as_posix()
         text = file.read_bytes().decode("utf-8-sig").replace("\r\n", "\n")
+        lines = list(io.StringIO(text, newline=""))
         for item in ast.walk(ast.parse(text)):
             if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 function_count += 1
             if isinstance(item, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
-                assert (path, item.lineno, ast.get_source_segment(text, item)) in recorded, (path, item.lineno)
+                assert (path, item.lineno, bounded_stdlib_segment(lines, item)) in recorded, (path, item.lineno)
             if isinstance(item, (ast.If, ast.While)):
-                assert (path, item.test.lineno, ast.get_source_segment(text, item.test)) in recorded, (path, item.lineno)
+                assert (path, item.test.lineno, bounded_stdlib_segment(lines, item.test)) in recorded, (path, item.lineno)
             if isinstance(item, ast.Return) and item.value:
-                assert (path, item.lineno, ast.get_source_segment(text, item)) in recorded, (path, item.lineno)
+                assert (path, item.lineno, bounded_stdlib_segment(lines, item)) in recorded, (path, item.lineno)
     assert inventory["counts"]["solver"] == function_count
 
 
