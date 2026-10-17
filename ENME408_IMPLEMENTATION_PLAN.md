@@ -12,7 +12,7 @@ PR/issue state before treating a candidate as merged. Public release and site
 deployment are deferred by the owner; physical PIL remains unavailable. The
 contracts below retain the acceptance work and staged future scope.
 
-## Active local native-backend cycle (16–17 October 2026)
+## Active local native-backend cycle (16â€“17 October 2026)
 
 The owner's new continuous engineering request supersedes the completed window
 below. The old coordinator released its lease and its scheduler remains paused;
@@ -39,10 +39,12 @@ export replayed in a separate process. Tracked evidence manifests are linked
 from [the native guide](docs/chrono_suspension_study.md). The bounded headless
 E16 increment merged through [PR #87](https://github.com/LucasKazaki/lapsim/pull/87)
 at `4cd6c7552d640c9af23a956dce8d90f097c3eaee`; team geometry, calibration and
-compliance remain open. At this 17 October refresh, the
-[CLI follow-up #92](https://github.com/LucasKazaki/lapsim/pull/92) and
-[saved-record inspector #93](https://github.com/LucasKazaki/lapsim/pull/93)
-remain separate open draft PRs outside #87's accepted scope.
+compliance remain open. The separate
+[CLI follow-up #92](https://github.com/LucasKazaki/lapsim/pull/92) merged normally
+as `2ac6d4dfd519d63bc1913551d83e678c33c79116`; the
+[saved-record inspector #93](https://github.com/LucasKazaki/lapsim/pull/93) merged
+normally as `6e7a215debfc38533241e98dea144b95a78687d1`. These follow-ups remain
+outside #87's numerical acceptance scope.
 The separately reviewed replay-cancellation repair passed all 88 Windows
 modules and local WSL static/POSIX gates at `8e60ba1`, then merged through
 [PR #86](https://github.com/LucasKazaki/lapsim/pull/86) at `a68eaa1` after the
@@ -83,7 +85,7 @@ implementation worker in the same local checkout, conditional on the app and
 computer remaining available. Its first scheduled execution must be observed
 before claiming that the scheduled worker actually ran.
 
-The expanded team scope uses the next unused IDs, after E01–E14:
+The expanded team scope uses the next unused IDs, after E01â€“E14:
 
 | ID | Bounded deliverable | Prerequisite / acceptance |
 |---|---|---|
@@ -104,7 +106,7 @@ Lucas's requested deliverable is one team-facing repository containing the simul
 
 Recorded project facts supplied by Lucas:
 
-- The current **2026–27 car is RWD**. The **2027–28 AWD car is a future configuration**, not the current validated plant.
+- The current **2026â€“27 car is RWD**. The **2027â€“28 AWD car is a future configuration**, not the current validated plant.
 - The recorded controller platform is an **STM32F405 on the team's custom PCB**. Keep that direction; do not migrate to Teensy.
 - **No new information has arrived from the team/Slack as of this update.** Exact MCU suffix, PCB revision, clock configuration, pinout, firmware, signal definitions, independent actuator count and final vehicle parameters remain unresolved.
 - The immediate goal is electronic differential/torque-control research: understand driver demand, achievable total force/torque, allocation and vehicle response. Autonomous driving, full game-like driver simulation and new CFD/chassis-flex work are not prerequisites.
@@ -123,7 +125,7 @@ The public repository and the private evidence store are different things. Keep 
 | What the team should review and supply | [Team review/data request](docs/team_review_and_data_request.md) |
 | Instructions for the next implementation agent | [AGENTS.md](AGENTS.md) |
 | Existing code architecture and evidence boundaries | [Engineering handoff](docs/engineering_handoff.md), [four-wheel guide](docs/four_wheel_dynamics.md), [source profiles](docs/source_vehicle_profiles.md) |
-| Existing research work packages | [R01–R10 roadmap](docs/research/professional_racing/lapsim_development_roadmap.md), [original backlog](docs/research/professional_racing/backlog.json) |
+| Existing research work packages | [R01â€“R10 roadmap](docs/research/professional_racing/lapsim_development_roadmap.md), [original backlog](docs/research/professional_racing/backlog.json) |
 
 This plan refines delivery priorities; it does not erase or relabel the earlier research backlog as implemented. Use E-IDs in commits/issue updates and cross-reference their R-IDs.
 
@@ -181,7 +183,7 @@ The native controller work is also not merely a graphic. Its recorded source inc
 Dependencies: fresh repository inventory. Related: quality issue #12.
 
 1. Fetch all current refs and inspect PR metadata, diffs, comments, check runs and ancestry. Record main and each actual head. Preserve unrelated local changes.
-2. Make an integration branch from **current main**, including this handoff. Integrate #13 → #15 → #17 → #18 with source ancestry retained, or propose the equivalent reviewed combined candidate. Do not reset main to the old baseline.
+2. Make an integration branch from **current main**, including this handoff. Integrate #13 â†’ #15 â†’ #17 â†’ #18 with source ancestry retained, or propose the equivalent reviewed combined candidate. Do not reset main to the old baseline.
 3. Do not merge superseded #14/#16, obsolete preparation #6/#7/#9, or every branch just because it exists. Classify each remaining branch as incorporated, superseded or genuinely outstanding.
 4. Rerun the final candidate's native suite, generated numerical contracts, critical static/security checks, browser interactions, actual browser physics/replay, Windows frozen verification and source-map checks. Inspect failures and skips, not only aggregate green badges.
 5. Use normal PR/branch rules. Never disable checks, change protection or force-push to make an integration pass. Use expected-head checks on merge. Re-run if the tested source changes.
@@ -339,7 +341,7 @@ Separate formatting-only changes from behavior changes. Maintain source-map fres
 | G4: isolated STM32 PIL | E11 real-device evidence and verified bench setup | Host adapter/mock tests only until hardware is available |
 | G5: physical model/controller validation | E12/E13 measured interfaces, timing and independent correlation | Planning only for unavailable measurements |
 
-Within G1–G2, prefer E03/E05 tests early, then bicycle and actuator work in parallel. Do not turn the table into a waterfall that prevents independent tests. A team-release candidate can be labeled basic/synthetic before all later gates complete, provided its capability matrix is accurate.
+Within G1â€“G2, prefer E03/E05 tests early, then bicycle and actuator work in parallel. Do not turn the table into a waterfall that prevents independent tests. A team-release candidate can be labeled basic/synthetic before all later gates complete, provided its capability matrix is accurate.
 
 ## 6. Required completion update
 
