@@ -104,6 +104,63 @@ def test_scenario_rejects_invalid_or_unbounded_work(field, value):
 
 
 @pytest.mark.parametrize(
+    "settle_s,maneuver_s,logging_period_s",
+    [
+        # 2,001 regular exports plus the forced settling boundary.
+        (1.0005, 0.9995, 0.001),
+        # 2,000 regular exports plus both distinct forced boundaries.
+        (1.0005, 0.999, 0.001),
+        # The same 2,002-export overrun with a three-plant-tick log period.
+        (1.0, 1.9995, 0.0015),
+    ],
+)
+def test_sample_budget_rejects_forced_boundaries_beyond_2001(
+    settle_s, maneuver_s, logging_period_s
+):
+    with pytest.raises(ValueError, match="sample budget"):
+        SuspensionScenario(
+            settle_s=settle_s,
+            maneuver_s=maneuver_s,
+            plant_step_s=0.0005,
+            controller_period_s=0.001,
+            logging_period_s=logging_period_s,
+        )
+
+
+@pytest.mark.parametrize(
+    "settle_s,maneuver_s,logging_period_s,settle_tick,final_tick",
+    [
+        # All boundaries lie on the logging grid: 2,001 regular exports.
+        (1.0, 1.0, 0.001, 2000, 4000),
+        # 2,000 regular exports and only a forced final boundary.
+        (1.0, 0.9995, 0.001, 2000, 3999),
+        # 2,000 regular exports and only a forced settling boundary.
+        (1.0, 1.9985, 0.0015, 2000, 5997),
+        # 1,999 regular exports and both distinct forced boundaries.
+        (1.0, 1.9975, 0.0015, 2000, 5995),
+    ],
+)
+def test_exact_2001_sample_budget_accepts_regular_and_forced_boundaries(
+    settle_s, maneuver_s, logging_period_s, settle_tick, final_tick
+):
+    scenario = SuspensionScenario(
+        settle_s=settle_s,
+        maneuver_s=maneuver_s,
+        plant_step_s=0.0005,
+        controller_period_s=0.001,
+        logging_period_s=logging_period_s,
+    )
+    # ClockPlant verifies exported boundary behavior without native physics.
+    result = run_study(scenario, plant_factory=ClockPlant)
+    samples = result["payload"]["samples"]
+    actual_ticks = [round(sample["time_s"] * 2000) for sample in samples]
+    assert len(samples) == result["execution"]["logging_samples"] == 2001
+    assert len(set(actual_ticks)) == 2001
+    assert actual_ticks[0] == 0 and actual_ticks[-1] == final_tick
+    assert settle_tick in actual_ticks
+
+
+@pytest.mark.parametrize(
     "field,value",
     [("braking", True), ("steering", float("nan")), ("driveshaft_torque_nm", 401)],
 )

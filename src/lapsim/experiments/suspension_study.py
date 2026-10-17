@@ -93,7 +93,17 @@ class SuspensionScenario:
                 )
         if (self.settle_s + self.maneuver_s) / self.plant_step_s > 100_000:
             raise ValueError("study exceeds the 100,000 plant-step budget")
-        if (self.settle_s + self.maneuver_s) / self.logging_period_s > 2_000:
+        total_ticks = round((self.settle_s + self.maneuver_s) / self.plant_step_s)
+        settle_ticks = round(self.settle_s / self.plant_step_s)
+        logging_ticks = round(self.logging_period_s / self.plant_step_s)
+        # Count the initial/regular exports and each distinct forced boundary.
+        sample_count = (
+            total_ticks // logging_ticks
+            + 1
+            + int(total_ticks % logging_ticks != 0)
+            + int(settle_ticks % logging_ticks != 0)
+        )
+        if sample_count > 2_001:
             raise ValueError("study exceeds the 2,001 sample budget")
 
 
@@ -805,17 +815,87 @@ def _validate_execution(execution: Any, scenario: SuspensionScenario) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--scenario", choices=("settle", "drive", "steer"), default="drive"
+    defaults = SuspensionScenario()
+    fresh = parser.add_argument_group("fresh study settings")
+    fresh.add_argument(
+        "--scenario",
+        dest="scenario_id",
+        choices=("settle", "drive", "steer"),
+        default=argparse.SUPPRESS,
+        help=f"requested maneuver (default: {defaults.scenario_id})",
     )
-    parser.add_argument("--plant-step", type=float, default=0.0005)
+    fresh.add_argument(
+        "--plant-step",
+        dest="plant_step_s",
+        type=float,
+        default=argparse.SUPPRESS,
+        help=f"plant integration step in seconds (default: {defaults.plant_step_s:g})",
+    )
+    fresh.add_argument(
+        "--settle",
+        dest="settle_s",
+        type=float,
+        default=argparse.SUPPRESS,
+        help=f"gravity settling duration in seconds (default: {defaults.settle_s:g})",
+    )
+    fresh.add_argument(
+        "--maneuver",
+        dest="maneuver_s",
+        type=float,
+        default=argparse.SUPPRESS,
+        help=f"duration after settling in seconds (default: {defaults.maneuver_s:g})",
+    )
+    fresh.add_argument(
+        "--controller-period",
+        dest="controller_period_s",
+        type=float,
+        default=argparse.SUPPRESS,
+        help=f"request hold period in seconds (default: {defaults.controller_period_s:g})",
+    )
+    fresh.add_argument(
+        "--logging-period",
+        dest="logging_period_s",
+        type=float,
+        default=argparse.SUPPRESS,
+        help=f"regular export period in seconds (default: {defaults.logging_period_s:g})",
+    )
+    fresh.add_argument(
+        "--driveshaft-torque",
+        dest="driveshaft_torque_nm",
+        type=float,
+        default=argparse.SUPPRESS,
+        help=f"ramp target request in N m (default: {defaults.driveshaft_torque_nm:g})",
+    )
+    fresh.add_argument(
+        "--steering",
+        type=float,
+        default=argparse.SUPPRESS,
+        help=f"normalized steering ramp target (default: {defaults.steering:g})",
+    )
+    fresh.add_argument(
+        "--settle-braking",
+        dest="settle_braking",
+        type=float,
+        default=argparse.SUPPRESS,
+        help=f"normalized settling brake request (default: {defaults.settle_braking:g})",
+    )
     parser.add_argument("--output", type=Path)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--replay", type=Path)
     mode.add_argument("--inspect", type=Path, help="inspect a saved result without native physics")
-    parser.add_argument("--stop-file", type=Path)
+    parser.add_argument(
+        "--stop-file", type=Path, help="cooperative stop marker for a fresh run or replay"
+    )
     args = parser.parse_args(argv)
     try:
+        scenario_options = {
+            field.name: getattr(args, field.name)
+            for field in fields(SuspensionScenario)
+            if hasattr(args, field.name)
+        }
+        if (args.replay or args.inspect) and scenario_options:
+            saved_mode = "--replay" if args.replay else "--inspect"
+            raise ValueError(f"{saved_mode} cannot be combined with fresh study settings")
         if args.inspect:
             if args.output:
                 raise ValueError("--inspect cannot be combined with --output")
@@ -849,9 +929,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         else:
             record = run_study(
-                SuspensionScenario(
-                    scenario_id=args.scenario, plant_step_s=args.plant_step
-                ),
+                SuspensionScenario(**scenario_options),
                 cancel=cancel,
                 progress=report_progress,
             )
