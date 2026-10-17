@@ -105,6 +105,59 @@ the input reports this saved-record scope as `not_requested`; an empty-viewer
 check alone does not establish packaged saved-record acceptance. This QA option
 does not run native physics or provide board timing evidence.
 
+## Compare two supplied saved studies
+
+The ordinary environment also provides a read-only saved-pair API and CLI:
+
+```powershell
+python -m lapsim.experiments.suspension_compare work/drive.json work/drive-half-step.json --kind plant-step
+python -m lapsim.experiments.suspension_compare work/drive.json work/drive-sparse-log.json --kind logging-period
+```
+
+Each input uses the existing 8 MB validated reader. The selected scenario field
+is the only permitted input difference: recorded model/assets, capabilities,
+implementation hash scope/files, other scenario fields, full command schedule,
+initial observation, frame, units, wheel order and controller description must
+agree. Git commit/dirty claims are shown separately. Missing profile/engine/asset
+claims or an unsupported source scope block numerical comparison. No engine,
+replay, new run, input write or automatic fallback is involved.
+
+`plant-step` reports signed right-minus-left final world-X velocity, COM height
+and four spring-length differences. Each observation's actual accumulated time,
+completed-interval command and computed/applied force values and source clocks
+remain separate; these are not simultaneous force differences. Unrepresentable
+subtraction of finite inputs is an explicit error.
+
+The existing native test's **saved fixture endpoint criterion** is applied only
+to the recorded default drive scenario at 0.0005/0.00025 s, the accepted synthetic
+fixture's complete physical/input/initial-observation claim fingerprint, and a
+current implementation-file match. The finer step is the velocity reference:
+`abs(coarse - fine) <= max(0.01 * abs(fine), 1e-12)`. COM height and each spring
+use only an absolute 0.001 m limit. This is a static calculation on saved claims;
+a pass does not establish positive drive, full native acceptance, convergence,
+physical accuracy or a fresh replay. Other compatible pairs retain their deltas
+and an explicit reason the criterion was not applied, including unavailable
+current source in a frozen environment. The fingerprint contains no Git identity,
+local paths or historical execution measurements and does not authenticate data.
+
+`logging-period` matches **exact stored state timestamps**, with no rounding,
+index alignment, tolerance or interpolation. It lists shared and unmatched
+counts/times, compares all shared recorded observations exactly, and reports
+differing fields and up to five examples with their own force clocks. Time lists
+are capped at 2,003 entries each with an explicit truncation flag; the existing
+scenario budget bounds every supported input to this limit. A sparse record
+without a 6.02 s observation does not acquire one from the denser record.
+Null force origins remain null, and sparse exports do not revalidate dense
+settling metrics. All inspection checks and historical timing/metric claims
+remain distinguished; no performance winner is inferred.
+
+The APIs are `compare_study_records(left, right, kind=...)` and
+`compare_study_files(left_path, right_path, kind=...)`. Incompatible claims return
+a report without numerical results; corrupt/oversized inputs or overflow raise
+an error. The CLI writes only a JSON report to stdout: exit 0 means comparison
+completed, even if its named numerical criterion failed; invalid/incompatible
+inputs exit 1. Existing native record schema and replay source scope are unchanged.
+
 ## Install separately from ordinary startup
 
 Use official micromamba 2.5.0-2 on Windows; its flat package cache avoids the
