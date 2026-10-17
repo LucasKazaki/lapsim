@@ -170,6 +170,16 @@ the outer command took 16.09 s including launcher, imports and export. A
 separate correctness suite was running on another CPU thread during this
 measurement. The implementation hashes are unchanged between these revisions.
 
+The tracked [historical Windows evidence manifest](research/evidence/chrono-win64-20261017.json)
+retains the full scenario, command arguments and exit statuses, timing receipts,
+source and engine identities, result content/receipt IDs, and SHA256 hashes of
+the original output and test-report bytes. Local installation paths are replaced
+by documented role bindings. These measurements precede the repair that moved
+settling acceptance from exported samples to every plant boundary; the recorded
+settling maxima describe the earlier sampling scope and do not verify a later
+revision. The manifest preserves measurement evidence without vendoring engine
+assets or large telemetry logs.
+
 Sources and license: [Chrono evidence register](research/chrono_backend.md).
 No upstream meshes, tire files, binaries or vehicle definitions are vendored;
 the installed dependency supplies them. The project's licensing work is unchanged.
