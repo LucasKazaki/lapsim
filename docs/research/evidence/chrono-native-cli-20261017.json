@@ -3517,5 +3517,152 @@
     },
     "helper_sha256": "1c53a6db198d4a8351a2a9a08029a1a2a23a917e24138aa7a4d5372360f1f5be",
     "scope": "Engine-free normal comparisons and independent seven-file recipe/calculation/full-receipt projections at clean 4bcc match actual installed 112 wheel/sdist IDs; no physics was run in this phase."
+  },
+  "static_map_entrypoints": {
+    "status": "passed",
+    "source": "98f2e9868df84c2c10cdceb754b101241b2bdb3e",
+    "tree": "834c9bc78274d8b71761401a69d6aa8fe8917ea6",
+    "source_clean_before_after": true,
+    "commands": [
+      {
+        "name": "site",
+        "argv": [
+          "{standard_python}",
+          "scripts/check_flowchart_site.py"
+        ],
+        "exit": 0,
+        "stdout": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/site-stdout.txt",
+          "bytes": 88,
+          "sha256": "800812ce537c4f8b0b1a986b8a68edf7df8593b11ed6791743ecb627b3424d00"
+        },
+        "stderr": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/site-stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "inventory",
+        "argv": [
+          "{standard_python}",
+          "docs/simulator_flowchart/generate_inventory.py",
+          "--check"
+        ],
+        "exit": 0,
+        "stdout": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/inventory-stdout.txt",
+          "bytes": 84,
+          "sha256": "93b9b2daae1a222c7cefce904d8d8c003d332954d2df82f39e48b7327faef858"
+        },
+        "stderr": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/inventory-stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "graph",
+        "argv": [
+          "{node_cli}",
+          "scripts/check_flowchart_data.mjs"
+        ],
+        "exit": 0,
+        "stdout": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/graph-stdout.txt",
+          "bytes": 169,
+          "sha256": "b966755291217b055be986e93c4b66f0255373b3eb17af4105c1e358c940523e"
+        },
+        "stderr": {
+          "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/graph-stderr.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "environment": {
+      "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+      "node_version": "v24.19.0",
+      "node_executable_sha256": "3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237",
+      "scope": "Observed ordinary repository Python and Windows Node for these three local static entrypoints; no environment attestation."
+    },
+    "entrypoint_sha256": {
+      "scripts/check_flowchart_site.py": "d17f02a545adbe4d5196fe43ed6d83f16a8300e82dfb5441143c6c8d002a3612",
+      "docs/simulator_flowchart/generate_inventory.py": "28a3efc7aeab88c8a2d284e74133829d3aa4bce0f819c93290bb14fe1fb32295",
+      "scripts/check_flowchart_data.mjs": "154669c3e0496b170dd572f1dff420d1be655a5c641aa9a45408c8db9ad89c8e"
+    },
+    "catalog": {
+      "path": "docs/simulator_flowchart/data/source-inventory.js",
+      "sha256": "da03b978f9519c73e3b6e59fc39661dbd60acc3c38da9536bd003c7863a2d88b",
+      "bytes_mtime_preserved": true
+    },
+    "execution": {
+      "argv": [
+        "{standard_python}",
+        "{repository}/work/detailed-study/verify_cli_static_map.py",
+        "98f2e9868df84c2c10cdceb754b101241b2bdb3e"
+      ],
+      "cwd": "{repository}",
+      "exit": 0,
+      "started_utc": "2026-10-17T07:47:16.978717-04:00",
+      "finished_utc": "2026-10-17T07:47:19.56942-04:00",
+      "outer_wall_time_s": 2.590732399985427,
+      "stage_wall_time_s": 2.534933599992655,
+      "maximum_wall_time_s": 240,
+      "required_preflight_floors_gib": {
+        "physical_gib": 10,
+        "commit_gib": 8.5
+      },
+      "preflight_headroom_gib": {
+        "physical_gib": 11.623218536376953,
+        "commit_gib": 16.321399688720703
+      },
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 11.500896453857422,
+        "commit_gib": 16.235252380371094
+      },
+      "job_metrics_before_final_close": {
+        "peak_single_process_committed_bytes": 150585344,
+        "peak_job_committed_bytes": 170708992,
+        "total_processes": 18,
+        "active_processes": 0,
+        "cpu_time_s": 2.171875
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a"
+    },
+    "raw": {
+      "summary": {
+        "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/summary.json",
+        "bytes": 2352,
+        "sha256": "e8fbb039cb2f1beb050575e75bb0b57b4ccaf58df14a8dbc93d56e51d2a6d028"
+      },
+      "commands": {
+        "path": "{repository}/work/detailed-study/cli-static-map-98f2e98/commands.json",
+        "bytes": 1222,
+        "sha256": "4b468df07c91a78caaa7078dcf5a4768cd00cfc0b1c278453230d3f3d970be72"
+      },
+      "guard": {
+        "path": "{repository}/work/detailed-study/cli-static-map-98f2e98-job/summary.json",
+        "bytes": 2398,
+        "sha256": "37857485313d5199fe804ea0bcfa1e936f7fd4edcf252b44990c0a27091884e8"
+      },
+      "preflight": {
+        "path": "{repository}/work/detailed-study/cli-static-map-98f2e98-preflight.json",
+        "bytes": 925,
+        "sha256": "0ffebb9c0054d5bf13188055488a6c12df3e4a4fe7fdec618ec648e4a7ad2ece"
+      },
+      "helper": {
+        "path": "{repository}/work/detailed-study/verify_cli_static_map.py",
+        "bytes": 2628,
+        "sha256": "c56a154e68f389c5925d5a6faaef32a7af3cc4aef409f63fbc6ac98c4d1e65d8"
+      }
+    },
+    "scope": "Local HTML/asset structure, generated Python-source inventory and assembled JavaScript graph checks; no browser simulation, build or publication."
   }
 }
