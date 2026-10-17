@@ -90,6 +90,11 @@ reference checks are development qualification, separate from ordinary startup.
 Only synthetic results, checksums and logs are uploaded by CI; wheel/sdist/EXE
 packages are not published by that workflow.
 
+The optional Chrono::Vehicle suspension study uses a separate pinned native
+Windows/Python 3.12 environment. Follow the
+[native installation and acceptance commands](chrono_suspension_study.md#install-separately-from-ordinary-startup);
+ordinary setup, desktop startup and the portable EXE do not install this engine.
+
 Public release remains deferred. Internal packages currently retain the existing
 repository GNSS/TIR resources; their redistribution permissions and the project
 license remain publication gates. The hosted site is a separate older build.

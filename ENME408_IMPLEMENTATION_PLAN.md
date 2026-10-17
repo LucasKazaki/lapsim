@@ -88,11 +88,17 @@ cases passed, with four actual Tk layouts reviewed. Initial focus and missing
 radio-arrow failures remain retained in the earlier focused receipt. A later
 source audit at `12136d3` retained one new optional-JSON type diagnostic; the
 explicit non-None capture/guard repair passed the same source checks at
-`86ba320`, without changing tests or the genuine-record helper. That
-evidence covers the source workflow; installed/frozen normal-workflow and
-broader acceptance remain separate gates recorded in the reviewed change and
-canonical issue. No native run/replay path, paired cursor, model or QA flag is
-added.
+`86ba320`, without changing tests or the genuine-record helper. Normal PR #101
+is merged at `6312e8b`; its complete tree equals accepted `c816018`. The local
+copied-EXE saved-pair workflow and postmerge CLI/identity checks passed.
+Installed/frozen and broader gates retain their separately recorded scopes in
+the reviewed change and canonical issue. No native run/replay path, paired
+cursor, model or QA flag is added.
+
+The next small E16 increment adds a seventh native acceptance scenario and a
+twelfth check for settling/final exports between controller and logging ticks.
+The actual noncoincident-clock experiment and separate normal CLI replay passed
+at `6312e8b`; the new candidate still requires its own full 12-check native run.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity
