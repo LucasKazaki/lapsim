@@ -758,10 +758,12 @@ class NativeRecordViewer:
             self._set_comparison_text(text)
 
     def inspect_comparison(self):
+        comparison_json = self.comparison_json
         if (
             self.closed
             or self.comparison_window is None
             or self.comparison_report is None
+            or comparison_json is None
         ):
             return None
         self._clear_comparison_details()
@@ -783,7 +785,7 @@ class NativeRecordViewer:
         scroll.pack(side="right", fill="y")
         text.configure(yscrollcommand=scroll.set)
         text.pack(fill="both", expand=True)
-        text.insert("1.0", self.comparison_json)
+        text.insert("1.0", comparison_json)
         text.configure(state="disabled")
         return window
 
