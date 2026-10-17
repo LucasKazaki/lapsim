@@ -72,6 +72,14 @@ frame or units; **Open native record…** remains available to load another file
 The reader and inspector still accept opaque claims for archival inspection.
 This presentation check performs no conversion or physical validation.
 
+The [frame/unit presentation receipt](research/evidence/chrono-native-viewer-claims-20261017.json)
+records local acceptance at `caa51fa`: 86 focused checks and a fresh 98-module
+Windows sequence passed, with one expected POSIX-only skip and one previously
+observed Tcl lifetime warning. It retains the earlier failed fixture run and
+separates source-window, installed-package and copied-executable checks. The
+portable ZIP contains an older test report; that attachment is outside current
+full-suite evidence and its selection remains a separate packaging defect.
+
 The four panels show the recorded COM path and wheel-center points, COM height,
 four spring lengths, and applied or computed vertical tire forces. The points
 are not suspension hardpoints or wheel orientations; spring length is not wheel
