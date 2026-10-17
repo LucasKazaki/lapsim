@@ -246,11 +246,17 @@ def main() -> int:
     args = parser.parse_args()
     catalog = build_catalog()
     content = serialize(catalog)
+    try:
+        existing = TARGET.read_text(encoding="utf-8")
+    except (FileNotFoundError, UnicodeError):
+        existing = None
     if args.check:
-        if not TARGET.exists() or TARGET.read_text(encoding="utf-8") != content:
+        if existing != content:
             print("Source inventory is stale. Run generate_inventory.py after source edits.")
             return 1
-    else:
+    elif existing != content:
+        # Universal-newline reads accept current LF/CRLF checkout spelling.
+        # Preserve its exact bytes and mtime when regeneration changes nothing.
         TARGET.write_text(content, encoding="utf-8", newline="\n")
     print(json.dumps(catalog["counts"], sort_keys=True))
     return 0
