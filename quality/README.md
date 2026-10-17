@@ -37,6 +37,15 @@ python quality/run_web_runtime.py
 
 Tool installation and platform requirements are specified in `.github/workflows/quality-audit.yml`. On Windows use `python scripts/build_windows.py` for the complete build-and-test path.
 
+The optional Chrono::Vehicle checks in `quality/test_chrono_native.py` use the
+separate pinned Windows/Python 3.12 environment in the
+[native suspension guide](../docs/chrono_suspension_study.md). This suite declares
+12 checks and saves seven synthetic scenarios, including settling/final exports
+between controller and logging ticks. It checks held requests and separate force
+origins without adding a calibrated-vehicle or achieved-torque criterion. The
+historical 11-check receipts keep their original source/count scope; a standalone
+clock experiment and replay do not establish a fresh candidate's full-suite pass.
+
 ## Primary-source references
 
 - Ruff: https://docs.astral.sh/ruff/

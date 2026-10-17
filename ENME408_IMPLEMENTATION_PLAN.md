@@ -88,11 +88,31 @@ cases passed, with four actual Tk layouts reviewed. Initial focus and missing
 radio-arrow failures remain retained in the earlier focused receipt. A later
 source audit at `12136d3` retained one new optional-JSON type diagnostic; the
 explicit non-None capture/guard repair passed the same source checks at
-`86ba320`, without changing tests or the genuine-record helper. That
-evidence covers the source workflow; installed/frozen normal-workflow and
-broader acceptance remain separate gates recorded in the reviewed change and
-canonical issue. No native run/replay path, paired cursor, model or QA flag is
-added.
+`86ba320`, without changing tests or the genuine-record helper. Normal PR #101
+is merged at `6312e8b`; its complete tree equals accepted `c816018`. The local
+copied-EXE saved-pair workflow and postmerge CLI/identity checks passed.
+Installed/frozen and broader gates retain their separately recorded scopes in
+the reviewed change and canonical issue. No native run/replay path, paired
+cursor, model or QA flag is added.
+
+The E16 native acceptance suite now includes a seventh scenario and a
+twelfth check for settling/final exports between controller and logging ticks.
+The actual noncoincident-clock experiment and separate normal CLI replay passed
+at `6312e8b`. The maintained suite subsequently passed at clean source
+`6a4b7da625b8cffc62c55a6fe764b2926286e53e` in the pinned native environment:
+
+```powershell
+python -m pytest quality/test_chrono_native.py -q --junitxml=work/detailed-study/chrono-native-6a4b7da.xml
+```
+
+All 12 checks passed, with zero failures, errors or skips: 71.82 s pytest time
+and 72.69 s outer guarded-command time. The XML is
+`work/detailed-study/chrono-native-6a4b7da.xml`, SHA-256
+`bf8b8cadef71a9dcefdff01c2c542693e7996a7f8fb925e864da26a850cacea3`.
+The [durable verification manifest](docs/research/evidence/chrono-noncoincident-clocks-20261017.json)
+retains measured cases, identities, commands and raw-file hashes. The ignored
+`work/detailed-study/native-full-6a4b7da-independent-proof.json` remains a local
+raw-evidence binding.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity

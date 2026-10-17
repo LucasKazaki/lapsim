@@ -330,6 +330,13 @@ Exported `samples` remain on the logging grid plus the explicit settling/final
 samples. These are discrete numerical fixture criteria, not continuous-time
 guarantees or calibration tolerances.
 
+The optional native acceptance suite declares 12 checks over seven saved
+synthetic scenarios. Its noncoincident-clock case uses 6.003 s settling,
+0.101 s maneuver, 0.0005 s plant steps, 0.01 s controller holds and 0.025 s
+logging. Settling and final samples are explicit extra exports; integration
+still uses whole, equal plant steps. The settling command remains held until
+the next controller event, and each sample describes its completed interval.
+
 Ctrl+C cancels a run. With `--stop-file work/detailed-study/STOP`, creating that
 file also cancels at a plant-tick boundary. No completed record is returned or
 published after cancellation, and the native owner is closed. Existing output
@@ -480,3 +487,42 @@ retains exact source/configuration identities, commands and exits, receipts,
 result IDs/hashes, all six comparison summaries, and the native test-report
 hash. It records this source revision rather than inferring acceptance of later
 implementation changes.
+
+## Noncoincident-clock experiment — 17 October 2026
+
+At clean source `6312e8bbc098f6b0995351da4e64af87e59e6a35`, the actual native
+case above passed an independent integer/Fraction clock oracle. An external
+observer recorded 12,208 equal 0.0005 s advances and 48,832 matching tire-step
+reads, with no shortened final step. The record contains 611 controller events,
+247 exports and 1,001 settling-window observations. Its forced exports are at
+6.003 s and 6.104 s, indices 241 and 246; these do not follow rounded logging
+indices. The settling request remains held at 6.003 s; the first maneuver event
+at 6.01 s requests 0.56 N m, and the final interval retains 7.76 N m. These are
+requested driveshaft loads, not achieved wheel or brake reactions.
+
+A separate normal CLI replay passed the existing source/full-payload check;
+the fresh payload and content ID were exactly equal to the instrumented record.
+Execution receipts differ because they include timing. This experiment adds
+no physical model, motion criterion, calibration or performance claim. The
+subsequent maintained-suite result has its own source and scope below.
+
+At clean source `6a4b7da625b8cffc62c55a6fe764b2926286e53e`, the pinned native
+environment ran:
+
+```powershell
+python -m pytest quality/test_chrono_native.py -q --junitxml=work/detailed-study/chrono-native-6a4b7da.xml
+```
+
+All 12 checks passed with zero failures, errors or skips in 71.82 s pytest
+time and 72.69 s outer guarded-command time. The XML at
+`work/detailed-study/chrono-native-6a4b7da.xml` has SHA-256
+`bf8b8cadef71a9dcefdff01c2c542693e7996a7f8fb925e864da26a850cacea3`;
+the [durable verification manifest](research/evidence/chrono-noncoincident-clocks-20261017.json)
+retains measured cases, identities, commands and raw-file hashes. The ignored
+`work/detailed-study/native-full-6a4b7da-independent-proof.json` remains a local
+raw-evidence binding. A separate
+normal CLI replay of the new fixture passed in 7.71 s outer time, preserved
+the input bytes and modification time, and reproduced the entire payload and
+content ID. All six original scenarios retained exactly equal commands, samples
+and metrics against the prior six-fixture run. These results retain their own
+source/receipt identities and do not expand the historical 11-check receipts.

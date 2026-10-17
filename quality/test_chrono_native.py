@@ -5,6 +5,7 @@ No skips, mocks, rendering, or alternative physics backend are used here.
 
 import json
 from dataclasses import asdict, replace
+from fractions import Fraction
 from pathlib import Path
 from uuid import uuid4
 
@@ -36,6 +37,15 @@ def native_records():
         "drive_sparse_log": SuspensionScenario(logging_period_s=0.05),
         "steer_left": SuspensionScenario(scenario_id="steer"),
         "steer_right": SuspensionScenario(scenario_id="steer", steering=-0.06),
+        "drive_noncoincident_clocks": SuspensionScenario(
+            settle_s=6.003,
+            maneuver_s=0.101,
+            plant_step_s=0.0005,
+            controller_period_s=0.01,
+            logging_period_s=0.025,
+            driveshaft_torque_nm=40.0,
+            settle_braking=0.2,
+        ),
     }
     for name, scenario in cases.items():
         if (Path("work/detailed-study/STOP")).exists():
@@ -130,6 +140,81 @@ def test_force_and_tire_kinematics_timestamps_expose_cached_coupling(native_reco
             sample["tire_kinematics_source_time_s"]
             == sample["tire_force_source_time_s"]
         )
+
+
+def test_noncoincident_exports_preserve_held_commands_and_force_clocks(native_records):
+    record = native_records["drive_noncoincident_clocks"]
+    payload, execution = record["payload"], record["execution"]
+    commands, samples = payload["commands"], payload["samples"]
+    # Independent rational/integer schedule, without runner clock/command helpers.
+    step, settle = Fraction("0.0005"), Fraction("6.003")
+    command_ticks = range(0, 12208, 20)
+    sample_ticks = sorted(set(range(0, 12209, 50)) | {12006, 12208})
+    assert execution["plant_steps"] == 12208
+    assert len(commands) == execution["controller_calls"] == 611
+    assert len(samples) == execution["logging_samples"] == 247
+    assert execution["simulated_time_s"] == pytest.approx(6.104, rel=0, abs=1e-9)
+    assert [event["time_s"] for event in commands] == pytest.approx(
+        [float(tick * step) for tick in command_ticks], rel=0, abs=1e-9
+    )
+    assert [sample["time_s"] for sample in samples] == pytest.approx(
+        [float(tick * step) for tick in sample_ticks], rel=0, abs=1e-9
+    )
+    assert [samples[index]["time_s"] for index in (241, 246)] == pytest.approx(
+        [6.003, 6.104], rel=0, abs=1e-9
+    )
+
+    def expected_request(tick):
+        if tick * step < settle:
+            return {"driveshaft_torque_nm": 0.0, "steering": 0.0, "braking": 0.2}
+        ramp = min(Fraction(1), (tick * step - settle) / Fraction("0.5"))
+        return {
+            "driveshaft_torque_nm": float(40 * ramp),
+            "steering": 0.0,
+            "braking": 0.0,
+        }
+
+    for event, tick in zip(commands, command_ticks, strict=True):
+        assert event["request"] == pytest.approx(
+            expected_request(tick), rel=0, abs=1e-10
+        )
+    for sample, tick in zip(samples, sample_ticks, strict=True):
+        # At 6.10 s the sample retains 6.96 Nm; the new event requests 7.76 Nm.
+        # These are held requests, not achieved wheel or brake reaction torques.
+        prior = (
+            dict.fromkeys(("driveshaft_torque_nm", "steering", "braking"), 0.0)
+            if tick == 0
+            else expected_request(((tick - 1) // 20) * 20)
+        )
+        assert sample["command"] == pytest.approx(prior, rel=0, abs=1e-10)
+        for channel, age_ticks in (
+            ("tire_force_source_time_s", 1),
+            ("tire_kinematics_source_time_s", 1),
+            ("applied_tire_force_source_time_s", 2),
+        ):
+            if tick < age_ticks:
+                assert sample[channel] is None
+            else:
+                assert sample[channel] == pytest.approx(
+                    float((tick - age_ticks) * step), rel=0, abs=1e-9
+                )
+        assert sample["applied_tire_force_geometry_time_s"] == pytest.approx(
+            float(max(0, tick - 1) * step), rel=0, abs=1e-9
+        )
+    metrics = payload["metrics"]
+    assert metrics["settle_samples"] == 1001
+    assert metrics["settle_window_s"] == pytest.approx([5.503, 6.003], rel=0, abs=1e-9)
+    sampling = metrics["settle_sampling"]
+    assert [sampling[key] for key in ("period_s", "first_time_s", "last_time_s")] == (
+        pytest.approx([0.0005, 5.503, 6.003], rel=0, abs=1e-9)
+    )
+    assert sampling["force_channel"] == "applied_wheel_force_world_n"
+    assert metrics["settle_acceptance"] == {
+        "passed": True,
+        "force_relative_limit": 0.01,
+        "left_right_relative_limit": 0.01,
+        "vertical_speed_limit_mps": 0.01,
+    }
 
 
 def test_reset_is_repeatable_and_observe_does_not_advance():
