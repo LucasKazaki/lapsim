@@ -1,0 +1,381 @@
+{
+  "schema": "lapsim.saved-native-pair-viewer-json-guard-verification.v1",
+  "date_local": "2026-10-17 America/New_York",
+  "scope": "Focused actual source Tk and direct-JSON saved-record normal-widget workflow only. No fresh physics/replay, installed/frozen workflow, full suite, WSL/security audit, build, browser, authenticity/calibration or historical timing validation is asserted.",
+  "tested_source_commit": "86ba320c73245090e416f5e7f7c910c9564982c2",
+  "tested_source_tree": "65bcc25f09584ece8dc43ce8edd3344605b0b90c",
+  "source_hash_scope": "Listed source/test Git blob bytes; working CRLF normalized to LF. A subsequent documentation/evidence-only commit may change Git identity without changing these tested files.",
+  "source_files_sha256": {
+    "src/lapsim/ui/native_record_viewer.py": "f535ddc7f250660f79cd58a14e9f25be240bee517ec2212c47e423ddec4eef31",
+    "tests/test_native_comparison_presentation.py": "256b23359a7d5b044e3cc214b28f0e9f89e9a5e2710c6c83932a9fd36cefc463",
+    "tests/test_native_comparison_viewer.py": "ff16877d7662f0443262652840aa4af3c78e684834eb3209f971e444018f39ff",
+    "src/lapsim/dynamics/native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+    "src/lapsim/dynamics/chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+    "src/lapsim/experiments/suspension_study.py": "66574226863b6c05f0fe130d121cc5ee89ff3086305a60ffbd1b9fd3c8b0581b",
+    "src/lapsim/experiments/suspension_compare.py": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7",
+    "src/lapsim/desktop.py": "de97d578cc6a93bfd7e864790af845e5965e264d5f19fc1729dc6c5b980feed7",
+    "src/lapsim/ui/dynamics_lab.py": "77935c4b8c621697158ad34590de77ecfd060e321c05e950112a9b225180cb45",
+    "docs/simulator_flowchart/data/source-inventory.js": "c0f8a4e4d032e577e36681b660374bbd34e84aef8aa116c62f9a9374fc5e9ae5"
+  },
+  "retained_static_regression": {
+    "source_commit": "12136d3f473f3c85512884e503601d6387256ee6",
+    "source_tree": "fb72d5bf42ba3b4503a761a5e9e5f80d53489e7d",
+    "source_audit_exit": 1,
+    "baseline_errors_warnings": [
+      241,
+      48
+    ],
+    "observed_errors_warnings": [
+      242,
+      48
+    ],
+    "new_type_locations": [
+      {
+        "file": "src/lapsim/ui/native_record_viewer.py",
+        "line": 786,
+        "column": 28,
+        "rule": "reportArgumentType",
+        "message": "Argument of type \"Unknown | None\" cannot be assigned to parameter \"chars\" of type \"str\" in function \"insert\"\n\u00a0\u00a0Type \"Unknown | None\" is not assignable to type \"str\"\n\u00a0\u00a0\u00a0\u00a0\"None\" is not assignable to \"str\""
+      }
+    ],
+    "tool_versions": [
+      "pyright==1.1.414",
+      "pytest==9.1.1",
+      "ruff==0.17.0",
+      "semgrep==1.180.0"
+    ],
+    "retained_peer_artifact_hashes": {
+      "wsl-static/new-type-findings.json": "6ec699fc09fd9e115c3d79fbdd0b816957a260d6c8371fe23a3665c2d4e40a4d",
+      "evidence-sha256.json": "af1ca2af43c18b0423cef3bcb70a022382d08dbd719c6912db45570ff4dda2a8",
+      "wsl-gate-failure-summary.json": "4d25f6c39bc106238e3f122c5797178c39ccc83528566cdb6a56d92de87e541b"
+    },
+    "repair": "Capture comparison_json locally, return explicitly if None before constructing Details, insert captured non-None text. No suppression, empty-string fallback or new mirrored guard test.",
+    "repair_scope": "Only native_record_viewer.py and generated source-inventory changed at repair commit. Existing tests/helper unchanged. Full static/security/POSIX audit was not rerun by this focused source receipt."
+  },
+  "final_focused_source_gate": {
+    "exit_code": 0,
+    "source_before_after": {
+      "commit": "86ba320c73245090e416f5e7f7c910c9564982c2",
+      "tree": "65bcc25f09584ece8dc43ce8edd3344605b0b90c",
+      "status_porcelain": ""
+    },
+    "outer_guard_wall_s": 43.95423910001409,
+    "minimum_headroom_gib": {
+      "physical_gib": 12.020301818847656,
+      "commit_gib": 14.479938507080078
+    },
+    "kernel_job_measures": {
+      "peak_single_process_committed_bytes": 240041984,
+      "peak_job_committed_bytes": 250724352,
+      "total_processes": 14,
+      "active_processes": 0,
+      "cpu_time_s": 40.46875
+    },
+    "guard_summary_sha256": "9108c6e124bd47bebfe6cbe5fbf20e3327b5a6d00efa9f100ae6ae6ea6ff999b",
+    "command_receipt_sha256": "e3f899eba9693f964dcbced5d86bae42e07c260b075bad85dbac2ea9c91e5cd0",
+    "counts": {
+      "tests": 154,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "module_case_counts": {
+      "tests.test_native_comparison_viewer": 14,
+      "tests.test_native_record_viewer": 23,
+      "tests.test_suspension_inspection": 36,
+      "tests.test_dynamics_lab": 5,
+      "tests.test_native_comparison_presentation": 25,
+      "tests.test_suspension_compare": 32,
+      "tests.test_suspension_compare_provenance": 19
+    },
+    "pytest_arguments": [
+      "tests/test_native_comparison_viewer.py",
+      "tests/test_native_record_viewer.py",
+      "tests/test_suspension_inspection.py",
+      "tests/test_dynamics_lab.py",
+      "tests/test_native_comparison_presentation.py",
+      "tests/test_suspension_compare.py",
+      "tests/test_suspension_compare_provenance.py",
+      "-q",
+      "--tb=short",
+      "--junitxml=work/detailed-study/pair-tk-86ba320-job/focused.xml"
+    ],
+    "xml_sha256": "343a0338255d8c0db8cd356c9b06693233f37520152afcd8fd65818dd973b77d",
+    "child_process_measures": {
+      "wall_time_s": 43.24272929999279,
+      "process_cpu_s": 40.234375,
+      "process_lifetime_peak_working_set_bytes": 237281280
+    }
+  },
+  "genuine_source_workflow": {
+    "exit_code": 0,
+    "source_before_after": {
+      "commit": "86ba320c73245090e416f5e7f7c910c9564982c2",
+      "tree": "65bcc25f09584ece8dc43ce8edd3344605b0b90c",
+      "status_porcelain": ""
+    },
+    "outer_guard_wall_s": 14.926574300014181,
+    "minimum_headroom_gib": {
+      "physical_gib": 12.118064880371094,
+      "commit_gib": 15.299201965332031
+    },
+    "kernel_job_measures": {
+      "peak_single_process_committed_bytes": 188555264,
+      "peak_job_committed_bytes": 189411328,
+      "total_processes": 2,
+      "active_processes": 0,
+      "cpu_time_s": 12.59375
+    },
+    "guard_summary_sha256": "5b99121af45f7163824cee08b3ee31c84cd90711629c2425a02521e2c8f3483f",
+    "command_receipt_sha256": "6201f0cdb7bd4c22288a1db18a7494f76c11a9279493707f4cbcc83e1f56ebf0",
+    "child_process_measures": {
+      "wall_time_s": 13.247760099999141,
+      "process_cpu_s": 12.4375,
+      "process_lifetime_peak_working_set_bytes": 187502592
+    },
+    "summary_sha256": "33475d35092d67114e10c4006c1cc962c9ffa6ba3ab208c9d9d07f288f308d63",
+    "helper": {
+      "path_role": "external standalone verify_pair_desktop.py",
+      "sha256": "07004474adb3531f74a8c2c49432f4526e972fd202728b786ed0bfd0382b8e3d",
+      "arguments": [
+        "--output",
+        "{unique_directory}",
+        "--drive",
+        "{drive}",
+        "--half",
+        "{half}",
+        "--sparse",
+        "{sparse}"
+      ],
+      "optional_installed_contract": "--require-installed requires loaded viewer/comparison/study under sys.prefix; available for later installed checks, not used in this source receipt.",
+      "dependencies": "stdlib, lapsim, Pillow; no repo test-module/oracle path dependency"
+    },
+    "status": "passed",
+    "cases": [
+      {
+        "case": "plant-step",
+        "left": "drive",
+        "right": "half",
+        "report_id": "57ecc0856398b0af9f17b6651bb539accdbe8f0fd668efb62e35ebe351004815",
+        "receipt_id": "574c88377ea35ca477ef19e413db28ac8c1cec3fd2291c8647b41b920360e494",
+        "recipe_status": "complete",
+        "passed": true
+      },
+      {
+        "case": "plant-step",
+        "left": "half",
+        "right": "drive",
+        "report_id": "f9982122361a517c4eba5d4654a419d23a4725908e37d528a98ea2629abbc812",
+        "receipt_id": "150578ccddc531c3b3df2bfa39996e518b60e3e7343201bc32adac5c4d0c7a64",
+        "recipe_status": "complete",
+        "passed": true
+      },
+      {
+        "case": "logging-period",
+        "left": "drive",
+        "right": "sparse",
+        "report_id": "eaeb03dcd35f6467fd4c8401ee0f14a8eddf080a11030e676ef6b96c9784c154",
+        "receipt_id": "4782834ee344b83e08d3552a1fea9d390a948f9cbb0efb79b867b06b2b019af1",
+        "recipe_status": "complete",
+        "passed": true
+      },
+      {
+        "case": "logging-period",
+        "left": "sparse",
+        "right": "drive",
+        "report_id": "9e36aecba64886cda0dc92caa9b429a088c02e4e9e910b9eb38f99ed1a2d660f",
+        "receipt_id": "da01a63c53185a880c81a958e218b7ce6f4ea4a56594e2d0249ae113b21cae15",
+        "recipe_status": "complete",
+        "passed": true
+      },
+      {
+        "case": "normal chooser Cancel preserves complete pair and primary selection",
+        "passed": true
+      },
+      {
+        "case": "sparse exact selection; no fabricated6.02",
+        "sample_index": 121,
+        "actual_time_s": 6.0499999999993666,
+        "passed": true
+      },
+      {
+        "case": "incompatible explicit kind",
+        "passed": true
+      },
+      {
+        "case": "source unavailable/incomplete recipe; no borrowed hashes",
+        "passed": true
+      },
+      {
+        "case": "invalid second input clears prior pair only",
+        "passed": true
+      },
+      {
+        "case": "oversized second input clears prior pair only",
+        "passed": true
+      },
+      {
+        "case": "explicit derived finite-velocity subtraction overflow; not native evidence",
+        "passed": true
+      },
+      {
+        "case": "logging-period",
+        "left": "drive",
+        "right": "sparse",
+        "report_id": "eaeb03dcd35f6467fd4c8401ee0f14a8eddf080a11030e676ef6b96c9784c154",
+        "receipt_id": "4782834ee344b83e08d3552a1fea9d390a948f9cbb0efb79b867b06b2b019af1",
+        "recipe_status": "complete",
+        "passed": true
+      },
+      {
+        "case": "delayed close discards publication, releases owner, recovers without moving primary cursor",
+        "passed": true
+      }
+    ],
+    "normal_file_picker_callback_calls": 29,
+    "picker_scope": "Normal open/compare/radio/chooser widget commands with explicit test-only file-dialog responses; no production QA flags.",
+    "input_records": {
+      "drive": {
+        "sha256": "97bd9f009b14bd877bbd76bced188090db615e7525afb72131b352b801cc22dc",
+        "mtime_ns": 1792214901063786500,
+        "content_id": "0bef273b667c6c98395323b0d05d6be3152b70f311b791b5c1adab28365c1b8a",
+        "receipt_id": "90e0259c25647c3b67b9abe098f70fa10bb5e370b122064a5340dc7ef07b6a3c",
+        "sample_count": 401,
+        "filename": "drive.json"
+      },
+      "half": {
+        "sha256": "c7d3a5b8e9eaae39670b9797d5126571acc94967b74e3776f1428bdaa0bbbcdf",
+        "mtime_ns": 1792214916557676200,
+        "content_id": "f50958e837c97ca3dc8d348779f3770684090f8d69bf9865225c4780f0c52bb6",
+        "receipt_id": "7700282f6de8c453126c0c409fed4bfcb51c27cf02623336676aab28c3fd7a11",
+        "sample_count": 401,
+        "filename": "drive_half_step.json"
+      },
+      "sparse": {
+        "sha256": "6b93d82332039f8825d106f49b2b814a8b5e7952df6869d7eb8774d24964cea4",
+        "mtime_ns": 1792214924402184900,
+        "content_id": "bc859b05c0a3be20761b0213433778021730f339852b75f279a60c6da15a58d9",
+        "receipt_id": "60c3aec0c40152793c37eb0bb75fe3322233e4032f66218ed617f58735469a07",
+        "sample_count": 161,
+        "filename": "drive_sparse_log.json"
+      }
+    },
+    "input_preservation": {
+      "drive": {
+        "bytes_sha256_unchanged": true,
+        "mtime_unchanged": true
+      },
+      "half": {
+        "bytes_sha256_unchanged": true,
+        "mtime_unchanged": true
+      },
+      "sparse": {
+        "bytes_sha256_unchanged": true,
+        "mtime_unchanged": true
+      }
+    },
+    "callback_errors": [],
+    "blocked_call_counts": {
+      "engine_imports": 0,
+      "forbidden_calls": 0
+    },
+    "logging_oracle": {
+      "shared": 81,
+      "drive_unmatched": 320,
+      "sparse_unmatched": 80,
+      "different_shared_observations": 0,
+      "sparse_has_6_02_s_sample": false,
+      "sparse_first_postsettle_time_s": 6.0499999999993666,
+      "policy": "Exact direct-JSON timestamp sets and complete observations, independently reversed roles; no index rounding/interpolation. Initial null origins and distinct endpoint force/geometry clocks retained in Details."
+    },
+    "rendered_and_interaction_checks": "All six endpoint rows/units/Right-minus-Left values, filenames/content prefixes, ordered unmatched counts, full read-only JSON/IDs, Cancel, unavailable/incompatible/error cases, delayed close/recovery, Details-only system close, arrows/Tab/Shift-Tab, Escape and system close. HWND PID checked against current process immediately before native close/capture.",
+    "derived_error_fixture_scope": "Only ignored test-output copies alter final velocity for finite-subtraction overflow; malformed/oversized files are explicit error fixtures, not newly simulated outputs.",
+    "visual_review": {
+      "source_commit": "86ba320c73245090e416f5e7f7c910c9564982c2",
+      "source_tree": "65bcc25f09584ece8dc43ce8edd3344605b0b90c",
+      "viewed_by": "author",
+      "scope": "All four new owned-window captures opened and visually inspected: six-row table, labels and controls readable; no clipping. Lower scope text scrolls at minimum size. No screen-reader or installed-runtime certification.",
+      "screenshots": [
+        {
+          "file": "pair-860x680-light.png",
+          "sha256": "2ae3909d06714343fba044c071227fa49e1cbc25d763932a678f4c3f5bb06f57",
+          "pair_size": "860x680",
+          "parent_size": "1180x840",
+          "dark": false,
+          "capture": "Pillow owned Tk wm_frame HWND only",
+          "report_id": "57ecc0856398b0af9f17b6651bb539accdbe8f0fd668efb62e35ebe351004815"
+        },
+        {
+          "file": "pair-720x520-light.png",
+          "sha256": "324ca4378211163ad09e865fa8556801776b8ce48a3cc6908497efb1cdb8bc12",
+          "pair_size": "720x520",
+          "parent_size": "960x720",
+          "dark": false,
+          "capture": "Pillow owned Tk wm_frame HWND only",
+          "report_id": "57ecc0856398b0af9f17b6651bb539accdbe8f0fd668efb62e35ebe351004815"
+        },
+        {
+          "file": "pair-860x680-dark.png",
+          "sha256": "2fb0d78b89e1b6f4af8753fb737cab22d47d9b96224a3b6f897590ab84ecce29",
+          "pair_size": "860x680",
+          "parent_size": "1180x840",
+          "dark": true,
+          "capture": "Pillow owned Tk wm_frame HWND only",
+          "report_id": "57ecc0856398b0af9f17b6651bb539accdbe8f0fd668efb62e35ebe351004815"
+        },
+        {
+          "file": "pair-720x520-dark.png",
+          "sha256": "bf6d045de4c0f071c8b69c1088c8a247b8bc293c8c716cd322356e3ee9e3a0bb",
+          "pair_size": "720x520",
+          "parent_size": "960x720",
+          "dark": true,
+          "capture": "Pillow owned Tk wm_frame HWND only",
+          "report_id": "57ecc0856398b0af9f17b6651bb539accdbe8f0fd668efb62e35ebe351004815"
+        }
+      ]
+    }
+  },
+  "guards_and_environment": {
+    "ownership": "Kernel unnamed Windows job; CREATE_SUSPENDED, assign owned handle before resume, KILL_ON_JOB_CLOSE. No PID ancestry adoption/unrelated termination.",
+    "authoritative_stop_role": "primary checkout/work/detailed-study/STOP",
+    "preflight_floors_gib": {
+      "physical_gib": 10,
+      "commit_gib": 8.5
+    },
+    "running_floors_gib": {
+      "physical_gib": 8,
+      "commit_gib": 7
+    },
+    "maximum_job_s": 180,
+    "sample_period_s": 0.1,
+    "environment": {
+      "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "thread_pools": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1"
+      }
+    },
+    "metric_scope": "Process working-set lifetime peak differs from kernel job peak committed memory. Outer time includes launch/source checks; these are not isolated performance claims. TkAgg/compositor GPU use unmeasured; no GPU physics inferred."
+  },
+  "unchanged_historical_receipts": [
+    {
+      "path": "docs/research/evidence/chrono-pair-viewer-tk-20261017.json",
+      "sha256": "548b0b1621f8bc6e750aecfe2b51fbb8ea4b791cade23862e84ab21d48c4e58d"
+    },
+    {
+      "path": "docs/research/evidence/chrono-pair-viewer-pure-20261017.json",
+      "sha256": "303444aad8db5c2e6707dea92e8b47e16c556f625d3d626f966606e936f199db",
+      "unchanged": true
+    }
+  ],
+  "raw_artifacts": {
+    "manifest_path": "work/detailed-study/pair-viewer-json-guard-86ba320/artifacts-sha256.json",
+    "manifest_sha256": "799369b53f70c212022a8458e35c16491237f663577d10c55d376515a2aa1b03",
+    "artifact_count": 31,
+    "scope": "New retained local bytes, including exact copies of three prior peer audit metadata artifacts; original genuine inputs remain referenced, not duplicated. Paths are role-bound."
+  },
+  "acceptance_boundary": "Owner-PC source workflow only. Distributed wheel/sdist/frozen normal workflows and broader exact-head gates require separate artifact evidence; production self-test remains single-record. Content hashes establish identity, not authenticity/calibration or new physics/timing validation."
+}

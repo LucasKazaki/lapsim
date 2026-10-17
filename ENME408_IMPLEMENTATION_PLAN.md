@@ -82,10 +82,13 @@ its pure saved-fixture checks are separate from native and package acceptance.
 
 A further E16 follow-up exposes the saved-pair API from the existing native
 record viewer: one explicit-kind/second-file review window, read-only
-summary/details and unchanged primary sample/force inspection. At `e211aa3`,
+summary/details and unchanged primary sample/force inspection. At `86ba320`,
 154 focused source checks and 13 independent genuine-record/error/ownership
 cases passed, with four actual Tk layouts reviewed. Initial focus and missing
-radio-arrow failures remain retained in the linked focused receipt. That
+radio-arrow failures remain retained in the earlier focused receipt. A later
+source audit at `12136d3` retained one new optional-JSON type diagnostic; the
+explicit non-None capture/guard repair passed the same source checks at
+`86ba320`, without changing tests or the genuine-record helper. That
 evidence covers the source workflow; installed/frozen normal-workflow and
 broader acceptance remain separate gates recorded in the reviewed change and
 canonical issue. No native run/replay path, paired cursor, model or QA flag is

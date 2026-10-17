@@ -142,15 +142,20 @@ uses native keyboard controls; Escape returns to the primary viewer action.
 The two kind choices also support widget-local arrows with wraparound; Tab,
 Shift-Tab and Space retain their normal behavior, and slider keys are unchanged.
 
-At `e211aa3`, 154 focused source checks passed on the owner's Windows PC,
+At `86ba320`, 154 focused source checks passed on the owner's Windows PC,
 including the real Tk workflow. An external direct-JSON oracle passed 13
 genuine-record/error/ownership cases through normal widget commands and explicit
 test-only file-picker responses. Four owned-window captures were reviewed at
 normal/minimum sizes in both themes. The logging pair retained exactly 81 shared,
 320 left-only and 80 right-only exports; the sparse record has no 6.02 s sample.
-The [focused Tk and genuine-record receipt](research/evidence/chrono-pair-viewer-tk-20261017.json)
-retains source IDs, counts, resource/clock scope, captures and the initial focus
-and radio-keyboard failures. The [earlier pure receipt](research/evidence/chrono-pair-viewer-pure-20261017.json)
+The [guard-repair focused receipt](research/evidence/chrono-pair-viewer-json-guard-20261017.json)
+retains the new source IDs, counts, resource/clock scope and captures, together
+with the earlier failed audit's optional-JSON type diagnostic. The explicit
+non-None capture/guard changes neither comparison calculations nor test/helper
+expectations. These focused checks do not rerun the full static audit.
+The [earlier Tk receipt](research/evidence/chrono-pair-viewer-tk-20261017.json)
+retains the initial focus and radio-keyboard failures at its historical source.
+The [earlier pure receipt](research/evidence/chrono-pair-viewer-pure-20261017.json)
 remains the historical pre-implementation/pure-only evidence.
 
 These source checks do not establish an installed or frozen pair workflow.
