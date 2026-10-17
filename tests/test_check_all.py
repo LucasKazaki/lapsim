@@ -57,6 +57,18 @@ def test_main_default_or_explicit_output_preserves_real_aggregation(
     for name in ("test_alpha.py", "test_beta.py"):
         (root / "tests" / name).write_text("# Discovered, never executed.\n")
     output = tmp_path / "requested reports" if explicit else root / "work"
+    ambient = {}
+    if explicit:
+        for path, raw in (
+            (
+                root / "work/test-results.xml",
+                b'<testsuites><testsuite name="unrelated retained aggregate" tests="1"/></testsuites>',
+            ),
+            (root / "work/keep.txt", b"unrelated retained evidence\n"),
+        ):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(raw)
+            ambient[path] = path.read_bytes(), path.stat().st_mtime_ns
     argv = ["check_all.py"]
     if explicit:
         argv.extend(["--output-dir", str(output)])
@@ -116,4 +128,6 @@ def test_main_default_or_explicit_output_preserves_real_aggregation(
     assert len(list(aggregate.iter("failure"))) == int(failed)
     assert len(list(aggregate.iter("skipped"))) == 1
     if explicit:
-        assert not (root / "work/test-results.xml").exists()
+        assert {
+            path: (path.read_bytes(), path.stat().st_mtime_ns) for path in ambient
+        } == ambient

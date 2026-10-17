@@ -250,7 +250,15 @@ def read_build_verification(build, *, status):
             expected.add("verification/test-results.xml")
             raw = archive.read("verification/test-results.xml")
             assert raw == build.fresh_reports[-1]
-            assert receipt["full_suite"]["command"] == build.test_commands[-1]
+            assert receipt["full_suite"]["command"] == [
+                "python",
+                "scripts/check_all.py",
+                "--output-dir",
+                "<build-owned-report-directory>",
+            ]
+            assert receipt["full_suite"]["command_scope"] == (
+                "Sanitized logical command; actual argv is retained only in local build evidence."
+            )
             assert receipt["full_suite"]["report"] == {
                 "path": "verification/test-results.xml",
                 "sha256": sha256(raw).hexdigest(),
@@ -258,6 +266,20 @@ def read_build_verification(build, *, status):
         else:
             assert receipt["full_suite"]["command"] is None
             assert receipt["full_suite"]["report"] is None
+        public_text = (
+            json.dumps(receipt, ensure_ascii=False)
+            .replace("\\\\", "/")
+            .replace("\\", "/")
+            .casefold()
+        )
+        for private_path in (
+            build.root.parent,
+            build.root,
+            build.output,
+            Path(sys.executable),
+        ):
+            assert private_path.is_absolute()
+            assert private_path.as_posix().casefold() not in public_text
         assert {name for name in archive.namelist() if name.startswith("verification/")} == expected
     return receipt
 
@@ -265,6 +287,13 @@ def read_build_verification(build, *, status):
 def test_skip_tests_zip_excludes_ambient_and_prior_output_evidence(archive_build):
     build = archive_build
     assert build.invoke(skip=True) == 0
+    with ZipFile(build.output / "LapSim-Windows-x64.zip") as archive:
+        members = set(archive.namelist())
+        # Expose the observed stale attachment before checking the new receipt.
+        assert "verification/test-results.xml" not in members
+        assert {name for name in members if name.startswith("verification/")} == {
+            "verification/build-verification.json"
+        }
     read_build_verification(build, status="skipped")
     assert build.test_commands == []
     assert build.calls == ["inventory generation", "stage assets", "PyInstaller"]
