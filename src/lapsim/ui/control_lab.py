@@ -273,6 +273,10 @@ class ControlLab:
             self.run_button.configure(state="normal")
             if revision != self.revision:
                 self.status.set("Inputs changed · old result discarded")
+            elif self.cancelled.is_set():
+                if self.imported:
+                    self.new()
+                self.status.set("Comparison cancelled · no result to save")
             elif error:
                 if self.imported:
                     self.new()
@@ -430,7 +434,7 @@ class ControlLab:
             if path.stat().st_size > 40_000_000:
                 raise ValueError("comparison exceeds 40 MB")
             record = decode_json(path.read_bytes(), maximum_bytes=40_000_000)
-            replay_control_comparison(record)
+            replay_control_comparison(record, cancel=self.cancelled.is_set)
             return record
 
         self._start(work, imported=True)

@@ -38,6 +38,11 @@ PROFILE_ID = "synthetic_rear_drive_control_v1"
 ZERO = (0.0, 0.0, 0.0, 0.0)
 
 
+def _check_cancelled(cancel: Callable[[], bool] | None) -> None:
+    if cancel is not None and cancel():
+        raise RuntimeError("Closed-loop calculation cancelled")
+
+
 def _physical_values(value: Any, name: str) -> None:
     """Reject booleans in the new runner without changing legacy records."""
     if isinstance(value, dict):
@@ -684,7 +689,13 @@ def run_closed_loop(
     return record
 
 
-def replay_closed_loop(record: Any, backend: Any = None) -> dict:
+def replay_closed_loop(
+    record: Any,
+    backend: Any = None,
+    *,
+    cancel: Callable[[], bool] | None = None,
+) -> dict:
+    _check_cancelled(cancel)
     if (
         isinstance(record, dict)
         and record.get("schema") == "lapsim.closed-loop.record.v1"
@@ -709,7 +720,7 @@ def replay_closed_loop(record: Any, backend: Any = None) -> dict:
     scenario = ClosedLoopScenario.from_dict(record.get("scenario"))
     if _content_id(asdict(scenario)) != record.get("configuration_sha256"):
         raise ValueError("configuration identity mismatch")
-    actual = run_closed_loop(scenario, backend)
+    actual = run_closed_loop(scenario, backend, cancel=cancel)
     for key in (
         "binary_sha256",
         "native_build",
@@ -722,6 +733,7 @@ def replay_closed_loop(record: Any, backend: Any = None) -> dict:
             raise ValueError("recorded backend artifact identity mismatch: " + key)
 
     def compare(a, b, path):
+        _check_cancelled(cancel)
         if type(b) in (int, float):
             if type(a) not in (int, float) or not isclose(
                 a, b, rel_tol=1e-8, abs_tol=1e-8
@@ -744,6 +756,7 @@ def replay_closed_loop(record: Any, backend: Any = None) -> dict:
         raise ValueError("closed-loop record fields mismatch")
     for key in ("result", "units", "clock_policy", "assumptions", "solver", "frames"):
         compare(record[key], actual[key], key)
+    _check_cancelled(cancel)
     return {
         "model_agreement": True,
         "backend_id": scenario.controller_backend_id,
