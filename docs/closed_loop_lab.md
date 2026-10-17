@@ -153,6 +153,14 @@ python -m lapsim.experiments.closed_loop --backend qemu_stm32f405 --qemu PATH_TO
 python -m lapsim.experiments.closed_loop --replay virtual-launch.json --qemu PATH_TO_QEMU_SYSTEM_ARM --firmware work/firmware-attempt-1/lapsim-f405-bench.elf
 ```
 
+The build CLI anchors a relative toolchain path to the caller's directory while
+preserving its invocation spelling, including an existing Windows 8.3 short
+path. A deeply nested canonical Windows path can exceed GNU's internal header
+lookup path limit even when the header exists. Passing the existing short path
+avoids that failure; the receipt retains the invoked compiler path and hashes
+the same executable. No toolchain copy or system-wide short-name setting is
+required. The canonical long-path spelling can still fail in that toolchain.
+
 These commands open only owned emulator standard pipes. They do not enumerate,
 connect to or flash physical hardware. Commands are bounded by a versioned frame,
 session/sequence, little-endian binary64 payload, CRC32 and whole-frame timeout.
