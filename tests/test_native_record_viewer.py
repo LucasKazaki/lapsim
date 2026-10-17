@@ -83,6 +83,57 @@ def make_viewer(root, saved):
     return viewer
 
 
+def test_recorded_model_claim_displays_actual_synthetic_profile():
+    from lapsim.ui.native_record_viewer import recorded_model_claim
+
+    record = {
+        "payload": {
+            "model": {"profile_id": "chrono10_synthetic_sedan_shafts_brakes_v1"}
+        }
+    }
+    assert (
+        recorded_model_claim(record)
+        == "Recorded model claim: chrono10_synthetic_sedan_shafts_brakes_v1"
+    )
+
+
+@pytest.mark.parametrize(
+    "model",
+    (
+        {},
+        {"profile_id": None},
+        {"profile_id": 4},
+        {"profile_id": []},
+        {"profile_id": ""},
+    ),
+)
+def test_recorded_model_claim_missing_or_nonstring_is_not_recorded(model):
+    from lapsim.ui.native_record_viewer import recorded_model_claim
+
+    assert (
+        recorded_model_claim({"payload": {"model": model}})
+        == "Recorded model claim: not recorded"
+    )
+
+
+def test_recorded_model_claim_bounds_and_escapes_untrusted_text():
+    from lapsim.ui.native_record_viewer import recorded_model_claim
+
+    profile = "A\nB\rC\tD\x00E\x1bF\x7f\u2028\u202e"
+    record = {"payload": {"model": {"profile_id": profile}}}
+    assert (
+        recorded_model_claim(record)
+        == r"Recorded model claim: A\nB\rC\tD\u0000E\u001bF\u007f\u2028\u202e"
+    )
+    assert record["payload"]["model"]["profile_id"] == profile
+    long_profile = "x" * 8_000_000
+    record["payload"]["model"]["profile_id"] = long_profile
+    display = recorded_model_claim(record)
+    assert display == "Recorded model claim: " + "x" * 77 + "…"
+    assert len(display) == 100
+    assert record["payload"]["model"]["profile_id"] is long_profile
+
+
 def test_dynamics_lab_exposes_native_open_without_crowding_header(root, monkeypatch):
     monkeypatch.setattr("tkinter.filedialog.askopenfilename", lambda **kwargs: "")
     lab = DynamicsLab(root)
@@ -104,6 +155,7 @@ def test_dynamics_lab_exposes_native_open_without_crowding_header(root, monkeypa
 
 def test_saved_selection_uses_exact_sample_and_distinct_clocks(root, saved):
     viewer = make_viewer(root, saved)
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     boundary = next(
         i
         for i, s in enumerate(viewer.record["payload"]["samples"])
@@ -138,6 +190,7 @@ def test_historical_mismatch_remains_viewable_and_explicit(
     root, tmp_path, saved_record
 ):
     record = json.loads(json.dumps(saved_record))
+    record["payload"]["model"]["profile_id"] = "historical_clock_fixture_only"
     record["payload"]["source"]["files_sha256"]["suspension_study.py"] = "0" * 64
     record["content_id"] = study._content_id(record["payload"])
     record["receipt_id"] = study._content_id(
@@ -146,6 +199,10 @@ def test_historical_mismatch_remains_viewable_and_explicit(
     path = tmp_path / "historical.json"
     path.write_text(json.dumps(record))
     viewer = make_viewer(root, path)
+    assert (
+        viewer.model_claim.get()
+        == "Recorded model claim: historical_clock_fixture_only"
+    )
     assert "mismatch" in viewer.checks.get()
     assert "fresh native replay not run" in viewer.checks.get()
     viewer.close()
@@ -229,6 +286,7 @@ def test_finite_height_render_failure_clears_result_and_recovers(
     from lapsim.ui.native_record_viewer import NativeRecordViewer
 
     record = json.loads(json.dumps(saved_record))
+    record["payload"]["model"]["profile_id"] = "incoming_finite_height_fixture"
     for sample in record["payload"]["samples"]:
         sample["position_m"][2] = 1e308
     record["content_id"] = study._content_id(record["payload"])
@@ -247,11 +305,13 @@ def test_finite_height_render_failure_clears_result_and_recovers(
     wait(root, lambda: not viewer.busy)
     assert errors == []
     assert viewer.record is None
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     assert "Open failed" in viewer.status.get()
     assert viewer.details_button.cget("state") == "disabled"
     viewer.load_path(saved)
     wait(root, lambda: not viewer.busy)
     assert viewer.record is not None
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     viewer.close()
 
 
@@ -303,7 +363,16 @@ def test_open_inspect_scrub_are_passive_and_preserve_input(root, saved, monkeypa
 def test_bad_load_clears_old_result_and_fresh_load_recovers(
     root, saved, tmp_path, monkeypatch, failure
 ):
-    viewer = make_viewer(root, saved)
+    prior = json.loads(saved.read_bytes())
+    prior["payload"]["model"]["profile_id"] = "previous_record_fixture"
+    prior["content_id"] = study._content_id(prior["payload"])
+    prior["receipt_id"] = study._content_id(
+        {key: value for key, value in prior.items() if key != "receipt_id"}
+    )
+    prior_path = tmp_path / "previous-profile.json"
+    prior_path.write_text(json.dumps(prior))
+    viewer = make_viewer(root, prior_path)
+    assert viewer.model_claim.get() == "Recorded model claim: previous_record_fixture"
     bad = tmp_path / "invalid.json"
     bad.write_text("{invalid")
     renderer = viewer._draw_record
@@ -315,13 +384,16 @@ def test_bad_load_clears_old_result_and_fresh_load_recovers(
         monkeypatch.setattr(viewer, "_draw_record", reject_plot)
     viewer.load_path(bad if failure == "json" else saved)
     assert viewer.record is None
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     wait(root, lambda: not viewer.busy)
     assert "Open failed" in viewer.status.get()
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     assert viewer.details_button.cget("state") == "disabled"
     monkeypatch.setattr(viewer, "_draw_record", renderer)
     viewer.load_path(saved)
     wait(root, lambda: not viewer.busy)
     assert viewer.record is not None
+    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
     viewer.close()
 
 
