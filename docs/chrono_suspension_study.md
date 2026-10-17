@@ -64,6 +64,14 @@ planar model. The additional action row keeps the entry visible without adding
 another button to the lab's existing header.
 The visible model profile is the record's bounded, escaped claim; its full value remains in Details and does not identify a current engine.
 
+The plots use fixed world-frame and SI labels, so they require the same exact
+recorded frame and unit claims as the [CSV projection](#export-a-supplied-saved-record-as-csv).
+Unsupported claims leave the plots and selected values empty, clear the saved
+identity and disable result actions. The inline error identifies the unsupported
+frame or units; **Open native record…** remains available to load another file.
+The reader and inspector still accept opaque claims for archival inspection.
+This presentation check performs no conversion or physical validation.
+
 The four panels show the recorded COM path and wheel-center points, COM height,
 four spring lengths, and applied or computed vertical tire forces. The points
 are not suspension hardpoints or wheel orientations; spring length is not wheel

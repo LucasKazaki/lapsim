@@ -62,6 +62,15 @@ desktop self-test now checks an empty viewer and optionally a supplied external
 record, keeping absent saved-record scope explicit. The source window and
 copied package require separate workflow checks.
 
+The viewer and CSV projection share an exact saved frame/unit claim check before
+using fixed world-frame and SI labels. Rejection clears plotted and selected
+telemetry, identity and result actions while keeping Open available. Supported
+historical source mismatches and unavailable source files remain viewable; the
+reader, inspector, native replay scope and numerical code stay unchanged.
+Acceptance covers independently resealed unsupported claims, bounded feedback,
+input preservation and supported reload, with actual installed and copied
+runtime checks kept separate from source-window tests.
+
 The engine-free saved-pair API/CLI merged normally through
 [PR #99](https://github.com/LucasKazaki/lapsim/pull/99) at `591728b` for declared
 plant-step or logging-period comparisons. It checks recorded physical/source
