@@ -1,0 +1,138 @@
+{
+  "schema": "lapsim.saved-native-comparison-provenance-verification.v1",
+  "date_local": "2026-10-17 America/New_York",
+  "scope": "Additive comparison recipe/calculation/full-receipt identity. Pure serialized fixtures and a required stdlib source-catalog refresh; no native physics, Tk/browser, build, full suite, WSL, installation, push, PR or integration.",
+  "base_commit": "d89bf4f6f6c7be40a156a89138ecd1913a6f9314",
+  "candidate_hash_scope": "listed source/test bytes with CRLF normalized to LF; candidate tests were run before the coherent commit, with exact file hashes retained",
+  "files_sha256": {
+    "src/lapsim/experiments/suspension_compare.py": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7",
+    "tests/test_suspension_compare_provenance.py": "91d9e34a52b036b34dcd395b74acba72076e7e6d267598454c6c4d64af247bcb",
+    "tests/test_suspension_compare.py": "4421b5fc33a774828f2b941b6a0f2b8196f248b300497961edddac4f7a6c92f0"
+  },
+  "native_three_files_unchanged_from_base": {
+    "src/lapsim/dynamics/native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+    "src/lapsim/dynamics/chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+    "src/lapsim/experiments/suspension_study.py": "66574226863b6c05f0fe130d121cc5ee89ff3086305a60ffbd1b9fd3c8b0581b"
+  },
+  "environment": {
+    "execution": "verified owner's native Windows PC, ordinary existing project environment",
+    "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+    "pytest": "9.1.1",
+    "ruff_formatter": "0.17.0",
+    "thread_pools": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "resource_budget_bytes": 209715200,
+    "headroom_floor_gib": 8,
+    "time_budget_s": 60,
+    "scope_note": "Concurrent parent-owned acceptance work; these measurements are correctness/resource receipts, not isolated performance claims."
+  },
+  "retained_before_implementation_regression": {
+    "command": [
+      "{baseline_python}",
+      "work/comparison-provenance/run_focused.py",
+      "baseline",
+      "tests/test_suspension_compare_provenance.py",
+      "-q"
+    ],
+    "source_commit": "d89bf4f6f6c7be40a156a89138ecd1913a6f9314",
+    "branch": "enme408/native-comparison-provenance-20261017",
+    "working_state": "base comparator unchanged; only the new first regression was untracked",
+    "original_git_status": "?? tests/test_suspension_compare_provenance.py\n",
+    "source_files_sha256": {
+      "src/lapsim/experiments/suspension_compare.py": "432c07a17d2a0f8d7bc81e031090f321164f823ddc1a5c9eaf5b827f7599d852",
+      "tests/test_suspension_compare_provenance.py": "9deb7a11fdea748b3cebc714426daceb98ad0011ae8ba3cee87c61696a82b156",
+      "tests/test_suspension_compare.py": "4421b5fc33a774828f2b941b6a0f2b8196f248b300497961edddac4f7a6c92f0"
+    },
+    "test_snapshot": "work/comparison-provenance/baseline-contract.py",
+    "failure": "KeyError: schema from compare_study_records before provenance implementation",
+    "exit_code": 1,
+    "counts": {
+      "passed": 0,
+      "failed": 1,
+      "error": 0,
+      "skipped": 0,
+      "deselected": 0
+    },
+    "whole_call_wall_s": 1.7230175999866333,
+    "process_lifetime_peak_working_set_bytes": 101826560,
+    "raw_result_sha256": "4313e668592ace66dc7ad493f79eb3a3e4892afd49042d40364fd79821388fd8",
+    "raw_log_sha256": "2953fa730805c5f071135f427f9baa186726fa03f12e78b1455fe31416a7c1fd"
+  },
+  "focused_final_candidate": {
+    "command": [
+      "{baseline_python}",
+      "work/comparison-provenance/run_focused.py",
+      "focused-final",
+      "tests/test_suspension_compare_provenance.py",
+      "tests/test_suspension_compare.py",
+      "-q"
+    ],
+    "equivalent_test_command": [
+      "python",
+      "-m",
+      "pytest",
+      "tests/test_suspension_compare_provenance.py",
+      "tests/test_suspension_compare.py",
+      "-q"
+    ],
+    "candidate_source_commit": "d89bf4f6f6c7be40a156a89138ecd1913a6f9314",
+    "working_state": "provenance implementation/tests/docs/catalog prepared locally on the base; exact source/test hashes above identify the tested candidate",
+    "exit_code": 0,
+    "counts": {
+      "passed": 51,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0,
+      "deselected": 0
+    },
+    "whole_call_wall_s": 3.396952199982479,
+    "process_lifetime_peak_working_set_bytes": 106393600,
+    "minimum_headroom_gib": {
+      "physical_gib": 12.55267333984375,
+      "commit_gib": 17.127437591552734
+    },
+    "stop_reason": null,
+    "raw_result_sha256": "6da70bfd020e477ed7947bc7635bf6e825ef615429d6533d8e057e24cc051446",
+    "raw_log_sha256": "e002c32e1acfb9594749a51eafa53304dabb46418d1ef15e1d750ecc6d7a0451"
+  },
+  "independent_contracts": [
+    "stdlib sorted finite JSON/SHA256 recipe, calculation projection and complete receipt oracles",
+    "all seven observed source files affect recipe identity; unlisted documentation does not",
+    "relocated LF/CRLF source bytes give the same observed recipe and report identities",
+    "JSON object-key reordering preserves calculation identity, including incompatible reason ordering",
+    "historical timing/receipt-only input changes preserve calculation ID and change full receipt ID",
+    "ordered roles, declared comparison kind and numerical result changes are bound",
+    "missing/unreadable source hashes remain null and incomplete recipe_id remains null",
+    "frozen-like missing files do not borrow recorded input hashes or block supported comparison",
+    "backend imports/processes/Git/native execution blocked; input IDs and bytes remain unchanged in existing CLI contracts",
+    "all previous report fields and native three-file scope retained"
+  ],
+  "source_catalog_refresh": {
+    "command": [
+      "{baseline_python}",
+      "docs/simulator_flowchart/generate_inventory.py"
+    ],
+    "exit_code": 0,
+    "wall_s": 0.8446709999989253,
+    "process_lifetime_peak_working_set_bytes": 120164352,
+    "generated_sha256": "ea9700ebb1c1c1efd4e5ab11ec5d3cce155ced8afd9be3668de5ddda2d71064b",
+    "scope": "Required source catalog refresh, stdlib AST only; no simulator imports or physics"
+  },
+  "artifact_hashes": {
+    "run_focused.py": "25ac482b9e042e8fdf60b5b49e50decbf1d226d1cedaf3320b9d98d1fb40a781",
+    "baseline-contract.py": "9deb7a11fdea748b3cebc714426daceb98ad0011ae8ba3cee87c61696a82b156",
+    "baseline.json": "4313e668592ace66dc7ad493f79eb3a3e4892afd49042d40364fd79821388fd8",
+    "baseline.log": "2953fa730805c5f071135f427f9baa186726fa03f12e78b1455fe31416a7c1fd",
+    "focused-initial.json": "321b8b8ed517ca44d38e79d04b30be2c24280a41b15615c936706ba88358ecff",
+    "focused-initial.log": "68a6cef74e3b6a3584e9e531bc8b7cc3f2628bfde00a904a183613528c44af8a",
+    "focused-final.json": "6da70bfd020e477ed7947bc7635bf6e825ef615429d6533d8e057e24cc051446",
+    "focused-final.log": "e002c32e1acfb9594749a51eafa53304dabb46418d1ef15e1d750ecc6d7a0451",
+    "inventory-generation.json": "a545a159f294f5baaf760b57d88fbc8d8a9613daa5c51518f07296c93a59dd57"
+  },
+  "acceptance_boundary": "This tracked receipt identifies the pre-commit candidate by source hashes. A subsequent exact-clean-commit focused run is retained separately in ignored work evidence; this document is not rewritten to embed its own commit SHA. Parent owns broader exact-head and integration gates.",
+  "retention": "Raw helper/test snapshots and logs remain under ignored work/comparison-provenance. {baseline_python} means the existing ordinary project Python above; installation-specific paths are not published. No new comparison file writer or report replay API is introduced."
+}
