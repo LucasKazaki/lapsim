@@ -39,7 +39,17 @@ def run(*args: str, **kwargs) -> None:
     subprocess.run(args, cwd=ROOT, check=True, **kwargs)
 
 
-def stage_assets() -> Path:
+def stage_assets(*, verification_dir: Path | None = None) -> Path:
+    """Stage sources; main may supply only its freshly allocated evidence leaf."""
+    verification_relative: Path | None = None
+    if verification_dir is not None:
+        owned = verification_dir.absolute()
+        resolved = owned.resolve(strict=True)
+        root = ROOT.resolve()
+        if owned != resolved or not resolved.is_dir() or resolved == root:
+            raise ValueError("Refusing to exclude an unexpected verification directory")
+        if resolved.is_relative_to(root):
+            verification_relative = resolved.relative_to(root)
     assets = ROOT / "build" / "assets"
     # Only a verified child of this checkout's build directory can be replaced.
     if assets.exists():
@@ -67,7 +77,20 @@ def stage_assets() -> Path:
         tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT).decode("utf-8").split("\0")
         paths.extend(ROOT / name for name in tracked if name and (ROOT / name).is_file())
         source_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-        source_dirty = bool(subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=normal"], cwd=ROOT, text=True).strip())
+        status_command = ["git", "status", "--porcelain", "--untracked-files=all"]
+        if verification_relative is not None:
+            status_command.extend([
+                "--", ":(top,literal,exclude)" + verification_relative.as_posix(),
+            ])
+        status_environment = os.environ.copy()
+        for variable in (
+            "GIT_LITERAL_PATHSPECS", "GIT_GLOB_PATHSPECS",
+            "GIT_NOGLOB_PATHSPECS", "GIT_ICASE_PATHSPECS",
+        ):
+            status_environment.pop(variable, None)
+        source_dirty = bool(subprocess.check_output(
+            status_command, cwd=ROOT, text=True, env=status_environment,
+        ).strip())
     else:
         # A distributed source snapshot may be rebuilt without a Git checkout.
         previous = ROOT / "build-info.json"
@@ -212,7 +235,7 @@ def main() -> int:
     generator = ROOT / "docs/simulator_flowchart/generate_inventory.py"
     if generator.is_file():
         run(sys.executable, str(generator))
-    assets = stage_assets()
+    assets = stage_assets(verification_dir=evidence)
     run(sys.executable, "-m", "PyInstaller", "--noconfirm", "--distpath", str(output), str(ROOT / "packaging/LapSim.spec"))
     executable = output / "LapSim.exe"
     report_path = output / "portable-self-test.json"
