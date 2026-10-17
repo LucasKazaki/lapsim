@@ -7,20 +7,27 @@ import json
 import platform
 import sys
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from hashlib import sha256
 from math import ceil, isclose, isfinite, sqrt
 from pathlib import Path
 from time import perf_counter, process_time
 from typing import Any
 
-from lapsim.dynamics.native_plant import WHEEL_ORDER, AxleCommand, NativePlant
+from lapsim.dynamics.native_plant import (
+    WHEEL_ORDER,
+    AxleCommand,
+    NativePlant,
+    PlantCapabilities,
+    PlantObservation,
+)
 
 from .dynamics_record import _canonical_json, _code_identity, _content_id
 from .record_io import read_json_bounded, write_text_atomic
 
 SCHEMA = "lapsim.native-suspension-study.v1"
 MAX_BYTES = 8_000_000
+SOURCE_HASH_SCOPE = "three study implementation files; UTF-8 bytes with CRLF normalized to LF"
 TIMING_SCOPE = "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export"
 PAYLOAD_KEYS = {
     "scenario",
@@ -90,7 +97,8 @@ class SuspensionScenario:
             raise ValueError("study exceeds the 2,001 sample budget")
 
 
-def _source() -> dict:
+def _implementation_source() -> dict:
+    """Read implementation hashes without importing the engine or launching Git."""
     from lapsim import dynamics
 
     files = {
@@ -99,13 +107,16 @@ def _source() -> dict:
         "suspension_study.py": Path(__file__),
     }
     return {
-        **_code_identity(),
-        "hash_scope": "three study implementation files; UTF-8 bytes with CRLF normalized to LF",
+        "hash_scope": SOURCE_HASH_SCOPE,
         "files_sha256": {
             name: sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
             for name, path in files.items()
         },
     }
+
+
+def _source() -> dict:
+    return {**_code_identity(), **_implementation_source()}
 
 
 def _peak_memory_bytes() -> int | None:
@@ -388,7 +399,14 @@ def _compare(expected: Any, actual: Any, path: str = "payload") -> None:
         raise ValueError(f"Replay differs at {path}")
 
 
-def replay_study(record: dict, *, cancel: Callable[[], bool] | None = None) -> dict:
+def validate_study_record(record: Any) -> SuspensionScenario:
+    """Check saved structure and integrity; do not reproduce or authenticate it."""
+    try:
+        encoded = _canonical_json(record).encode("utf-8")
+    except (TypeError, ValueError, OverflowError, RecursionError) as exc:
+        raise ValueError("Native suspension record must contain finite JSON") from exc
+    if len(encoded) > MAX_BYTES:
+        raise ValueError("Native suspension record exceeds the replay byte budget")
     if (
         not isinstance(record, dict)
         or set(record) != {"schema", "content_id", "payload", "execution", "receipt_id"}
@@ -406,13 +424,18 @@ def replay_study(record: dict, *, cancel: Callable[[], bool] | None = None) -> d
         or _content_id(payload) != record["content_id"]
     ):
         raise ValueError("Native suspension record content hash does not match")
+    if not isinstance(payload["scenario"], dict) or set(payload["scenario"]) != {
+        field.name for field in fields(SuspensionScenario)
+    }:
+        raise ValueError("Invalid suspension scenario fields")
     try:
         scenario = SuspensionScenario(**payload["scenario"])
     except (KeyError, TypeError) as exc:
         raise ValueError("Invalid suspension scenario") from exc
     source = payload["source"]
-    actual_source = _source()
-    if not isinstance(source, dict) or set(source) != set(actual_source):
+    if not isinstance(source, dict) or set(source) != {
+        "code_commit", "dirty_worktree", "hash_scope", "files_sha256"
+    }:
         raise ValueError("Invalid study source identity")
     commit = source["code_commit"]
     if (
@@ -428,6 +451,88 @@ def replay_study(record: dict, *, cancel: Callable[[], bool] | None = None) -> d
         and type(source["dirty_worktree"]) is not bool
     ):
         raise ValueError("Invalid study Git identity")
+    hashes = source["files_sha256"]
+    if (
+        not isinstance(source["hash_scope"], str)
+        or not 1 <= len(source["hash_scope"]) <= 256
+        or not isinstance(hashes, dict)
+        or set(hashes) != {"native_plant.py", "chrono_vehicle.py", "suspension_study.py"}
+        or any(
+            not isinstance(value, str)
+            or len(value) != 64
+            or any(char not in "0123456789abcdef" for char in value)
+            for value in hashes.values()
+        )
+    ):
+        raise ValueError("Invalid study implementation identity")
+    _validate_execution(record["execution"], scenario)
+    _validate_saved_channels(payload, record["execution"], scenario)
+    return scenario
+
+
+def read_study_record(path: str | Path) -> dict:
+    """Load a bounded saved record without starting the optional native backend."""
+    record = read_json_bounded(Path(path), maximum_bytes=MAX_BYTES)
+    validate_study_record(record)
+    return record
+
+
+def inspect_study_record(record: Any) -> dict:
+    """Summarize saved claims separately from checks performed while opening."""
+    scenario = validate_study_record(record)
+    payload = record["payload"]
+    try:
+        current = _implementation_source()
+    except OSError:
+        implementation_status = "unavailable; current implementation files could not be read"
+    else:
+        implementation_matches = all(
+            payload["source"][key] == current[key] for key in current
+        )
+        implementation_status = (
+            "match" if implementation_matches
+            else "mismatch; recorded source required for replay"
+        )
+    return {
+        "kind": "saved native suspension record; stored model and metrics are claims",
+        "schema": record["schema"],
+        "saved_content_id": record["content_id"],
+        "saved_receipt_id": record["receipt_id"],
+        "checks": {
+            "receipt_and_content_integrity": "checked",
+            "stored_structure": "checked; finite channels, counts and sample/command clocks",
+            "current_implementation_files": implementation_status,
+            "authenticity": "not established by content hashes",
+            "fresh_native_replay": "not run",
+            "historical_timing": "recorded claims; not validated",
+            "vehicle_calibration": "not established",
+        },
+        "saved_scenario": payload["scenario"],
+        "saved_clocks": {
+            "plant_step_s": scenario.plant_step_s,
+            "controller_period_s": scenario.controller_period_s,
+            "logging_period_s": scenario.logging_period_s,
+            "plant_steps": record["execution"]["plant_steps"],
+            "command_events": len(payload["commands"]),
+            "exported_samples": len(payload["samples"]),
+            "sample_command_phase": "completed interval; same-time command event begins the next hold",
+            "settling_sampling_claim": payload["metrics"].get("settle_sampling", "not recorded by this implementation"),
+        },
+        "saved_capabilities_and_topology": payload["capabilities"],
+        "saved_provenance": {
+            key: payload[key]
+            for key in ("model", "source", "frame", "units", "controller", "wheel_order")
+        },
+        "stored_metrics_claims": payload["metrics"],
+        "historical_execution_claims": record["execution"],
+    }
+
+
+def replay_study(record: dict, *, cancel: Callable[[], bool] | None = None) -> dict:
+    scenario = validate_study_record(record)
+    payload = record["payload"]
+    source = payload["source"]
+    actual_source = _implementation_source()
     if (
         source["hash_scope"] != actual_source["hash_scope"]
         or source["files_sha256"] != actual_source["files_sha256"]
@@ -435,13 +540,187 @@ def replay_study(record: dict, *, cancel: Callable[[], bool] | None = None) -> d
         raise ValueError(
             "Study implementation changed; use the recorded source revision for replay"
         )
-    _validate_execution(record["execution"], scenario)
     actual = run_study(scenario, cancel=cancel)
     # A documentation-only commit may change the repository SHA, but the exact
     # three implementation hashes must match. Never compare runtime wall times.
     for key in PAYLOAD_KEYS - {"source"}:
         _compare(payload[key], actual["payload"][key], key)
     return actual
+
+
+def _numeric_shape(value: Any, shape: tuple[int, ...], path: str) -> None:
+    if shape:
+        if not isinstance(value, (list, tuple)) or len(value) != shape[0]:
+            raise ValueError(f"Invalid saved channel shape: {path}")
+        for item in value:
+            _numeric_shape(item, shape[1:], path)
+    else:
+        try:
+            valid = type(value) in (int, float) and isfinite(value)
+        except OverflowError:
+            valid = False
+        if not valid:
+            raise ValueError(f"Invalid saved numeric channel: {path}")
+
+
+def _validate_saved_command(request: Any) -> None:
+    if not isinstance(request, dict) or set(request) != {
+        field.name for field in fields(AxleCommand)
+    }:
+        raise ValueError("Invalid saved command fields")
+    try:
+        AxleCommand(**request)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Invalid saved command request") from exc
+
+
+def _validate_metrics_claims(metrics: dict) -> None:
+    """Check known stored metric shapes, without claiming their reproduction."""
+    numeric = {
+        "settle_max_vertical_force_relative_error",
+        "settle_max_left_right_load_relative_difference",
+        "settle_max_vertical_speed_mps",
+        "final_speed_mps", "final_heading_rad", "final_chassis_com_height_m",
+    }
+    required = numeric | {"settle_window_s", "settle_samples", "settle_acceptance"}
+    if not required <= metrics.keys():
+        raise ValueError("Missing saved metric fields")
+    for name in numeric:
+        _numeric_shape(metrics[name], (), name)
+    _numeric_shape(metrics["settle_window_s"], (2,), "settling window")
+    if (
+        type(metrics["settle_samples"]) is not int
+        or not 1 <= metrics["settle_samples"] <= 100_001
+    ):
+        raise ValueError("Invalid saved settling observation count")
+    acceptance = metrics["settle_acceptance"]
+    limits = {"force_relative_limit", "left_right_relative_limit", "vertical_speed_limit_mps"}
+    if (
+        not isinstance(acceptance, dict)
+        or set(acceptance) != limits | {"passed"}
+        or type(acceptance["passed"]) is not bool
+    ):
+        raise ValueError("Invalid saved settling acceptance claim")
+    for name in limits:
+        _numeric_shape(acceptance[name], (), name)
+        if acceptance[name] < 0:
+            raise ValueError("Invalid saved settling limit")
+    if "settle_sampling" in metrics:
+        sampling = metrics["settle_sampling"]
+        if (
+            not isinstance(sampling, dict)
+            or set(sampling) != {
+                "clock", "period_s", "first_time_s", "last_time_s", "force_channel"
+            }
+            or any(
+                not isinstance(sampling[key], str) or not sampling[key]
+                for key in ("clock", "force_channel")
+            )
+        ):
+            raise ValueError("Invalid saved settling clock claim")
+        for name in ("period_s", "first_time_s", "last_time_s"):
+            _numeric_shape(sampling[name], (), name)
+        if (
+            sampling["period_s"] <= 0
+            or not 0 <= sampling["first_time_s"] <= sampling["last_time_s"]
+        ):
+            raise ValueError("Invalid saved settling clock claim")
+
+
+def _validate_saved_channels(
+    payload: dict, execution: dict, scenario: SuspensionScenario
+) -> None:
+    """Validate stored shapes/clock relationships, not native model assertions."""
+    capabilities = payload["capabilities"]
+    if (
+        not isinstance(capabilities, dict)
+        or set(capabilities) != {field.name for field in fields(PlantCapabilities)}
+        or any(
+            not isinstance(value, str) or not 1 <= len(value) <= 256
+            for value in capabilities.values()
+        )
+        or capabilities["device"] != execution["device"]
+        or payload["wheel_order"] not in (list(WHEEL_ORDER), WHEEL_ORDER)
+    ):
+        raise ValueError("Invalid saved capabilities or wheel order")
+    if any(
+        not isinstance(payload[key], dict) or not payload[key]
+        for key in ("model", "metrics")
+    ):
+        raise ValueError("Stored model and metrics claims must be objects")
+    _validate_metrics_claims(payload["metrics"])
+    if any(
+        not isinstance(payload[key], str) or not payload[key]
+        for key in ("frame", "units", "controller")
+    ):
+        raise ValueError("Invalid saved frame, units or controller description")
+    commands, samples = payload["commands"], payload["samples"]
+    if (
+        not isinstance(commands, (list, tuple))
+        or len(commands) != execution["controller_calls"]
+        or not isinstance(samples, (list, tuple))
+        or len(samples) != execution["logging_samples"]
+    ):
+        raise ValueError("Saved sample/command count disagrees with execution receipt")
+    controller_ticks = round(scenario.controller_period_s / scenario.plant_step_s)
+    logging_ticks = round(scenario.logging_period_s / scenario.plant_step_s)
+    ticks = execution["plant_steps"]
+    for index, event in enumerate(commands):
+        if not isinstance(event, dict) or set(event) != {"time_s", "request"}:
+            raise ValueError("Invalid saved command event")
+        _numeric_shape(event["time_s"], (), "command time")
+        if not isclose(
+            event["time_s"], index * controller_ticks * scenario.plant_step_s,
+            rel_tol=0, abs_tol=1e-9,
+        ):
+            raise ValueError("Saved command clock disagrees with scenario")
+        _validate_saved_command(event["request"])
+    sample_ticks = sorted({
+        *range(0, ticks + 1, logging_ticks),
+        round(scenario.settle_s / scenario.plant_step_s), ticks,
+    })
+    shapes = {
+        **{name: (3,) for name in (
+            "position_m", "velocity_mps", "cardan_xyz_rad", "angular_velocity_rad_s"
+        )},
+        **{name: (4, 3) for name in (
+            "wheel_position_m", "wheel_force_world_n", "applied_wheel_force_world_n"
+        )},
+        **{name: (4,) for name in (
+            "wheel_omega_rad_s", "native_axle_shaft_omega_rad_s", "tire_slip_ratio",
+            "tire_slip_angle_rad", "suspension_spring_length_m",
+            "suspension_spring_force_n", "suspension_damper_force_n",
+            "driveline_wheel_torque_nm",
+        )},
+    }
+    nullable_times = {
+        "tire_force_source_time_s", "tire_kinematics_source_time_s",
+        "applied_tire_force_source_time_s",
+    }
+    sample_fields = {field.name for field in fields(PlantObservation)}
+    for tick, sample in zip(sample_ticks, samples, strict=True):
+        if not isinstance(sample, dict) or set(sample) != sample_fields:
+            raise ValueError("Invalid saved observation fields")
+        for name, value in sample.items():
+            if name == "command" or name in nullable_times and value is None:
+                continue
+            _numeric_shape(value, shapes.get(name, ()), name)
+        time_s = sample["time_s"]
+        if (
+            not isclose(time_s, tick * scenario.plant_step_s, rel_tol=0, abs_tol=1e-9)
+            or sample["mass_kg"] <= 0
+        ):
+            raise ValueError("Invalid saved observation clock or mass")
+        for name in nullable_times | {"applied_tire_force_geometry_time_s"}:
+            if sample[name] is not None and not 0 <= sample[name] <= time_s + 1e-9:
+                raise ValueError("Saved force/kinematics clock lies outside its observation")
+        prior_command = (
+            asdict(AxleCommand()) if tick == 0
+            else commands[(tick - 1) // controller_ticks]["request"]
+        )
+        _validate_saved_command(sample["command"])
+        if sample["command"] != prior_command:
+            raise ValueError("Saved observation command does not describe its completed interval")
 
 
 def _validate_execution(execution: Any, scenario: SuspensionScenario) -> None:
@@ -531,10 +810,20 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--plant-step", type=float, default=0.0005)
     parser.add_argument("--output", type=Path)
-    parser.add_argument("--replay", type=Path)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--replay", type=Path)
+    mode.add_argument("--inspect", type=Path, help="inspect a saved result without native physics")
     parser.add_argument("--stop-file", type=Path)
     args = parser.parse_args(argv)
     try:
+        if args.inspect:
+            if args.output:
+                raise ValueError("--inspect cannot be combined with --output")
+            summary = inspect_study_record(
+                read_json_bounded(args.inspect, maximum_bytes=MAX_BYTES)
+            )
+            print(json.dumps(summary, indent=2))
+            return 0
         if (
             args.replay
             and args.output

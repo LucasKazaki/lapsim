@@ -89,6 +89,8 @@ suspension, dynamic contact loads and a bounded rear-driveshaft baseline.
 Its passenger-size upstream fixture is explicitly separate from the Formula SAE
 team profile. It uses an isolated native environment and saves checked replay
 records; ordinary desktop, browser and fast-model startup remain available.
+Read a supplied result without the native engine using
+`python -m lapsim.experiments.suspension_study --inspect saved-study.json`.
 Follow the [installation, commands and validity limits](docs/chrono_suspension_study.md).
 
 ## Component materials study
