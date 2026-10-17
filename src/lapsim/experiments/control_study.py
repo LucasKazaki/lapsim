@@ -21,6 +21,7 @@ from .basic_dynamics import decode_json
 from .closed_loop import (
     ClosedLoopScenario,
     DriverPoint,
+    _check_cancelled,
     replay_closed_loop,
     run_closed_loop,
 )
@@ -192,7 +193,10 @@ def run_control_comparison(
     return record
 
 
-def replay_control_comparison(record: Any) -> dict:
+def replay_control_comparison(
+    record: Any, *, cancel: Callable[[], bool] | None = None
+) -> dict:
+    _check_cancelled(cancel)
     if (
         not isinstance(record, dict)
         or set(record)
@@ -215,12 +219,14 @@ def replay_control_comparison(record: Any) -> dict:
     ):
         raise ValueError("unsupported paired strategy/backend")
     for label, strategy in (("A", "equal_split"), ("B", "traction_limited")):
+        _check_cancelled(cancel)
         run = record["runs"][label]
         if ClosedLoopScenario.from_dict(run["scenario"]) != replace(
             base, strategy=strategy
         ):
             raise ValueError("comparison does not hold inputs constant")
-        replay_closed_loop(run)
+        replay_closed_loop(run, cancel=cancel)
+        _check_cancelled(cancel)
         expected = metrics(run)
         observed = record["metrics"][label]
         if not isinstance(observed, dict) or set(observed) != set(expected):
@@ -233,6 +239,7 @@ def replay_control_comparison(record: Any) -> dict:
                 or not isclose(actual, value, rel_tol=1e-8, abs_tol=1e-8)
             ):
                 raise ValueError("comparison metrics do not describe the stored run")
+    _check_cancelled(cancel)
     return {
         "model_agreement": True,
         "run_id": record["run_id"],

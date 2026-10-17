@@ -29,8 +29,13 @@ Both stored runs execute again before the imported result appears. Imported
 controls are read-only; **New preset** begins a new editable comparison.
 Browser CSV exports sampled results for both strategies. Inspect JSON for
 controller events, rejected sensor arrivals, raw candidates and fault reasons.
-Cancellation discards the partial calculation. Editing a new preset clears its
-old result. Desktop calculation runs in a worker; Tk rendering stays on Tk's
+Desktop cancellation also interrupts checked imports at a plant boundary,
+between the two stored runs, or during result verification. A cancelled import
+discards its partial or queued result, leaves Save and Inspect unavailable,
+and permits another load or a fresh run. The replay Python APIs accept the same
+optional cancellation callback as execution; saved schemas and numeric checks
+are unchanged. Editing a new preset clears its old result. Desktop calculation
+runs in a worker; Tk rendering stays on Tk's
 own thread. Browser calculation runs in a Python Web Worker, requires the pinned
 scientific-runtime CDN on first use and executes the Python backend only.
 
