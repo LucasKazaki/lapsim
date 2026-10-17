@@ -1,0 +1,957 @@
+{
+  "schema": "lapsim.native-noncoincident-clock-verification.v1",
+  "scope": "Actual local Windows CPU PyChrono suite and separate-process fixture replay at clean source 6a4; historical 6312 observer experiment is explicitly separate. Synthetic upstream Sedan numerical/clock verification, not calibration, achieved brake torque, GPU physics or a performance/deadline guarantee.",
+  "retention": "This tracked compact manifest retains measured results, source/configuration identities and original-byte SHA256 bindings. Raw telemetry, XML and local receipts remain ignored; their hashes are not signatures or a promise of remote availability. Only installation-specific absolute paths are replaced by explicit roles; no engine assets, hostname or raw telemetry are embedded.",
+  "path_bindings": {
+    "{repository}": "clean primary checkout used for the recorded gates; working directory is its root",
+    "{micromamba}": "official micromamba 2.5.0-2 executable; SHA256 baf6d56a31a63a75f0c77bdce27fefea57b1bdc8aa25b50a1be45696c0e737e7",
+    "{native_prefix}": "existing isolated Windows/Python 3.12 prefix previously recreated from both tracked locks and editable project --no-deps; same prefix role in all recorded invocations",
+    "{root_prefix}": "short isolated micromamba root selected in the process environment before invocation"
+  },
+  "tested_source": {
+    "commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+    "tree": "02aa91443ab10c3d184a623ad65cdc16870c6fa2",
+    "dirty_worktree": false,
+    "implementation": {
+      "code_commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+      "dirty_worktree": false,
+      "hash_scope": "three study implementation files; UTF-8 bytes with CRLF normalized to LF",
+      "files_sha256": {
+        "native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+        "chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+        "suspension_study.py": "66574226863b6c05f0fe130d121cc5ee89ff3086305a60ffbd1b9fd3c8b0581b"
+      }
+    },
+    "native_test_sha256_crlf_to_lf": "349d4bc6b94a83840d5da29b9a6ce22e89e41acbc2781d3bd64a84f1ee02631d",
+    "test_hash_scope": "quality/test_chrono_native.py UTF-8 bytes with CRLF normalized to LF; commit/tree bind the complete tested checkout"
+  },
+  "environment": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "python": "3.12.15 | packaged by conda-forge | (main, Oct 13 2026, 16:44:09) [MSC v.1944 64 bit (AMD64)]",
+    "prefix": "{native_prefix}",
+    "executable": "{native_prefix}/python.exe",
+    "device": "CPU",
+    "gpu_physics": false,
+    "thread_pools": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "launcher_environment": {
+      "MAMBA_ROOT_PREFIX": "{root_prefix}",
+      "PYTHONUTF8": "1",
+      "PYTHONUNBUFFERED": "1",
+      "MPLBACKEND": "Agg",
+      "LAPSIM_JOB_COMMIT_HEADROOM_GIB": "7"
+    },
+    "evidence_scope": "Python/platform/root-prefix values observed in the 6312 helper, matching Python/device in the 6a4 records; same native-prefix role in commands. Pool/UTF8/backend flags imposed by the hash-bound outer runner; runtime commit floor is recorded per gate. No fresh installation or full transitive environment inventory claimed for these runs.",
+    "locks_sha256": {
+      "environments/chrono-win64.lock.txt": "e3bcaa4393a31d571cc48e808315440e7139d5c547aefa41ab8ca603bfd0eba4",
+      "environments/chrono-pip.lock.txt": "8ae6902f0833cd34eab8101032ba326962121133b455d50d13db533f4a2b749e"
+    },
+    "engine_identity": "model_configuration.engine"
+  },
+  "model_configuration": {
+    "engine": {
+      "name": "pychrono",
+      "version": "10.0.0",
+      "build": "py312h418371c_0",
+      "subdir": "win-64",
+      "sha256": "8429923678c714c8b49f0a04c92990b1002457396c0765cfc250ac46fa34d92e",
+      "native_modules_sha256": {
+        "_core.pyd": "2b700d253e4f359d0a508094de9f857f469c2362a04d8cc249f5f7251ed002e9",
+        "_vehicle.pyd": "08b30f00a398f0e2d0042248eb41f2cda23e00ba843bb587a963982b60c7226e"
+      }
+    },
+    "assets_sha256": {
+      "sedan/brake/Sedan_BrakeShafts.json": "59e6f5f834b834a337518412bfb0e9f0af2512000bf71f27708537d2441c0c1e",
+      "sedan/chassis/Sedan_Chassis.json": "18ffc5935cc49ef06fcb49f88d5e84d198da922d5a14d72961885c310deadd09",
+      "sedan/driveline/Sedan_Driveline2WD.json": "80dd661a9c20ed7eb3e00cda148ccbe0ad4a0150f49b97dafa9d98a755696457",
+      "sedan/steering/Sedan_RackPinion.json": "828071b626be2ef9b0f63d2ff06097b22372a1739fa902583519801cfe8bca02",
+      "sedan/suspension/Sedan_DoubleWishbone.json": "7fe4624e1ea9f367cda41780f1c255a4c7da579fd29f073d7ab55d11dad0bbf5",
+      "sedan/tire/Sedan_Pac02Tire.json": "93f8945e5fea8a03364e1549791683292bc446dd8eb1585e782e67628b3a811f",
+      "sedan/tire/Sedan_Pac02Tire.tir": "ef4c08a321d06927616416d6af2eb3c6db41fa8461927650b194c0ed79ac4af1",
+      "sedan/vehicle/Sedan_Vehicle.json": "6605c1fa5798e80b3c62fd16dc7d25bd5ed9f0321129ddddd0dc2c5e8ee7821e",
+      "sedan/wheel/Sedan_Wheel.json": "cb272839e50b8b45b150c902d9e7a24b8cefed67e770d2f866a3a44e23c13f2a",
+      "derived/synthetic_sedan_shafts.json": "2ec10b9acacf1a7511b773bf7bc3409c280b483a328ddb131a59f8e7f8fa6a1a"
+    },
+    "profile_id": "chrono10_synthetic_sedan_shafts_brakes_v1",
+    "vehicle_variant": {
+      "base": "sedan/vehicle/Sedan_Vehicle.json",
+      "only_definition_override": "all four brake inputs use upstream Sedan_BrakeShafts.json",
+      "brake_model": "torque-limited shaft clutch; upstream max 2000 N m, shaft inertia 0.4 kg m^2 per brake",
+      "ideal_brake_locking": false,
+      "brake_reaction_telemetry": "unavailable through selected public API; request is not achieved brake torque"
+    },
+    "solver": {
+      "type": "ChSolverBB",
+      "max_iterations": 150,
+      "tolerance": 1E-10,
+      "threads": 1
+    },
+    "initial_height_m": 0.7,
+    "gravity_mps2": 9.81,
+    "terrain": {
+      "type": "flat rigid",
+      "size_m": [
+        100,
+        30
+      ],
+      "friction": 0.9
+    },
+    "observation_phase": "chassis COM after Advance; cached tire force carries its separate input-state time",
+    "orientation_representation": "Cardan XYZ radians plus world XY heading of the chassis forward axis",
+    "tire_force_coupling": "one plant-step cached tire force delay; contact frame/gating uses interval-start geometry",
+    "tire_internal_step_policy": "Pac02 low-speed Dahl bristle step equals each actual plant step; normal-speed handling slip is instantaneous",
+    "gpu_physics": false,
+    "wheel_signs": "wheel-local +Y omega and driveline wheel torque are positive propulsion; native axle-shaft omega uses opposite axis",
+    "torque_scope": "reported differential wheel output; excludes tire/brake torque and exact shaft-body connector inertia",
+    "limitations": [
+      "Upstream synthetic passenger Sedan; no Formula SAE geometry or vehicle calibration",
+      "Ideal requested driveshaft torque; no motor, inverter, battery, regen, or traction controller",
+      "Rigid links/chassis; no flexible structure, aero, thermal model or physical validation",
+      "Pac02 parameter provenance is upstream synthetic data; no fitted team tire coefficients",
+      "Selected TIR uses linear vertical stiffness/damping; no tire bottoming, rolling resistance or pressure dependence"
+    ]
+  },
+  "native_suite": {
+    "gate": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{native_prefix}",
+        "python",
+        "-m",
+        "pytest",
+        "quality/test_chrono_native.py",
+        "-q",
+        "--junitxml=work/detailed-study/chrono-native-6a4b7da.xml"
+      ],
+      "working_directory": "{repository}",
+      "source_before": {
+        "commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T06:26:08.752349-04:00",
+      "finished_utc": "2026-10-17T06:27:21.397613-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 72.64489070000127,
+      "outer_guard_wall_s": 72.6936005000025,
+      "maximum_wall_s": 180,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.361408233642578,
+        "commit_gib": 17.133346557617188
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 11.880695343017578,
+        "commit_gib": 16.611953735351562
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 132689920,
+        "peak_job_committed_bytes": 175906816,
+        "total_processes": 40,
+        "active_processes": 0,
+        "cpu_time_s": 71.75
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "local_guard_binding": "work/detailed-study/native-full-6a4b7da-job/summary.json"
+    },
+    "junit": {
+      "raw": {
+        "path": "work/detailed-study/chrono-native-6a4b7da.xml",
+        "bytes": 1851,
+        "sha256": "bf8b8cadef71a9dcefdff01c2c542693e7996a7f8fb925e864da26a850cacea3"
+      },
+      "counts": {
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "pytest_time_s": 71.817,
+      "case_time_scope": "pytest XML per-case durations include shared fixture setup where pytest assigns it; not isolated simulation or performance timings",
+      "cases": [
+        {
+          "name": "test_gravity_equilibrium_and_static_left_right_symmetry",
+          "result": "passed",
+          "time_s": 62.41
+        },
+        {
+          "name": "test_positive_rear_drive_has_correct_authority_and_forward_response",
+          "result": "passed",
+          "time_s": 0.0
+        },
+        {
+          "name": "test_steering_sign_and_mirrored_yaw_response",
+          "result": "passed",
+          "time_s": 0.0
+        },
+        {
+          "name": "test_timestep_refinement_changes_small_physical_quantities_by_less_than_one_percent",
+          "result": "passed",
+          "time_s": 0.0
+        },
+        {
+          "name": "test_logging_is_side_effect_free_and_does_not_change_the_physical_trace",
+          "result": "passed",
+          "time_s": 0.001
+        },
+        {
+          "name": "test_force_and_tire_kinematics_timestamps_expose_cached_coupling",
+          "result": "passed",
+          "time_s": 0.004
+        },
+        {
+          "name": "test_noncoincident_exports_preserve_held_commands_and_force_clocks",
+          "result": "passed",
+          "time_s": 0.013
+        },
+        {
+          "name": "test_reset_is_repeatable_and_observe_does_not_advance",
+          "result": "passed",
+          "time_s": 0.037
+        },
+        {
+          "name": "test_native_tire_clock_matches_each_actual_plant_interval",
+          "result": "passed",
+          "time_s": 0.03
+        },
+        {
+          "name": "test_native_record_replays_through_same_engine",
+          "result": "passed",
+          "time_s": 7.396
+        },
+        {
+          "name": "test_actual_cancel_cleans_up_and_does_not_poison_next_native_initialization",
+          "result": "passed",
+          "time_s": 0.06
+        },
+        {
+          "name": "test_insufficient_settle_is_rejected_before_maneuver",
+          "result": "passed",
+          "time_s": 0.998
+        }
+      ]
+    },
+    "records": {
+      "settle": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/d032b844821a4c81803c8d408e0bf8e6/settle.json",
+          "bytes": 1015501,
+          "sha256": "2b3a0fb1f2fb714b214cee3d5230e72f98e99d29a83043a712c56cb4dc2f9f8f"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "c9bc9c146504f3f2e103df299be80cdd2588ada7b1ee774fe8d483da04bf42ef",
+        "receipt_id": "ba8dfb872d329f1539ff3af5d8c104961e142a9c516d3de84caffc69c58e578c",
+        "source_commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "scenario": {
+          "scenario_id": "settle",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 1001
+      },
+      "drive": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/d032b844821a4c81803c8d408e0bf8e6/drive.json",
+          "bytes": 1026781,
+          "sha256": "22c3f5e99b113fc6c5a660e8325069a325fd26c128127935c66dda57affc5eb8"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "456e5fbd2938a65a203307967170db7736d80f019a093d245fbd13c2bd5140b2",
+        "receipt_id": "30f9088ea7ae735df5fd23b3aafc836da0d9c7303a38d47b1c8fea6aaf41831a",
+        "source_commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "scenario": {
+          "scenario_id": "drive",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 1001
+      },
+      "drive_half_step": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/d032b844821a4c81803c8d408e0bf8e6/drive_half_step.json",
+          "bytes": 1026992,
+          "sha256": "9973be8598e38a04ee72f2fb18d1b79dbd601ec671a0cfe7570cb553c5f38344"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "bb8448c6f06c11cefeb711285450f1048b32031898b82e7e0893b9b1b496ae91",
+        "receipt_id": "5a1f8cea0b4e4f1e5d80fb6bbe21a792ea4201117cb79221bc07f983c285d917",
+        "source_commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "scenario": {
+          "scenario_id": "drive",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.00025,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 32000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 2001
+      },
+      "drive_sparse_log": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/d032b844821a4c81803c8d408e0bf8e6/drive_sparse_log.json",
+          "bytes": 461219,
+          "sha256": "da807a151b4dc79b916d2de8bae8fb64210f45dcdd42aeddcd686bbebf710acc"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "1e37cb2db3c6d3b7ed2f660e4b22f1d6f916ead2c506bd0825b6e43e9c44e737",
+        "receipt_id": "2988350782c5841ca2f527416da6c1c2ce9998a70fb0880ddf0e1c522413e9e7",
+        "source_commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "scenario": {
+          "scenario_id": "drive",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.05,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 161,
+        "settling_observations": 1001
+      },
+      "steer_left": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/d032b844821a4c81803c8d408e0bf8e6/steer_left.json",
+          "bytes": 1027670,
+          "sha256": "940752cd728861a603efd31172ac52e0512dbb66c44fce512f92866522a1fa93"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "c7082b4eae00e5627a21905db8ab9e8f8464b29e695704718e1a15f5efd68b2e",
+        "receipt_id": "409133e160daa10eedef7f3024ad7442dab7ba952aeb2e32b2ef5c1586b27a51",
+        "source_commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "scenario": {
+          "scenario_id": "steer",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 1001
+      },
+      "steer_right": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/d032b844821a4c81803c8d408e0bf8e6/steer_right.json",
+          "bytes": 1028258,
+          "sha256": "fa17889751c8db3166ba3371fa0321a00afe872691fe677ab550188cedcaafec"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "656a49daa8b72a4844da141d9f511e9baad96343bb6d6b135422fd6fbc8c04f1",
+        "receipt_id": "8c0a5930d8f873838a45af86e3534048cf84a58db9b81699400bb699e83babc7",
+        "source_commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "scenario": {
+          "scenario_id": "steer",
+          "settle_s": 6.0,
+          "maneuver_s": 2.0,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.02,
+          "driveshaft_torque_nm": 40.0,
+          "steering": -0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 16000,
+        "controller_events": 800,
+        "exported_samples": 401,
+        "settling_observations": 1001
+      },
+      "drive_noncoincident_clocks": {
+        "raw": {
+          "path": "work/detailed-study/native-checks/d032b844821a4c81803c8d408e0bf8e6/drive_noncoincident_clocks.json",
+          "bytes": 640192,
+          "sha256": "5162fcce0f02b1282c72d977523cf3dfdee856c4b94e43bee28fb356c6f61798"
+        },
+        "schema": "lapsim.native-suspension-study.v1",
+        "content_id": "3f5ea19098b631510b0ed43d485005a5149a4fcf502b459a86191828f7f5b3cf",
+        "receipt_id": "edf9fdd8eae9d4dafd0e6f292d1ff180ea0f09c8aa5fead63e6923c02ffe3fed",
+        "source_commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "scenario": {
+          "scenario_id": "drive",
+          "settle_s": 6.003,
+          "maneuver_s": 0.101,
+          "plant_step_s": 0.0005,
+          "controller_period_s": 0.01,
+          "logging_period_s": 0.025,
+          "driveshaft_torque_nm": 40.0,
+          "steering": 0.06,
+          "settle_braking": 0.2
+        },
+        "plant_steps": 12208,
+        "controller_events": 611,
+        "exported_samples": 247,
+        "settling_observations": 1001
+      }
+    },
+    "new_case_clock_result": {
+      "oracle": "maintained test uses independent integer/Fraction schedule, not runner command/clock helpers",
+      "forced_export_indices": [
+        241,
+        246
+      ],
+      "forced_export_times_s": [
+        6.003,
+        6.104
+      ],
+      "command_events": 611,
+      "exported_samples": 247,
+      "plant_steps": 12208,
+      "settle_window_s": [
+        5.503,
+        6.003
+      ],
+      "settle_sampling": {
+        "clock": "every plant-tick boundary in the inclusive settling window",
+        "period_s": 0.0005,
+        "first_time_s": 5.50299999999967,
+        "last_time_s": 6.002999999999393,
+        "force_channel": "applied_wheel_force_world_n"
+      },
+      "settle_acceptance": {
+        "passed": true,
+        "force_relative_limit": 0.01,
+        "left_right_relative_limit": 0.01,
+        "vertical_speed_limit_mps": 0.01
+      },
+      "force_clock_scope": "computed force and tire kinematics originate one plant tick before chassis sample; applied force two ticks before, with initial null origins; applied geometry one tick before, clamped at zero",
+      "request_scope": "completed-interval held requested command, not achieved wheel/brake torque",
+      "execution": {
+        "python": "3.12.15",
+        "platform": "Windows",
+        "initialization_wall_s": 0.028580999991390854,
+        "stepping_and_record_wall_s": 6.229604100022698,
+        "total_wall_s": 6.258185100014089,
+        "process_cpu_s": 6.203125,
+        "process_lifetime_peak_working_set_bytes": 163770368,
+        "plant_steps": 12208,
+        "simulated_time_s": 6.104,
+        "controller_calls": 611,
+        "logging_samples": 247,
+        "device": "CPU",
+        "gpu_physics": false,
+        "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export"
+      }
+    }
+  },
+  "separate_new_fixture_replay": {
+    "gate": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{native_prefix}",
+        "python",
+        "-m",
+        "lapsim.experiments.suspension_study",
+        "--replay",
+        "work/detailed-study/native-checks/d032b844821a4c81803c8d408e0bf8e6/drive_noncoincident_clocks.json",
+        "--output",
+        "work/detailed-study/native-noncoincident-replayed-6a4b7da.json",
+        "--stop-file",
+        "work/detailed-study/STOP"
+      ],
+      "working_directory": "{repository}",
+      "source_before": {
+        "commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "6a4b7da625b8cffc62c55a6fe764b2926286e53e",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T06:28:30.574402-04:00",
+      "finished_utc": "2026-10-17T06:28:38.232188-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 7.657382600009441,
+      "outer_guard_wall_s": 7.709593400009908,
+      "maximum_wall_s": 180,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.343883514404297,
+        "commit_gib": 17.082706451416016
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 12.164802551269531,
+        "commit_gib": 16.909198760986328
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 102653952,
+        "peak_job_committed_bytes": 150405120,
+        "total_processes": 12,
+        "active_processes": 0,
+        "cpu_time_s": 7.203125
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "local_guard_binding": "work/detailed-study/native-fixture-replay-6a4b7da-job/summary.json"
+    },
+    "input_record": "native_suite.records.drive_noncoincident_clocks",
+    "input_mtime_ns_at_suite_proof": 1792232832549834500,
+    "input_bytes_and_mtime_preserved": true,
+    "entire_payload_and_content_id_equal": true,
+    "output_raw": {
+      "path": "work/detailed-study/native-noncoincident-replayed-6a4b7da.json",
+      "bytes": 605816,
+      "sha256": "b355a97d0ceede90a05314405e9fa8d99754baa8075e25453034d55951b48bf8"
+    },
+    "output_content_id": "3f5ea19098b631510b0ed43d485005a5149a4fcf502b459a86191828f7f5b3cf",
+    "output_receipt_id": "501057568feec6bb43a47ba01eb40c7c52875a6e352c938c5d1b37ad4941a169",
+    "execution": {
+      "controller_calls": 611,
+      "device": "CPU",
+      "gpu_physics": false,
+      "initialization_wall_s": 0.12375269999029115,
+      "logging_samples": 247,
+      "plant_steps": 12208,
+      "platform": "Windows",
+      "process_cpu_s": 6.0625,
+      "process_lifetime_peak_working_set_bytes": 139943936,
+      "python": "3.12.15",
+      "simulated_time_s": 6.104,
+      "stepping_and_record_wall_s": 6.010696799989091,
+      "timing_scope": "engine construction through deterministic payload hashing; excludes interpreter/import startup, receipt envelope, and disk export",
+      "total_wall_s": 6.134449499979382
+    },
+    "equality_scope": "entire payload/content ID equality; receipt ID differs because execution timing remains in the receipt"
+  },
+  "original_six_comparison": {
+    "prior_source": "885a7d9bc27d8692f980c926b6ebbcec43508f45",
+    "scope": "direct raw JSON comparison recorded in hash-bound parent proof: scenario, model, capabilities, controller, commands, samples and metrics exactly equal; source and execution/receipt identity are not required to match",
+    "cases": {
+      "settle": {
+        "before_raw": {
+          "path": "work/detailed-study/native-checks/a797fec6f39c4633ab5c92cd257276f3/settle.json",
+          "bytes": 1015503,
+          "sha256": "83858599d0b7b41b7dd097396a49456e0568a1743bff941120bb35407f447b2a"
+        },
+        "before_content_id": "536b97006d87e46f56cd82bf75d530d8c3920deaa3f79950d01e267447c00ae5",
+        "before_receipt_id": "692262e99d5853142e6aa134ec2ad258074f1e33879054b9f3531075a8e8c003",
+        "after_record": "native_suite.records.settle",
+        "fields_exactly_equal": [
+          "scenario",
+          "model",
+          "capabilities",
+          "controller",
+          "commands",
+          "samples",
+          "metrics"
+        ],
+        "exported_samples": 401,
+        "controller_events": 800
+      },
+      "drive": {
+        "before_raw": {
+          "path": "work/detailed-study/native-checks/a797fec6f39c4633ab5c92cd257276f3/drive.json",
+          "bytes": 1026783,
+          "sha256": "97bd9f009b14bd877bbd76bced188090db615e7525afb72131b352b801cc22dc"
+        },
+        "before_content_id": "0bef273b667c6c98395323b0d05d6be3152b70f311b791b5c1adab28365c1b8a",
+        "before_receipt_id": "90e0259c25647c3b67b9abe098f70fa10bb5e370b122064a5340dc7ef07b6a3c",
+        "after_record": "native_suite.records.drive",
+        "fields_exactly_equal": [
+          "scenario",
+          "model",
+          "capabilities",
+          "controller",
+          "commands",
+          "samples",
+          "metrics"
+        ],
+        "exported_samples": 401,
+        "controller_events": 800
+      },
+      "drive_half_step": {
+        "before_raw": {
+          "path": "work/detailed-study/native-checks/a797fec6f39c4633ab5c92cd257276f3/drive_half_step.json",
+          "bytes": 1026995,
+          "sha256": "c7d3a5b8e9eaae39670b9797d5126571acc94967b74e3776f1428bdaa0bbbcdf"
+        },
+        "before_content_id": "f50958e837c97ca3dc8d348779f3770684090f8d69bf9865225c4780f0c52bb6",
+        "before_receipt_id": "7700282f6de8c453126c0c409fed4bfcb51c27cf02623336676aab28c3fd7a11",
+        "after_record": "native_suite.records.drive_half_step",
+        "fields_exactly_equal": [
+          "scenario",
+          "model",
+          "capabilities",
+          "controller",
+          "commands",
+          "samples",
+          "metrics"
+        ],
+        "exported_samples": 401,
+        "controller_events": 800
+      },
+      "drive_sparse_log": {
+        "before_raw": {
+          "path": "work/detailed-study/native-checks/a797fec6f39c4633ab5c92cd257276f3/drive_sparse_log.json",
+          "bytes": 461219,
+          "sha256": "6b93d82332039f8825d106f49b2b814a8b5e7952df6869d7eb8774d24964cea4"
+        },
+        "before_content_id": "bc859b05c0a3be20761b0213433778021730f339852b75f279a60c6da15a58d9",
+        "before_receipt_id": "60c3aec0c40152793c37eb0bb75fe3322233e4032f66218ed617f58735469a07",
+        "after_record": "native_suite.records.drive_sparse_log",
+        "fields_exactly_equal": [
+          "scenario",
+          "model",
+          "capabilities",
+          "controller",
+          "commands",
+          "samples",
+          "metrics"
+        ],
+        "exported_samples": 161,
+        "controller_events": 800
+      },
+      "steer_left": {
+        "before_raw": {
+          "path": "work/detailed-study/native-checks/a797fec6f39c4633ab5c92cd257276f3/steer_left.json",
+          "bytes": 1027669,
+          "sha256": "a5b0df845bcbc7b7d722e3963e3666d0b221f450a454a59701563c2482408f73"
+        },
+        "before_content_id": "4fb89d626c3e62cd56bcd3b62ce24f2795dfaefc48af98d82c4b20c09396526d",
+        "before_receipt_id": "e6596b5d78835b437ec5124b5949fa44bdd770b5abd760e6ab955e5994c1371d",
+        "after_record": "native_suite.records.steer_left",
+        "fields_exactly_equal": [
+          "scenario",
+          "model",
+          "capabilities",
+          "controller",
+          "commands",
+          "samples",
+          "metrics"
+        ],
+        "exported_samples": 401,
+        "controller_events": 800
+      },
+      "steer_right": {
+        "before_raw": {
+          "path": "work/detailed-study/native-checks/a797fec6f39c4633ab5c92cd257276f3/steer_right.json",
+          "bytes": 1028255,
+          "sha256": "b6b3b8cae80e7526c512f80f70e9716bb834275a0277b07eaf02dcda882c2729"
+        },
+        "before_content_id": "25b8ffafc5463b578b89be2db4ad3372e06f5abdde5e1a4aeb2cb0047e4bdbc6",
+        "before_receipt_id": "83adbff4ddbaa09d0a27b81ee9da1577decd7571b96056a68c2881477a8cabdf",
+        "after_record": "native_suite.records.steer_right",
+        "fields_exactly_equal": [
+          "scenario",
+          "model",
+          "capabilities",
+          "controller",
+          "commands",
+          "samples",
+          "metrics"
+        ],
+        "exported_samples": 401,
+        "controller_events": 800
+      }
+    }
+  },
+  "historical_6312_observer": {
+    "scope": "earlier standalone actual engine experiment, separate from the later 12-check suite; observer adds native GetChTime/GetStepsize reads only and uses the normal run_study integration/requests",
+    "source": {
+      "commit": "6312e8bbc098f6b0995351da4e64af87e59e6a35",
+      "tree": "96245cab3ff195121dc13b5292ff6cce5d36690b",
+      "tree_verification_scope": "must be checked by external clean-source kernel guard; helper checks recorded commit and three actual loaded files"
+    },
+    "gate": {
+      "command": [
+        "{micromamba}",
+        "run",
+        "-p",
+        "{native_prefix}",
+        "python",
+        "-X",
+        "utf8",
+        "work/detailed-study/verify_native_noncoincident_clocks.py",
+        "--repository",
+        "{repository}",
+        "--output",
+        "{repository}/work/detailed-study/native-noncoincident-6312e8b",
+        "--expected-commit",
+        "6312e8bbc098f6b0995351da4e64af87e59e6a35",
+        "--expected-tree",
+        "96245cab3ff195121dc13b5292ff6cce5d36690b",
+        "--micromamba-executable",
+        "{micromamba}",
+        "--maximum-seconds",
+        "120"
+      ],
+      "working_directory": "{repository}",
+      "source_before": {
+        "commit": "6312e8bbc098f6b0995351da4e64af87e59e6a35",
+        "status_porcelain": ""
+      },
+      "source_after": {
+        "commit": "6312e8bbc098f6b0995351da4e64af87e59e6a35",
+        "status_porcelain": ""
+      },
+      "started_utc": "2026-10-17T06:19:31.914533-04:00",
+      "finished_utc": "2026-10-17T06:19:45.333643-04:00",
+      "exit_code": 0,
+      "stage_wall_s": 13.41866470000241,
+      "outer_guard_wall_s": 13.46981800001231,
+      "maximum_wall_s": 180,
+      "runtime_headroom_floor_gib": {
+        "physical_gib": 8.0,
+        "commit_gib": 7.0
+      },
+      "recorded_headroom_before_gib": {
+        "physical_gib": 12.399459838867188,
+        "commit_gib": 17.16049575805664
+      },
+      "minimum_headroom_gib": {
+        "physical_gib": 12.046009063720703,
+        "commit_gib": 16.811466217041016
+      },
+      "kernel_job_metrics": {
+        "peak_single_process_committed_bytes": 103751680,
+        "peak_job_committed_bytes": 150564864,
+        "total_processes": 12,
+        "active_processes": 0,
+        "cpu_time_s": 7.5625
+      },
+      "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+      "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+      "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+      "local_guard_binding": "work/detailed-study/native-noncoincident-6312e8b-job/summary.json"
+    },
+    "helper_sha256": "329b21b3b065a4e8c5ba5b3aa10850f89bc7d480a85ec82ae1213cc54bce10e6",
+    "record": {
+      "raw": {
+        "path": "work/detailed-study/native-noncoincident-6312e8b/native-record.json",
+        "bytes": 605817,
+        "sha256": "6a713372195e8107c33712f41f170a1738bc4cb3f2162fc8b40a858d92f77347"
+      },
+      "schema": "lapsim.native-suspension-study.v1",
+      "content_id": "5cfd82b4648f54b4aaeccf4afadcaed60826ca2c671f870a075440e73e0aa651",
+      "receipt_id": "b5a3efbbbbca6e1a24c46e4c58dfd16dee78c1212882e68b8ae3fff58c9e95a4",
+      "source_commit": "6312e8bbc098f6b0995351da4e64af87e59e6a35",
+      "scenario": {
+        "controller_period_s": 0.01,
+        "driveshaft_torque_nm": 40.0,
+        "logging_period_s": 0.025,
+        "maneuver_s": 0.101,
+        "plant_step_s": 0.0005,
+        "scenario_id": "drive",
+        "settle_braking": 0.2,
+        "settle_s": 6.003,
+        "steering": 0.06
+      },
+      "plant_steps": 12208,
+      "controller_events": 611,
+      "exported_samples": 247,
+      "settling_observations": 1001
+    },
+    "oracle": {
+      "passed": true,
+      "oracle": "stdlib Fraction/integer schedule, direct saved JSON; no production command/validation helper",
+      "plant_steps": 12208,
+      "command_events": 611,
+      "exported_samples": 247,
+      "regular_export_count": 245,
+      "forced_sample_indices": {
+        "settle": 241,
+        "final": 246
+      },
+      "forced_times_s": [
+        6.003,
+        6.104
+      ],
+      "settling_observations": 1001,
+      "all_runner_observations": 1227,
+      "first_maneuver_event_time_s": 6.01,
+      "first_maneuver_requested_driveshaft_nm": 0.56,
+      "final_completed_interval_request": {
+        "driveshaft_torque_nm": 7.76,
+        "steering": 0.0,
+        "braking": 0.0
+      },
+      "phase_scope": "Requested driveshaft/brake command, not achieved wheel/brake reaction torque. Computed/applied/geometry force clocks remain separate; no interpolation or simultaneous-force claim.",
+      "numerical_tolerances": {
+        "clock_abs_s": 1E-09,
+        "command_abs_in_recorded_units": 1E-10
+      }
+    },
+    "observer": {
+      "actual_advance_calls": 12208,
+      "completed_advances": 12208,
+      "advance_arguments_seen_s": [
+        0.0005
+      ],
+      "shortened_step_seen": false,
+      "actual_tire_step_reads": 48832,
+      "tire_step_s": 0.0005,
+      "maximum_native_clock_error_s": 6.634692795159935E-13,
+      "runner_observations": 1227,
+      "close_called": true,
+      "closed": true,
+      "scope": "Only extra native reads are GetChTime and four GetStepsize calls per advance. No extra observe, synchronize, integration, command, tire or state mutation."
+    },
+    "helper_timing": {
+      "wall_s": 12.438015299994731,
+      "process_cpu_s": 7.203125,
+      "process_lifetime_peak_working_set_bytes": 142548992,
+      "timing_scope": "Helper wall starts before native imports and includes instrumentation/export/oracle; raw record execution timing is normal run_study scope with observer overhead. Outer guard time/job memory separate. No isolated performance claim."
+    },
+    "maintained_new_case_payload_except_source_equal": true,
+    "separate_replay": {
+      "gate": {
+        "command": [
+          "{micromamba}",
+          "run",
+          "-p",
+          "{native_prefix}",
+          "python",
+          "-m",
+          "lapsim.experiments.suspension_study",
+          "--replay",
+          "work/detailed-study/native-noncoincident-6312e8b/native-record.json",
+          "--output",
+          "work/detailed-study/native-noncoincident-6312e8b/replayed-record.json",
+          "--stop-file",
+          "work/detailed-study/STOP"
+        ],
+        "working_directory": "{repository}",
+        "source_before": {
+          "commit": "6312e8bbc098f6b0995351da4e64af87e59e6a35",
+          "status_porcelain": ""
+        },
+        "source_after": {
+          "commit": "6312e8bbc098f6b0995351da4e64af87e59e6a35",
+          "status_porcelain": ""
+        },
+        "started_utc": "2026-10-17T06:20:35.424324-04:00",
+        "finished_utc": "2026-10-17T06:20:43.084513-04:00",
+        "exit_code": 0,
+        "stage_wall_s": 7.659768399986206,
+        "outer_guard_wall_s": 7.712557899998501,
+        "maximum_wall_s": 180,
+        "runtime_headroom_floor_gib": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        },
+        "recorded_headroom_before_gib": {
+          "physical_gib": 12.397636413574219,
+          "commit_gib": 17.168636322021484
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 12.088672637939453,
+          "commit_gib": 16.845661163330078
+        },
+        "kernel_job_metrics": {
+          "peak_single_process_committed_bytes": 102572032,
+          "peak_job_committed_bytes": 150384640,
+          "total_processes": 12,
+          "active_processes": 0,
+          "cpu_time_s": 7.171875
+        },
+        "ownership": "Windows unnamed job object; CREATE_SUSPENDED, assign owned process handle before resume, KILL_ON_JOB_CLOSE; no process-tree PID adoption",
+        "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed.",
+        "guard_runner_sha256": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+        "local_guard_binding": "work/detailed-study/native-noncoincident-replay-6312e8b-job/summary.json"
+      },
+      "equality": {
+        "status": "passed",
+        "actual_exit": 0,
+        "entire_payload_equal": true,
+        "content_id_equal": true,
+        "raw_input_unchanged": true,
+        "replay_sha256": "65d2471e423cf44cfa48d1268214b7120e451d244ecbffbc0577ce5e0001427e",
+        "outer_s": 7.712557899998501,
+        "guard_sha256": "98295b0984203a0da80fb7943ab2f699807b941c7457fbf58eeaf98d94b108ad",
+        "minimum_headroom_gib": {
+          "physical_gib": 12.088672637939453,
+          "commit_gib": 16.845661163330078
+        },
+        "owned_processes_final": 0
+      },
+      "output_raw": {
+        "path": "work/detailed-study/native-noncoincident-6312e8b/replayed-record.json",
+        "bytes": 605817,
+        "sha256": "65d2471e423cf44cfa48d1268214b7120e451d244ecbffbc0577ce5e0001427e"
+      },
+      "output_content_id": "5cfd82b4648f54b4aaeccf4afadcaed60826ca2c671f870a075440e73e0aa651",
+      "output_receipt_id": "ab5d43072cc2cb110f3f2a9f56f6e1baddad8fad39b4dc5c7b3e0a6e46a0da1d"
+    },
+    "historical_receipt_scope": "original helper summary still says replay prepared/not executed because it preceded the separate process; the later parent proof and distinct replay gate above establish that replay result without rewriting the original summary"
+  },
+  "local_raw_artifacts_sha256": {
+    "work/detailed-study/chrono-native-6a4b7da.xml": "bf8b8cadef71a9dcefdff01c2c542693e7996a7f8fb925e864da26a850cacea3",
+    "work/detailed-study/native-full-6a4b7da-independent-proof.json": "7f051c5667eda7f25dc1feed2f5a72a7030203238252227dd7e3d5b1d7e3a85a",
+    "work/detailed-study/native-6a4b7da-preflight.json": "0f2ef72f791b3037042beaebb9812aa22a1bf02c66b582093aa0e9c5c7399070",
+    "work/detailed-study/verify_native_full_6a4b7da.py": "8f7cb3a87d6b587944b328c6296f78d094b5d3f135af7706c5641983ccce3b2e",
+    "work/detailed-study/run_owned_job.py": "e73dbf1599de5af1415458bde0af5e2c3c8ee49eceab86eed14541c6d9e3b07a",
+    "work/detailed-study/verify_native_noncoincident_clocks.py": "329b21b3b065a4e8c5ba5b3aa10850f89bc7d480a85ec82ae1213cc54bce10e6",
+    "work/detailed-study/native-noncoincident-6312-parent-proof.json": "54630028e2b16ea794cd019b94702e66f5e3af82a8143909a5f6ddca11892262",
+    "work/detailed-study/native-noncoincident-6312e8b/intended.json": "989128a93ffc825c7beb8f2015528e75cc86e2e4e8fad1aa5dcd6c99a2e25d90",
+    "work/detailed-study/native-noncoincident-6312e8b/summary.json": "9a2510482b44dcdcc9015b606cd7f7c0c245c26d2734885194771458c7ef0bd4",
+    "work/detailed-study/native-noncoincident-6312e8b/independent-oracle.json": "647b4c0e675f179845d534d91464ed1329d3ae52c97abfc5f4f6ca384ac5733d",
+    "work/detailed-study/native-noncoincident-6312e8b/artifacts-sha256.json": "646d3bcf9d040f06e44023b35a6126d2be51ad5cf4b6f8b30b6684c3b7388cec",
+    "work/detailed-study/native-full-6a4b7da-job/summary.json": "1d0c6647c627485632922d19cb1debb9c0a9f0b87d4d26cc29ed56fffaefbd5f",
+    "work/detailed-study/native-full-6a4b7da-job/native-full-6a4b7da-command.json": "fbab1dc427e93f2cf27bbba3bf1b6de5eae11e011fdfe55f820754b6e9a2ea32",
+    "work/detailed-study/native-full-6a4b7da-job/native-full-6a4b7da-stdout.txt": "bee8baa59a9c940d604b61c15fecf9a0206fdd1796480d2eb3d1f7c37a3514a9",
+    "work/detailed-study/native-full-6a4b7da-job/native-full-6a4b7da-stderr.txt": "be278b4c60eb5eca15d8a76338fc7a37d341ffec1728b456f40b945bc233add0",
+    "work/detailed-study/native-fixture-replay-6a4b7da-job/summary.json": "0552c2e814ee32883563167b4ef75f6cd7d031f292ca9fa25fc1c47fcec43f0f",
+    "work/detailed-study/native-fixture-replay-6a4b7da-job/native-fixture-replay-6a4b7da-command.json": "f5dfb2f0a61d7aeccb88ac35ebe482ce840d083d5ea2fdb0aa729eca4b28a70e",
+    "work/detailed-study/native-fixture-replay-6a4b7da-job/native-fixture-replay-6a4b7da-stdout.txt": "5fcd6dd09283c209c001621b8073f70f49c3ca50e0bdd9636f012383eca30ea3",
+    "work/detailed-study/native-fixture-replay-6a4b7da-job/native-fixture-replay-6a4b7da-stderr.txt": "3ea759c5c674464938391c7c92279f38cc6e0c2a501ec42690628859ec9aa6f3",
+    "work/detailed-study/native-noncoincident-6312e8b-job/summary.json": "8616a578fdc9a9fb825109cf8a54d677cb97574bd92706f6f551f9ec83d23ff6",
+    "work/detailed-study/native-noncoincident-6312e8b-job/native-noncoincident-6312e8b-command.json": "108ae94c150b90a0e6cd51849feecde0cff0c38af3be0c51cb49481423bd939a",
+    "work/detailed-study/native-noncoincident-6312e8b-job/native-noncoincident-6312e8b-stdout.txt": "d959ebcc367c1526fa8ba238380d53a3fc1f763777d45e19d8032221526fcdc0",
+    "work/detailed-study/native-noncoincident-6312e8b-job/native-noncoincident-6312e8b-stderr.txt": "3ea759c5c674464938391c7c92279f38cc6e0c2a501ec42690628859ec9aa6f3",
+    "work/detailed-study/native-noncoincident-replay-6312e8b-job/summary.json": "98295b0984203a0da80fb7943ab2f699807b941c7457fbf58eeaf98d94b108ad",
+    "work/detailed-study/native-noncoincident-replay-6312e8b-job/native-noncoincident-replay-6312e8b-command.json": "53650c982163aa59d7c6bf808b8b86d92b49dbe0108f67bb6d60583732f78379",
+    "work/detailed-study/native-noncoincident-replay-6312e8b-job/native-noncoincident-replay-6312e8b-stdout.txt": "2a9292bca6cfc5c002ae1b2be0e7e302dd7c46419da584d22bffe1ca87fa458d",
+    "work/detailed-study/native-noncoincident-replay-6312e8b-job/native-noncoincident-replay-6312e8b-stderr.txt": "3ea759c5c674464938391c7c92279f38cc6e0c2a501ec42690628859ec9aa6f3"
+  }
+}

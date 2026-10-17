@@ -109,8 +109,10 @@ All 12 checks passed, with zero failures, errors or skips: 71.82 s pytest time
 and 72.69 s outer guarded-command time. The XML is
 `work/detailed-study/chrono-native-6a4b7da.xml`, SHA-256
 `bf8b8cadef71a9dcefdff01c2c542693e7996a7f8fb925e864da26a850cacea3`.
-The compact local proof is retained at the ignored path
-`work/detailed-study/native-full-6a4b7da-independent-proof.json`.
+The [durable verification manifest](docs/research/evidence/chrono-noncoincident-clocks-20261017.json)
+retains measured cases, identities, commands and raw-file hashes. The ignored
+`work/detailed-study/native-full-6a4b7da-independent-proof.json` remains a local
+raw-evidence binding.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity

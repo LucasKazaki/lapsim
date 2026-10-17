@@ -517,8 +517,10 @@ All 12 checks passed with zero failures, errors or skips in 71.82 s pytest
 time and 72.69 s outer guarded-command time. The XML at
 `work/detailed-study/chrono-native-6a4b7da.xml` has SHA-256
 `bf8b8cadef71a9dcefdff01c2c542693e7996a7f8fb925e864da26a850cacea3`;
-the compact local proof is retained at the ignored path
-`work/detailed-study/native-full-6a4b7da-independent-proof.json`. A separate
+the [durable verification manifest](research/evidence/chrono-noncoincident-clocks-20261017.json)
+retains measured cases, identities, commands and raw-file hashes. The ignored
+`work/detailed-study/native-full-6a4b7da-independent-proof.json` remains a local
+raw-evidence binding. A separate
 normal CLI replay of the new fixture passed in 7.71 s outer time, preserved
 the input bytes and modification time, and reproduced the entire payload and
 content ID. All six original scenarios retained exactly equal commands, samples
