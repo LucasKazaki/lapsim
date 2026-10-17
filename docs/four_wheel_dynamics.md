@@ -9,6 +9,12 @@ Conditions, and Secondary Effects* report (Report II), sections 3, 7, 8, and
 measured vehicle data. This module is separate from the prescribed-course
 endurance solver.
 
+For vertical suspension/contact dynamics, the separate optional
+[native suspension study](chrono_suspension_study.md) uses one CPU Chrono
+plant. Its explicitly synthetic passenger-size profile, clocks and actuation
+are independent of this fast planar plant; the two models do not share state
+or add forces to each other.
+
 ## States and axes
 
 The ten states are world position `X,Y`, counterclockwise heading `ψ`, body

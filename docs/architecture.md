@@ -10,6 +10,15 @@ The code is split into two packages with different responsibilities:
 The lap solvers depend on component interfaces rather than a specific motor,
 tire, or suspension implementation.
 
+An optional [native suspension study](chrono_suspension_study.md) is a separate
+time-domain alternative. `dynamics/native_plant.py` defines a small immutable
+command/observation boundary; `dynamics/chrono_vehicle.py` owns one CPU Chrono
+vehicle and all its physical state. `experiments/suspension_study.py` owns the
+integer run clock, held driver requests, cancellation and recorded results.
+It contributes no forces or state to `vehicle_model.Vehicle` or the planar
+plant. The existing quasi-static `SuspensionModel` interface is retained for
+distance-domain force queries; it is not repurposed as a native engine owner.
+
 Analysis code enters through the points-producing event facade:
 `simulate_endurance`, `simulate_acceleration`, or `simulate_skidpad`. Each
 accepts a `Vehicle`, `SpatialTrack`, and `ControlsProfile` and returns the same
