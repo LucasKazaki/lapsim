@@ -280,8 +280,11 @@ def test_kind_arrows_wrap_once_clear_old_report_and_preserve_native_space_tab(
     details = viewer.inspect_comparison()
     selected = viewer.selected_sample
     first, second = viewer.comparison_kind_buttons
+    wait(root, lambda: details.winfo_viewable() and first.winfo_viewable())
     first.focus_force()
     root.update()
+    wait(root, lambda: first.focus_get() is first)
+    assert first.focus_get() is first
     first.event_generate("<Right>")
     root.update()
     assert viewer.comparison_kind.get() == "logging-period"
@@ -302,6 +305,8 @@ def test_kind_arrows_wrap_once_clear_old_report_and_preserve_native_space_tab(
     root.update()
     assert viewer.comparison_kind.get() == "logging-period"
     first.focus_force()
+    wait(root, lambda: first.focus_get() is first)
+    assert first.focus_get() is first
     first.event_generate("<space>")
     root.update()
     assert viewer.comparison_kind.get() == "plant-step"
