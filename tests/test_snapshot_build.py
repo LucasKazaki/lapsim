@@ -98,6 +98,7 @@ def archive_build(tmp_path, monkeypatch):
     assert spec is not None and spec.loader is not None
     builder = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(builder)
+    original_stage_assets = builder.stage_assets
     root = tmp_path / "source checkout"
     output = tmp_path / "shared output"
     (root / "work").mkdir(parents=True)
@@ -131,6 +132,7 @@ def archive_build(tmp_path, monkeypatch):
         originals=before,
         identity=identity,
         mode="passed",
+        real_stage_assets=False,
         calls=[],
         test_commands=[],
         report_paths=[],
@@ -138,8 +140,10 @@ def archive_build(tmp_path, monkeypatch):
         portable_commands=[],
     )
 
-    def stage_assets():
+    def stage_assets(*args, **kwargs):
         state.calls.append("stage assets")
+        if state.real_stage_assets:
+            return original_stage_assets(*args, **kwargs)
         assets = root / "build/assets"
         assets.mkdir(parents=True, exist_ok=True)
         (assets / "build-info.json").write_text(json.dumps(identity), encoding="utf-8")
@@ -212,7 +216,7 @@ def archive_build(tmp_path, monkeypatch):
     )
 
     def invoke(*, skip):
-        argv = ["build_windows.py", "--output-dir", str(output)]
+        argv = ["build_windows.py", "--output-dir", str(state.output)]
         if skip:
             argv.append("--skip-tests")
         monkeypatch.setattr(sys, "argv", argv)
@@ -359,4 +363,117 @@ def test_reused_output_never_adopts_previous_build_report(archive_build, skip_se
         assert len(build.test_commands) == 2
         assert build.report_paths[1].parent != first.parent
         assert build.fresh_reports[0] != build.fresh_reports[1]
+    assert_build_inputs_preserved(build)
+
+
+@pytest.mark.parametrize("skip", (False, True), ids=("full", "skip"))
+@pytest.mark.parametrize("inherit_literal", (False, True), ids=("normal-env", "literal-env"))
+@pytest.mark.parametrize(
+    "source_change",
+    ("clean", "tracked", "untracked-sibling"),
+)
+def test_own_verification_does_not_contaminate_real_git_source_identity(
+    archive_build, monkeypatch, skip, source_change, inherit_literal
+):
+    build = archive_build
+    build.real_stage_assets = True
+    # Deliberately relative, nonignored, and containing pathspec metacharacters.
+    build.output = Path("release [candidate]")
+    monkeypatch.chdir(build.root)
+    source = Path(__file__).resolve().parents[1]
+    for name in (
+        "README.md", "START-HERE.txt", "AGENTS.md", "ENME408_IMPLEMENTATION_PLAN.md",
+        "pyproject.toml", "setup.py", "requirements-build.lock", "build_lapsim.cmd",
+        "setup_lapsim.cmd", "setup_lapsim.ps1", "launch_lapsim.cmd", "packaging/LapSim.spec",
+        "analysis/data/track/gnss_imu_endurance_track.csv",
+        "analysis/data/track/gnss_imu_endurance_track.json",
+    ):
+        target = build.root / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source / name, target)
+    shutil.copytree(source / "web", build.root / "web")
+    # Build/work were already generated or private scratch in the original fixture.
+    # The selected release directory is intentionally absent from this ignore list.
+    (build.root / ".gitignore").write_text("/build/\n/work/\n", encoding="utf-8")
+    hooks = build.root / "work/no-hooks"
+    hooks.mkdir()
+    pathspec_environment = (
+        "GIT_LITERAL_PATHSPECS", "GIT_GLOB_PATHSPECS",
+        "GIT_NOGLOB_PATHSPECS", "GIT_ICASE_PATHSPECS",
+    )
+    # Prevent inherited Git routing/configuration from affecting the temporary repo.
+    for name in pathspec_environment + (
+        "GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR",
+        "GIT_CONFIG_COUNT", "GIT_CONFIG_PARAMETERS", "GIT_TEMPLATE_DIR",
+    ):
+        monkeypatch.delenv(name, raising=False)
+        monkeypatch.delitem(build.builder.os.environ, name, raising=False)
+    empty_global = build.root / "work/empty-global.gitconfig"
+    empty_global.write_text("", encoding="utf-8")
+    for name, value in (
+        ("GIT_CONFIG_GLOBAL", str(empty_global)), ("GIT_CONFIG_NOSYSTEM", "1"),
+    ):
+        monkeypatch.setenv(name, value)
+        monkeypatch.setitem(build.builder.os.environ, name, value)
+
+    def git(*args):
+        return subprocess.check_output(
+            [
+                "git", "-c", "core.autocrlf=false", "-c", "init.defaultBranch=fixture",
+                "-c", "commit.gpgsign=false", "-c", "user.name=Synthetic Fixture",
+                "-c", "user.email=fixture@example.invalid",
+                "-c", f"core.hooksPath={hooks}", *args,
+            ],
+            cwd=build.root, text=True,
+        ).strip()
+
+    git("init", "--quiet")
+    git("add", "--all")
+    git("commit", "--quiet", "--no-gpg-sign", "-m", "Synthetic clean build source")
+    commit = git("rev-parse", "HEAD")
+    assert git("status", "--porcelain", "--untracked-files=all") == ""
+    if source_change == "tracked":
+        readme = build.root / "README.md"
+        readme.write_bytes(readme.read_bytes() + b"\nintentional tracked source change\n")
+    sibling = None
+    if source_change == "untracked-sibling":
+        # A prefix-wide or whole-output exclusion would incorrectly hide this.
+        sibling = build.root / build.output / "verification-user-evidence/report.txt"
+        sibling.parent.mkdir(parents=True)
+        sibling.write_bytes(b"pre-existing user evidence, not owned by this build\n")
+    expected_dirty = source_change in ("tracked", "untracked-sibling")
+    assert bool(git("status", "--porcelain", "--untracked-files=all")) is expected_dirty
+    tracked = [build.root / name for name in git("ls-files", "-z").split("\0") if name]
+    source_before = {name: (name.read_bytes(), name.stat().st_mtime_ns) for name in tracked}
+    sibling_before = (sibling.read_bytes(), sibling.stat().st_mtime_ns) if sibling else None
+    if inherit_literal:
+        # Inherited only after the real temporary repository is prepared.
+        monkeypatch.setenv("GIT_LITERAL_PATHSPECS", "1")
+        monkeypatch.setitem(build.builder.os.environ, "GIT_LITERAL_PATHSPECS", "1")
+    # Real staging/source enumeration/Git/copy/hash/identity; only installed
+    # dependency metadata enumeration follows the existing synthetic test seam.
+    monkeypatch.setattr(build.builder, "version", lambda name: "test-version")
+    monkeypatch.setattr(
+        build.builder, "distribution",
+        lambda name: SimpleNamespace(metadata={"Name": name}, requires=(), files=()),
+    )
+    monkeypatch.setattr(
+        build.builder, "subprocess",
+        SimpleNamespace(run=build.builder.subprocess.run, check_output=subprocess.check_output),
+    )
+    assert build.invoke(skip=skip) == 0
+    with ZipFile(build.output / "LapSim-Windows-x64.zip") as archive:
+        identity = json.loads(archive.read("build-info.json"))
+        verification = json.loads(archive.read("verification/build-verification.json"))
+    assert identity["code_commit"] == commit
+    assert verification["packaged_source"]["code_commit"] == commit
+    assert (
+        identity["dirty_worktree"],
+        verification["packaged_source"]["dirty_worktree"],
+    ) == (expected_dirty, expected_dirty)
+    assert verification["packaged_source"]["source_sha256"] == identity["source_sha256"]
+    assert git("rev-parse", "HEAD") == commit
+    assert {name: (name.read_bytes(), name.stat().st_mtime_ns) for name in tracked} == source_before
+    if sibling is not None:
+        assert (sibling.read_bytes(), sibling.stat().st_mtime_ns) == sibling_before
     assert_build_inputs_preserved(build)
