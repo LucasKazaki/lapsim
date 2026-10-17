@@ -25,9 +25,22 @@ now merged through `c3008c2`. Their combined native-candidate tree passed all
 88 Windows test modules (2,165 reported cases, zero failures/errors, one
 POSIX-only skip); that compiler regression passed separately on local WSL.
 E16's 11 actual native checks and the local static/security gate also passed.
-The fresh native setup/export/replay path was reproduced after selecting the
-project cache through `MAMBA_ROOT_PREFIX`. E16 remains a draft until the remaining
-package/artifact gates and normal exact-head PR checks permit integration.
+Installed wheel/sdist/source-bootstrap, actual portable executable, and browser
+accessibility gates passed at `135f6ed`. The fresh native setup/export/replay
+path was reproduced after selecting the project cache through
+`MAMBA_ROOT_PREFIX`.
+
+A subsequent counterexample showed that decimated logging could hide a one-tick
+settling excursion. The repaired gate measures every plant boundary in the
+final half-second, with unchanged thresholds and exported telemetry. At clean
+`5c59265`, 66 focused checks and all 11 actual native checks passed; all six
+native scenarios retained identical commands and saved samples, and a fresh
+export replayed in a separate process. Tracked evidence manifests are linked
+from [the native guide](docs/chrono_suspension_study.md). E16 remains a draft
+until the repaired combined candidate completes its broader local and normal
+exact-head PR gates. The separately reviewed replay-cancellation candidate
+passed all 88 Windows modules and local WSL static/POSIX gates at `8e60ba1`;
+its normal PR integration remains separate from E16's numerical claims.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity

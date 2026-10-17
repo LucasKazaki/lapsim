@@ -209,6 +209,22 @@ On the owner's native Windows project environment, CPython 3.13.15,
 completed with **66 passed, no skips or failures, in 5.47 s**. These lightweight
 tests include all three settling limits, window endpoints, unlogged clock/NaN
 rejection, dense acceptance counts and sparse export invariance. They use an
-instrumented clock fixture, not surrogate vehicle physics. The strengthened
-`quality/test_chrono_native.py` remains a separate actual-engine gate; this repair
-has not independently established native acceptance or native runtime cost.
+instrumented clock fixture, not surrogate vehicle physics.
+
+At clean source `5c592654448e067d0f7ca2584f50d91a341a7e25`, all 11 actual
+PyChrono checks passed with no skips or failures in 75.48 s (76.66 s outer
+command). The default settling gate measured 1,001 plant boundaries; the
+half-step run measured 2,001. Dense and sparse logging produced identical
+settling summaries, and all six native scenarios retained exactly the earlier
+commands and saved sample values. The dense maximum vertical-force error was
+0.04349% of weight, within the unchanged 1% criterion.
+
+A fresh drive command and separate-process replay also passed at that source.
+The drive measured 8.32 s inside the study, 8.22 s process CPU and a 134.6 MiB
+lifetime peak working set; the outer command took 9.71 s. A local WSL static
+audit was active, and these timings do not establish an isolated performance
+improvement or a deadline. The [plant-clock evidence manifest](research/evidence/chrono-settling-plant-clock-20261017.json)
+retains exact source/configuration identities, commands and exits, receipts,
+result IDs/hashes, all six comparison summaries, and the native test-report
+hash. It records this source revision rather than inferring acceptance of later
+implementation changes.
