@@ -11,6 +11,7 @@ from math import isfinite
 from pathlib import Path
 import sys
 
+from .dynamics_record import _canonical_json
 from .suspension_study import (
     SOURCE_HASH_SCOPE,
     SuspensionScenario,
@@ -40,6 +41,11 @@ SCOPE = (
 )
 
 
+def _saved_equal(left, right):
+    """Match recorded JSON values, independent of Python list/tuple storage."""
+    return _canonical_json(left) == _canonical_json(right)
+
+
 def _compatibility(left, right, field):
     reasons = []
     for name in (
@@ -51,7 +57,7 @@ def _compatibility(left, right, field):
         "controller",
         "commands",
     ):
-        if left[name] != right[name]:
+        if not _saved_equal(left[name], right[name]):
             reasons.append("payload." + name + " differs")
     for label, payload in (("left", left), ("right", right)):
         model = payload["model"]
@@ -63,12 +69,12 @@ def _compatibility(left, right, field):
         if payload["source"]["hash_scope"] != SOURCE_HASH_SCOPE:
             reasons.append(label + " implementation hash scope is unsupported")
     for name in ("hash_scope", "files_sha256"):
-        if left["source"][name] != right["source"][name]:
+        if not _saved_equal(left["source"][name], right["source"][name]):
             reasons.append("payload.source." + name + " differs")
     for name in left["scenario"]:
         if name != field and left["scenario"][name] != right["scenario"][name]:
             reasons.append("payload.scenario." + name + " differs")
-    if left["samples"][0] != right["samples"][0]:
+    if not _saved_equal(left["samples"][0], right["samples"][0]):
         reasons.append("initial recorded observation differs")
     return reasons
 
@@ -101,7 +107,9 @@ def _logging_result(left, right):
             j += 1
         else:
             shared.append(a[i]["time_s"])
-            fields = sorted(key for key in a[i] if a[i][key] != b[j][key])
+            fields = sorted(
+                key for key in a[i] if not _saved_equal(a[i][key], b[j][key])
+            )
             if fields:
                 mismatch_count += 1
                 differences.update(fields)
@@ -127,7 +135,7 @@ def _logging_result(left, right):
         "different_shared_observations": mismatch_count,
         "different_field_counts": dict(sorted(differences.items())),
         "first_five_mismatch_examples": examples,
-        "stored_metric_claims_equal": left["metrics"] == right["metrics"],
+        "stored_metric_claims_equal": _saved_equal(left["metrics"], right["metrics"]),
         "settling_scope": "stored streaming metrics are claims; sparse exports do not revalidate dense settling",
     }
 
@@ -203,11 +211,7 @@ def _criterion(left, right, inspections, quantities):
         )
     }
     claim["initial_observation"] = left["samples"][0]
-    claim_id = sha256(
-        json.dumps(
-            claim, sort_keys=True, separators=(",", ":"), allow_nan=False
-        ).encode("utf-8")
-    ).hexdigest()
+    claim_id = sha256(_canonical_json(claim).encode("utf-8")).hexdigest()
     current = all(
         summary["checks"]["current_implementation_files"] == "match"
         for summary in inspections
