@@ -29,10 +29,17 @@ repository root, replacing the executable path with your downloaded copy:
 $mm = 'C:\path\to\micromamba.exe'
 $nativeEnv = 'C:\path\to\short\chrono312'
 $nativeCache = 'C:\path\to\short\chrono-cache'
+$env:MAMBA_ROOT_PREFIX = $nativeCache
 & $mm create -y -r $nativeCache -p $nativeEnv -f environments/chrono-win64.lock.txt
 & $mm run -p $nativeEnv python -m pip install -r environments/chrono-pip.lock.txt
 & $mm run -p $nativeEnv python -m pip install --no-deps -e .
 ```
+
+Set `MAMBA_ROOT_PREFIX` in the current shell before the first invocation, and
+retain it for the run commands below. The local reproduction found that a
+populated default directory could make micromamba fail during startup, before
+it read `-r`. Selecting the isolated project cache through the environment
+resolved this without changing or deleting the default directory.
 
 The explicit conda lock identifies all native package builds and checksums;
 the pip lock pins the Python dependencies. The supported engine is the official
