@@ -575,3 +575,40 @@ the input bytes and modification time, and reproduced the entire payload and
 content ID. All six original scenarios retained exactly equal commands, samples
 and metrics against the prior six-fixture run. These results retain their own
 source/receipt identities and do not expand the historical 11-check receipts.
+
+## Configured CLI acceptance (17 October 2026)
+
+The [CLI evidence manifest](research/evidence/chrono-native-cli-20261017.json)
+records the separate sources and measured scopes. The retained `eb52ef2`
+baseline reproduced 33 expected failures and 103 passes; unchanged assertions
+then passed all 136 engine-free checks at `bc504d5`. That source also passed
+12 actual native checks over seven fresh records. The configured normal CLI
+and separate replay reproduced the fresh fixture payload/content ID and
+preserved the supplied input bytes and modification time. The earlier
+[native-clock evidence](research/evidence/chrono-noncoincident-clocks-20261017.json)
+keeps its own `6a4b7da` suite and `6312e8b` instrumentation scope.
+
+At inventory-only source `1129238`, 97 fresh ordinary module processes used
+the unchanged runner functions in one observed segment. This was not an
+uninterrupted `check_all.py` invocation. Its reported JUnit total is 2,396
+tests, with 1,386 raw testcase elements, zero failures/errors and one expected
+Windows skip; the same POSIX compiler case passed in WSL. The full WSL audit
+retained the existing 241 errors/48 warnings with no new type fingerprints.
+Zero Semgrep matches/top-level errors came with eight unchanged fixpoint
+warnings, so taint coverage remains incomplete. Broad lint/format debt remains.
+
+Actual wheel and sdist checks each retained 538 references, 13 normal pair
+cases and four configured CLI cases. Installed replay aliases and mid-replay
+cancellation were not separately invoked; those source contracts remain in
+the 136-check and full-module evidence. Browser checks covered four layouts,
+12 accessibility states and 10 focused cases, with zero detected violations or
+runtime errors and 36 incomplete accessibility rule entries. Visual review
+covered two installed-wheel and two browser captures. Frozen checks covered
+the original build/self-tests, copied supplied-record viewing and same-path
+alias rejection; they add no new frozen normal-pair acceptance or physics.
+
+The normal ancestry merge `4bccac1` preserves all `1129238` runtime, tests,
+locks and generated catalog bytes. Fresh normal comparisons at `4bccac1`
+independently reproduced the actual installed wheel/sdist recipe, calculation
+and receipt IDs. Its explicit seven-file recipe remains a limited source scope;
+the changed study hash and historical execution claims remain separate.

@@ -113,6 +113,8 @@ The [durable verification manifest](docs/research/evidence/chrono-noncoincident-
 retains measured cases, identities, commands and raw-file hashes. The ignored
 `work/detailed-study/native-full-6a4b7da-independent-proof.json` remains a local
 raw-evidence binding.
+Normal PR #103 subsequently merged as `8802edf`, with the accepted manifest
+and its historical suite/observer scopes retained.
 
 The bounded CLI extension exposes all nine existing scenario settings in
 the normal command, with seven additional flags and no new input schema. It
@@ -120,11 +122,18 @@ counts every regular and forced settling/final export against the unchanged
 2,001-sample limit before native initialization. Explicit fresh-study flags are
 rejected in replay/inspection modes; defaults and saved-scenario authority remain
 unchanged. The retained regression baseline at `eb52ef2` reproduced 33 expected
-failures with 103 passing cases. Pure CLI checks, actual native fixtures and
-packaged workflows have separate acceptance scopes. Editing the existing study
-module changes its strict three-file replay identity; old over-budget scenarios
-may fail current validation, and historical fixture/criterion evidence must not
-be relabeled.
+failures with 103 passing cases. Unchanged assertions then passed 136 checks at
+`bc504d5`, which also passed the 12 native checks and configured CLI/replay. At
+the inventory-only `1129238` candidate, all 97 ordinary module processes, the
+WSL audit/POSIX case, installed wheel/sdist workflows, browser checks and frozen
+single-record/alias checks passed within their recorded scopes. The normal
+main-ancestry merge `4bccac1` preserved all `1129238` runtime/test/catalog bytes;
+fresh normal comparisons there reproduced the installed wheel/sdist IDs. The
+[CLI evidence manifest](docs/research/evidence/chrono-native-cli-20261017.json)
+retains counts, commands, source identities, hashes and coverage limits. Editing
+the existing study module changes its strict three-file replay identity; old
+over-budget scenarios may fail current validation, and historical fixture/criterion
+evidence must not be relabeled.
 
 E16's smallest increment is a headless, explicitly synthetic native suspension
 and rear-driveshaft study. The engineering user needs reproducible gravity
