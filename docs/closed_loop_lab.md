@@ -51,6 +51,15 @@ policy. Replay checks the numeric record and reports source-identity agreement
 separately. JSON content hashes detect accidental edits; they do not authenticate
 a publisher.
 
+Both headless CLIs bound the actual file read (20 MB for a single run/scenario,
+40 MB for a comparison), including files that grow after selection. Output
+uses a unique sibling temporary file and atomic replacement; a partial write
+or failed replacement preserves the previous destination and removes the
+temporary file. Concurrent writers use separate temporaries. A filesystem may
+refuse an overlapping replacement, which is reported as an error while a
+complete saved record remains. Replay output cannot alias its input, including
+through a hard link.
+
 ## What the loop calculates
 
 At each integer boundary the runner applies reset, samples sensors, delivers due

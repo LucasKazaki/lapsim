@@ -25,6 +25,7 @@ from .closed_loop import (
     run_closed_loop,
 )
 from .dynamics_record import _canonical_json, _content_id
+from .record_io import read_json_bounded, write_text_atomic
 
 SCHEMA = "lapsim.control-comparison.v1"
 CASES = {
@@ -266,10 +267,8 @@ def main() -> int:
                 or (args.output.exists() and args.output.samefile(args.replay))
             ):
                 raise ValueError("output must not overwrite input")
-            if args.replay.stat().st_size > 40_000_000:
-                raise ValueError("comparison file exceeds size limit")
             result = replay_control_comparison(
-                decode_json(args.replay.read_bytes(), maximum_bytes=40_000_000)
+                read_json_bounded(args.replay, maximum_bytes=40_000_000)
             )
         else:
             result = run_control_comparison(
@@ -277,7 +276,7 @@ def main() -> int:
             )
         encoded = _canonical_json(result) + "\n"
         if args.output:
-            args.output.write_text(encoded, encoding="utf-8")
+            write_text_atomic(args.output, encoded)
         else:
             print(encoded)
     except (ValueError, OSError, TypeError) as error:
