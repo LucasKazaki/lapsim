@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import argparse
 import csv
-from hashlib import sha256
 import io
 import json
-from pathlib import Path
 import sys
+from hashlib import sha256
+from pathlib import Path
 from typing import Any
 
 from .record_io import write_text_atomic
@@ -89,7 +89,7 @@ _HEADER = (
 )
 
 
-def _number(value: int | float | None) -> str:
+def _number(value: float | None) -> str:
     return "" if value is None else repr(value)
 
 
@@ -101,11 +101,12 @@ def _inspection_metadata(record: dict[str, Any], inspection: Any) -> str:
     ):
         raise ValueError("inspection context must bind both IDs to the saved record")
     checks = inspection.get("checks")
-    if not isinstance(checks, dict):
-        raise ValueError("inspection context requires a checks object")
-    status = checks.get("current_implementation_files")
+    status = (
+        checks.get("current_implementation_files") if isinstance(checks, dict) else None
+    )
     if (
-        not isinstance(status, str)
+        not isinstance(checks, dict)
+        or not isinstance(status, str)
         or not (status == "match" or status.startswith(("mismatch;", "unavailable;")))
         or checks.get("fresh_native_replay") != "not run"
         or checks.get("historical_timing") != "recorded claims; not validated"
@@ -224,6 +225,7 @@ def main(argv: list[str] | None = None) -> int:
         TypeError,
         OverflowError,
         RecursionError,
+        RuntimeError,
         csv.Error,
     ) as exc:
         print(f"Native telemetry CSV: {exc}", file=sys.stderr)

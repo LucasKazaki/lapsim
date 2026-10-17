@@ -8,15 +8,14 @@ import io
 import json
 import math
 import os
-from pathlib import Path
 import subprocess
 from hashlib import sha256
+from pathlib import Path
 
 import pytest
-
-from lapsim.experiments import suspension_study as study
 from test_suspension_study import ClockPlant
 
+from lapsim.experiments import suspension_study as study
 
 CSV_SCHEMA = "lapsim.native-telemetry-csv.v1"
 CONTEXT_SCOPE = "supplied read-only inspection context; not attestation"
@@ -113,10 +112,14 @@ def originals():
         },
     }
     settings = {
-        "short": dict(settle_s=1.0, maneuver_s=0.1, plant_step_s=0.001),
-        "noncoincident": dict(settle_s=6.003, maneuver_s=0.101, logging_period_s=0.025),
+        "short": {"settle_s": 1.0, "maneuver_s": 0.1, "plant_step_s": 0.001},
+        "noncoincident": {
+            "settle_s": 6.003,
+            "maneuver_s": 0.101,
+            "logging_period_s": 0.025,
+        },
         "dense": {},
-        "sparse": dict(logging_period_s=0.05),
+        "sparse": {"logging_period_s": 0.05},
     }
     with pytest.MonkeyPatch.context() as patch:
         # Avoid Git entirely even while constructing portable clock fixtures.
@@ -231,29 +234,37 @@ def expected_sample(record, index):
     expected["completed_interval_braking_normalized"] = number(
         sample["command"]["braking"]
     )
-    for index, wheel in enumerate(WHEELS):
+    for wheel_index, wheel in enumerate(WHEELS):
         scalars = {
-            "wheel_omega_local_y_rad_s": sample["wheel_omega_rad_s"][index],
+            "wheel_omega_local_y_rad_s": sample["wheel_omega_rad_s"][wheel_index],
             "native_axle_shaft_omega_rad_s": sample["native_axle_shaft_omega_rad_s"][
-                index
+                wheel_index
             ],
-            "tire_slip_ratio_dimensionless": sample["tire_slip_ratio"][index],
-            "tire_slip_angle_rad": sample["tire_slip_angle_rad"][index],
-            "suspension_spring_length_m": sample["suspension_spring_length_m"][index],
-            "suspension_spring_force_n": sample["suspension_spring_force_n"][index],
-            "suspension_damper_force_n": sample["suspension_damper_force_n"][index],
-            "driveline_wheel_torque_nm": sample["driveline_wheel_torque_nm"][index],
+            "tire_slip_ratio_dimensionless": sample["tire_slip_ratio"][wheel_index],
+            "tire_slip_angle_rad": sample["tire_slip_angle_rad"][wheel_index],
+            "suspension_spring_length_m": sample["suspension_spring_length_m"][
+                wheel_index
+            ],
+            "suspension_spring_force_n": sample["suspension_spring_force_n"][
+                wheel_index
+            ],
+            "suspension_damper_force_n": sample["suspension_damper_force_n"][
+                wheel_index
+            ],
+            "driveline_wheel_torque_nm": sample["driveline_wheel_torque_nm"][
+                wheel_index
+            ],
         }
         for axis, component in (("x", 0), ("y", 1), ("z", 2)):
-            scalars[f"center_world_{axis}_m"] = sample["wheel_position_m"][index][
+            scalars[f"center_world_{axis}_m"] = sample["wheel_position_m"][wheel_index][
                 component
             ]
             scalars[f"computed_force_world_{axis}_n"] = sample["wheel_force_world_n"][
-                index
+                wheel_index
             ][component]
             scalars[f"applied_force_world_{axis}_n"] = sample[
                 "applied_wheel_force_world_n"
-            ][index][component]
+            ][wheel_index][component]
         expected.update(
             {f"{wheel}_{name}": number(value) for name, value in scalars.items()}
         )
