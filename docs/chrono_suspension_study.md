@@ -503,6 +503,24 @@ requested driveshaft loads, not achieved wheel or brake reactions.
 A separate normal CLI replay passed the existing source/full-payload check;
 the fresh payload and content ID were exactly equal to the instrumented record.
 Execution receipts differ because they include timing. This experiment adds
-no physical model, motion criterion, calibration or performance claim. It did
-not run the new maintained 12-check suite: that candidate requires its own
-full native acceptance, separately from the historical 11-check evidence.
+no physical model, motion criterion, calibration or performance claim. The
+subsequent maintained-suite result has its own source and scope below.
+
+At clean source `6a4b7da625b8cffc62c55a6fe764b2926286e53e`, the pinned native
+environment ran:
+
+```powershell
+python -m pytest quality/test_chrono_native.py -q --junitxml=work/detailed-study/chrono-native-6a4b7da.xml
+```
+
+All 12 checks passed with zero failures, errors or skips in 71.82 s pytest
+time and 72.69 s outer guarded-command time. The XML at
+`work/detailed-study/chrono-native-6a4b7da.xml` has SHA-256
+`bf8b8cadef71a9dcefdff01c2c542693e7996a7f8fb925e864da26a850cacea3`;
+the compact local proof is retained at the ignored path
+`work/detailed-study/native-full-6a4b7da-independent-proof.json`. A separate
+normal CLI replay of the new fixture passed in 7.71 s outer time, preserved
+the input bytes and modification time, and reproduced the entire payload and
+content ID. All six original scenarios retained exactly equal commands, samples
+and metrics against the prior six-fixture run. These results retain their own
+source/receipt identities and do not expand the historical 11-check receipts.
