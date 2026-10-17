@@ -376,21 +376,20 @@ def test_bad_load_clears_old_result_and_fresh_load_recovers(
     assert viewer.model_claim.get() == "Recorded model claim: previous_record_fixture"
     bad = tmp_path / "invalid.json"
     bad.write_text("{invalid")
-    renderer = viewer._draw_record
-    if failure == "plot":
+    with monkeypatch.context() as renderer_patch:
+        if failure == "plot":
 
-        def reject_plot():
-            raise ValueError("stored channel range cannot be plotted")
+            def reject_plot(_viewer):
+                raise ValueError("stored channel range cannot be plotted")
 
-        monkeypatch.setattr(viewer, "_draw_record", reject_plot)
-    viewer.load_path(bad if failure == "json" else saved)
-    assert viewer.record is None
-    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
-    wait(root, lambda: not viewer.busy)
-    assert "Open failed" in viewer.status.get()
-    assert viewer.model_claim.get() == "Recorded model claim: not recorded"
-    assert viewer.details_button.cget("state") == "disabled"
-    monkeypatch.setattr(viewer, "_draw_record", renderer)
+            renderer_patch.setattr(type(viewer), "_draw_record", reject_plot)
+        viewer.load_path(bad if failure == "json" else saved)
+        assert viewer.record is None
+        assert viewer.model_claim.get() == "Recorded model claim: not recorded"
+        wait(root, lambda: not viewer.busy)
+        assert "Open failed" in viewer.status.get()
+        assert viewer.model_claim.get() == "Recorded model claim: not recorded"
+        assert viewer.details_button.cget("state") == "disabled"
     viewer.load_path(saved)
     wait(root, lambda: not viewer.busy)
     assert viewer.record is not None
