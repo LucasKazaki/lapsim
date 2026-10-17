@@ -103,6 +103,8 @@ def test_logging_is_side_effect_free_and_does_not_change_the_physical_trace(
     sparse = native_records["drive_sparse_log"]["payload"]
     assert dense["commands"] == sparse["commands"]
     assert dense["samples"][-1] == sparse["samples"][-1]
+    assert dense["metrics"] == sparse["metrics"]
+    assert dense["metrics"]["settle_samples"] == 1001
     shared = {round(sample["time_s"], 8): sample for sample in dense["samples"]}
     for sample in sparse["samples"]:
         key = round(sample["time_s"], 8)

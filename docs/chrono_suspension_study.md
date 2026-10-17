@@ -64,11 +64,19 @@ This increment has a local command-line workflow, without a browser service.
 
 Use `--plant-step 0.00025` for a half-step comparison. The Python API accepts a
 validated `SuspensionScenario` for other bounded settings. Six seconds under
-gravity precede a two-second maneuver by default. Over the final 0.5 s of
-settling, vertical tire reaction must remain within 1% of total weight,
+gravity precede a two-second maneuver by default. At every plant-tick boundary
+in the final 0.5 s of settling, cached applied vertical tire reaction must remain
+within 1% of total weight,
 left/right axle-load difference within 1% of half the weight, and vertical
 chassis speed within 0.01 m/s. A failed settling gate stops before actuation.
-These are numerical fixture criteria, not calibration tolerances.
+The gate observes independently of the logging cadence and retains streaming
+maxima, so an excursion between exported samples cannot be hidden by sparse
+logging. `metrics.settle_samples` counts these acceptance observations;
+`metrics.settle_sampling` records their clock, period, first/last actual sample
+times and force channel. A window edge between plant ticks is not interpolated.
+Exported `samples` remain on the logging grid plus the explicit settling/final
+samples. These are discrete numerical fixture criteria, not continuous-time
+guarantees or calibration tolerances.
 
 Ctrl+C cancels a run. With `--stop-file work/detailed-study/STOP`, creating that
 file also cancels at a plant-tick boundary. No completed record is returned or
@@ -183,3 +191,24 @@ assets or large telemetry logs.
 Sources and license: [Chrono evidence register](research/chrono_backend.md).
 No upstream meshes, tire files, binaries or vehicle definitions are vendored;
 the installed dependency supplies them. The project's licensing work is unchanged.
+
+## Settling-clock repair checks — 17 October 2026
+
+At source `135f6ed`, a synthetic clock fixture with a one-plant-tick excursion
+at 0.751 s passed a one-second settling gate at both 10 ms and 25 ms logging.
+The four retained baseline failures cover vertical speed 0.02 m/s and vertical
+reaction 2% above weight; the old gate read only exported logging samples.
+The repaired gate checks the plant clock without changing command or export
+clocks. Four frozen before/after fixture traces, including off-grid window,
+settling and final boundaries, had byte-identical commands and exported samples.
+Their complete trace SHA-256 values are retained as frozen regression contracts
+in `tests/test_suspension_study.py`.
+
+On the owner's native Windows project environment, CPython 3.13.15,
+`python -m pytest tests/test_suspension_study.py tests/test_simulator_flowchart.py -q`
+completed with **66 passed, no skips or failures, in 5.47 s**. These lightweight
+tests include all three settling limits, window endpoints, unlogged clock/NaN
+rejection, dense acceptance counts and sparse export invariance. They use an
+instrumented clock fixture, not surrogate vehicle physics. The strengthened
+`quality/test_chrono_native.py` remains a separate actual-engine gate; this repair
+has not independently established native acceptance or native runtime cost.

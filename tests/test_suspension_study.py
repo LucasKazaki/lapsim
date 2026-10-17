@@ -34,6 +34,7 @@ class ClockPlant:
         self.closed = False
         self.steps = 0
         self.commands = []
+        self.observations = []
 
     def reset(self):
         self.time = 0.0
@@ -48,6 +49,7 @@ class ClockPlant:
         self.applied = self.command
 
     def observe(self):
+        self.observations.append(self.steps)
         return PlantObservation(
             time_s=self.time,
             tire_force_source_time_s=None,
@@ -142,6 +144,184 @@ def test_observation_rate_does_not_change_clock_or_command_calls():
     assert plants[0].commands == plants[1].commands
     assert plants[0].steps == plants[1].steps
     assert results[0]["payload"]["samples"][-1] == results[1]["payload"]["samples"][-1]
+    assert results[0]["payload"]["metrics"] == results[1]["payload"]["metrics"]
+    assert results[0]["payload"]["metrics"]["settle_samples"] == 1001
+    assert [len(result["payload"]["samples"]) for result in results] == [111, 45]
+    for plant in plants:
+        assert [tick for tick in plant.observations if 1000 <= tick <= 2000] == list(
+            range(1000, 2001)
+        )
+
+
+@pytest.mark.parametrize(
+    "settings,trace_sha256",
+    [
+        (
+            dict(settle_s=1.0, maneuver_s=0.1, plant_step_s=0.001, logging_period_s=0.01),
+            "387f2b1786d65c02c06a08b6bcf37c9a51c423606f06e31bcf24570f05aed44a",
+        ),
+        (
+            dict(settle_s=1.0, maneuver_s=0.1, plant_step_s=0.001, logging_period_s=0.025),
+            "27a7a39a8e00e46f5cf1f5c3bf2ae6070f31635d660e1a6fd3e5974d3642e3eb",
+        ),
+        (
+            dict(settle_s=1.003, maneuver_s=0.101, plant_step_s=0.001, logging_period_s=0.025),
+            "58b1bb26f5e62749b327f8d374d40d628d81567db093de950b8dcd47a772d3bc",
+        ),
+        (
+            dict(
+                settle_s=1.0002,
+                maneuver_s=0.1002,
+                plant_step_s=0.0006,
+                controller_period_s=0.0102,
+                logging_period_s=0.024,
+            ),
+            "70c61bab00a8a506505045f91862767432aeb2fa140b04a7633625ed47794484",
+        ),
+    ],
+)
+def test_commands_and_exported_samples_match_pre_repair_frozen_trace(settings, trace_sha256):
+    # Frozen from 135f6ed62a32e3e82f3bd3b82550f95359ec1cea before repair.
+    # Covers every recorded field and command, not runtime/source identities.
+    # ClockPlant is instrumentation, not native-physics acceptance evidence.
+    result = run_study(SuspensionScenario(**settings), plant_factory=ClockPlant)
+    trace = {key: result["payload"][key] for key in ("samples", "commands")}
+    assert _content_id(trace) == trace_sha256
+
+
+@pytest.mark.parametrize("logging_period_s", (0.01, 0.025))
+@pytest.mark.parametrize("excursion", ("vertical_speed", "vertical_force", "left_right_load"))
+def test_settle_gate_rejects_excursion_between_exported_samples(
+    logging_period_s, excursion
+):
+    class ExcursionPlant(ClockPlant):
+        def observe(self):
+            sample = super().observe()
+            if self.steps == 751:
+                if excursion == "vertical_speed":
+                    sample = replace(sample, velocity_mps=(1.0, 0.0, 0.02))
+                elif excursion == "vertical_force":
+                    sample = replace(
+                        sample,
+                        applied_wheel_force_world_n=((0.0, 0.0, 9.81 * 1.02 / 4),) * 4,
+                    )
+                else:
+                    forces = list(sample.applied_wheel_force_world_n)
+                    # Equal/opposite changes keep total vertical force correct.
+                    forces[0] = (0.0, 0.0, 9.81 / 4 + 9.81 * 0.005)
+                    forces[1] = (0.0, 0.0, 9.81 / 4 - 9.81 * 0.005)
+                    sample = replace(sample, applied_wheel_force_world_n=tuple(forces))
+            return sample
+
+    plant = ExcursionPlant()
+    scenario = SuspensionScenario(
+        settle_s=1.0,
+        maneuver_s=0.1,
+        plant_step_s=0.001,
+        logging_period_s=logging_period_s,
+    )
+    with pytest.raises(RuntimeError, match="not settled"):
+        run_study(scenario, plant_factory=lambda: plant)
+    assert plant.closed
+    assert plant.steps == 1000
+    assert all(command.braking == 0.2 for _, command in plant.commands)
+
+
+@pytest.mark.parametrize("excursion_tick", (500, 1000))
+def test_settle_window_includes_both_plant_boundary_endpoints(excursion_tick):
+    class ExcursionPlant(ClockPlant):
+        def observe(self):
+            sample = super().observe()
+            if self.steps == excursion_tick:
+                return replace(sample, velocity_mps=(1.0, 0.0, 0.02))
+            return sample
+
+    plant = ExcursionPlant()
+    with pytest.raises(RuntimeError, match="not settled"):
+        run_study(
+            SuspensionScenario(settle_s=1.0, maneuver_s=0.1, plant_step_s=0.001),
+            plant_factory=lambda: plant,
+        )
+    assert plant.closed and plant.steps == 1000
+
+
+@pytest.mark.parametrize("excursion_tick", (490, 1010))
+def test_settle_gate_does_not_include_observations_outside_its_window(excursion_tick):
+    class OutsideExcursion(ClockPlant):
+        def observe(self):
+            sample = super().observe()
+            if self.steps == excursion_tick:
+                return replace(sample, velocity_mps=(1.0, 0.0, 0.02))
+            return sample
+
+    result = run_study(
+        SuspensionScenario(
+            settle_s=1.0, maneuver_s=0.1, plant_step_s=0.001, logging_period_s=0.01
+        ),
+        plant_factory=OutsideExcursion,
+    )
+    assert result["payload"]["metrics"]["settle_acceptance"]["passed"]
+    assert result["payload"]["metrics"]["settle_max_vertical_speed_mps"] == 0.0
+    assert any(sample["velocity_mps"][2] == 0.02 for sample in result["payload"]["samples"])
+
+
+def test_settle_summary_retains_a_valid_peak_not_present_in_exported_samples():
+    class SubLimitPeak(ClockPlant):
+        def observe(self):
+            sample = super().observe()
+            if self.steps == 751:
+                return replace(sample, velocity_mps=(1.0, 0.0, 0.0095))
+            return sample
+
+    result = run_study(
+        SuspensionScenario(settle_s=1.0, maneuver_s=0.1, plant_step_s=0.001),
+        plant_factory=SubLimitPeak,
+    )
+    payload = result["payload"]
+    assert payload["metrics"]["settle_max_vertical_speed_mps"] == 0.0095
+    assert payload["metrics"]["settle_samples"] == 501
+    assert all(sample["velocity_mps"][2] == 0.0 for sample in payload["samples"])
+
+
+def test_settle_sampling_scope_reports_the_actual_grid_when_window_edge_is_off_grid():
+    result = run_study(
+        SuspensionScenario(
+            settle_s=1.0002,
+            maneuver_s=0.1002,
+            plant_step_s=0.0006,
+            controller_period_s=0.0102,
+            logging_period_s=0.024,
+        ),
+        plant_factory=ClockPlant,
+    )
+    metrics = result["payload"]["metrics"]
+    assert metrics["settle_window_s"] == pytest.approx([0.5002, 1.0002])
+    assert metrics["settle_samples"] == 834
+    assert metrics["settle_sampling"]["period_s"] == 0.0006
+    assert metrics["settle_sampling"]["first_time_s"] == pytest.approx(0.5004)
+    assert metrics["settle_sampling"]["last_time_s"] == pytest.approx(1.0002)
+    assert metrics["settle_sampling"]["force_channel"] == "applied_wheel_force_world_n"
+
+
+@pytest.mark.parametrize("failure", ("clock", "nonfinite"))
+def test_unlogged_settling_observations_are_validated_and_close_on_error(failure):
+    class InvalidObservation(ClockPlant):
+        def observe(self):
+            sample = super().observe()
+            if self.steps == 751:
+                if failure == "clock":
+                    return replace(sample, time_s=99.0)
+                return replace(sample, velocity_mps=(1.0, 0.0, float("nan")))
+            return sample
+
+    plant = InvalidObservation()
+    expected = RuntimeError if failure == "clock" else ValueError
+    with pytest.raises(expected):
+        run_study(
+            SuspensionScenario(settle_s=1.0, maneuver_s=0.1, plant_step_s=0.001),
+            plant_factory=lambda: plant,
+        )
+    assert plant.closed and plant.steps == 751
 
 
 def test_cancel_closes_plant_and_returns_no_record():

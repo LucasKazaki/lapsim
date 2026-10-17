@@ -9,7 +9,7 @@ import sys
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from hashlib import sha256
-from math import isclose, isfinite, sqrt
+from math import ceil, isclose, isfinite, sqrt
 from pathlib import Path
 from time import perf_counter, process_time
 from typing import Any
@@ -162,46 +162,74 @@ def _command(scenario: SuspensionScenario, time_s: float) -> AxleCommand:
     )
 
 
-def _metrics(samples: list[dict], scenario: SuspensionScenario) -> dict:
-    settled = [
-        sample
-        for sample in samples
-        if scenario.settle_s - 0.5 - 1e-10
-        <= sample["time_s"]
-        <= scenario.settle_s + 1e-10
-    ]
-    weights = [sample["mass_kg"] * 9.81 for sample in settled]
-    forces = [
-        sum(force[2] for force in sample["applied_wheel_force_world_n"])
-        for sample in settled
-    ]
-    ratios = [abs(force - weight) / weight for force, weight in zip(forces, weights)]
-    left_right = [
-        abs(loads[2 * axle][2] - loads[2 * axle + 1][2])
-        / max(1.0, sample["mass_kg"] * 9.81 / 2)
-        for sample in settled
-        for axle in range(2)
-        for loads in [sample["applied_wheel_force_world_n"]]
-    ]
-    accepted = (
-        max(ratios) <= 0.01
-        and max(left_right) <= 0.01
-        and max(abs(sample["velocity_mps"][2]) for sample in settled) <= 0.01
-    )
+@dataclass(slots=True)
+class _SettlingMeasurements:
+    """Streaming plant-boundary maxima; exported logging owns no acceptance clock."""
+
+    count: int = 0
+    first_time_s: float | None = None
+    last_time_s: float | None = None
+    force_relative_error: float = 0.0
+    left_right_relative_difference: float = 0.0
+    vertical_speed_mps: float = 0.0
+
+    def add(self, sample: dict) -> None:
+        weight = sample["mass_kg"] * 9.81
+        if not isfinite(weight) or weight <= 0:
+            raise ValueError("Native plant mass must be finite and positive")
+        loads = sample["applied_wheel_force_world_n"]
+        force_error = abs(sum(force[2] for force in loads) - weight) / weight
+        left_right = max(
+            abs(loads[2 * axle][2] - loads[2 * axle + 1][2]) / max(1.0, weight / 2)
+            for axle in range(2)
+        )
+        vertical_speed = abs(sample["velocity_mps"][2])
+        if not all(
+            isfinite(value) for value in (force_error, left_right, vertical_speed)
+        ):
+            raise ValueError("Nonfinite native settling measurement")
+        self.force_relative_error = max(self.force_relative_error, force_error)
+        self.left_right_relative_difference = max(
+            self.left_right_relative_difference, left_right
+        )
+        self.vertical_speed_mps = max(self.vertical_speed_mps, vertical_speed)
+        if self.count == 0:
+            self.first_time_s = sample["time_s"]
+        self.last_time_s = sample["time_s"]
+        self.count += 1
+
+    def metrics(self, scenario: SuspensionScenario) -> dict:
+        if self.count == 0:
+            raise RuntimeError("No plant observations in the settling window")
+        return {
+            "settle_window_s": [scenario.settle_s - 0.5, scenario.settle_s],
+            "settle_samples": self.count,
+            "settle_sampling": {
+                "clock": "every plant-tick boundary in the inclusive settling window",
+                "period_s": scenario.plant_step_s,
+                "first_time_s": self.first_time_s,
+                "last_time_s": self.last_time_s,
+                "force_channel": "applied_wheel_force_world_n",
+            },
+            "settle_max_vertical_force_relative_error": self.force_relative_error,
+            "settle_max_left_right_load_relative_difference": self.left_right_relative_difference,
+            "settle_max_vertical_speed_mps": self.vertical_speed_mps,
+            "settle_acceptance": {
+                "passed": self.force_relative_error <= 0.01
+                and self.left_right_relative_difference <= 0.01
+                and self.vertical_speed_mps <= 0.01,
+                "force_relative_limit": 0.01,
+                "left_right_relative_limit": 0.01,
+                "vertical_speed_limit_mps": 0.01,
+            },
+        }
+
+
+def _metrics(
+    samples: list[dict], scenario: SuspensionScenario, settling: _SettlingMeasurements
+) -> dict:
     return {
-        "settle_window_s": [scenario.settle_s - 0.5, scenario.settle_s],
-        "settle_samples": len(settled),
-        "settle_max_vertical_force_relative_error": max(ratios),
-        "settle_max_left_right_load_relative_difference": max(left_right),
-        "settle_max_vertical_speed_mps": max(
-            abs(sample["velocity_mps"][2]) for sample in settled
-        ),
-        "settle_acceptance": {
-            "passed": accepted,
-            "force_relative_limit": 0.01,
-            "left_right_relative_limit": 0.01,
-            "vertical_speed_limit_mps": 0.01,
-        },
+        **settling.metrics(scenario),
         "final_speed_mps": sqrt(
             sum(value * value for value in samples[-1]["velocity_mps"])
         ),
@@ -237,6 +265,12 @@ def run_study(
         controller_ticks = round(scenario.controller_period_s / scenario.plant_step_s)
         logging_ticks = round(scenario.logging_period_s / scenario.plant_step_s)
         settle_tick = round(scenario.settle_s / scenario.plant_step_s)
+        # A window edge need not fall on the plant grid. Include only its
+        # integer boundaries, with tolerance for division at an exact boundary.
+        settle_start_tick = ceil(
+            (scenario.settle_s - 0.5) / scenario.plant_step_s - 1e-8
+        )
+        settling = _SettlingMeasurements()
         model = plant.provenance()
         capabilities = asdict(plant.capabilities)
         for tick in range(ticks + 1):
@@ -244,19 +278,24 @@ def run_study(
                 raise StudyCancelled(f"Study cancelled at plant tick {tick}")
             # Observe before setting the next command: command telemetry belongs
             # to the interval that produced this state, not a future request.
-            if tick % logging_ticks == 0 or tick in (settle_tick, ticks):
+            log_sample = tick % logging_ticks == 0 or tick in (settle_tick, ticks)
+            measure_settling = settle_start_tick <= tick <= settle_tick
+            if log_sample or measure_settling:
                 sample = asdict(plant.observe())
                 expected = tick * scenario.plant_step_s
                 if not isclose(sample["time_s"], expected, rel_tol=0, abs_tol=1e-9):
                     raise RuntimeError("Native plant clock diverged from the runner")
                 # Also rejects a solver NaN before it can become saved evidence.
                 _canonical_json(sample)
-                samples.append(sample)
+                if measure_settling:
+                    settling.add(sample)
+                if log_sample:
+                    samples.append(sample)
             if tick == ticks:
                 break
             if (
                 tick == settle_tick
-                and not _metrics(samples, scenario)["settle_acceptance"]["passed"]
+                and not settling.metrics(scenario)["settle_acceptance"]["passed"]
             ):
                 raise RuntimeError(
                     "Vehicle has not settled under gravity; increase settle_s or inspect the recorded native model"
@@ -281,7 +320,7 @@ def run_study(
             "controller": "bounded open-loop rear-driveshaft ramp; 0.5 s ramp, zero-order hold",
             "commands": commands,
             "samples": samples,
-            "metrics": _metrics(samples, scenario),
+            "metrics": _metrics(samples, scenario, settling),
         }
         deterministic_id = _content_id(payload)
         cpu_finished = process_time()
