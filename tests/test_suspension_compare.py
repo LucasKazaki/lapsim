@@ -192,6 +192,39 @@ def test_logging_matches_actual_time_intersection_and_reports_missing_samples(re
     assert [fingerprint(record) for record in records] == before
 
 
+def test_tuple_backed_valid_api_record_matches_its_identical_saved_json():
+    from lapsim.experiments.suspension_compare import compare_study_records
+
+    def tuple_arrays(value):
+        if isinstance(value, list):
+            return tuple(tuple_arrays(item) for item in value)
+        if isinstance(value, dict):
+            return {key: tuple_arrays(item) for key, item in value.items()}
+        return value
+
+    left = fixture_record()
+    right = tuple_arrays(left)
+    study.validate_study_record(right)
+    assert right["content_id"] == left["content_id"]
+    assert right["receipt_id"] == left["receipt_id"]
+    report = compare_study_records(left, right, kind="logging-period")
+    assert report["status"] == "compared"
+    assert report["result"]["all_shared_observations_equal"] is True
+
+
+def test_different_json_model_types_do_not_match_as_python_false_and_zero(records):
+    from lapsim.experiments.suspension_compare import compare_study_records
+
+    left, right = records
+    left["payload"]["model"]["opaque_boolean_claim"] = False
+    right["payload"]["model"]["opaque_boolean_claim"] = 0
+    seal(left)
+    seal(right)
+    report = compare_study_records(left, right, kind="logging-period")
+    assert report["status"] == "incompatible"
+    assert "payload.model differs" in report["compatibility"]["reasons"]
+
+
 def test_logging_detects_shared_observable_difference_without_index_alignment(records):
     from lapsim.experiments.suspension_compare import compare_study_records
 
