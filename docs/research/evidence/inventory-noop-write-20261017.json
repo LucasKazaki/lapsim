@@ -1,0 +1,149 @@
+{
+  "schema": "lapsim.inventory-noop-write-verification.v1",
+  "date_local": "2026-10-17 America/New_York",
+  "base_commit": "3a600f04dca22b45663356013dae8cd3e7b554d1",
+  "scope": "Actual generator main-path reproducibility repair; no numerical source changes, global Git policy changes, builds, native physics or browser jobs. Parent owns the subsequent actual frozen-build clean-check verification.",
+  "candidate_hash_scope": "listed source/test bytes with CRLF normalized to LF",
+  "files_sha256": {
+    "docs/simulator_flowchart/generate_inventory.py": "c12ae8e38dade11d3709b95fea1a87dd5161fed18118a12520cd35b196beddd1",
+    "tests/test_simulator_flowchart.py": "1d3f7845af5734002fa333cdd814cd8d1d89992e9fd345411bff4b38bf451831"
+  },
+  "environment": "verified owner's native Windows PC, ordinary project CPython 3.13.15; no installation or engine needed",
+  "measurement_helper_sha256": "d7d65936b38b595dae403767b4ab5207b1dd095fcef3a576b881f1bec51a0d48",
+  "retained_before_fix_regression": {
+    "initial_command": [
+      "{baseline_python}",
+      "-m",
+      "pytest",
+      "tests/test_simulator_flowchart.py",
+      "-k",
+      "inventory_main_preserves",
+      "-q"
+    ],
+    "initial_result": "2 failed before implementation: LF rewrote mtime; CRLF rewrote bytes and mtime",
+    "retained_raw_reproduction_command": [
+      "{baseline_python}",
+      "work/inventory-noop-write/check_increment.py",
+      "baseline"
+    ],
+    "frozen_generator_origin": "git show 3a600f04dca22b45663356013dae8cd3e7b554d1:docs/simulator_flowchart/generate_inventory.py",
+    "phase": "baseline",
+    "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+    "budget_bytes": 209715200,
+    "baseline_generator_sha256": "c04df8f63ff40b4103f4e55fcb24a8b57705a2c8a9a3e66271e8d02dbedee75e",
+    "pytest_arguments": [
+      "--capture=sys",
+      "tests/test_simulator_flowchart.py",
+      "-q",
+      "-k",
+      "inventory_main_preserves"
+    ],
+    "exit_code": 1,
+    "counts": {
+      "passed": 0,
+      "failed": 2,
+      "error": 0,
+      "skipped": 0
+    },
+    "wall_s": 0.6337807000090834,
+    "process_lifetime_peak_working_set_bytes": 51630080,
+    "resource_scope": "this Python process lifetime high-water mark, including imports; child Node map-check process is not included",
+    "log_sha256": "6c9b532d6c89c7a5943f56baa986c5b070e819d110f1410f0c7910a514baf0f1"
+  },
+  "focused_inventory_and_map_tests": {
+    "command": [
+      "{baseline_python}",
+      "work/inventory-noop-write/check_increment.py",
+      "tests"
+    ],
+    "equivalent_test_command": [
+      "python",
+      "-m",
+      "pytest",
+      "tests/test_simulator_flowchart.py",
+      "-q"
+    ],
+    "phase": "tests",
+    "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+    "budget_bytes": 209715200,
+    "pytest_arguments": [
+      "--capture=sys",
+      "tests/test_simulator_flowchart.py",
+      "-q"
+    ],
+    "exit_code": 0,
+    "counts": {
+      "passed": 22,
+      "failed": 0,
+      "error": 0,
+      "skipped": 0
+    },
+    "wall_s": 2.2027024000126403,
+    "process_lifetime_peak_working_set_bytes": 123260928,
+    "resource_scope": "this Python process lifetime high-water mark, including imports; child Node map-check process is not included",
+    "log_sha256": "78c66472b3063435abc161b490c761263a5f55fa219b88cb497b8fe32a6816ee"
+  },
+  "real_repository_generation_and_check": {
+    "command": [
+      "{baseline_python}",
+      "work/inventory-noop-write/check_increment.py",
+      "main"
+    ],
+    "operations": [
+      "generate_inventory.main()",
+      "generate_inventory.main() with --check"
+    ],
+    "phase": "main",
+    "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+    "budget_bytes": 209715200,
+    "before": {
+      "sha256": "62b7730a47d547cfcefe2d7afb604d77ed242fc9d77938a7d69902a328454810",
+      "bytes": 9198724,
+      "mtime_ns": 1792214768732831600,
+      "crlf_count": 0,
+      "lf_count": 2
+    },
+    "generation_exit": 0,
+    "after_generation": {
+      "sha256": "62b7730a47d547cfcefe2d7afb604d77ed242fc9d77938a7d69902a328454810",
+      "bytes": 9198724,
+      "mtime_ns": 1792214768732831600,
+      "crlf_count": 0,
+      "lf_count": 2
+    },
+    "check_exit": 0,
+    "after_check": {
+      "sha256": "62b7730a47d547cfcefe2d7afb604d77ed242fc9d77938a7d69902a328454810",
+      "bytes": 9198724,
+      "mtime_ns": 1792214768732831600,
+      "crlf_count": 0,
+      "lf_count": 2
+    },
+    "root_eol_proof": {
+      "source": "3a600f04dca22b45663356013dae8cd3e7b554d1",
+      "path": "docs/simulator_flowchart/data/source-inventory.js",
+      "head_blob": "3faf5c8b5f0d637e35a04d2cfbf32dcfbead4b34",
+      "filtered_work_blob": "3faf5c8b5f0d637e35a04d2cfbf32dcfbead4b34",
+      "raw_sha256": "62b7730a47d547cfcefe2d7afb604d77ed242fc9d77938a7d69902a328454810",
+      "raw_bytes": 9198724,
+      "crlf_count": 0,
+      "lf_count": 2
+    },
+    "preserved_raw_sha256_and_git_blob_match": true,
+    "wall_s": 1.102114499983145,
+    "process_lifetime_peak_working_set_bytes": 101175296,
+    "resource_scope": "this Python process lifetime high-water mark, including imports; child Node map-check process is not included",
+    "log_sha256": "708378c9e155851ed29e9109e50637bd328056420a94b41b3d4f45dcdf0cf890"
+  },
+  "artifact_hashes": {
+    "baseline.json": "e449aa84a1dc4710d0b227f57da80857cd3a710d51324a88f8a71ef11eea059e",
+    "baseline.log": "6c9b532d6c89c7a5943f56baa986c5b070e819d110f1410f0c7910a514baf0f1",
+    "tests.json": "3f2ff7ad21860fe3e98728dbc882af81548b6faf2385a4eddb8c6e03db19c2b5",
+    "tests.log": "78c66472b3063435abc161b490c761263a5f55fa219b88cb497b8fe32a6816ee",
+    "main.json": "9432f269a9e30c3205daf59238c0c17af4aed209e63da375db755ae596542ba6",
+    "main.log": "708378c9e155851ed29e9109e50637bd328056420a94b41b3d4f45dcdf0cf890",
+    "root-eol-proof.json": "9680f71cc5a51aac759dd08ddbe66ffa110a2f9cfa7ee329fe52b3060899b068",
+    "root-preserved-lf.js": "62b7730a47d547cfcefe2d7afb604d77ed242fc9d77938a7d69902a328454810"
+  },
+  "retention": "Large raw JS and local logs/helpers remain in ignored work/inventory-noop-write. This tracked manifest preserves exact hashes, results and unchanged-target measurements without personal absolute paths. The portable test fixtures exercise real catalog generation/main rather than stubbing it. No source-inventory.js content change is part of this repair."
+}

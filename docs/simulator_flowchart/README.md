@@ -124,7 +124,11 @@ After changing source behavior:
    its sources. Update the root README overview if a subsystem boundary changed.
 
 Use `python docs/simulator_flowchart/generate_inventory.py --check` as a read-only
-freshness gate. The generator caches UTF-8 parser lines once per file; the
+freshness gate. Generation preserves already-current LF/CRLF output bytes and
+mtime; missing, stale or invalid UTF-8 output is regenerated with LF endings.
+The [write-reproducibility receipt](../research/evidence/inventory-noop-write-20261017.json)
+retains the failure counterexample and focused verification.
+The generator caches UTF-8 parser lines once per file; the
 coverage check independently uses `ast.get_source_segment` on each expression's
 line span. UTF-8 columns, multiline text, and line endings remain exact without
 repeatedly scanning the rest of the file.
