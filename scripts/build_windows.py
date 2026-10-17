@@ -10,9 +10,10 @@ from pathlib import Path
 import platform
 import shutil
 import subprocess
+from subprocess import CalledProcessError
 import sys
 import sysconfig
-from tempfile import TemporaryDirectory, gettempdir
+from tempfile import TemporaryDirectory, gettempdir, mkdtemp
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +29,10 @@ REVIEWED_WEB_REPLAYS = {
     "enme408-synthetic-replay.json": "3c77722726b4ef7e43e172df4adee75d312ed89a8c5a648b79f314d485996bec",
     "enme408-native-c-replay.json": "dbb91a06097a4cdd38c4c72db7ca1e15f85e1866d02efc77de5bac5f281046b8",
 }
+VERIFICATION_SOURCE_SCOPE = (
+    "When run, full repository tests precede inventory generation; "
+    "packaged snapshot identity is separate."
+)
 
 
 def run(*args: str, **kwargs) -> None:
@@ -164,8 +169,46 @@ def main() -> int:
         os.environ[variable] = "1"
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    if not args.skip_tests:
-        run(sys.executable, str(ROOT / "scripts/check_all.py"))
+    evidence = Path(mkdtemp(prefix="verification-", dir=output))
+    print(f"Build verification evidence: {evidence}", flush=True)
+    suite_report = evidence / "test-results.xml"
+    suite_command = None if args.skip_tests else [
+        sys.executable, str(ROOT / "scripts/check_all.py"), "--output-dir", str(evidence),
+    ]
+
+    def save_local_suite(
+        status: str, *, exit_code: int | None = None, error: str | None = None,
+    ) -> None:
+        local = {
+            "status": status,
+            "command": suite_command,
+            "exit_code": exit_code,
+            "report_path": str(suite_report) if suite_command is not None else None,
+            "report_sha256": sha256(suite_report.read_bytes()).hexdigest()
+            if suite_report.is_file() else None,
+            "error": error,
+            "source_scope": VERIFICATION_SOURCE_SCOPE,
+            "scope": "Local literal invocation evidence; excluded from distributed ZIP.",
+        }
+        (evidence / "full-suite-invocation.json").write_text(
+            json.dumps(local, indent=2, allow_nan=False) + "\n", encoding="utf-8",
+        )
+
+    save_local_suite("skipped" if args.skip_tests else "running")
+    if suite_command is not None:
+        try:
+            run(*suite_command)
+        except CalledProcessError as error:
+            save_local_suite("failed", exit_code=error.returncode, error=str(error))
+            raise
+        except OSError as error:
+            save_local_suite("failed", error=str(error))
+            raise
+        if not suite_report.is_file():
+            message = "Full-suite report was not produced in build verification directory"
+            save_local_suite("missing-report", exit_code=0, error=message)
+            raise RuntimeError(message + ": " + str(evidence))
+        save_local_suite("passed", exit_code=0)
     generator = ROOT / "docs/simulator_flowchart/generate_inventory.py"
     if generator.is_file():
         run(sys.executable, str(generator))
@@ -206,6 +249,33 @@ def main() -> int:
             raise RuntimeError(f"Portable self-test did not pass: {report_path}")
     checksums = {"LapSim.exe": sha256(executable.read_bytes()).hexdigest()}
     (output / "checksums.json").write_text(json.dumps(checksums, indent=2) + "\n", encoding="utf-8")
+    suite: dict[str, object] = {"status": "skipped", "command": None, "report": None}
+    if not args.skip_tests:
+        suite = {
+            "status": "passed",
+            "command": [
+                "python", "scripts/check_all.py", "--output-dir",
+                "<build-owned-report-directory>",
+            ],
+            "command_scope": (
+                "Sanitized logical command; actual argv is retained only in local build evidence."
+            ),
+            "report": {
+                "path": "verification/test-results.xml",
+                "sha256": sha256(suite_report.read_bytes()).hexdigest(),
+            },
+        }
+    identity = json.loads((assets / "build-info.json").read_text(encoding="utf-8"))
+    verification = evidence / "build-verification.json"
+    verification.write_text(json.dumps({
+        "schema": "lapsim.build-verification.v1",
+        "full_suite": suite,
+        "source_scope": VERIFICATION_SOURCE_SCOPE,
+        "packaged_source": {
+            name: identity[name]
+            for name in ("code_commit", "dirty_worktree", "source_sha256")
+        },
+    }, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     archive = output / "LapSim-Windows-x64.zip"
     with ZipFile(archive, "w", ZIP_DEFLATED, compresslevel=6) as bundle:
         for path in (executable, report_path, output / "checksums.json"):
@@ -213,17 +283,9 @@ def main() -> int:
         for path in assets.rglob("*"):
             if path.is_file():
                 bundle.write(path, path.relative_to(assets).as_posix())
-        for path in (ROOT / "work").glob("*results.xml"):
-            bundle.write(path, "verification/" + path.name)
-        for filename in (
-            "test-suite.log", "physics-operating-sweep.json", "documentation-qa.json",
-            "gui-recovery.json", "gui-recovery.log", "gui-repeat-course.log",
-            "gui-repeat-evidence.log", "gui-repeat-restart.log", "gui-capture-sys.log",
-            "gui-capture-sys-lifecycle.log", "gui-shutdown.log",
-        ):
-            path = ROOT / "work" / filename
-            if path.is_file():
-                bundle.write(path, "verification/" + filename)
+        bundle.write(verification, "verification/build-verification.json")
+        if not args.skip_tests:
+            bundle.write(suite_report, "verification/test-results.xml")
     print(f"Portable checks passed. Share {archive} or {executable}.")
     return 0
 
