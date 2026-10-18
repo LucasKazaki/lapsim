@@ -960,8 +960,8 @@ def test_fused_consumer_context_hashes_stay_local_and_inputs_are_not_mutated(
     assert observed["identity"] == baseline["identity"]
     assert observed["observed"] != baseline["observed"]
     assert (
-        observed["observed"]["expected_inputs_sha256"]
-        != baseline["observed"]["expected_inputs_sha256"]
+        observed["observed"]["cases"][0]["expected_inputs_sha256"]
+        != baseline["observed"]["cases"][0]["expected_inputs_sha256"]
     )
 
 
