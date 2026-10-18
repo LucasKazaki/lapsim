@@ -21,6 +21,8 @@ import re
 from typing import Any, Mapping
 from uuid import uuid4
 
+from lapsim.resources import _io_path
+
 from .spatial_track import SpatialTrack
 
 
@@ -208,7 +210,9 @@ class CourseBundle:
 
         destination = Path(path).expanduser().resolve()
         destination.parent.mkdir(parents=True, exist_ok=True)
-        temporary = destination.with_name(f"{destination.name}.{uuid4().hex}.tmp")
+        temporary = _io_path(
+            destination.with_name(f"{destination.name}.{uuid4().hex}.tmp")
+        )
         try:
             temporary.write_text(
                 json.dumps(self.to_dict(), indent=2, ensure_ascii=False, allow_nan=False)
