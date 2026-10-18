@@ -132,6 +132,21 @@ main `1153e7c`, with existing debt retained. These checks do not rebuild those
 artifacts. See the [local build evidence](research/evidence/portable-build-verification-20261017.json)
 for the retained failed gate and coverage limits.
 
+Source status excludes only the build's fresh verification leaf, preserving
+other source dirtiness. At `6ed6153`, actual full and separate skipped builds
+passed with clean packaged identities, each completing 20 original and 21
+copied checks plus supported-record/alias/frame/units exits 0/2/1/1. The full
+receipt binds its exact 98-report aggregate (2,467 reported / 1,457 raw cases,
+zero failures/errors, one expected Windows POSIX-only skip); skipped verification
+has null suite command/report and no XML or totals. The [build evidence](research/evidence/portable-build-verification-20261017.json)
+retains distinct EXE/ZIP hashes, 30 focused contracts (12 real-Git cases), the PR #110
+finding and failed style gate, plus passed quality gates and their remaining
+debt/warning limits. Native records were viewed passively; standard fast-model
+replays ran. PyInstaller's existing hidden-import warning is separate from the
+full suite's zero warning-summary blocks. Final map and normal reviewed
+integration/postmerge results remain pending; these artifacts keep source
+`6ed6153`, with raw-JUnit privacy and internal-only publication limits unchanged.
+
 Frozen read-only resources resolve through `lapsim.resources.repository_root()`
 to the extraction root's `bundle` directory. Source runs resolve to the checkout.
 Installed wheels resolve to `lapsim/_resources` and use captured identity;

@@ -2,7 +2,7 @@
   "schema": "lapsim.portable-build-evidence.v1",
   "date": "2026-10-17",
   "work_item": "E04",
-  "status": "Local build and test-only quality acceptance complete with documented limitations. Normal integration and postmerge verification are separate and not claimed.",
+  "status": "Owned-leaf behavior has red/green30 focused evidence including twelve real-Git cases; measured runtime6ed6153 has completed targeted/global quality and actual full/skip/copied-app acceptance. Final map and normal successor PR/integration/postmerge results remain pending; historical source scopes and limits are retained.",
   "source": {
     "commit": "cb3720bb645c8e1aa0aed82e89f23326ab19cfa4",
     "tree": "aa51dae99f665082da9d11d2c8bdb9b63e84afd4",
@@ -491,6 +491,210 @@
       "checkout": "primary",
       "path": "work/detailed-study/portable-postpolish-quality-7ead724-independent-review/inventory.json",
       "sha256": "cbdb626d4a9728842bef03dd8f3747df58c070faa177a5f656bce03ad944540f"
+    },
+    {
+      "role": "owned_leaf_PR110_retained_CI_status",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable110-status-held-after-review.json",
+      "sha256": "4a4126cf9cad10bfa8f192fe246984298678e9f3167af437cf27002b36210438"
+    },
+    {
+      "role": "owned_leaf_PR110_retained_draft_hold",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable110-draft-hold.json",
+      "sha256": "1fb96d6e2d1431ab1743320b5b3644dc037ffe4b7024308d46acf010aee0639a"
+    },
+    {
+      "role": "owned_leaf_PR110_confirmed_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable110-review-comments-first.json",
+      "sha256": "353f61e3d39d91fbf4372877371c6e78dab64ed1f7aa258c9bd067f55b276d4b"
+    },
+    {
+      "role": "owned_leaf_red30_independent_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-dirty-source-red-1c6d655-independent-preservation-20261017/independent-proof.json",
+      "sha256": "6943d22eba01ea31c8f7a5b8a56049f687d3485882d238a81272fd5ece3cf719"
+    },
+    {
+      "role": "owned_leaf_green30_independent_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-dirty-source-green-edb6001-independent-preservation-20261017/independent-proof.json",
+      "sha256": "07888dc7761e2d95e0af712ba6e656eba7776626b50bb3c9fe1f38e43575d417"
+    },
+    {
+      "role": "owned_leaf_red30_XML",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-dirty-source-red-1c6d655-independent-preservation-20261017/closed-guard/focused.xml",
+      "sha256": "7504386638c690fa00edff60a73108e4839f9cd608d20c11907f8529e6e6305a"
+    },
+    {
+      "role": "owned_leaf_green30_XML",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-dirty-source-green-edb6001-independent-preservation-20261017/closed-guard/focused.xml",
+      "sha256": "43faa3f81ff16d76ddfa65defb39b71dc16b84976fc5869a7d20c42f7761f9a3"
+    },
+    {
+      "role": "owned_leaf_production_proposal",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-owned-verification-production-proposal-r2-20261017/proposal.json",
+      "sha256": "7a1c79c775c036eb291e097ebcfc5fa643d886287ec73433e1b4e9da27b1407c"
+    },
+    {
+      "role": "owned_leaf_regression_static_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-owned-verification-regression-r3-independent-review-20261017/independent-review.json",
+      "sha256": "9966db6a43c3cc5dac03aa02475187a9cbd60df743f27ff3a82dd8aaec929f77"
+    },
+    {
+      "role": "owned_leaf_edb_failed_four_file_quality_review",
+      "checkout": "backend",
+      "path": "work/portable-edb-failed-quality-independent-preservation-20261017/independent-proof.json",
+      "sha256": "ad830d3d57c7ef521befdc0e85082261592d1259d5dc36c8486c122af3219512"
+    },
+    {
+      "role": "owned_leaf_edb_failed_four_file_quality_summary",
+      "checkout": "backend",
+      "path": "work/portable-edb-failed-quality-independent-preservation-20261017/closed-failed-run/changed-files-edb6001-with-diffs-attempt-1/summary.json",
+      "sha256": "91b5608243c8c5602e2784418162dacfc79f82bc5cac6ea170115dae04ecfce7"
+    },
+    {
+      "role": "owned_leaf_edb_failed_four_file_quality_guard",
+      "checkout": "backend",
+      "path": "work/portable-edb-failed-quality-independent-preservation-20261017/closed-failed-run/wsl-post-polish-edb6001-with-diffs-attempt-1-command.json",
+      "sha256": "cb25f1f432b42769f0d688895f9e20ec3582ea29d891759ef925dbc385f00c86"
+    },
+    {
+      "role": "owned_leaf_measured_style_source_freeze",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-measured-style-source-freeze.json",
+      "sha256": "0e6959168d03898ee0adec301e8309dccc829030942600bfaf7002baa6f34641"
+    },
+    {
+      "role": "owned_leaf_6ed_passed_four_file_quality_review",
+      "checkout": "backend",
+      "path": "work/portable-6ed-passed-quality-independent-preservation-20261017/independent-proof.json",
+      "sha256": "c16215f3b924eafd1b3cac68c0b1403e97f51f9bc410392fc8e5e1283d901292"
+    },
+    {
+      "role": "owned_leaf_6ed_passed_four_file_quality_summary",
+      "checkout": "backend",
+      "path": "work/portable-6ed-passed-quality-independent-preservation-20261017/closed-passed-run/changed-files-6ed6153-with-diffs-attempt-1/summary.json",
+      "sha256": "5f048434f28cde85f1ab44cb71ab84c58f595ecf9c4a51078b1279266dff88a0"
+    },
+    {
+      "role": "owned_leaf_6ed_passed_four_file_quality_guard",
+      "checkout": "backend",
+      "path": "work/portable-6ed-passed-quality-independent-preservation-20261017/closed-passed-run/wsl-post-polish-6ed6153-with-diffs-attempt-1-command.json",
+      "sha256": "b5ce633d454b0edc542b5279fd4f019e6eb6e890487067ca4f42160c54159241"
+    },
+    {
+      "role": "owned_leaf_6ed_global_quality_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-owned-global-quality-6ed6153-independent-proof.json",
+      "sha256": "a43d3feb84b7f336f01d4c1252c2299f957aeddd415e7e6eec597269734591ff"
+    },
+    {
+      "role": "owned_leaf_6ed_global_quality_strict_raw_index",
+      "checkout": "primary",
+      "path": "work/portable-owned-global-quality-6ed6153-20261017/evidence-sha256.json",
+      "sha256": "e1cb62352840b55c7573a1d938729966f4f6d78586a0415bacf383081f0baa05"
+    },
+    {
+      "role": "owned_leaf_6ed_global_quality_summary",
+      "checkout": "primary",
+      "path": "work/portable-owned-global-quality-6ed6153-20261017/wsl-gate-summary.json",
+      "sha256": "16eb6b7df31b8801947db695ede86ae22bf52d3c98978a514cb432db31042fa7"
+    },
+    {
+      "role": "owned_leaf_6ed_global_quality_guard",
+      "checkout": "primary",
+      "path": "work/portable-owned-global-quality-6ed6153-20261017/wsl-gates-command.json",
+      "sha256": "927a6834a546cf5d1f5fa7b9734ffd6369686b11ebc23651d474f0ea15f49707"
+    },
+    {
+      "role": "owned_leaf_6ed_global_quality_semgrep_raw",
+      "checkout": "primary",
+      "path": "work/portable-owned-global-quality-6ed6153-20261017/wsl-static/semgrep.json",
+      "sha256": "316affdfa3ccda369492126adbadbad5883fdd9649064adbf847f5555ed68804"
+    },
+    {
+      "role": "owned_leaf_6ed_global_quality_POSIX_XML",
+      "checkout": "primary",
+      "path": "work/portable-owned-global-quality-6ed6153-20261017/posix-compiler.xml",
+      "sha256": "6ee66757208ae9e063314a5c7d4c3c2a8117f7f8d930720f0c8a7e1cb91465d1"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_full_build_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-6ed6153-independent-preservation-20261017/independent-proof.json",
+      "sha256": "8ddf6482ffe88549423e308e337cea558927eb45dcf751901bae03311e450e2f"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_full_build_inventory",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-6ed6153-independent-preservation-20261017/evidence-inventory.json",
+      "sha256": "2810d1a6785a1382f90f51836d9f20e0ffd6632730c135c1040d868981fb407a"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_full_build_guard",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-6ed6153-independent-preservation-20261017/closed-guard/summary.json",
+      "sha256": "40500045cb0de5d3ff77f540cf73d425a5c03e531d92547c86cabe25f71b3a69"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_full_build_public_receipt",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-6ed6153-independent-preservation-20261017/closed-build/verification-tl7mgw1u/build-verification.json",
+      "sha256": "8c082c8b934c483b4cf889f42238757d9e52d76a7f37244d489e023aa0823a67"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_full_build_exact_aggregate",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-6ed6153-independent-preservation-20261017/closed-build/verification-tl7mgw1u/test-results.xml",
+      "sha256": "6d34b4b454894175a7ded8090c7e2da6510dddd5b44fbd9a5a50879edbe9388f"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_full_build_module_index",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-full-6ed6153-independent-preservation-20261017/module-index.json",
+      "sha256": "dd65f338c175e109f67dae79e6d27c08423b671d6438c1f9aa4338f255ef7ae1"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_skip_build_review",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-6ed6153-independent-preservation-20261017/independent-proof.json",
+      "sha256": "beef50a5ec9c4a31bce639d400fb88b7227646c9f51b6ae04fef54f9a9142a3e"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_skip_build_inventory",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-6ed6153-independent-preservation-20261017/evidence-inventory.json",
+      "sha256": "f646543e353bc5870e276418f9af028e5a20147bd0fc89c530da63f003fd267e"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_skip_build_guard",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-6ed6153-independent-preservation-20261017/closed-skip-guard/summary.json",
+      "sha256": "f78e164d38a7b946c6b7f0a70d4790629624fe56cd1c42f3d3c2220cd44c9f40"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_skip_build_public_receipt",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-6ed6153-independent-preservation-20261017/closed-skip-build/verification-vukwtux8/build-verification.json",
+      "sha256": "d398691893ab3fb3506244b20135e0f32346e505ba222110a3d068c13426e84b"
+    },
+    {
+      "role": "owned_leaf_6ed_normal_skip_build_local_invocation",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-6ed6153-independent-preservation-20261017/closed-skip-build/verification-vukwtux8/full-suite-invocation.json",
+      "sha256": "9f4f8a7fb9871b65e3da7a72438463b91bdd87d1773f2be45b4a41d31e255d51"
+    },
+    {
+      "role": "owned_leaf_6ed_full_originals_unchanged_after_skip",
+      "checkout": "primary",
+      "path": "work/detailed-study/portable-build-skip-6ed6153-independent-preservation-20261017/full-originals-checked.json",
+      "sha256": "847deb567680e91cfdb5ca49700474f2dc701512461f721320e6fee2fa927c13"
     }
   ],
   "test_only_successors": {
@@ -519,5 +723,1045 @@
   "normal_integration": {
     "status": "pending as of this local acceptance freeze",
     "scope": "Normal PR/checks/merge and postmerge verification are tracked separately; no outcome is asserted here."
+  },
+  "owned_verification_source_identity_followup": {
+    "status": "Measured runtime6ed6153 has completed targeted/global quality and actual normal full/skip builds with copied-app checks. Final documentation map, successor PR and normal integration/postmerge results remain pending.",
+    "predecessor_PR110": {
+      "url": "https://github.com/LucasKazaki/lapsim/pull/110",
+      "head_commit": "d0f4d35de1eddef52293e9a58b0a1aa04a1c227c",
+      "tree": "077ebc5766d83dc34ac65101abb8a7b93f9e71a3",
+      "retained_hold_utc": "2026-10-17T18:22:46.095800+00:00",
+      "state_at_retained_hold": "OPEN draft, unmerged",
+      "successful_hosted_CI_checks": 14,
+      "CI_scope": "Fourteen completed successful CI checks on the retained d0f4d35 head; this does not override the confirmed review finding or accept a different source.",
+      "confirmed_P2": {
+        "url": "https://github.com/LucasKazaki/lapsim/pull/110#discussion_r4303845080",
+        "problem": "A nonignored in-checkout output directory made newly written build-owned verification evidence appear as source dirtiness in both packaged identity objects."
+      },
+      "integration": "Retained unchanged and unmerged; normal reviewed successor integration remains separate."
+    },
+    "runtime_repair": {
+      "measured_commit": "edb60014a4900cbcec1b15af523ace680568282a",
+      "tree": "734f6fb359179b6df38df3004dfea1c5adc8ddc0",
+      "parent_tests_only_commit": "1c6d655f8f40ffd6f473c92bbd0e33925914d3ea",
+      "builder_LF_sha256": "436351a380eec15273d0f5bd891b40dbb9df5a4fba98fc8b9f906764bc2a210d",
+      "policy": "Main supplies only its freshly allocated verification leaf to stage_assets. After inventory generation, Git status enumerates all untracked files and excludes only the exact resolved in-repository leaf with top/literal/exclude pathspec magic. External evidence receives no exclusion; root or aliased evidence fails closed.",
+      "preserved_dirtiness": "All other tracked and untracked source remains visible, including preexisting verification-prefix siblings in the same output directory. No blanket output-directory/prefix exclusion or cached preflight dirtiness flag.",
+      "environment": "Only a copied environment for the status subprocess removes the four Git pathspec-mode variables. No user/system/global Git configuration is changed, and pathspec variables in the production process environment are not mutated.",
+      "protected_source_scope": "Only builder code changes from the tests-only red commit; three native source files and seven existing comparison recipe source entries remain unchanged. No numerical model, controller or saved-record schema repair is claimed.",
+      "final_source_commit": null,
+      "final_source_note": "edb6001 identifies the actual focused30 repair. Measured-style runtime candidate6ed6153 is separately recorded below; neither is relabeled as the future docs/PR head, and no pending build source/result is inferred."
+    },
+    "actual_red_1c6d655": {
+      "commit": "1c6d655f8f40ffd6f473c92bbd0e33925914d3ea",
+      "tree": "fee8155c93ee0d3775d8815077d92ee477c4985b",
+      "reported_cases": 30,
+      "raw_cases": 30,
+      "passed": 26,
+      "failures": 4,
+      "errors": 0,
+      "skipped": 0,
+      "captured_pytest_warning_summary_blocks": 0,
+      "failure_classification": "Exactly four clean-source full/skip by normal/literal-environment cases reached archive assembly but both ZIP identities were true instead of expected false; no setup/import errors. The original18 and eight genuine-dirty controls passed.",
+      "real_temporary_Git_repositories": 12,
+      "guard": {
+        "actual_exit": 1,
+        "owned_active_at_close": 0,
+        "wall_s": 12.18750070000533,
+        "peak_owned_job_commit_bytes": 111104000,
+        "fresh_headroom_gib": {
+          "physical_gib": 11.740531921386719,
+          "commit_gib": 15.365310668945312
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 11.504615783691406,
+          "commit_gib": 15.087024688720703
+        },
+        "maximum_s": 90,
+        "scope": "Owned Windows job metrics; kernel commit is not physical working set. Times describe the complete focused gate, not a benchmark."
+      },
+      "limit": "The four intended failures stop before later source/sentinel assertions. Current remaining inputs were independently copied with exact bytes/mtime; failed guard has no source_after, and reviewer source-after observation is separately labeled. The metadata-schema assumption and approved correction remain preserved."
+    },
+    "actual_green_edb6001": {
+      "commit": "edb60014a4900cbcec1b15af523ace680568282a",
+      "tree": "734f6fb359179b6df38df3004dfea1c5adc8ddc0",
+      "reported_cases": 30,
+      "raw_cases": 30,
+      "passed": 30,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "captured_pytest_warning_summary_blocks": 0,
+      "case_names_order_and_test_bytes_mtimes_exact_red": true,
+      "real_temporary_Git_repositories": 12,
+      "controlled_source_states": {
+        "clean": 4,
+        "tracked": 4,
+        "untracked_sibling": 4
+      },
+      "full_skip_counts": {
+        "full": 6,
+        "skip": 6
+      },
+      "ZIP_identity_flags": {
+        "clean_both_false": 4,
+        "tracked_or_untracked_sibling_both_true": 8
+      },
+      "Git_commit_objects_asset_and_ZIP_hashmaps_independently_verified": true,
+      "all_later_source_and_sentinel_preservation_asserts_reached_and_passed": true,
+      "all2129_preserved_red_core_files_rehashed_unchanged": true,
+      "all28_prior_user_outputs_preserved": true,
+      "guard": {
+        "actual_exit": 0,
+        "owned_active_at_close": 0,
+        "wall_s": 11.63421589997597,
+        "peak_owned_job_commit_bytes": 105480192,
+        "fresh_headroom_gib": {
+          "physical_gib": 12.083263397216797,
+          "commit_gib": 15.672164916992188
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 12.012100219726562,
+          "commit_gib": 15.576160430908203
+        },
+        "maximum_s": 90,
+        "scope": "Owned Windows job metrics; kernel commit is not physical working set. Times describe the complete focused gate, not a benchmark."
+      }
+    },
+    "focused_command": {
+      "argv": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "-rs",
+        "--capture=sys",
+        "tests/test_check_all.py",
+        "tests/test_snapshot_build.py",
+        "--junitxml=<owned-job>/focused.xml"
+      ],
+      "scope": "Sanitized command roles; exact actual argv and exits are bound in local receipts. Same30 cases and order, no added skips or changed expectations."
+    },
+    "test_scope": "Real temporary Git init/commit/status, source staging/copy/hash and archive identities ran. The established expensive full-suite, inventory, PyInstaller and copied-executable process boundaries remain stubbed; these30 contracts do not rebuild or relabel cb3720b EXEs/ZIPs. No fresh native physics/replay, import census, calibration, release or timing-performance claim.",
+    "remaining_gates": {
+      "packaging_four_file_quality_against_actual_main": {
+        "status": "completed with preserved failed edb attempt and passed measured-style successor; whole-format debt retained",
+        "actual_source_commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+        "actual_result": "8/main8 type errors, 2/main2 broad findings, no new fingerprints, checker format0, critical0, mapped four-file security0"
+      },
+      "original_global_source_inventory_POSIX_audit": {
+        "status": "completed with documented diagnostic and coverage limits",
+        "actual_source_commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+        "actual_result": "source audit0, inventory0, POSIX0 with one pass and zero skips; src-only baseline fingerprints unchanged; broad/format/security warning limits retained"
+      },
+      "normal_full_build": {
+        "status": "completed; current invocation XML and copied-app checks verified",
+        "actual_source_commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+        "actual_result": "98 module reports; 2467 reported/1457 raw cases, zero failures/errors, one expected Windows POSIX-only skip; original20/copied21 checks and copied exits0/2/1/1"
+      },
+      "normal_skip_build": {
+        "status": "completed separately; no pytest/XML/modules/totals",
+        "actual_source_commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+        "actual_result": "second build and original20/copied21 checks, copied exits0/2/1/1; strict skipped/null receipt-only verification ZIP; all1710 full copies and151 applicable full originals preserved"
+      },
+      "final_static_map_entrypoints": {
+        "status": "pending",
+        "actual_source_commit": null,
+        "actual_result": null
+      },
+      "normal_successor_PR_checks_and_review": {
+        "status": "pending",
+        "actual_source_commit": null,
+        "actual_result": null
+      },
+      "normal_merge_and_postmerge_verification": {
+        "status": "pending",
+        "actual_source_commit": null,
+        "actual_result": null
+      }
+    },
+    "remaining_scope": "Only the three map/PR/merge-and-postmerge gates remain pending with null actual source/result. All earlier cb/025/7ead, red/green30 and failededb evidence remains historical and unchanged. Actual6ed build artifacts do not certify a future docs/PR head; no release/publication or physical-validation claim.",
+    "measured_style_runtime_candidate": {
+      "commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+      "tree": "f25c50ed6a6da257054d2fa6ab69858852294878",
+      "parent": "edb60014a4900cbcec1b15af523ace680568282a",
+      "changed_paths": [
+        "scripts/build_windows.py",
+        "scripts/check_all.py",
+        "tests/test_snapshot_build.py"
+      ],
+      "changed_LF_sha256": {
+        "scripts/build_windows.py": "c7c93930fa5189bc695e2814153563e01105d527424df3cbc67ee6af3d4638e2",
+        "scripts/check_all.py": "62b603f1501992da4b06d4bdf6fd11bbc6d942198a0841e00ffd1aaa61c157ac",
+        "tests/test_snapshot_build.py": "0e91f2b19dda6f8c91e8413294bb0a9c915d1c4b363ad7d8234b781ffa578e0f"
+      },
+      "source_equivalence": "Metadata AST comparison to preserved edb source is exact for all four selected files after normalizing only the known tuple concatenation/unpacking. The same eleven string elements and order are independently checked; formatting changes no assertions, decorators, test order or numerical values.",
+      "eleven_environment_strings": [
+        "GIT_LITERAL_PATHSPECS",
+        "GIT_GLOB_PATHSPECS",
+        "GIT_NOGLOB_PATHSPECS",
+        "GIT_ICASE_PATHSPECS",
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_INDEX_FILE",
+        "GIT_COMMON_DIR",
+        "GIT_CONFIG_COUNT",
+        "GIT_CONFIG_PARAMETERS",
+        "GIT_TEMPLATE_DIR"
+      ],
+      "root_freeze_records_all_other_Git_entries_exact": 892,
+      "native_three_and_recipe_seven": "Seven existing comparison recipe source files, including the three native source files, retain exact raw bytes/hash/mtime. This is not seven saved records or the isolated API recipe-eight followup.",
+      "catalog_and_prior_outputs": "Catalog bytes/hash/mtime and all twenty-eight prior user outputs remain exact; no user deliverable is written by proposal preparation.",
+      "identity_scope": "6ed6153 identifies this measured runtime candidate. A later docs/PR head and each actual build artifact source must be recorded separately. No future source, build result or artifact ID is inferred here."
+    },
+    "actual_failed_edb_four_file_quality": {
+      "commit": "edb60014a4900cbcec1b15af523ace680568282a",
+      "tree": "734f6fb359179b6df38df3004dfea1c5adc8ddc0",
+      "actual_result": "failed",
+      "actual_quality": {
+        "exit": 1,
+        "new_broad": [
+          {
+            "file": "tests/test_snapshot_build.py",
+            "code": "RUF005",
+            "message": "Consider iterable unpacking instead of concatenation",
+            "count": 1
+          }
+        ],
+        "new_finding_line": 405,
+        "current_main_broad_counts": [
+          3,
+          2
+        ],
+        "current_main_type_errors": [
+          8,
+          8
+        ],
+        "new_type_fingerprints": 0,
+        "critical_exit": 0,
+        "checker_only_format_exit": 0,
+        "full_current_main_format_exits": [
+          1,
+          1
+        ],
+        "full_current_main_format_diff_exits": [
+          1,
+          1
+        ],
+        "command_actual_exits": {
+          "selected-versions": 0,
+          "current-ruff": 1,
+          "current-format": 1,
+          "current-format-diff": 1,
+          "current-pyright": 1,
+          "baseline_main-ruff": 1,
+          "baseline_main-format": 1,
+          "baseline_main-format-diff": 1,
+          "baseline_main-pyright": 1,
+          "current-checker-format": 0,
+          "current-critical": 0,
+          "mapped-security": 0
+        },
+        "security_exit": 0,
+        "mapped_files_observed_scanned": [
+          "01_build_windows.py",
+          "02_check_all.py",
+          "03_snapshot_contract.py",
+          "04_aggregation_contract.py"
+        ],
+        "security_matches": 0,
+        "security_errors": 0
+      },
+      "actual_command_exits": {
+        "selected-versions": 0,
+        "current-ruff": 1,
+        "current-format": 1,
+        "current-format-diff": 1,
+        "current-pyright": 1,
+        "baseline_main-ruff": 1,
+        "baseline_main-format": 1,
+        "baseline_main-format-diff": 1,
+        "baseline_main-pyright": 1,
+        "current-checker-format": 0,
+        "current-critical": 0,
+        "mapped-security": 0
+      },
+      "requested_files": [
+        "scripts/build_windows.py",
+        "scripts/check_all.py",
+        "tests/test_snapshot_build.py",
+        "tests/test_check_all.py"
+      ],
+      "command_scope": "Actual argv/exits are retained in the bound per-phase summary. Current/main selected four-file Ruff, format/check/diff, Python-3.11 Pyright, checker-only format, critical Ruff and mapped-flat Semgrep commands ran. No scanner is rerun by proposal preparation.",
+      "guard": {
+        "state": "finished",
+        "direct_child_actual_exit": 1,
+        "stop_reason": null,
+        "wall_s": 20.524462100001983,
+        "fresh_headroom_gib": {
+          "physical_gib": 14.395683288574219,
+          "commit_gib": 20.802082061767578
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 12.236103057861328,
+          "commit_gib": 18.320144653320312
+        },
+        "ownership": "Direct Popen process handle only; Linux persistent marker watcher owns each setsid phase process group. No Windows PID tree traversal or ancestry adoption.",
+        "resource_stop": false,
+        "limits": "Direct-held WSL child / Linux phase-group scope. No kernel-job peak, active0 census or Windows PID ancestry claim inferred."
+      },
+      "format_limit": "Both whole four-file current/main format checks and diffs remain exit1. Raw remaining hunks are retained; this is not a whole-format certification.",
+      "security_scope": "Exact byte copies with explicit filename mapping outside repository ignores. This is additional code scanning, not direct repository-path or complete taint/security attestation; rule/path/context limitations and all warnings remain visible.",
+      "preservation": {
+        "selected_linux_current_main_flat_counts": [
+          4,
+          4,
+          4
+        ],
+        "clone_metadata_files": 6,
+        "current_windows_four_equal_linux_LF_and_actual_Git_source": true,
+        "baseline_linux_four_equal_actual_main_Git_blobs": true,
+        "primary_recipe_files": 7,
+        "native_three_subset": [
+          "src/lapsim/dynamics/native_plant.py",
+          "src/lapsim/dynamics/chrono_vehicle.py",
+          "src/lapsim/experiments/suspension_study.py"
+        ],
+        "recipe_equal_main_LF": true,
+        "all28_outputs_equal_prior_preservation": true,
+        "source_clean_before_after": true,
+        "source_or_output_modified_by_review": false,
+        "whole_clones_copied": false
+      }
+    },
+    "actual_passed_6ed_four_file_quality": {
+      "commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+      "tree": "f25c50ed6a6da257054d2fa6ab69858852294878",
+      "actual_result": "passed delta/critical/checker-format/mapped-security gates with retained diagnostics",
+      "actual_quality": {
+        "exit": 0,
+        "new_broad": [],
+        "current_main_broad_counts": [
+          2,
+          2
+        ],
+        "current_main_type_errors": [
+          8,
+          8
+        ],
+        "new_type_fingerprints": 0,
+        "critical_exit": 0,
+        "checker_only_format_exit": 0,
+        "full_current_main_format_exits": [
+          1,
+          1
+        ],
+        "full_current_main_format_diff_exits": [
+          1,
+          1
+        ],
+        "command_actual_exits": {
+          "selected-versions": 0,
+          "current-ruff": 1,
+          "current-format": 1,
+          "current-format-diff": 1,
+          "current-pyright": 1,
+          "baseline_main-ruff": 1,
+          "baseline_main-format": 1,
+          "baseline_main-format-diff": 1,
+          "baseline_main-pyright": 1,
+          "current-checker-format": 0,
+          "current-critical": 0,
+          "mapped-security": 0
+        },
+        "security_exit": 0,
+        "mapped_files_observed_scanned": [
+          "01_build_windows.py",
+          "02_check_all.py",
+          "03_snapshot_contract.py",
+          "04_aggregation_contract.py"
+        ],
+        "security_matches": 0,
+        "security_errors": 0
+      },
+      "actual_command_exits": {
+        "selected-versions": 0,
+        "current-ruff": 1,
+        "current-format": 1,
+        "current-format-diff": 1,
+        "current-pyright": 1,
+        "baseline_main-ruff": 1,
+        "baseline_main-format": 1,
+        "baseline_main-format-diff": 1,
+        "baseline_main-pyright": 1,
+        "current-checker-format": 0,
+        "current-critical": 0,
+        "mapped-security": 0
+      },
+      "requested_files": [
+        "scripts/build_windows.py",
+        "scripts/check_all.py",
+        "tests/test_snapshot_build.py",
+        "tests/test_check_all.py"
+      ],
+      "command_scope": "Actual argv/exits are retained in the bound per-phase summary. Current/main selected four-file Ruff, format/check/diff, Python-3.11 Pyright, checker-only format, critical Ruff and mapped-flat Semgrep commands ran. No scanner is rerun by proposal preparation.",
+      "guard": {
+        "state": "finished",
+        "direct_child_actual_exit": 0,
+        "stop_reason": null,
+        "wall_s": 17.027476100018248,
+        "fresh_headroom_gib": {
+          "physical_gib": 13.896957397460938,
+          "commit_gib": 20.425731658935547
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 11.459720611572266,
+          "commit_gib": 17.532371520996094
+        },
+        "ownership": "Direct Popen process handle only; Linux persistent marker watcher owns each setsid phase process group. No Windows PID tree traversal or ancestry adoption.",
+        "resource_stop": false,
+        "limits": "Direct-held WSL child / Linux phase-group scope. No kernel-job peak, active0 census or Windows PID ancestry claim inferred."
+      },
+      "format_limit": "Both whole four-file current/main format checks and diffs remain exit1. Raw remaining hunks are retained; this is not a whole-format certification.",
+      "security_scope": "Exact byte copies with explicit filename mapping outside repository ignores. This is additional code scanning, not direct repository-path or complete taint/security attestation; rule/path/context limitations and all warnings remain visible.",
+      "preservation": {
+        "selected_linux_current_main_flat_counts": [
+          4,
+          4,
+          4
+        ],
+        "clone_metadata_files": 6,
+        "current_windows_four_equal_linux_LF_and_actual_Git_source": true,
+        "baseline_linux_four_equal_actual_main_Git_blobs": true,
+        "primary_recipe_files": 7,
+        "native_three_subset": [
+          "src/lapsim/dynamics/native_plant.py",
+          "src/lapsim/dynamics/chrono_vehicle.py",
+          "src/lapsim/experiments/suspension_study.py"
+        ],
+        "recipe_equal_main_LF": true,
+        "all28_outputs_equal_prior_preservation": true,
+        "source_clean_before_after": true,
+        "prior_failed_102_copies_rehashed_bytes_mtimes_exact": true,
+        "primary_recipe_seven_bytes_mtimes_exact_failed_edb": true,
+        "source_four_AST_exact_edb_except_one_known_tuple_concat_to_unpack": true,
+        "source_or_output_modified_by_review": false,
+        "whole_clones_copied": false
+      }
+    },
+    "actual_global_6ed_source_inventory_POSIX": {
+      "commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+      "tree": "f25c50ed6a6da257054d2fa6ab69858852294878",
+      "status": "passed with retained diagnostic and coverage limits",
+      "clean_clone_before_and_after": true,
+      "actual_command_exits": {
+        "source_audit_exit": 0,
+        "inventory_check_exit": 0,
+        "posix_compiler_exit": 0
+      },
+      "commands": [
+        {
+          "argv": [
+            "<security-tools-python>",
+            "<owned-evidence>/wsl-source-audit-wrapper.py"
+          ],
+          "actual_exit": 0,
+          "scope": "Delegates the unchanged quality/run_source_audit.py entrypoint; only Semgrep jobs is bounded to one. Actual subcommands are retained in the strict raw index."
+        },
+        {
+          "argv": [
+            "<security-tools-python>",
+            "docs/simulator_flowchart/generate_inventory.py",
+            "--check"
+          ],
+          "actual_exit": 0
+        },
+        {
+          "argv": [
+            "<security-tools-python>",
+            "-X",
+            "utf8",
+            "-m",
+            "pytest",
+            "tests/test_native_closed_loop.py::test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c",
+            "-q",
+            "--tb=short",
+            "--junitxml=<owned-evidence>/posix-compiler.xml"
+          ],
+          "actual_exit": 0
+        }
+      ],
+      "strict_raw_index": {
+        "sha256": "e1cb62352840b55c7573a1d938729966f4f6d78586a0415bacf383081f0baa05",
+        "indexed_files_verified": 31,
+        "actual_packet_regular_files": 32,
+        "exact_coverage_including_index_itself": true,
+        "external_collector_stdout_avoids_self_index_mismatch": true,
+        "all_original_packet_bytes_and_mtimes_unchanged": true
+      },
+      "type": {
+        "scope": "Original src-only global audit against actual baseline1e8e35ac64093742caafa67c118ca02efa6e6537; no whole scripts/tests type coverage claim.",
+        "current_errors": 241,
+        "current_warnings": 48,
+        "baseline_errors": 241,
+        "baseline_warnings": 48,
+        "all_289_fingerprints_equal": true,
+        "zero_new": true
+      },
+      "lint_and_format": {
+        "critical_exit": 0,
+        "broad_raw_diagnostic_count": 634,
+        "broad_exit": 1,
+        "format_exit": 1,
+        "files_would_reformat": 125,
+        "files_already_formatted": 100,
+        "scope": "All raw diagnostics retained; no clean lint/format or no-new broad/format claim is inferred from this original diagnostic gate."
+      },
+      "security": {
+        "actual_exit": 0,
+        "scanned_files": 283,
+        "rules_run": 219,
+        "matches": 0,
+        "top_level_errors": 0,
+        "larger_than_1MB_skips": 4,
+        "ignore_pattern_skips": 100,
+        "fixpoint_warning_record_count": 8,
+        "exact_warning_records_path": "semgrep-fixpoint-warning-records.json",
+        "exact_warning_records_sha256": "2dfec7944cdaca291c5ebae4f134c89b17137191403d748b2512ca874e2e633c",
+        "app_js_aggregate_rules": 2,
+        "app_js_first_named_rule": "typescript.react.security.audit.react-unsanitized-method.react-unsanitized-method",
+        "second_app_js_rule_identity": "unreported",
+        "scope": "The eight time.fixpoint_timeouts warn objects are retained despite absence from human log. Original tracked-file/default-ignore/test exclusions and taint/rule/context limits remain. No full warning census, exact historical warning multiset equality or complete security claim."
+      },
+      "exact_fixpoint_warning_records": [
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/integration/upstream-originals/reference/allocator_cortex_m4_objects.py:379:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/integration/upstream-originals/reference/allocator_cortex_m4_objects.py",
+            "start": {
+              "line": 379,
+              "col": 5,
+              "offset": 18840
+            },
+            "end": {
+              "line": 379,
+              "col": 10,
+              "offset": 18845
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/reference/allocator_cortex_m4_objects.py:379:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/reference/allocator_cortex_m4_objects.py",
+            "start": {
+              "line": 379,
+              "col": 5,
+              "offset": 18840
+            },
+            "end": {
+              "line": 379,
+              "col": 10,
+              "offset": 18845
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/reference/cortex_m4_objects.py:186:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/reference/cortex_m4_objects.py",
+            "start": {
+              "line": 186,
+              "col": 5,
+              "offset": 8805
+            },
+            "end": {
+              "line": 186,
+              "col": 13,
+              "offset": 8813
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/reference/cortex_m4_objects.py:314:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/reference/cortex_m4_objects.py",
+            "start": {
+              "line": 314,
+              "col": 5,
+              "offset": 14112
+            },
+            "end": {
+              "line": 314,
+              "col": 10,
+              "offset": 14117
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at controller/reference/guard_cortex_m4_objects.py:74:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "controller/reference/guard_cortex_m4_objects.py",
+            "start": {
+              "line": 74,
+              "col": 5,
+              "offset": 3174
+            },
+            "end": {
+              "line": 74,
+              "col": 10,
+              "offset": 3179
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at docs/simulator_flowchart/app.js:1:0 [rules: 2, first: typescript.react.security.audit.react-unsanitized-method.react-unsanitized-method]",
+          "location": {
+            "path": "docs/simulator_flowchart/app.js",
+            "start": {
+              "line": 1,
+              "col": 1,
+              "offset": 0
+            },
+            "end": {
+              "line": 1,
+              "col": 1,
+              "offset": 0
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at quality/run_browser_audit.py:20:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "quality/run_browser_audit.py",
+            "start": {
+              "line": 20,
+              "col": 5,
+              "offset": 453
+            },
+            "end": {
+              "line": 20,
+              "col": 9,
+              "offset": 457
+            }
+          }
+        },
+        {
+          "error_type": "Fixpoint timeout",
+          "severity": "warn",
+          "message": "Fixpoint timeout while performing taint analysis at src/lapsim/experiments/dynamics_record.py:223:4 [rules: 1, first: python.boto3.security.hardcoded-token.hardcoded-token]",
+          "location": {
+            "path": "src/lapsim/experiments/dynamics_record.py",
+            "start": {
+              "line": 223,
+              "col": 5,
+              "offset": 8521
+            },
+            "end": {
+              "line": 223,
+              "col": 33,
+              "offset": 8549
+            }
+          }
+        }
+      ],
+      "posix": {
+        "actual_exit": 0,
+        "tests": 1,
+        "passed": 1,
+        "failures": 0,
+        "errors": 0,
+        "skips": 0,
+        "testcase": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c",
+        "xml_sha256": "6ee66757208ae9e063314a5c7d4c3c2a8117f7f8d930720f0c8a7e1cb91465d1"
+      },
+      "execution": {
+        "outcomes": {
+          "source_audit_exit": 0,
+          "inventory_check_exit": 0,
+          "posix_compiler_exit": 0
+        },
+        "guard_state": "finished",
+        "actual_exit": 0,
+        "stop_reason": null,
+        "wall_time_s": 69.0701371000032,
+        "headroom_before_gib": {
+          "physical_gib": 13.409744262695312,
+          "commit_gib": 19.769309997558594
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 10.956451416015625,
+          "commit_gib": 16.946422576904297
+        },
+        "preflight_floors_gib": {
+          "physical_gib": 10,
+          "commit_gib": 8.5
+        },
+        "running_floors_gib": {
+          "physical_gib": 8,
+          "commit_gib": 7
+        },
+        "tool_versions": [
+          "pyright==1.1.414",
+          "pytest==9.1.1",
+          "ruff==0.17.0",
+          "semgrep==1.180.0"
+        ],
+        "ownership_scope": "Actual direct held child exit plus recorded Linux phase-group watcher/waits/traps. No kernel-owned peak, active0 process census, isolated memory/performance claim or unrelated-process adoption."
+      },
+      "environment": {
+        "device_used": "CPU",
+        "gpu_device_available": true,
+        "memory_kib": {
+          "MemTotal": "15937656",
+          "MemAvailable": "15195788"
+        },
+        "cgroup_memory_max": null
+      },
+      "environment_limit": "CPU correctness/security gates on local WSL2. GPU visibility is access metadata, not use or acceleration. Memory visibility is not isolated consumption or a benchmark.",
+      "preservation": {
+        "path": "work/portable-owned-global-6ed6153-preserved-20261018",
+        "index_sha256": "8dbb7785001d6ed7856867e0c95b9f74771065ed6f2c4375d83b90d082ecd974",
+        "raw_global_files": 32,
+        "external_files": 5,
+        "current_primary_sources": 12,
+        "current_primary_source_scope": "4 packaging scripts/tests + 7 native/comparison-source files + catalog",
+        "prior_outputs": 28,
+        "git_source_projections": 14,
+        "total_copy2_preserved_files": 77,
+        "all_bytes_and_mtimes_exact": true
+      }
+    },
+    "actual_normal_full_6ed_build": {
+      "status": "passed",
+      "commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+      "tree": "f25c50ed6a6da257054d2fa6ab69858852294878",
+      "reviewed_utc": "2026-10-18T04:31:21.115165+00:00",
+      "full_suite": {
+        "actual_literal_invocation_exit": 0,
+        "module_reports": 98,
+        "reported": {
+          "tests": 2467,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 1
+        },
+        "raw_testcase_elements": 1457,
+        "exact_module_case_sequence_and_original_Windows_serialization": true,
+        "individual_subprocess_exit_receipts": "not recorded by normal check_all; none invented",
+        "pytest_warning_blocks": [],
+        "warning_scope": "Only pytest full-suite stdout interval; PyInstaller/build log warnings remain separate. Historical Tcl warning is not erased or causally explained."
+      },
+      "verification": {
+        "public_receipt_sanitized": true,
+        "local_literal_argv_excluded_from_ZIP": true,
+        "ZIP_verification_allowlist": [
+          "verification/build-verification.json",
+          "verification/test-results.xml"
+        ],
+        "exact_current_XML_in_ZIP": true,
+        "source_identity": {
+          "code_commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+          "dirty_worktree": false,
+          "source_sha256": "934186494af55780c7c9a4937df438ce22c8bed99c4313992f361e94d0ac32ff"
+        },
+        "source_scope": "When run, full repository tests precede inventory generation; packaged snapshot identity is separate.",
+        "privacy_limitation": "Exact raw JUnit retains normal hostname and may contain local diagnostics. Sanitized public JSON does not establish fully sanitized ZIP/report or authorize publication. Raw XML unchanged."
+      },
+      "runtime": {
+        "python": "3.13.15 (main, Sep  1 2026, 14:16:48) [MSC v.1944 64 bit (AMD64)]",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "Tcl_runtime": "8.6.12",
+        "Tk_compiled": "8.6",
+        "locked_versions": {
+          "altgraph": "0.17.5",
+          "colorama": "0.4.6",
+          "contourpy": "1.4.0",
+          "cycler": "0.12.1",
+          "defusedxml": "0.7.1",
+          "et_xmlfile": "2.0.0",
+          "fonttools": "4.66.1",
+          "iniconfig": "2.3.1",
+          "kiwisolver": "1.5.1",
+          "matplotlib": "3.11.2",
+          "numpy": "2.5.3",
+          "openpyxl": "3.1.5",
+          "packaging": "26.3",
+          "pefile": "2024.8.26",
+          "pillow": "12.3.0",
+          "pluggy": "1.6.0",
+          "Pygments": "2.21.0",
+          "pyinstaller": "6.22.0",
+          "pyinstaller-hooks-contrib": "2026.8",
+          "pyparsing": "3.3.3",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pywin32-ctypes": "0.2.3",
+          "scipy": "1.18.1",
+          "setuptools": "84.0.0",
+          "six": "1.17.0"
+        }
+      },
+      "artifact": {
+        "EXE_sha256": "7d02dbea59ccbc523719ea4285e3aeea952bb5a8bfdf35eb04b1cdda94a4b7d1",
+        "ZIP_sha256": "eb3d0a55e26887694745821eba13bd9b928e63caf633dcbf29b8d1eb9f49ad1f",
+        "ZIP_members": 947,
+        "source_asset_hashes_verified": 941,
+        "original_standard_checks": 20,
+        "copied_standard_checks": 21,
+        "copied_actual_exits": [
+          0,
+          2,
+          1,
+          1
+        ]
+      },
+      "focused30_in_full": {
+        "baseline_sha256": "43faa3f81ff16d76ddfa65defb39b71dc16b84976fc5869a7d20c42f7761f9a3",
+        "module_order": [
+          "test_check_all.xml",
+          "test_snapshot_build.xml"
+        ],
+        "measured_rows": 30,
+        "exact_complete_classname_name_order": true,
+        "index_sha256": "ee1f16c21526c9c3a9759739a261f33a42e2f40f444f3b3398a7effc1e6ff9d3",
+        "fresh_module_hashes": {
+          "test_check_all.xml": "0195a224750d15c902396e0d06f55bead2e5ef3f87ff0cb34e29c665777d8f04",
+          "test_snapshot_build.xml": "932e1dacfc05be2008ee1d52006e57a302ae2536575ea0daf2773257f3df4053"
+        }
+      },
+      "preservation": {
+        "files": 1710,
+        "prior_user_outputs": 28,
+        "all_bytes_hash_mtime_exact": true
+      },
+      "remaining_same_run_pytest_scope": "Only actual surviving uniquely attributable same-run regular files. Earlier pytest temp directories may have been removed; no reconstruction, assumed basetemp or old focused-file substitution.",
+      "packaged_assets_scope": "Actual completed6ed build/assets intentionally regenerated. Their current original-before/after/copy bytes/hash/mtime are preserved; no claim that oldcb build assets or their mtimes stayed unchanged. Full tests precede inventory generation; packaged snapshot identity remains separate.",
+      "guard": {
+        "actual_exit": 0,
+        "owned_active_before_final_close": 0,
+        "wall_time_s": 1175.9623614999582,
+        "metrics": {
+          "peak_single_process_committed_bytes": 592957440,
+          "peak_job_committed_bytes": 646914048,
+          "total_processes": 2182,
+          "active_processes": 0,
+          "cpu_time_s": 1049.53125
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 12.306175231933594,
+          "commit_gib": 18.420852661132812
+        },
+        "fresh_preflight": {
+          "physical_gib": 13.50381088256836,
+          "commit_gib": 19.725807189941406
+        },
+        "runtime_floors_gib": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        },
+        "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed."
+      },
+      "scope": "Actual normal full check_all/build plus PyInstaller/original copied smoke and four separate copied supplied-record commands. Standard fast lap/bicycle/control/component calculations and replays execute; supplied native records are viewed passively, no fresh native physics or native saved-study replay. No release, publication, physical validation, calibration, same-process recovery, complete a11y, module-import or kernel-wide process census claim."
+    },
+    "actual_normal_skip_6ed_build": {
+      "status": "passed separate --skip-tests build; no suite execution or totals",
+      "commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+      "tree": "f25c50ed6a6da257054d2fa6ab69858852294878",
+      "reviewed_utc": "2026-10-18T04:37:25.882766+00:00",
+      "skip_contract": {
+        "local_status": "skipped",
+        "local_command_exit_report_path_report_hash": "all null",
+        "public_full_suite": {
+          "status": "skipped",
+          "command": null,
+          "report": null
+        },
+        "current_suite_XML_modules_or_totals": "none",
+        "ZIP_verification_members": [
+          "verification/build-verification.json"
+        ],
+        "public_JSON_sanitized": true,
+        "local_literal_invocation_excluded_from_ZIP": true
+      },
+      "artifact": {
+        "second_PyInstaller_and_original_self_test": "passed",
+        "original_checks": 20,
+        "copied_checks": 21,
+        "copied_actual_exits": [
+          0,
+          2,
+          1,
+          1
+        ],
+        "EXE_sha256": "63b4e9d4c3dd3d5f8a6399aa83d8be802cb17fa94020eedc384465b6bc8a2c8f",
+        "ZIP_sha256": "de9b88173c483f2ded1a21ef938fd3ef6c68e15da003491f1266d17e3106db80",
+        "ZIP_members": 946,
+        "verified_source_asset_hashes": 941,
+        "packaged_source": {
+          "code_commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+          "dirty_worktree": false,
+          "source_sha256": "934186494af55780c7c9a4937df438ce22c8bed99c4313992f361e94d0ac32ff"
+        }
+      },
+      "full_build_preservation": {
+        "proof_sha256": "8ddf6482ffe88549423e308e337cea558927eb45dcf751901bae03311e450e2f",
+        "raw_full_output_outside_guard_and_sentinels_checked": 151,
+        "original_check_index_sha256": "847deb567680e91cfdb5ca49700474f2dc701512461f721320e6fee2fa927c13",
+        "raw_full_output_membership_unchanged": true,
+        "intentional_exception": "Original ROOT/build/assets are intentionally regenerated by the second build. Prior full asset COPIES remain exact; no unchanged-original-asset-mtime claim.",
+        "all1710_copies_bytes_hash_mtime_unchanged": true
+      },
+      "preserved_files": 1037,
+      "preserved_bytes": 298191457,
+      "all28_prior_user_outputs_unchanged": true,
+      "guard": {
+        "actual_exit": 0,
+        "owned_active_before_final_close": 0,
+        "wall_time_s": 109.90721939998912,
+        "metrics": {
+          "peak_single_process_committed_bytes": 303837184,
+          "peak_job_committed_bytes": 348352512,
+          "total_processes": 82,
+          "active_processes": 0,
+          "cpu_time_s": 79.0625
+        },
+        "fresh_preflight": {
+          "physical_gib": 12.939369201660156,
+          "commit_gib": 19.043495178222656
+        },
+        "runtime_floors": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        },
+        "minimum_headroom": {
+          "physical_gib": 12.086296081542969,
+          "commit_gib": 18.464111328125
+        },
+        "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed."
+      },
+      "scope": "Actual separate --skip-tests build and four ordinary copied EXE commands; no pytest/full-suite execution or totals attached. Existing standard fast-model calculations/replays run; native supplied record viewing passive. No native physics/native saved-study replay, same-process recovery, publication/release, physical validation or complete process/import/a11y census claim. Full raw JUnit privacy limitation remains in its separate full-build proof.",
+      "runtime_scope": "Skip runtime/26 locked versions equal actual accepted full6ed runtime; current four raw sources and full preserved source bytes/mtime exact. No skip full-suite execution/counts claim."
+    },
+    "both_actual_6ed_builds": {
+      "packaged_source_identity": {
+        "code_commit": "6ed6153dfea24250c6a7981384b80701ab2e933c",
+        "dirty_worktree": false,
+        "source_sha256": "934186494af55780c7c9a4937df438ce22c8bed99c4313992f361e94d0ac32ff"
+      },
+      "separate_executable_and_archive_artifacts": true,
+      "copied_command_order": [
+        "supported supplied record",
+        "input/report alias",
+        "unsupported frame",
+        "unsupported units"
+      ],
+      "actual_exit_codes_each_build": [
+        0,
+        2,
+        1,
+        1
+      ],
+      "original_copied_standard_checks_each_build": [
+        20,
+        21
+      ],
+      "supported_saved_record_IDs": {
+        "content_id": "62386b59d501a23132e53b2f39448e7d756cbada9e6063c2db8ffe16c9327291",
+        "receipt_id": "2335a00b34f76775bb36bbccf660a5b91470e9d9f4ddae2b38937077ae525a25"
+      },
+      "selected_saved_native_clocks_and_completed_interval_commands": [
+        {
+          "index": 0,
+          "clocks": {
+            "time_s": 0.0,
+            "tire_force_source_time_s": null,
+            "tire_kinematics_source_time_s": null,
+            "applied_tire_force_source_time_s": null,
+            "applied_tire_force_geometry_time_s": 0.0
+          },
+          "completed_interval_command": {
+            "driveshaft_torque_nm": 0.0,
+            "steering": 0.0,
+            "braking": 0.0
+          }
+        },
+        {
+          "index": 300,
+          "clocks": {
+            "time_s": 5.999999999999394,
+            "tire_force_source_time_s": 5.9994999999993945,
+            "tire_kinematics_source_time_s": 5.9994999999993945,
+            "applied_tire_force_source_time_s": 5.998999999999395,
+            "applied_tire_force_geometry_time_s": 5.9994999999993945
+          },
+          "completed_interval_command": {
+            "driveshaft_torque_nm": 0.0,
+            "steering": 0.0,
+            "braking": 0.2
+          }
+        },
+        {
+          "index": 400,
+          "clocks": {
+            "time_s": 7.999999999998286,
+            "tire_force_source_time_s": 7.999499999998286,
+            "tire_kinematics_source_time_s": 7.999499999998286,
+            "applied_tire_force_source_time_s": 7.998999999998286,
+            "applied_tire_force_geometry_time_s": 7.999499999998286
+          },
+          "completed_interval_command": {
+            "driveshaft_torque_nm": 40.0,
+            "steering": 0.0,
+            "braking": 0.0
+          }
+        }
+      ],
+      "native_inspection_context": {
+        "receipt_and_content_integrity": "checked",
+        "stored_structure": "checked; finite channels, counts and sample/command clocks",
+        "current_implementation_files": "unavailable; current implementation files could not be read",
+        "authenticity": "not established by content hashes",
+        "fresh_native_replay": "not run",
+        "historical_timing": "recorded claims; not validated",
+        "vehicle_calibration": "not established"
+      },
+      "protected_native_three_recipe_seven_and_exporter_LF_sha256": {
+        "dynamics/native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+        "dynamics/chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+        "experiments/suspension_study.py": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe",
+        "experiments/suspension_compare.py": "62cbc19a023877b824e54c458a303903ec3bf8f615f0e5821821761ec44a1dc7",
+        "experiments/dynamics_record.py": "edd2842d0b98c31b805fa5bb830238e66aeaceef9eea983fdd15da933fe25373",
+        "experiments/record_io.py": "32b68f49460f89b83244693b131e15dd7c23dfec36ee9ddca93bf4fd82368a91",
+        "experiments/basic_dynamics.py": "34ff3f7390d322ecb879a357cd53d03150ad0b94edd59608cbb08737625e3ff9",
+        "experiments/suspension_export.py": "975b58bc89efcb6e5c1a69aa363cd6d4db04a461692c3803802ea39731e62c82"
+      },
+      "numerical_and_schema_scope": "Three native implementation files, seven existing comparison recipe source files and the exporter remain unchanged from accepted main1153. No new physics, frame/unit conversion, calibration or native saved-study replay is established. Existing standard fast-model calculations and replays actually ran.",
+      "PyInstaller_warning": {
+        "signature": "WARNING: Hidden import \"scipy.special._cdflib\" not found!",
+        "actual_full_lines": [
+          "31512 WARNING: Hidden import \"scipy.special._cdflib\" not found!"
+        ],
+        "actual_skip_lines": [
+          "20541 WARNING: Hidden import \"scipy.special._cdflib\" not found!"
+        ],
+        "scope": "Build stderr warning is distinct from the full pytest stdout interval (zero warning-summary blocks) and the skip mode (no pytest executed). The historical Tcl warning and its unresolved cause are retained; no blanket warning-free claim."
+      },
+      "privacy_and_publication": "Exact raw JUnit retains normal hostname and may contain local diagnostics. Sanitized public JSON does not establish fully sanitized ZIP/report or authorize publication. Raw XML unchanged."
+    }
   }
 }

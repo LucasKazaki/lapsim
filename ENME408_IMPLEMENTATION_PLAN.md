@@ -115,6 +115,23 @@ so tested and packaged identities remain separate. The prior stale attachment
 and historical Tcl warning retain their original scope; sanitized JSON does
 not sanitize exact JUnit or its ZIP, and no release claim is made.
 
+Build-owned verification excludes only its fresh leaf from source status,
+preserving other tracked/untracked dirtiness. At measured runtime `6ed6153`,
+actual full and separate skipped builds passed, each with 20 original and 21
+copied checks plus supported-record/alias/frame/units exits 0/2/1/1. The full
+build produced 98 reports, 2,467 reported / 1,457 raw cases, zero failures/errors
+and one expected Windows POSIX-only skip; the skipped build attaches no suite
+XML or totals. Thirty focused contracts include 12 real-Git cases retaining
+the genuine-dirty controls.
+The [build receipt](docs/research/evidence/portable-build-verification-20261017.json)
+preserves the [PR #110 finding](https://github.com/LucasKazaki/lapsim/pull/110#discussion_r4303845080),
+four red failures and failed style gate alongside passed targeted/global
+quality, existing debt and security warnings. Full pytest had no warning-summary
+blocks; PyInstaller's existing hidden-import warning is separate and the
+historical Tcl cause remains unresolved. Final map and normal successor
+PR/integration/postmerge results remain pending. Artifacts retain `6ed6153`,
+separate from future docs heads; raw JUnit privacy and release limits remain.
+
 The engine-free saved-pair API/CLI merged normally through
 [PR #99](https://github.com/LucasKazaki/lapsim/pull/99) at `591728b` for declared
 plant-step or logging-period comparisons. It checks recorded physical/source
