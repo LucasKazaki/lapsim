@@ -97,14 +97,55 @@ map's generated source inventory, builds `dist/LapSim.exe`, and runs that
 executable's self-test from a temporary unrelated directory with Python/Git
 removed from `PATH`, isolated user data, and optional external evidence absent.
 It then produces `dist/LapSim-Windows-x64.zip`, `portable-self-test.json`, and
-`checksums.json`. The ZIP includes the available release verification logs and
-third-party runtime license notices. The output directory can be changed with
+`checksums.json`. The ZIP includes verification produced by this build invocation
+and third-party runtime license notices. The output directory can be changed with
 `--output-dir`; `--skip-tests` is intended only after a separate complete check
 of the same final checkout:
 
 ```powershell
 .\build_lapsim.cmd --output-dir C:\path\to\release
 ```
+
+Each invocation keeps a fresh `verification-*` directory beneath its output,
+including on a failed or missing full-suite report. Its local
+`full-suite-invocation.json` records the literal test command before execution
+and its outcome. The ZIP's `verification/build-verification.json` instead uses
+a sanitized logical command and identifies the packaged source context.
+When full tests pass, only that invocation's exact aggregate is included as
+`verification/test-results.xml`, with its SHA256. Ambient `work` reports/logs
+and earlier output reports are excluded. With `--skip-tests`, the receipt says
+`skipped` and includes no full-suite report; separately retained acceptance
+evidence is not attached automatically. The fresh portable self-test remains
+a distinct frozen smoke check. When enabled, full repository tests precede inventory
+generation, so the packaged snapshot identity is separate from that test phase;
+this receipt does not attest that both snapshots are identical.
+
+The full-suite XML is retained byte-for-byte and can include the runner's
+hostname or local diagnostic paths. A sanitized JSON receipt does not
+establish that the ZIP/report is free of machine metadata; these internal QA
+artifacts carry no publication or release claim.
+
+Actual full and skipped build artifacts retain source `cb3720b`. Test-only
+successors passed the same 18 focused contracts, most recently at `7ead724`;
+the actual final four-file gate reports no new type/broad findings against
+main `1153e7c`, with existing debt retained. These checks do not rebuild those
+artifacts. See the [local build evidence](research/evidence/portable-build-verification-20261017.json)
+for the retained failed gate and coverage limits.
+
+Source status excludes only the build's fresh verification leaf, preserving
+other source dirtiness. At `6ed6153`, actual full and separate skipped builds
+passed with clean packaged identities, each completing 20 original and 21
+copied checks plus supported-record/alias/frame/units exits 0/2/1/1. The full
+receipt binds its exact 98-report aggregate (2,467 reported / 1,457 raw cases,
+zero failures/errors, one expected Windows POSIX-only skip); skipped verification
+has null suite command/report and no XML or totals. The [build evidence](research/evidence/portable-build-verification-20261017.json)
+retains distinct EXE/ZIP hashes, 30 focused contracts (12 real-Git cases), the PR #110
+finding and failed style gate, plus passed quality gates and their remaining
+debt/warning limits. Native records were viewed passively; standard fast-model
+replays ran. PyInstaller's existing hidden-import warning is separate from the
+full suite's zero warning-summary blocks. Final map and normal reviewed
+integration/postmerge results remain pending; these artifacts keep source
+`6ed6153`, with raw-JUnit privacy and internal-only publication limits unchanged.
 
 Frozen read-only resources resolve through `lapsim.resources.repository_root()`
 to the extraction root's `bundle` directory. Source runs resolve to the checkout.
@@ -127,7 +168,10 @@ other required flows in the verification guide. Preserve skipped-test reasons,
 manual-check scope, hashes, runtime versions, source commit, and dirty-worktree
 state in the release evidence.
 
-Use the final package's report as the source of actual passing totals. Historical
+Use an included full-suite XML for passing totals only when the final package's
+verification receipt says `passed`. A skipped build has no included full-suite
+totals; `portable-self-test.json` describes the separate frozen smoke workflow.
+Keep separately run suite evidence with its own source and hash bindings. Historical
 test counts in the engineering handoff and earlier local logs describe earlier
 runs. Rebuild when code, bundled data, documentation, or map changes, then
 repeat checks affected by those changes. Never describe a source-only sweep as
