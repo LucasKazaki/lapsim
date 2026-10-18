@@ -1,0 +1,713 @@
+{
+  "schema": "lapsim.recipient-fused-fine-verification.v1",
+  "status": "locally_verified_bounded_E05_fine_increment",
+  "date": "2026-10-18",
+  "source": "0854c587b922fcfd821a2979ca5fdacac74ee116",
+  "tree": "c9055d862831f33b0131656a1d7116edb645f827",
+  "source_git_lf_sha256": {
+    "src/lapsim/desktop.py": "c108c556296011661979e914d0c2e3d763e2f0578194cec277f0caf71c9f5482",
+    "tests/test_recipient_grid_self_test.py": "a2bd12e4bf010f6c5d2aba69154540ee4a292ec34c8de1c0d3f3b3bc4a79cf52",
+    "quality/run_package_runtime.py": "46263fbe48ab1bfae43a07f3ff2d03aa7ff87bdc0688f7ca79d698465e3802ed",
+    "src/lapsim/core/controls.py": "f10e40386d5f78284c742b62959517227562ffe64e68c7b4849675d1dbaba474",
+    "tests/test_state_update.py": "d54db6a9b75fcc61a284cedcae00d22c9a96a8953ee923a6ceb7d9c52733abce",
+    "docs/simulator_flowchart/data/source-inventory.js": "28f3b83f5964a282c46d16364c9ba5aef34ee194c4b9f45a149235e36ecb552a",
+    "analysis/data/track/gnss_imu_endurance_track.csv": "80375fcdb28d25ebcf3d007b03cce3a72b6830b160536a0d167926db16d96aff",
+    "analysis/data/track/gnss_imu_endurance_track.json": "357bc92c7e1af7c5f5d6cc3785abcfc09c06ca08d510d0ff47d79515cd5c4b75",
+    "requirements-build.lock": "4543d27ee243ee832aafca0cfe0f7ada0656ec98a459db912bba73e5402d4022"
+  },
+  "scope": "E05 synchronous recipient acceptance for the original 0.5 m / 1,978-cell and retained 5 m / 198-cell fused grids through source, wheel, sdist, extracted-source bootstrap and original/copied Windows EXEs at the stated runtime source. Imported 32/128-cell and catalog 392-cell checks stay covered. The separate two-profile Pyodide gate covers normal browser profiles. Ordinary picker, asynchronous Run and the fine fused browser route remain open.",
+  "change": "Validate both ordered fused cases and retain full configured inputs and within-context record seals. No model equation, source data, solver/replay tolerance or new numerical defect repair in this increment.",
+  "inputs": {
+    "fused_declared_identity": {
+      "course_id": "team_endurance_fused_gnss_imu",
+      "source_geometry_sha256": "264e73a7cfeebcc902394d97140b2f754190a58e0274b8687a871884864e34ae",
+      "cases": [
+        {
+          "requested_maximum_cell_length_m": 5.0,
+          "cell_count": 198,
+          "declared_inputs_sha256": "e15c4089e7d844e03465639693e839b840a3e01b64983d7261485831ac9fa544"
+        },
+        {
+          "requested_maximum_cell_length_m": 0.5,
+          "cell_count": 1978,
+          "declared_inputs_sha256": "2d6551a9e505afa207852508eec14b9b099ffcb32ffa6f27ee1dc0805ef58dcf"
+        }
+      ]
+    },
+    "source_geometry": {
+      "cells": 1978,
+      "stations": 1979,
+      "length_m": 989.0,
+      "half_meter_stations": true,
+      "coherent_arcs": false
+    },
+    "geometry_oracle": "Independent original CSV/Fraction curvature weighted by source cell length. Target stations and x/y are exact; curvature uses absolute tolerance 1e-12 and zero relative tolerance for both requests. Fine uses the 1,978 original half-meter cells; the coarse final cell is 4 m. The oracle never constructs the worker grid.",
+    "contextual_leaves": [
+      "settings.track.geometry",
+      "settings.track.geometry_sha256",
+      "settings.track.source_course.source_artifact_sha256.fused_csv",
+      "settings.track.source_course.source_artifact_sha256.fusion_metadata_json"
+    ],
+    "comparison": "Only these four leaves are removed after each complete geometry/source/config/replay validation. Every other unknown input key remains in declared identity. Full expected/recorded inputs stay exact within each context; observed hashes/run IDs/traces are not equated across contexts.",
+    "source_kind": "recorded_fusion_unverified",
+    "coordinate_frame": "legacy_map_registered_xy_unknown_origin",
+    "revision": "legacy_unversioned",
+    "boundary_status": "absent",
+    "bundle_claim": null,
+    "replay_metric_tolerances": {
+      "driving_time_s": 0.01,
+      "lap_time_s": 0.01,
+      "starting_speed_mps": 0.01,
+      "ending_speed_mps": 0.01,
+      "pack_energy_kwh": 1e-05,
+      "final_state_of_charge": 1e-05,
+      "sample_time_s": 0.01,
+      "sample_distance_m": 1e-08,
+      "speed_trace_mps": 0.01,
+      "path_speed_ceiling_mps": 0.01,
+      "controls.motor_torque_request_nm": 0.0,
+      "controls.front_brake_pressure_psi": 0.0,
+      "controls.rear_brake_pressure_psi": 0.0,
+      "controls.rear_regenerative_brake_force_request_n": 0.0,
+      "controls.steering_angle_rad": 0.0,
+      "controls.front_regenerative_brake_force_request_n": 0.0,
+      "tire.road_grip_multiplier": 0.0
+    }
+  },
+  "contexts": {
+    "source": [
+      {
+        "requested_maximum_cell_length_m": 5.0,
+        "cell_count": 198,
+        "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+        "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          198,
+          198
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      },
+      {
+        "requested_maximum_cell_length_m": 0.5,
+        "cell_count": 1978,
+        "geometry_sha256": "264e73a7cfeebcc902394d97140b2f754190a58e0274b8687a871884864e34ae",
+        "full_inputs_sha256": "a15fc10f0d1a1dafbce19827db55a2cdc64292bdea285a4bb2f92a24b4497f06",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          1978,
+          1978
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      }
+    ],
+    "wheel": [
+      {
+        "requested_maximum_cell_length_m": 5.0,
+        "cell_count": 198,
+        "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+        "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          198,
+          198
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      },
+      {
+        "requested_maximum_cell_length_m": 0.5,
+        "cell_count": 1978,
+        "geometry_sha256": "264e73a7cfeebcc902394d97140b2f754190a58e0274b8687a871884864e34ae",
+        "full_inputs_sha256": "a15fc10f0d1a1dafbce19827db55a2cdc64292bdea285a4bb2f92a24b4497f06",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          1978,
+          1978
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      }
+    ],
+    "sdist": [
+      {
+        "requested_maximum_cell_length_m": 5.0,
+        "cell_count": 198,
+        "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+        "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          198,
+          198
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      },
+      {
+        "requested_maximum_cell_length_m": 0.5,
+        "cell_count": 1978,
+        "geometry_sha256": "264e73a7cfeebcc902394d97140b2f754190a58e0274b8687a871884864e34ae",
+        "full_inputs_sha256": "a15fc10f0d1a1dafbce19827db55a2cdc64292bdea285a4bb2f92a24b4497f06",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          1978,
+          1978
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      }
+    ],
+    "bootstrap": [
+      {
+        "requested_maximum_cell_length_m": 5.0,
+        "cell_count": 198,
+        "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+        "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          198,
+          198
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      },
+      {
+        "requested_maximum_cell_length_m": 0.5,
+        "cell_count": 1978,
+        "geometry_sha256": "264e73a7cfeebcc902394d97140b2f754190a58e0274b8687a871884864e34ae",
+        "full_inputs_sha256": "a15fc10f0d1a1dafbce19827db55a2cdc64292bdea285a4bb2f92a24b4497f06",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          1978,
+          1978
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      }
+    ],
+    "frozen_original": [
+      {
+        "requested_maximum_cell_length_m": 5.0,
+        "cell_count": 198,
+        "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+        "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          198,
+          198
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      },
+      {
+        "requested_maximum_cell_length_m": 0.5,
+        "cell_count": 1978,
+        "geometry_sha256": "264e73a7cfeebcc902394d97140b2f754190a58e0274b8687a871884864e34ae",
+        "full_inputs_sha256": "a15fc10f0d1a1dafbce19827db55a2cdc64292bdea285a4bb2f92a24b4497f06",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          1978,
+          1978
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      }
+    ],
+    "frozen_copied": [
+      {
+        "requested_maximum_cell_length_m": 5.0,
+        "cell_count": 198,
+        "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+        "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          198,
+          198
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      },
+      {
+        "requested_maximum_cell_length_m": 0.5,
+        "cell_count": 1978,
+        "geometry_sha256": "264e73a7cfeebcc902394d97140b2f754190a58e0274b8687a871884864e34ae",
+        "full_inputs_sha256": "a15fc10f0d1a1dafbce19827db55a2cdc64292bdea285a4bb2f92a24b4497f06",
+        "recorded_inputs_equal": true,
+        "same_record_replay_ID_within_context": true,
+        "recorded_replayed_samples": [
+          1978,
+          1978
+        ],
+        "metrics_passed": 17,
+        "all_maximum_absolute_errors_zero": true,
+        "mismatch_reasons": [],
+        "provenance_warning_count": 0
+      }
+    ]
+  },
+  "verification": {
+    "focused": {
+      "actual_source": "35720a91ead46a69d339e320644d26840d4c84b8",
+      "raw": 54,
+      "reported": 54,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "implementation_and_test_blobs_equal_runtime_source": true
+    },
+    "source": {
+      "checks": 23,
+      "exit": 0
+    },
+    "maps": {
+      "checks": 3,
+      "exit": 0
+    },
+    "quality": {
+      "paths": [
+        "src/lapsim/desktop.py",
+        "tests/test_recipient_grid_self_test.py",
+        "quality/run_package_runtime.py"
+      ],
+      "types_current": 0,
+      "types_baseline": 0,
+      "new_types": 0,
+      "broad_current": 0,
+      "new_broad": 0,
+      "critical_exit": 0,
+      "changed_test_format_exit": 0,
+      "whole_format": "Both actual exit1;13 inherited desktop edit-hunk fingerprints and multiplicities exact,0 introduced/0 missing.",
+      "actual_python_security_rules": 151,
+      "all_three_scanned": true,
+      "security_matches": 0,
+      "security_errors": 0
+    },
+    "full": {
+      "modules": 100,
+      "actual_check_all_exit": 0,
+      "XML_reported_totals": {
+        "tests": 2657,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "raw_XML_testcase_count": 1641,
+      "aggregate_exact_bytes_and_order_independently_reconstructed": true,
+      "unchanged_old99_ID_order": true,
+      "current54_ID_order": true,
+      "skip": "One unchanged Windows skip for POSIX multi-call compiler-launcher semantics.",
+      "warning": "One actual RuntimeWarning block about Tcl deallocation on another thread, equal to the accepted coarse run; three diagnostic source blobs unchanged. Cause remains unresolved; no suppression or lifecycle-fix claim."
+    },
+    "package": {
+      "source_wheel_sdist_bootstrap_checks": [
+        23,
+        23,
+        23,
+        23
+      ],
+      "installed_reference_each": {
+        "tests": 538,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "actual_outer_command_exits": [
+        0,
+        0
+      ],
+      "locked_build_names": 26,
+      "installed_native_C_checked": true,
+      "source_identity_through_sdist": true,
+      "actual_non_ASCII_extracted_source_bootstrap": true,
+      "offline_readonly_repeat": true,
+      "archive_reference_scope": "Exactly two retained sdist regular member bytes independently equal the explicitly labeled archive-reference files; never a surviving/reconstructed actual bootstrap payload. Producer checked its actual extracted source before cleanup.",
+      "marker_scope": "Pinned producer assertions cover offline marker byte/mtime; cleaned marker is not reconstructed or independently present after closure.",
+      "artifacts": {
+        "python_lapsim-0.1.0-py3-none-any.whl": {
+          "bytes": 4601188,
+          "sha256": "88803c5fd8afc1f35d9445a88fad6d395fd3b5be8e73e74449ca2f7e859b5321"
+        },
+        "python_lapsim-0.1.0.tar.gz": {
+          "bytes": 3687939,
+          "sha256": "7d4fa0fe6860a4a5f3750625ea5730dbe2cb0abbcec392a9599e8718ea37a3f7"
+        }
+      }
+    },
+    "frozen": {
+      "actual_check_counts": {
+        "original": 23,
+        "copied": 24
+      },
+      "actual_outer_command_exits": [
+        0,
+        0
+      ],
+      "copied_route_exits": [
+        0,
+        2,
+        1,
+        1
+      ],
+      "copied_route_meanings": [
+        "native supplied-record check",
+        "reject output alias of input",
+        "reject resealed frame claim",
+        "reject resealed units claim"
+      ],
+      "full_suite_in_this_build": {
+        "status": "skipped",
+        "command": null,
+        "report": null
+      },
+      "separately_measured_full100_peer_sha256": "5279bc810bb1d8254b9683aebceeefab3ac0379455527fdf2fe970720a6f9895",
+      "packaged_source": {
+        "code_commit": "0854c587b922fcfd821a2979ca5fdacac74ee116",
+        "dirty_worktree": false,
+        "source_sha256": "0430604321e92e7fa9e7213dc4ed39ce292e8cf69d995206b829f291cf4e38ef"
+      },
+      "artifacts": {
+        "LapSim.exe": {
+          "bytes": 79391057,
+          "sha256": "631d30f6a2996be6f2b9a6916d7f8574622fcad6675bd816b2bb10dc35651a37"
+        },
+        "LapSim-Windows-x64.zip": {
+          "bytes": 87542466,
+          "sha256": "c6709e9ae5e54a44383cdb9fd695fb9a49fb44770bcf54a02862771f3a9c8017"
+        }
+      },
+      "scope": "Intentional --skip-tests build after the separate ordinary100 run. Own suite command/report are null and XML is absent. Genuine original/copied EXE contexts check both fused cases; copied run uses isolated storage and System32-only PATH. No release or hardware action."
+    },
+    "browser_separate": {
+      "actual_command_exits": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "runtime_archive": {
+        "archive_sha256": "c8544da061aceca896bf062eb44e581e259878b68f72aef3feab7fc7f2b113fc",
+        "source_sha256": "bb5ed00456fdb3cd84d527e5e503a5a467defbfc9fb0557d1bf76f27477d6e0c",
+        "all_declared_archive_member_hashes_and_scope_recomputed": true,
+        "members": 326,
+        "Controls_exact_current_raw_bytes": true,
+        "manifest_source_clean_commit": "0854c587b922fcfd821a2979ca5fdacac74ee116"
+      },
+      "profiles": [
+        {
+          "profile": "repository_baseline",
+          "sample_count": 392,
+          "absolute_scalar_differences": {
+            "elapsedTimeS": 0.0,
+            "energyKwh": 0.0,
+            "socFinal": 0.0
+          },
+          "original_comparison_tolerances": {
+            "relative": 1e-09,
+            "absolute": 1e-09
+          },
+          "axe_counts": {
+            "violations": 0,
+            "passes": 27,
+            "incomplete": 1,
+            "inapplicable": 37
+          },
+          "axe_incomplete_IDs": [
+            "color-contrast"
+          ],
+          "record_runtime": {
+            "dependencies": {
+              "matplotlib": "3.10.8",
+              "numpy": "2.4.6",
+              "scipy": "1.18.0"
+            },
+            "platform": {
+              "machine": "wasm32",
+              "release": "5.0.3",
+              "system": "Emscripten",
+              "version": "#1"
+            },
+            "python": {
+              "implementation": "CPython",
+              "version": "3.14.2"
+            }
+          },
+          "model_validity": {
+            "vehicle_validation": "not_established_by_this_run",
+            "warnings": [
+              "Repository defaults are a model baseline, not an as-built car.",
+              "Some telemetry channels have unspecified units."
+            ]
+          }
+        },
+        {
+          "profile": "prius_2026_le",
+          "sample_count": 392,
+          "absolute_scalar_differences": {
+            "elapsedTimeS": 0.0,
+            "energyKwh": 0.0,
+            "socFinal": 0.0
+          },
+          "original_comparison_tolerances": {
+            "relative": 1e-09,
+            "absolute": 1e-09
+          },
+          "axe_counts": {
+            "violations": 0,
+            "passes": 27,
+            "incomplete": 1,
+            "inapplicable": 37
+          },
+          "axe_incomplete_IDs": [
+            "color-contrast"
+          ],
+          "record_runtime": {
+            "dependencies": {
+              "matplotlib": "3.10.8",
+              "numpy": "2.4.6",
+              "scipy": "1.18.0"
+            },
+            "platform": {
+              "machine": "wasm32",
+              "release": "5.0.3",
+              "system": "Emscripten",
+              "version": "#1"
+            },
+            "python": {
+              "implementation": "CPython",
+              "version": "3.14.2"
+            }
+          },
+          "model_validity": {
+            "vehicle_validation": "not_established_by_this_run",
+            "warnings": [
+              "Equivalent power source and estimated tire/aero/pack inputs; hybrid drivetrain is not modeled.",
+              "Some telemetry channels have unspecified units."
+            ]
+          }
+        }
+      ],
+      "scope": "Two normal-profile exports and native replay/model agreement observed by the unchanged producer with the original relative and absolute 1e-9 comparisons. A full native replay report/trace is not separately retained; booleans and three scalar differences are. All raw accessibility reports include incompletes; screenshots are bound by bytes/dimensions only. The fine fused browser route and complete visual/accessibility review remain outside this gate."
+    }
+  },
+  "retained_counterexamples": {
+    "producer": {
+      "source": "d67e7c328d217880366c6362193d12eeab1871c8",
+      "raw": 2,
+      "failures": 2,
+      "reason": "Fine route absent: positive returned only 5 m, and worker-only wrong fine refinement was never exercised. No fine numerical failure is asserted."
+    },
+    "consumer": {
+      "source": "64f7b60de6c02a712cf5faf5a3effc1fa111d8c8",
+      "raw": 14,
+      "failures": 8,
+      "passes": 6,
+      "reason": "Old one-case consumer rejected dual reports and accepted missing fine evidence; some other negatives reached only the early guard."
+    },
+    "wrong_worker_grid": "Regression substitutes only a refinement of the real coarse grid inside the genuine worker. Correct fine count, stations and endpoint cannot hide wrong source curvature and x/y. Positive fine execution and the geometry-specific negative both passed in the actual 54-case module.",
+    "rounding_boundary": "A resealed 1-ULP fine curvature perturbation within 1e-12 remains contextual; malformed order, count, solver settings, tolerances and out-of-tolerance channels are rejected."
+  },
+  "commands": {
+    "source": "python -m lapsim.desktop --self-test self-test.json",
+    "focused": "python -m pytest -q tests/test_recipient_grid_self_test.py",
+    "full": "python scripts/check_all.py --output-dir check-all",
+    "maps": [
+      "python scripts/check_flowchart_site.py",
+      "python docs/simulator_flowchart/generate_inventory.py --check",
+      "node scripts/check_flowchart_data.mjs"
+    ],
+    "package": "python quality/run_package_runtime.py --desktop --output-dir package-check",
+    "frozen_build": "python scripts/build_windows.py --skip-tests --output-dir frozen-check",
+    "browser": [
+      "python scripts/build_web.py",
+      "pwsh -NoProfile -File scripts/stage_team_site.ps1 -OutputDirectory dist/web",
+      "python quality/run_web_runtime.py"
+    ]
+  },
+  "local_evidence_sha256": {
+    "source_stage": "f26d8c1e447381af3749522f07c3d55801b853f65cb937ac2de757ab5686ad97",
+    "source_maps_peer": "7ddecd5da7e30389349b83204b418f09c7bcd0e6d515814d9b6ed6b126d0b99a",
+    "quality_summary": "6cbc8aabc1cad1f8eb083e189761a699af2437005bba183278f4bc26c63e99f1",
+    "quality_peer": "1e32de7085fbba92d2cde3cfa333889e511b456347798f6d9b70c6137cf2ddb8",
+    "focused54_XML": "55eb39501d67e97046507aac63538c175bf717f774322b01d8364f98707dd308",
+    "focused54_peer": "267b1a2891594328de11772aa540f62748830f15e428ca7caab8c54ba4a76c9c",
+    "producer_RED2_XML": "6f83c248e1f9e57cc051e7197de6a7a18828c47a37fdc09ae2efeb99136da831",
+    "consumer_RED14_XML": "fb10767d77f0fd16870f88fdd47729d94aa25e6ecab1d2805866b1b4dec400eb",
+    "full_peer": "5279bc810bb1d8254b9683aebceeefab3ac0379455527fdf2fe970720a6f9895",
+    "package_peer": "279d5877369c2e2f055f5ce00bfdd686668cc6c653f37b3c08892b0210ba2dd1",
+    "frozen_peer": "2d33adaab3d94d5f35b79717d2e477d2cfc93f2c7c25f0d3f66674b9aa9c2aed",
+    "browser_peer": "e3779d09de9c57f83f036e678a22ac0b4ba1ba8a6154a1ecdeced9c649fa90d0",
+    "full_aggregate_XML": "8131b984b150de3861541c24cfc5a99e5bb0d839a2949950fe2ed524bbd31d95",
+    "package_stage": "647f891d0b70ce32af20420276fe9dde8a51a48ae43c974d71cfea82d532baa6",
+    "package_guard": "e4b336dded2368501c8feb0b20c9df03faa70338ecfe3337c850580a5e5abab6",
+    "package_summary": "fc16f7eb6609b4f0f3418cec091be558cd7c3da6bf70064ed54c936ae9e9619a",
+    "package_index": "2ee75ced8a1488a04470aa838516024c7b43ddeb3290095bd31cfdffffd6245e",
+    "package_closed_R2_helper": "d21e6d01d7b94f21331124febba103b772f38dede3d179f364f069d0572e5090",
+    "package_closed_R2_source_peer": "5dc47ee6ae8c8b7775c01dde7c6febe1a1839ded3954a12e1218b12798ee4904",
+    "frozen_stage": "38f2973a4bcc84776652f6030c3e13bb88d73fc0800be8702fb011bbb7874782",
+    "frozen_guard": "a507406f516da0c72785bf3829ce4de382658c32102db0dc42d99f51390ea4bd",
+    "frozen_prerequisites": "5e4edecf1d7ec78278093b303a3b24ce48dd61eed67cee502d5b2912e7e738e3",
+    "frozen_index": "f746a69cbbd38b95f3758ed185b344477e87837ee5e5c5fd2f91a04d13868e64",
+    "browser_stage": "57397b1fc9fe3886430fc12f33cf030666fab81a8f50d371020737773e1e394c",
+    "browser_guard": "df8d83b3573ddb5442ec85bb42c7ca6edf8a6ec15e6ffc15775d108f9337a195",
+    "final_implementation_source_peer": "2561251de9fed3ffdcb9e58f6d30e8373210c818cb073281432bee3480840acd"
+  },
+  "integration": null,
+  "postmerge": null,
+  "pending": [
+    "normal exact-head integration",
+    "postmerge verification",
+    "local delivery and tracker update"
+  ],
+  "limits": [
+    "Legacy fused geometry remains unverified; XY/curvature consistency, surveyed origin and boundaries are not established. This is reproducibility evidence, not calibration.",
+    "Existing Controls scalar-boundary repair remains inherited from the earlier fused receipt. No archived record is rewritten.",
+    "Source execution uses CPU on the actual native Windows PC. GPU discovery does not establish GPU physics.",
+    "Observed scratch record hashes/IDs do not reconstruct removed GUI payloads. Raw private logs and JUnit are not part of this public projection."
+  ],
+  "runtime": {
+    "python_native_build": "3.13.15",
+    "source_numpy": "2.5.4",
+    "build_wheel_sdist_frozen_numpy": "2.5.3",
+    "installed_versions_observed": {
+      "wheel": {
+        "contourpy": "1.4.0",
+        "cycler": "0.12.1",
+        "et-xmlfile": "2.0.0",
+        "fonttools": "4.66.1",
+        "kiwisolver": "1.5.1",
+        "matplotlib": "3.11.2",
+        "numpy": "2.5.3",
+        "openpyxl": "3.1.5",
+        "packaging": "26.3",
+        "pillow": "12.3.0",
+        "pyparsing": "3.3.3",
+        "python-dateutil": "2.9.0.post0",
+        "python-lapsim": "0.1.0",
+        "scipy": "1.18.1",
+        "six": "1.17.0"
+      },
+      "sdist": {
+        "contourpy": "1.4.0",
+        "cycler": "0.12.1",
+        "et-xmlfile": "2.0.0",
+        "fonttools": "4.66.1",
+        "kiwisolver": "1.5.1",
+        "matplotlib": "3.11.2",
+        "numpy": "2.5.3",
+        "openpyxl": "3.1.5",
+        "packaging": "26.3",
+        "pillow": "12.3.0",
+        "pyparsing": "3.3.3",
+        "python-dateutil": "2.9.0.post0",
+        "python-lapsim": "0.1.0",
+        "scipy": "1.18.1",
+        "six": "1.17.0"
+      },
+      "bootstrap": {
+        "contourpy": "1.4.0",
+        "cycler": "0.12.1",
+        "et-xmlfile": "2.0.0",
+        "fonttools": "4.67.0",
+        "kiwisolver": "1.5.1",
+        "matplotlib": "3.11.2",
+        "numpy": "2.5.4",
+        "openpyxl": "3.1.5",
+        "packaging": "26.3",
+        "pillow": "13.0.0",
+        "pyparsing": "3.3.3",
+        "python-dateutil": "2.9.0.post0",
+        "python-lapsim": "0.1.0",
+        "scipy": "1.18.1",
+        "six": "1.17.0"
+      }
+    },
+    "quality_tools": [
+      "pyright 1.1.414",
+      "ruff 0.17.0",
+      "semgrep 1.180.0",
+      "pytest 9.1.1"
+    ]
+  },
+  "execution": {
+    "destination": "Actual native Windows 11 Home 10.0.26300 PC; Ryzen 9 7950X3D, 16 cores / 32 threads, 31.16 GiB visible RAM; RTX 5080 with 16 GiB detected. Physics reference remains CPU; GPU physics was not introduced.",
+    "policy": "One substantial project job and numerical pools of 1. Fresh headroom: 10 GiB physical / 8.5 GiB commit; running floors: 8 / 7 GiB, with STOP handling. Every owned job closed with zero active processes.",
+    "source": {
+      "guarded_wall_s": 61.85828759998549,
+      "peak_job_committed_bytes": 363003904,
+      "minimum_headroom_GiB": {
+        "physical_gib": 9.525962829589844,
+        "commit_gib": 12.533164978027344
+      }
+    },
+    "full": {
+      "guarded_wall_s": 933.5865666000172,
+      "peak_job_committed_bytes": 608722944,
+      "minimum_headroom_GiB": {
+        "physical_gib": 9.498603820800781,
+        "commit_gib": 12.76082992553711
+      }
+    },
+    "package": {
+      "guarded_wall_s": 423.0007423000061,
+      "peak_job_committed_bytes": 401289216,
+      "minimum_headroom_GiB": {
+        "physical_gib": 8.705451965332031,
+        "commit_gib": 12.290046691894531
+      }
+    },
+    "frozen": {
+      "guarded_wall_s": 210.68190490000416,
+      "peak_job_committed_bytes": 414961664,
+      "minimum_headroom_GiB": {
+        "physical_gib": 9.39434814453125,
+        "commit_gib": 12.89382553100586
+      }
+    },
+    "browser_separate": {
+      "guarded_wall_s": 37.54149090003921,
+      "peak_job_committed_bytes": 1297199104,
+      "minimum_headroom_GiB": {
+        "physical_gib": 9.763992309570312,
+        "commit_gib": 16.086021423339844
+      }
+    },
+    "scope": "Commit peaks are not RSS. Wall times include startup/build/install/verification work, not steady model benchmarks or latency/real-time claims."
+  },
+  "command_scope": "Portable command forms shown. Exact local native argv/environment/exits are retained in hash-bound private receipts; use the documented supported environments.",
+  "finalization_scope": "This dated receipt freezes local acceptance at runtime source 0854. Later docs, PR heads and merges do not relabel these artifacts as rebuilt. Actual integration and postmerge belong in the subsequent local delivery record."
+}
