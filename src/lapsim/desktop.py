@@ -187,16 +187,21 @@ def _self_test_json_sha256(value) -> str:
 def _check_imported_course_grid(app, directory: Path) -> dict:
     """Exercise the real desktop worker in caller-isolated storage, without threads."""
     from hashlib import sha256
+    from itertools import pairwise
     from math import cos, isclose, isfinite, pi, sin
     from .courses.course_bundle import CourseBundle
     from .experiments import LapRunSettings, RunRecord, default_run_directory
     from .experiments.lap_replay import replay_lap_record
     from .profiles import build_vehicle, snapshot_vehicle_config
     from .ui.course_catalog import (
-        course_source_metadata, imported_course_spec, solver_track_for_course,
+        course_source_metadata,
+        imported_course_spec,
+        solver_track_for_course,
     )
     from .ui.simulation import (
-        apply_uniform_road_grip, endurance_run_config, path_solver_settings,
+        apply_uniform_road_grip,
+        endurance_run_config,
+        path_solver_settings,
     )
 
     def snapshot(path):
@@ -206,28 +211,39 @@ def _check_imported_course_grid(app, directory: Path) -> dict:
         directory.mkdir(parents=True, exist_ok=False)
         distance_m = [20.0 * pi * index / 32 for index in range(33)]
         geometry = {
-            "closed": True, "distance_m": distance_m,
+            "closed": True,
+            "distance_m": distance_m,
             "x_m": [10.0 * sin(value / 10.0) for value in distance_m],
             "y_m": [10.0 * (1.0 - cos(value / 10.0)) for value in distance_m],
             "curvature_per_m": [0.1] * 32,
         }
         manifest = {
-            "schema_version": 1, "course_id": "recipient_grid_circle", "revision": "v1",
-            "label": "Recipient grid circle", "description": "Public analytic self-test circle.",
-            "source_kind": "synthetic", "boundary_status": "absent",
+            "schema_version": 1,
+            "course_id": "recipient_grid_circle",
+            "revision": "v1",
+            "label": "Recipient grid circle",
+            "description": "Public analytic self-test circle.",
+            "source_kind": "synthetic",
+            "boundary_status": "absent",
             "provenance": {
-                "source_name": "Radius 10 m analytic circle", "source_sha256": None,
+                "source_name": "Radius 10 m analytic circle",
+                "source_sha256": None,
                 "processing_method": "32 manually declared equal circular arcs",
                 "review_note": "Synthetic calculation fixture; no measured course or boundaries",
             },
             "coordinate_frame": {
-                "type": "local_cartesian_right_handed_xy", "units": "m",
-                "origin": "Start", "x_axis": "east", "y_axis": "north",
+                "type": "local_cartesian_right_handed_xy",
+                "units": "m",
+                "origin": "Start",
+                "x_axis": "east",
+                "y_axis": "north",
             },
             "travel_direction": "counterclockwise",
             "ai_defaults": {
-                "width_source": "assumed_uniform", "half_width_m": 2.5,
-                "vehicle_width_m": 1.8, "safety_margin_m": 0.2,
+                "width_source": "assumed_uniform",
+                "half_width_m": 2.5,
+                "vehicle_width_m": 1.8,
+                "safety_margin_m": 0.2,
             },
             "geometry": {"model": "piecewise_constant_curvature_arcs", **geometry},
             "geometry_sha256": _self_test_json_sha256(geometry),
@@ -235,26 +251,35 @@ def _check_imported_course_grid(app, directory: Path) -> dict:
         source_path = directory / "circle-v1.json"
         source_path.write_text(
             json.dumps(manifest, indent=2, allow_nan=False) + "\n",
-            encoding="utf-8", newline="\n",
+            encoding="utf-8",
+            newline="\n",
         )
         source_before = snapshot(source_path)
         bundle = CourseBundle.load(source_path)
-        if (
-            bundle.geometry_sha256 != _self_test_json_sha256(geometry)
-            or bundle.bundle_sha256 != _self_test_json_sha256(manifest)
-        ):
-            raise RuntimeError("Recipient grid fixture provenance does not match its analytic input")
-        source = course_source_metadata(imported_course_spec(bundle), bundle.track, bundle=bundle)
+        if bundle.geometry_sha256 != _self_test_json_sha256(
+            geometry
+        ) or bundle.bundle_sha256 != _self_test_json_sha256(manifest):
+            raise RuntimeError(
+                "Recipient grid fixture provenance does not match its analytic input"
+            )
+        source = course_source_metadata(
+            imported_course_spec(bundle), bundle.track, bundle=bundle
+        )
         app._import_course_bundle(source_path)
         if app.course_spec.course_id != "imported:recipient_grid_circle@v1":
             raise RuntimeError("Recipient grid import selected a different course")
 
         def check_geometry(value, subdivisions, maximum_cell_length_m):
             cell_count = 32 * subdivisions
-            if value["closed"] is not True or value["curvature_per_m"] != [0.1] * cell_count:
-                raise RuntimeError("Recipient grid cell count or curvature is incorrect")
+            if (
+                value["closed"] is not True
+                or value["curvature_per_m"] != [0.1] * cell_count
+            ):
+                raise RuntimeError(
+                    "Recipient grid cell count or curvature is incorrect"
+                )
             expected_distance_m = [distance_m[0]]
-            for lower, upper in zip(distance_m[:-1], distance_m[1:], strict=True):
+            for lower, upper in pairwise(distance_m):
                 expected_distance_m.extend(
                     lower + (index / subdivisions) * (upper - lower)
                     for index in range(1, subdivisions)
@@ -263,43 +288,86 @@ def _check_imported_course_grid(app, directory: Path) -> dict:
             if value["distance_m"] != expected_distance_m or any(
                 not 0.0 < upper - lower <= maximum_cell_length_m
                 for lower, upper in zip(
-                    value["distance_m"][:-1], value["distance_m"][1:], strict=True,
+                    value["distance_m"][:-1],
+                    value["distance_m"][1:],
+                    strict=True,
                 )
             ):
                 raise RuntimeError("Recipient grid station spacing is incorrect")
             for field in ("distance_m", "x_m", "y_m"):
-                if len(value[field]) != cell_count + 1 or value[field][::subdivisions] != geometry[field]:
-                    raise RuntimeError("Recipient grid did not preserve source boundaries")
-            for distance, x, y in zip(value["distance_m"], value["x_m"], value["y_m"], strict=True):
+                if (
+                    len(value[field]) != cell_count + 1
+                    or value[field][::subdivisions] != geometry[field]
+                ):
+                    raise RuntimeError(
+                        "Recipient grid did not preserve source boundaries"
+                    )
+            for distance, x, y in zip(
+                value["distance_m"], value["x_m"], value["y_m"], strict=True
+            ):
                 if not (
                     isclose(x, 10.0 * sin(distance / 10.0), rel_tol=0.0, abs_tol=1e-12)
-                    and isclose(y, 10.0 * (1.0 - cos(distance / 10.0)), rel_tol=0.0, abs_tol=1e-12)
+                    and isclose(
+                        y,
+                        10.0 * (1.0 - cos(distance / 10.0)),
+                        rel_tol=0.0,
+                        abs_tol=1e-12,
+                    )
                 ):
-                    raise RuntimeError("Recipient grid differs from the analytic circle")
+                    raise RuntimeError(
+                        "Recipient grid differs from the analytic circle"
+                    )
 
         cases = []
         for step_m, subdivisions in ((5.0, 1), (0.5, 4)):
-            expected_track = solver_track_for_course(app.course_spec.course_id, bundle.track, step_m)
+            expected_track = solver_track_for_course(
+                app.course_spec.course_id, bundle.track, step_m
+            )
             vehicle, profile = build_vehicle("repository_baseline")
             apply_uniform_road_grip(vehicle, 1.0)
             settings = LapRunSettings.from_track(
-                expected_track, track_id=app.course_spec.course_id, solver_step_m=step_m,
-                solver_settings=path_solver_settings(vehicle), torque_request_fraction=0.8,
-                road_grip_multiplier=1.0, endurance_config=endurance_run_config(vehicle),
-                profile_id="repository_baseline", profile_label="Recipient grid self-test",
+                expected_track,
+                track_id=app.course_spec.course_id,
+                solver_step_m=step_m,
+                solver_settings=path_solver_settings(vehicle),
+                torque_request_fraction=0.8,
+                road_grip_multiplier=1.0,
+                endurance_config=endurance_run_config(vehicle),
+                profile_id="repository_baseline",
+                profile_label="Recipient grid self-test",
                 source_course=source,
             ).to_dict()
             check_geometry(settings["track"]["geometry"], subdivisions, step_m)
-            expected_inputs = json.loads(json.dumps({
-                "settings": settings, "effective_vehicle_config": snapshot_vehicle_config(vehicle),
-                "base_vehicle_config": profile.to_dict()["model_config"],
-                "selected_profile_id": "repository_baseline",
-            }, allow_nan=False))
+            expected_inputs = json.loads(
+                json.dumps(
+                    {
+                        "settings": settings,
+                        "effective_vehicle_config": snapshot_vehicle_config(vehicle),
+                        "base_vehicle_config": profile.to_dict()["model_config"],
+                        "selected_profile_id": "repository_baseline",
+                    },
+                    allow_nan=False,
+                )
+            )
             expected_hash = _self_test_json_sha256(expected_inputs)
-            app._calculate_single("repository_baseline", "Recipient grid self-test", None, step_m, 0.8, 1.0)
+            app._calculate_single(
+                "repository_baseline",
+                "Recipient grid self-test",
+                None,
+                step_m,
+                0.8,
+                1.0,
+            )
             kind, payload, error = app.result_queue.get_nowait()
-            if error is not None or kind != "single" or payload is None or not payload[2].completed:
-                raise RuntimeError("Recipient imported-grid inputs or worker calculation failed") from error
+            if (
+                error is not None
+                or kind != "single"
+                or payload is None
+                or not payload[2].completed
+            ):
+                raise RuntimeError(
+                    "Recipient imported-grid inputs or worker calculation failed"
+                ) from error
             run_id = payload[3]
             record_path = default_run_directory() / f"{run_id}.json"
             record_before = snapshot(record_path)
@@ -308,43 +376,70 @@ def _check_imported_course_grid(app, directory: Path) -> dict:
             check_geometry(actual_geometry, subdivisions, step_m)
             recorded_inputs = {
                 "settings": document["settings"],
-                "effective_vehicle_config": document["configuration"]["effective_vehicle_config"],
-                "base_vehicle_config": document["configuration"]["base_profile_manifest"]["model_config"],
+                "effective_vehicle_config": document["configuration"][
+                    "effective_vehicle_config"
+                ],
+                "base_vehicle_config": document["configuration"][
+                    "base_profile_manifest"
+                ]["model_config"],
                 "selected_profile_id": document["configuration"]["selected_profile_id"],
             }
             recorded_hash = _self_test_json_sha256(recorded_inputs)
             if recorded_hash != expected_hash:
-                raise RuntimeError("Recipient grid recorded inputs/configuration/profile do not match the request")
+                raise RuntimeError(
+                    "Recipient grid recorded inputs/configuration/profile do not match the request"
+                )
             resolved_start = payload[2].starting_speed_mps
             if (
-                resolved_start is None or not isfinite(resolved_start) or resolved_start < 0.0
+                resolved_start is None
+                or not isfinite(resolved_start)
+                or resolved_start < 0.0
                 or document["result"].get("starting_speed_mps") != resolved_start
             ):
-                raise RuntimeError("Recipient grid resolved starting speed does not match its record")
+                raise RuntimeError(
+                    "Recipient grid resolved starting speed does not match its record"
+                )
             replay = replay_lap_record(record_path)
             if not replay.model_agreement or not replay.replay_completed:
-                raise RuntimeError("Recipient grid saved-record replay did not complete with model agreement")
-            if snapshot(record_path) != record_before or snapshot(source_path) != source_before:
-                raise RuntimeError("Recipient grid replay changed its saved record or source fixture")
-            cases.append({
-                "requested_maximum_cell_length_m": step_m, "cell_count": 32 * subdivisions,
-                "geometry": actual_geometry,
-                "geometry_sha256": document["settings"]["track"]["geometry_sha256"],
-                "expected_inputs": expected_inputs, "expected_inputs_sha256": expected_hash,
-                "recorded_inputs_sha256": recorded_hash, "record_run_id": run_id,
-                "record_sha256": sha256(record_before[0]).hexdigest(), "record_bytes": len(record_before[0]),
-                "record_unchanged": True, "replay": replay.to_dict(),
-                "starting_speed": {
-                    "configured_override_mps": settings["endurance_config"]["starting_speed_mps"],
-                    "resolved_mps": resolved_start,
-                },
-            })
+                raise RuntimeError(
+                    "Recipient grid saved-record replay did not complete with model agreement"
+                )
+            if (
+                snapshot(record_path) != record_before
+                or snapshot(source_path) != source_before
+            ):
+                raise RuntimeError(
+                    "Recipient grid replay changed its saved record or source fixture"
+                )
+            cases.append(
+                {
+                    "requested_maximum_cell_length_m": step_m,
+                    "cell_count": 32 * subdivisions,
+                    "geometry": actual_geometry,
+                    "geometry_sha256": document["settings"]["track"]["geometry_sha256"],
+                    "expected_inputs": expected_inputs,
+                    "expected_inputs_sha256": expected_hash,
+                    "recorded_inputs_sha256": recorded_hash,
+                    "record_run_id": run_id,
+                    "record_sha256": sha256(record_before[0]).hexdigest(),
+                    "record_bytes": len(record_before[0]),
+                    "record_unchanged": True,
+                    "replay": replay.to_dict(),
+                    "starting_speed": {
+                        "configured_override_mps": settings["endurance_config"][
+                            "starting_speed_mps"
+                        ],
+                        "resolved_mps": resolved_start,
+                    },
+                }
+            )
         return {
             "status": "passed",
             "fixture": {
                 "input_sha256": sha256(source_before[0]).hexdigest(),
                 "bundle_sha256": bundle.bundle_sha256,
-                "geometry_sha256": bundle.geometry_sha256, "geometry": geometry,
+                "geometry_sha256": bundle.geometry_sha256,
+                "geometry": geometry,
             },
             "cases": cases,
             "scope": (
@@ -357,7 +452,9 @@ def _check_imported_course_grid(app, directory: Path) -> dict:
     except RuntimeError:
         raise
     except Exception as error:
-        raise RuntimeError(f"Recipient imported-grid self-test failed: {error}") from error
+        raise RuntimeError(
+            f"Recipient imported-grid self-test failed: {error}"
+        ) from error
 
 
 def self_test(report_path: Path, *, native_record_path: Path | None = None) -> dict:

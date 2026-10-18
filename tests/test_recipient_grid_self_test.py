@@ -118,7 +118,7 @@ def test_recipient_self_test_rejects_different_effective_profile(
         "_vehicle_for_profile",
         lambda *_args: build_vehicle("prius_2026_le"),
     )
-    with pytest.raises(RuntimeError, match="inputs|configuration|profile"):
+    with pytest.raises(RuntimeError, match=r"inputs|configuration|profile"):
         desktop._check_imported_course_grid(app, tmp_path / "wrong-profile")
 
 
@@ -182,7 +182,7 @@ def test_atomic_save_keeps_normal_destination_when_temporary_path_is_long(
     parent = root / ("p" * max(1, 80 - len(str(root)) - 1))
     parent.mkdir()
     leaf_length = 245 - len(str(parent)) - 1
-    assert 10 <= leaf_length and leaf_length + 37 <= 255
+    assert leaf_length >= 10 and leaf_length + 37 <= 255
     destination = parent / ("s" * (leaf_length - len(".json")) + ".json")
     assert len(str(destination)) == 245
     assert not str(destination).startswith("\\\\?\\")

@@ -72,23 +72,27 @@ def _recipient_grid_identity(report: dict) -> dict:
             for name in ("input_sha256", "bundle_sha256", "geometry_sha256")
         }
         if any(
-            not isinstance(pin, str) or len(pin) != 64
+            not isinstance(pin, str)
+            or len(pin) != 64
             or set(pin) - set("0123456789abcdef")
             for pin in fixture.values()
         ):
             raise ValueError("fixture identities are missing or malformed")
         cases = grid["cases"]
         if [
-            (row["requested_maximum_cell_length_m"], row["cell_count"])
-            for row in cases
+            (row["requested_maximum_cell_length_m"], row["cell_count"]) for row in cases
         ] != [(5.0, 32), (0.5, 128)]:
             raise ValueError("imported-course grids differ from the contract")
         identities = []
         for row in cases:
-            expected_hash = sha256(json.dumps(
-                row["expected_inputs"], sort_keys=True, separators=(",", ":"),
-                allow_nan=False,
-            ).encode("utf-8")).hexdigest()
+            expected_hash = sha256(
+                json.dumps(
+                    row["expected_inputs"],
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                ).encode("utf-8")
+            ).hexdigest()
             if (
                 row["expected_inputs_sha256"] != expected_hash
                 or row["recorded_inputs_sha256"] != expected_hash
@@ -97,15 +101,21 @@ def _recipient_grid_identity(report: dict) -> dict:
                 or row["replay"]["replay_completed"] is not True
             ):
                 raise ValueError("saved inputs or replay differ from the request")
-            identities.append({
-                "requested_maximum_cell_length_m": row["requested_maximum_cell_length_m"],
-                "cell_count": row["cell_count"],
-                "geometry_sha256": row["geometry_sha256"],
-                "inputs_sha256": expected_hash,
-            })
+            identities.append(
+                {
+                    "requested_maximum_cell_length_m": row[
+                        "requested_maximum_cell_length_m"
+                    ],
+                    "cell_count": row["cell_count"],
+                    "geometry_sha256": row["geometry_sha256"],
+                    "inputs_sha256": expected_hash,
+                }
+            )
         return {"fixture": fixture, "cases": identities}
     except (KeyError, TypeError, ValueError) as error:
-        raise RuntimeError(f"Recipient imported-grid report is invalid: {error}") from error
+        raise RuntimeError(
+            f"Recipient imported-grid report is invalid: {error}"
+        ) from error
 
 
 def run(argv: list[str], cwd: Path, log: Path, *, timeout=300, offline=False) -> None:
