@@ -735,3 +735,361 @@ def test_recipient_fused_coarse_rejects_worker_start_sample_curvature(
     assert {
         source: (source.read_bytes(), source.stat().st_mtime_ns) for source in files
     } == source_before
+
+
+def _fused_consumer_report() -> dict:
+    from copy import deepcopy
+
+    path, source_geometry, geometry, _wrong = _fused_coarse_source_oracle()
+
+    def digest(value):
+        return sha256(
+            json.dumps(
+                value, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode()
+        ).hexdigest()
+
+    source = {
+        "metadata_version": 1,
+        "selected_course_id": "team_endurance_fused_gnss_imu",
+        "source_geometry_sha256": digest(source_geometry),
+        "source_geometry_hash_scope": (
+            "canonical loaded closed/distance_m/x_m/y_m/curvature_per_m"
+        ),
+        "source_kind": "recorded_fusion_unverified",
+        "revision": "legacy_unversioned",
+        "coordinate_frame": "legacy_map_registered_xy_unknown_origin",
+        "boundary_status": "absent",
+        "bundle_id": None,
+        "bundle_sha256": None,
+        "bundle_hash_scope": None,
+        "source_artifact_sha256": {
+            "fused_csv": sha256(path.read_bytes()).hexdigest(),
+            "fusion_metadata_json": sha256(
+                path.with_suffix(".json").read_bytes()
+            ).hexdigest(),
+        },
+    }
+    inputs = {
+        "settings": {
+            "track": {
+                "id": source["selected_course_id"],
+                "cell_count": 198,
+                "length_m": 989.0,
+                "closed": True,
+                "geometry": deepcopy(geometry),
+                "geometry_sha256": digest(geometry),
+                "source_course": deepcopy(source),
+            },
+            "solver": {"future_solver_key": {"value": 7}},
+            "endurance_config": {"laps": 1},
+            "driver": {"torque_request_fraction": 0.8},
+            "conditions": {"road_grip_multiplier": 1.0},
+        },
+        "effective_vehicle_config": {"future_effective_key": [1, 2]},
+        "base_vehicle_config": {"future_base_key": {"tag": "fixture"}},
+        "selected_profile_id": "repository_baseline",
+        "future_top_level_key": {"do_not_drop": True},
+    }
+    report = {
+        "status": "passed",
+        "checks": {"fused_course_grid": True},
+        "build": None,
+        "frozen": False,
+        "recipient_fused_grid": {
+            "status": "passed",
+            "course_id": source["selected_course_id"],
+            "source": source,
+            "source_geometry": source_geometry,
+            "cases": [
+                {
+                    "requested_maximum_cell_length_m": 5.0,
+                    "cell_count": 198,
+                    "geometry": geometry,
+                    "geometry_sha256": digest(geometry),
+                    "expected_inputs": inputs,
+                    "expected_inputs_sha256": digest(inputs),
+                    "recorded_inputs_sha256": digest(inputs),
+                    "record_unchanged": True,
+                    "record_run_id": "1" * 64,
+                    "replay": {
+                        "run_id": "1" * 64,
+                        "model_agreement": True,
+                        "replay_completed": True,
+                        "recorded_sample_count": 198,
+                        "replayed_sample_count": 198,
+                        "mismatch_reasons": [],
+                        "provenance_warnings": ["Synthetic report fixture only"],
+                        "metrics": [
+                            {
+                                "name": name,
+                                "maximum_absolute_error": (
+                                    0.005 if name == "driving_time_s" else 0.0
+                                ),
+                                "tolerance": tolerance,
+                                "passed": True,
+                            }
+                            for name, tolerance in (
+                                ("driving_time_s", 0.01),
+                                ("lap_time_s", 0.01),
+                                ("starting_speed_mps", 0.01),
+                                ("ending_speed_mps", 0.01),
+                                ("pack_energy_kwh", 1e-5),
+                                ("final_state_of_charge", 1e-5),
+                                ("sample_time_s", 0.01),
+                                ("sample_distance_m", 1e-8),
+                                ("speed_trace_mps", 0.01),
+                                ("path_speed_ceiling_mps", 0.01),
+                                ("controls.motor_torque_request_nm", 0.0),
+                                ("controls.front_brake_pressure_psi", 0.0),
+                                ("controls.rear_brake_pressure_psi", 0.0),
+                                (
+                                    "controls.rear_regenerative_brake_force_request_n",
+                                    0.0,
+                                ),
+                                ("controls.steering_angle_rad", 0.0),
+                                (
+                                    "controls.front_regenerative_brake_force_request_n",
+                                    0.0,
+                                ),
+                                ("tire.road_grip_multiplier", 0.0),
+                            )
+                        ],
+                    },
+                }
+            ],
+        },
+    }
+    return report
+
+
+def _fused_consumer():
+    import importlib.util
+
+    path = Path(__file__).resolve().parents[1] / "quality/run_package_runtime.py"
+    spec = importlib.util.spec_from_file_location("recipient_package_consumer", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module._fused_grid_identity
+
+
+def _reseal_fused_consumer_report(report: dict) -> None:
+    row = report["recipient_fused_grid"]["cases"][0]
+
+    def digest(value):
+        return sha256(
+            json.dumps(
+                value, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode()
+        ).hexdigest()
+
+    row["geometry_sha256"] = digest(row["geometry"])
+    track = row["expected_inputs"]["settings"]["track"]
+    track["geometry"] = json.loads(json.dumps(row["geometry"]))
+    track["geometry_sha256"] = row["geometry_sha256"]
+    track["source_course"] = json.loads(
+        json.dumps(report["recipient_fused_grid"]["source"])
+    )
+    row["expected_inputs_sha256"] = row["recorded_inputs_sha256"] = digest(
+        row["expected_inputs"]
+    )
+
+
+@pytest.mark.parametrize("frozen", [False, True])
+def test_fused_consumer_context_hashes_stay_local_and_inputs_are_not_mutated(
+    frozen: bool,
+) -> None:
+    from copy import deepcopy
+    from math import nextafter
+
+    consume = _fused_consumer()
+    first = _fused_consumer_report()
+    original = deepcopy(first)
+    baseline = consume(first)
+    assert first == original
+    second = deepcopy(first)
+    source = second["recipient_fused_grid"]["source"]
+    source["source_artifact_sha256"] = {
+        "fused_csv": "a" * 64,
+        "fusion_metadata_json": "b" * 64,
+    }
+    second["build"] = {
+        "files_sha256": {
+            "analysis/data/track/gnss_imu_endurance_track.csv": "a" * 64,
+            "analysis/data/track/gnss_imu_endurance_track.json": "b" * 64,
+        }
+    }
+    second["frozen"] = frozen
+    second["build"]["source_sha256"] = sha256(
+        (
+            json.dumps(second["build"]["files_sha256"], sort_keys=True)
+            if frozen
+            else json.dumps(
+                second["build"]["files_sha256"],
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        ).encode()
+    ).hexdigest()
+    row = second["recipient_fused_grid"]["cases"][0]
+    row["geometry"]["curvature_per_m"][0] = nextafter(
+        row["geometry"]["curvature_per_m"][0], float("inf")
+    )
+    row["record_run_id"] = "2" * 64
+    row["replay"]["run_id"] = row["record_run_id"]
+    _reseal_fused_consumer_report(second)
+    observed = consume(second)
+    assert observed["identity"] == baseline["identity"]
+    assert observed["observed"] != baseline["observed"]
+    assert (
+        observed["observed"]["expected_inputs_sha256"]
+        != baseline["observed"]["expected_inputs_sha256"]
+    )
+
+
+@pytest.mark.parametrize("channel", ["distance_m", "x_m", "y_m", "curvature_per_m"])
+def test_fused_consumer_rejects_truthfully_rehashed_wrong_geometry(
+    channel: str,
+) -> None:
+    report = _fused_consumer_report()
+    report["recipient_fused_grid"]["cases"][0]["geometry"][channel][1] += 0.01
+    _reseal_fused_consumer_report(report)
+    with pytest.raises(RuntimeError, match="independent cell oracle"):
+        _fused_consumer()(report)
+
+
+@pytest.mark.parametrize(
+    "section",
+    [
+        "settings",
+        "effective_vehicle_config",
+        "base_vehicle_config",
+        "future_top_level_key",
+    ],
+)
+def test_fused_consumer_compares_unknown_configuration_keys(section: str) -> None:
+    consume = _fused_consumer()
+    report = _fused_consumer_report()
+    before = consume(report)
+    row = report["recipient_fused_grid"]["cases"][0]
+    row["expected_inputs"][section]["new_unknown_key"] = {"must_compare": 42}
+    _reseal_fused_consumer_report(report)
+    assert consume(report)["identity"] != before["identity"]
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "check",
+        "recorded_hash",
+        "resource_hash",
+        "replay",
+        "record_changed",
+        "partial_count",
+        "failed_metric",
+        "null_error",
+        "run_id",
+        "mismatch",
+        "no_metrics",
+        "truncated_metrics",
+        "duplicate_metric",
+        "altered_tolerance",
+    ],
+)
+def test_fused_consumer_rejects_incomplete_local_evidence(fault: str) -> None:
+    report = _fused_consumer_report()
+    row = report["recipient_fused_grid"]["cases"][0]
+    if fault == "check":
+        report["checks"].clear()
+    elif fault == "recorded_hash":
+        row["recorded_inputs_sha256"] = "0" * 64
+    elif fault == "resource_hash":
+        report["recipient_fused_grid"]["source"]["source_artifact_sha256"][
+            "fused_csv"
+        ] = "a" * 64
+    elif fault == "replay":
+        row["replay"]["model_agreement"] = False
+    elif fault == "record_changed":
+        row["record_unchanged"] = False
+    elif fault == "partial_count":
+        row["replay"]["replayed_sample_count"] = 197
+    elif fault == "failed_metric":
+        row["replay"]["metrics"][0]["passed"] = False
+    elif fault == "null_error":
+        row["replay"]["metrics"][0]["maximum_absolute_error"] = None
+    elif fault == "run_id":
+        row["replay"]["run_id"] = "another-run"
+    elif fault == "mismatch":
+        row["replay"]["mismatch_reasons"] = ["Contradictory local report"]
+    elif fault == "no_metrics":
+        row["replay"]["metrics"] = []
+    elif fault == "truncated_metrics":
+        row["replay"]["metrics"] = [row["replay"]["metrics"][2]]
+    elif fault == "duplicate_metric":
+        row["replay"]["metrics"].append(dict(row["replay"]["metrics"][0]))
+    else:
+        row["replay"]["metrics"][0].update(
+            maximum_absolute_error=100.0, tolerance=1000.0
+        )
+    with pytest.raises(RuntimeError, match="Recipient fused-grid report is invalid"):
+        _fused_consumer()(report)
+
+
+def test_fused_consumer_binds_actual_source_root_before_normalizing(
+    tmp_path: Path,
+) -> None:
+    consume = _fused_consumer()
+    report = _fused_consumer_report()
+    baseline = consume(report)
+    path, _source, _geometry, _wrong = _fused_coarse_source_oracle()
+    target = tmp_path / "analysis/data/track"
+    target.mkdir(parents=True)
+    for source in (path, path.with_suffix(".json")):
+        original = source.read_bytes()
+        lf = original.replace(b"\r\n", b"\n")
+        changed = lf if original != lf else lf.replace(b"\n", b"\r\n")
+        (target / source.name).write_bytes(changed)
+    raw = report["recipient_fused_grid"]["source"]["source_artifact_sha256"]
+    raw["fused_csv"] = sha256((target / path.name).read_bytes()).hexdigest()
+    raw["fusion_metadata_json"] = sha256(
+        (target / path.with_suffix(".json").name).read_bytes()
+    ).hexdigest()
+    _reseal_fused_consumer_report(report)
+    with pytest.raises(RuntimeError, match="raw source hashes"):
+        consume(report)
+    observed = consume(report, source_root=tmp_path)
+    assert observed["identity"] == baseline["identity"]
+    assert (
+        observed["observed"]["raw_source_sha256"]
+        != baseline["observed"]["raw_source_sha256"]
+    )
+
+
+@pytest.mark.parametrize("field", ["curvature_per_m", "x_m"])
+def test_fused_consumer_rejects_semantic_source_root_with_truthful_raw_hashes(
+    field: str,
+    tmp_path: Path,
+) -> None:
+    import csv
+
+    path, _source, _geometry, _wrong = _fused_coarse_source_oracle()
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    rows[0][field] = str(float(rows[0][field]) + 0.01)
+    target = tmp_path / "analysis/data/track"
+    target.mkdir(parents=True)
+    with (target / path.name).open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]), lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    metadata = target / path.with_suffix(".json").name
+    metadata.write_bytes(path.with_suffix(".json").read_bytes())
+    report = _fused_consumer_report()
+    raw = report["recipient_fused_grid"]["source"]["source_artifact_sha256"]
+    raw["fused_csv"] = sha256((target / path.name).read_bytes()).hexdigest()
+    raw["fusion_metadata_json"] = sha256(metadata.read_bytes()).hexdigest()
+    _reseal_fused_consumer_report(report)
+    # Raw hashes and full input hashes are truthful; the claimed264e source is not.
+    with pytest.raises(RuntimeError, match="source geometry differs"):
+        _fused_consumer()(report, source_root=tmp_path)
