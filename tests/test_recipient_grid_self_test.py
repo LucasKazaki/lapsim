@@ -781,7 +781,10 @@ def _fused_consumer_report() -> dict:
                 "geometry_sha256": digest(geometry),
                 "source_course": deepcopy(source),
             },
-            "solver": {"future_solver_key": {"value": 7}},
+            "solver": {
+                "requested_maximum_cell_length_m": 5.0,
+                "future_solver_key": {"value": 7},
+            },
             "endurance_config": {"laps": 1},
             "driver": {"torque_request_fraction": 0.8},
             "conditions": {"road_grip_multiplier": 1.0},
@@ -860,6 +863,24 @@ def _fused_consumer_report() -> dict:
             ],
         },
     }
+    fine = deepcopy(report["recipient_fused_grid"]["cases"][0])
+    fine.update(
+        requested_maximum_cell_length_m=0.5,
+        cell_count=1978,
+        geometry=deepcopy(source_geometry),
+        record_run_id="3" * 64,
+    )
+    fine["expected_inputs"]["settings"]["track"]["cell_count"] = 1978
+    fine["expected_inputs"]["settings"]["solver"]["requested_maximum_cell_length_m"] = (
+        0.5
+    )
+    fine["replay"].update(
+        run_id=fine["record_run_id"],
+        recorded_sample_count=1978,
+        replayed_sample_count=1978,
+    )
+    report["recipient_fused_grid"]["cases"].append(fine)
+    _reseal_fused_consumer_report(report)
     return report
 
 
@@ -875,8 +896,6 @@ def _fused_consumer():
 
 
 def _reseal_fused_consumer_report(report: dict) -> None:
-    row = report["recipient_fused_grid"]["cases"][0]
-
     def digest(value):
         return sha256(
             json.dumps(
@@ -884,16 +903,17 @@ def _reseal_fused_consumer_report(report: dict) -> None:
             ).encode()
         ).hexdigest()
 
-    row["geometry_sha256"] = digest(row["geometry"])
-    track = row["expected_inputs"]["settings"]["track"]
-    track["geometry"] = json.loads(json.dumps(row["geometry"]))
-    track["geometry_sha256"] = row["geometry_sha256"]
-    track["source_course"] = json.loads(
-        json.dumps(report["recipient_fused_grid"]["source"])
-    )
-    row["expected_inputs_sha256"] = row["recorded_inputs_sha256"] = digest(
-        row["expected_inputs"]
-    )
+    for row in report["recipient_fused_grid"]["cases"]:
+        row["geometry_sha256"] = digest(row["geometry"])
+        track = row["expected_inputs"]["settings"]["track"]
+        track["geometry"] = json.loads(json.dumps(row["geometry"]))
+        track["geometry_sha256"] = row["geometry_sha256"]
+        track["source_course"] = json.loads(
+            json.dumps(report["recipient_fused_grid"]["source"])
+        )
+        row["expected_inputs_sha256"] = row["recorded_inputs_sha256"] = digest(
+            row["expected_inputs"]
+        )
 
 
 @pytest.mark.parametrize("frozen", [False, True])
@@ -1249,3 +1269,93 @@ def test_recipient_fused_fine_rejects_refined_coarse_worker_grid(
     assert len(injected) == 1
     assert worker_requests == [5.0, 0.5]
     assert {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in files} == before
+
+
+def test_fused_consumer_dual_grid_validates_each_case_without_mutation() -> None:
+    from copy import deepcopy
+
+    report = _fused_consumer_report()
+    before = deepcopy(report)
+    result = _fused_consumer()(report)
+    assert report == before
+    assert [
+        (row["requested_maximum_cell_length_m"], row["cell_count"])
+        for row in result["identity"]["cases"]
+    ] == [(5.0, 198), (0.5, 1978)]
+    assert len(result["observed"]["cases"]) == 2
+    for actual, expected in zip(
+        result["observed"]["cases"],
+        report["recipient_fused_grid"]["cases"],
+        strict=True,
+    ):
+        assert actual["record_run_id"] == expected["record_run_id"]
+        assert actual["replay"] == expected["replay"]
+        assert actual["expected_inputs_sha256"] == expected["recorded_inputs_sha256"]
+
+
+def test_fused_consumer_dual_grid_keeps_fine_rounding_contextual() -> None:
+    from math import nextafter
+
+    consume = _fused_consumer()
+    report = _fused_consumer_report()
+    before = consume(report)
+    fine = report["recipient_fused_grid"]["cases"][1]
+    fine["geometry"]["curvature_per_m"][0] = nextafter(
+        fine["geometry"]["curvature_per_m"][0], float("inf")
+    )
+    _reseal_fused_consumer_report(report)
+    after = consume(report)
+    assert after["identity"] == before["identity"]
+    assert after["observed"]["cases"][0] == before["observed"]["cases"][0]
+    assert after["observed"]["cases"][1] != before["observed"]["cases"][1]
+
+
+def test_fused_consumer_dual_grid_compares_fine_unknown_inputs() -> None:
+    consume = _fused_consumer()
+    report = _fused_consumer_report()
+    before = consume(report)["identity"]["cases"]
+    fine = report["recipient_fused_grid"]["cases"][1]
+    fine["expected_inputs"]["settings"]["future_fine_key"] = {"must_compare": 42}
+    _reseal_fused_consumer_report(report)
+    after = consume(report)["identity"]["cases"]
+    assert after[0] == before[0]
+    assert after[1] != before[1]
+
+
+@pytest.mark.parametrize(
+    "fault",
+    ["missing", "reversed", "extra", "duplicate", "count", "solver", "tolerance"],
+)
+def test_fused_consumer_dual_grid_rejects_incomplete_fine_evidence(fault: str) -> None:
+    from copy import deepcopy
+
+    report = _fused_consumer_report()
+    cases = report["recipient_fused_grid"]["cases"]
+    if fault == "missing":
+        cases.pop()
+    elif fault == "reversed":
+        cases.reverse()
+    elif fault == "extra":
+        cases.append(deepcopy(cases[1]))
+    elif fault == "duplicate":
+        cases[1] = deepcopy(cases[0])
+    elif fault == "count":
+        cases[1]["replay"]["replayed_sample_count"] = 1977
+    elif fault == "solver":
+        cases[1]["expected_inputs"]["settings"]["solver"][
+            "requested_maximum_cell_length_m"
+        ] = 0.75
+        _reseal_fused_consumer_report(report)
+    elif fault == "tolerance":
+        cases[1]["replay"]["metrics"][0]["tolerance"] = 0.02
+    with pytest.raises(RuntimeError, match="Recipient fused-grid report is invalid"):
+        _fused_consumer()(report)
+
+
+@pytest.mark.parametrize("channel", ["distance_m", "x_m", "y_m", "curvature_per_m"])
+def test_fused_consumer_dual_grid_rejects_resealed_fine_geometry(channel: str) -> None:
+    report = _fused_consumer_report()
+    report["recipient_fused_grid"]["cases"][1]["geometry"][channel][1] += 0.01
+    _reseal_fused_consumer_report(report)
+    with pytest.raises(RuntimeError, match="independent cell oracle"):
+        _fused_consumer()(report)
