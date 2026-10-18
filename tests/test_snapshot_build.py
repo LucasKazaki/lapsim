@@ -106,12 +106,15 @@ def archive_build(tmp_path, monkeypatch):
     generator.parent.mkdir(parents=True)
     generator.write_text("# Inventory command is observed, never executed.\n")
     poison = {
-        root / "work/test-results.xml": b'<testsuites><testsuite name="unrelated old suite" tests="1"/></testsuites>',
-        root / "work/foreign-results.xml": b'<testsuites><testsuite name="unrelated future timestamp" tests="1"/></testsuites>',
+        root
+        / "work/test-results.xml": b'<testsuites><testsuite name="unrelated old suite" tests="1"/></testsuites>',
+        root
+        / "work/foreign-results.xml": b'<testsuites><testsuite name="unrelated future timestamp" tests="1"/></testsuites>',
         root / "work/test-suite.log": b"unrelated shell tee output\n",
         root / "work/physics-operating-sweep.json": b'{"unrelated":"sweep"}',
         root / "work/gui-recovery.log": b"unrelated desktop workflow\n",
-        output / "prior verification run/test-results.xml": b'<testsuites><testsuite name="prior output run" tests="1"/></testsuites>',
+        output
+        / "prior verification run/test-results.xml": b'<testsuites><testsuite name="prior output run" tests="1"/></testsuites>',
     }
     for path, raw in poison.items():
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -285,7 +288,9 @@ def read_build_verification(build, *, status):
         ):
             assert private_path.is_absolute()
             assert private_path.as_posix().casefold() not in public_text
-        assert {name for name in archive.namelist() if name.startswith("verification/")} == expected
+        assert {
+            name for name in archive.namelist() if name.startswith("verification/")
+        } == expected
     return receipt
 
 
@@ -316,14 +321,23 @@ def test_full_build_bundles_only_its_fresh_report_and_exact_command(archive_buil
     assert report.is_file() and report.read_bytes() == build.fresh_reports[0]
     assert build.test_commands[0][1] == str(build.root / "scripts/check_all.py")
     assert build.test_commands[0][-2:] == ["--output-dir", str(report.parent)]
-    assert build.calls == ["full tests", "inventory generation", "stage assets", "PyInstaller"]
+    assert build.calls == [
+        "full tests",
+        "inventory generation",
+        "stage assets",
+        "PyInstaller",
+    ]
     assert_build_inputs_preserved(build)
 
 
-def test_successful_runner_without_fresh_report_cannot_package_ambient_report(archive_build):
+def test_successful_runner_without_fresh_report_cannot_package_ambient_report(
+    archive_build,
+):
     build = archive_build
     build.mode = "missing"
-    with pytest.raises((RuntimeError, FileNotFoundError), match=r"report|JUnit|verification"):
+    with pytest.raises(
+        (RuntimeError, FileNotFoundError), match=r"report|JUnit|verification"
+    ):
         build.invoke(skip=False)
     assert build.calls == ["full tests"]
     assert not (build.output / "LapSim-Windows-x64.zip").exists()
@@ -367,7 +381,9 @@ def test_reused_output_never_adopts_previous_build_report(archive_build, skip_se
 
 
 @pytest.mark.parametrize("skip", (False, True), ids=("full", "skip"))
-@pytest.mark.parametrize("inherit_literal", (False, True), ids=("normal-env", "literal-env"))
+@pytest.mark.parametrize(
+    "inherit_literal", (False, True), ids=("normal-env", "literal-env")
+)
 @pytest.mark.parametrize(
     "source_change",
     ("clean", "tracked", "untracked-sibling"),
@@ -382,9 +398,18 @@ def test_own_verification_does_not_contaminate_real_git_source_identity(
     monkeypatch.chdir(build.root)
     source = Path(__file__).resolve().parents[1]
     for name in (
-        "README.md", "START-HERE.txt", "AGENTS.md", "ENME408_IMPLEMENTATION_PLAN.md",
-        "pyproject.toml", "setup.py", "requirements-build.lock", "build_lapsim.cmd",
-        "setup_lapsim.cmd", "setup_lapsim.ps1", "launch_lapsim.cmd", "packaging/LapSim.spec",
+        "README.md",
+        "START-HERE.txt",
+        "AGENTS.md",
+        "ENME408_IMPLEMENTATION_PLAN.md",
+        "pyproject.toml",
+        "setup.py",
+        "requirements-build.lock",
+        "build_lapsim.cmd",
+        "setup_lapsim.cmd",
+        "setup_lapsim.ps1",
+        "launch_lapsim.cmd",
+        "packaging/LapSim.spec",
         "analysis/data/track/gnss_imu_endurance_track.csv",
         "analysis/data/track/gnss_imu_endurance_track.json",
     ):
@@ -398,20 +423,29 @@ def test_own_verification_does_not_contaminate_real_git_source_identity(
     hooks = build.root / "work/no-hooks"
     hooks.mkdir()
     pathspec_environment = (
-        "GIT_LITERAL_PATHSPECS", "GIT_GLOB_PATHSPECS",
-        "GIT_NOGLOB_PATHSPECS", "GIT_ICASE_PATHSPECS",
+        "GIT_LITERAL_PATHSPECS",
+        "GIT_GLOB_PATHSPECS",
+        "GIT_NOGLOB_PATHSPECS",
+        "GIT_ICASE_PATHSPECS",
     )
     # Prevent inherited Git routing/configuration from affecting the temporary repo.
-    for name in pathspec_environment + (
-        "GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR",
-        "GIT_CONFIG_COUNT", "GIT_CONFIG_PARAMETERS", "GIT_TEMPLATE_DIR",
+    for name in (
+        *pathspec_environment,
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_INDEX_FILE",
+        "GIT_COMMON_DIR",
+        "GIT_CONFIG_COUNT",
+        "GIT_CONFIG_PARAMETERS",
+        "GIT_TEMPLATE_DIR",
     ):
         monkeypatch.delenv(name, raising=False)
         monkeypatch.delitem(build.builder.os.environ, name, raising=False)
     empty_global = build.root / "work/empty-global.gitconfig"
     empty_global.write_text("", encoding="utf-8")
     for name, value in (
-        ("GIT_CONFIG_GLOBAL", str(empty_global)), ("GIT_CONFIG_NOSYSTEM", "1"),
+        ("GIT_CONFIG_GLOBAL", str(empty_global)),
+        ("GIT_CONFIG_NOSYSTEM", "1"),
     ):
         monkeypatch.setenv(name, value)
         monkeypatch.setitem(build.builder.os.environ, name, value)
@@ -419,12 +453,23 @@ def test_own_verification_does_not_contaminate_real_git_source_identity(
     def git(*args):
         return subprocess.check_output(
             [
-                "git", "-c", "core.autocrlf=false", "-c", "init.defaultBranch=fixture",
-                "-c", "commit.gpgsign=false", "-c", "user.name=Synthetic Fixture",
-                "-c", "user.email=fixture@example.invalid",
-                "-c", f"core.hooksPath={hooks}", *args,
+                "git",
+                "-c",
+                "core.autocrlf=false",
+                "-c",
+                "init.defaultBranch=fixture",
+                "-c",
+                "commit.gpgsign=false",
+                "-c",
+                "user.name=Synthetic Fixture",
+                "-c",
+                "user.email=fixture@example.invalid",
+                "-c",
+                f"core.hooksPath={hooks}",
+                *args,
             ],
-            cwd=build.root, text=True,
+            cwd=build.root,
+            text=True,
         ).strip()
 
     git("init", "--quiet")
@@ -434,7 +479,9 @@ def test_own_verification_does_not_contaminate_real_git_source_identity(
     assert git("status", "--porcelain", "--untracked-files=all") == ""
     if source_change == "tracked":
         readme = build.root / "README.md"
-        readme.write_bytes(readme.read_bytes() + b"\nintentional tracked source change\n")
+        readme.write_bytes(
+            readme.read_bytes() + b"\nintentional tracked source change\n"
+        )
     sibling = None
     if source_change == "untracked-sibling":
         # A prefix-wide or whole-output exclusion would incorrectly hide this.
@@ -444,8 +491,12 @@ def test_own_verification_does_not_contaminate_real_git_source_identity(
     expected_dirty = source_change in ("tracked", "untracked-sibling")
     assert bool(git("status", "--porcelain", "--untracked-files=all")) is expected_dirty
     tracked = [build.root / name for name in git("ls-files", "-z").split("\0") if name]
-    source_before = {name: (name.read_bytes(), name.stat().st_mtime_ns) for name in tracked}
-    sibling_before = (sibling.read_bytes(), sibling.stat().st_mtime_ns) if sibling else None
+    source_before = {
+        name: (name.read_bytes(), name.stat().st_mtime_ns) for name in tracked
+    }
+    sibling_before = (
+        (sibling.read_bytes(), sibling.stat().st_mtime_ns) if sibling else None
+    )
     if inherit_literal:
         # Inherited only after the real temporary repository is prepared.
         monkeypatch.setenv("GIT_LITERAL_PATHSPECS", "1")
@@ -454,12 +505,16 @@ def test_own_verification_does_not_contaminate_real_git_source_identity(
     # dependency metadata enumeration follows the existing synthetic test seam.
     monkeypatch.setattr(build.builder, "version", lambda name: "test-version")
     monkeypatch.setattr(
-        build.builder, "distribution",
+        build.builder,
+        "distribution",
         lambda name: SimpleNamespace(metadata={"Name": name}, requires=(), files=()),
     )
     monkeypatch.setattr(
-        build.builder, "subprocess",
-        SimpleNamespace(run=build.builder.subprocess.run, check_output=subprocess.check_output),
+        build.builder,
+        "subprocess",
+        SimpleNamespace(
+            run=build.builder.subprocess.run, check_output=subprocess.check_output
+        ),
     )
     assert build.invoke(skip=skip) == 0
     with ZipFile(build.output / "LapSim-Windows-x64.zip") as archive:
@@ -473,7 +528,9 @@ def test_own_verification_does_not_contaminate_real_git_source_identity(
     ) == (expected_dirty, expected_dirty)
     assert verification["packaged_source"]["source_sha256"] == identity["source_sha256"]
     assert git("rev-parse", "HEAD") == commit
-    assert {name: (name.read_bytes(), name.stat().st_mtime_ns) for name in tracked} == source_before
+    assert {
+        name: (name.read_bytes(), name.stat().st_mtime_ns) for name in tracked
+    } == source_before
     if sibling is not None:
         assert (sibling.read_bytes(), sibling.stat().st_mtime_ns) == sibling_before
     assert_build_inputs_preserved(build)

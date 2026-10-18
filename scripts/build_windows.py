@@ -79,18 +79,28 @@ def stage_assets(*, verification_dir: Path | None = None) -> Path:
         source_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
         status_command = ["git", "status", "--porcelain", "--untracked-files=all"]
         if verification_relative is not None:
-            status_command.extend([
-                "--", ":(top,literal,exclude)" + verification_relative.as_posix(),
-            ])
+            status_command.extend(
+                [
+                    "--",
+                    ":(top,literal,exclude)" + verification_relative.as_posix(),
+                ]
+            )
         status_environment = os.environ.copy()
         for variable in (
-            "GIT_LITERAL_PATHSPECS", "GIT_GLOB_PATHSPECS",
-            "GIT_NOGLOB_PATHSPECS", "GIT_ICASE_PATHSPECS",
+            "GIT_LITERAL_PATHSPECS",
+            "GIT_GLOB_PATHSPECS",
+            "GIT_NOGLOB_PATHSPECS",
+            "GIT_ICASE_PATHSPECS",
         ):
             status_environment.pop(variable, None)
-        source_dirty = bool(subprocess.check_output(
-            status_command, cwd=ROOT, text=True, env=status_environment,
-        ).strip())
+        source_dirty = bool(
+            subprocess.check_output(
+                status_command,
+                cwd=ROOT,
+                text=True,
+                env=status_environment,
+            ).strip()
+        )
     else:
         # A distributed source snapshot may be rebuilt without a Git checkout.
         previous = ROOT / "build-info.json"
@@ -195,12 +205,22 @@ def main() -> int:
     evidence = Path(mkdtemp(prefix="verification-", dir=output))
     print(f"Build verification evidence: {evidence}", flush=True)
     suite_report = evidence / "test-results.xml"
-    suite_command = None if args.skip_tests else [
-        sys.executable, str(ROOT / "scripts/check_all.py"), "--output-dir", str(evidence),
-    ]
+    suite_command = (
+        None
+        if args.skip_tests
+        else [
+            sys.executable,
+            str(ROOT / "scripts/check_all.py"),
+            "--output-dir",
+            str(evidence),
+        ]
+    )
 
     def save_local_suite(
-        status: str, *, exit_code: int | None = None, error: str | None = None,
+        status: str,
+        *,
+        exit_code: int | None = None,
+        error: str | None = None,
     ) -> None:
         local = {
             "status": status,
@@ -208,13 +228,15 @@ def main() -> int:
             "exit_code": exit_code,
             "report_path": str(suite_report) if suite_command is not None else None,
             "report_sha256": sha256(suite_report.read_bytes()).hexdigest()
-            if suite_report.is_file() else None,
+            if suite_report.is_file()
+            else None,
             "error": error,
             "source_scope": VERIFICATION_SOURCE_SCOPE,
             "scope": "Local literal invocation evidence; excluded from distributed ZIP.",
         }
         (evidence / "full-suite-invocation.json").write_text(
-            json.dumps(local, indent=2, allow_nan=False) + "\n", encoding="utf-8",
+            json.dumps(local, indent=2, allow_nan=False) + "\n",
+            encoding="utf-8",
         )
 
     save_local_suite("skipped" if args.skip_tests else "running")
@@ -228,7 +250,9 @@ def main() -> int:
             save_local_suite("failed", error=str(error))
             raise
         if not suite_report.is_file():
-            message = "Full-suite report was not produced in build verification directory"
+            message = (
+                "Full-suite report was not produced in build verification directory"
+            )
             save_local_suite("missing-report", exit_code=0, error=message)
             raise RuntimeError(message + ": " + str(evidence))
         save_local_suite("passed", exit_code=0)
@@ -277,7 +301,9 @@ def main() -> int:
         suite = {
             "status": "passed",
             "command": [
-                "python", "scripts/check_all.py", "--output-dir",
+                "python",
+                "scripts/check_all.py",
+                "--output-dir",
                 "<build-owned-report-directory>",
             ],
             "command_scope": (
@@ -290,15 +316,23 @@ def main() -> int:
         }
     identity = json.loads((assets / "build-info.json").read_text(encoding="utf-8"))
     verification = evidence / "build-verification.json"
-    verification.write_text(json.dumps({
-        "schema": "lapsim.build-verification.v1",
-        "full_suite": suite,
-        "source_scope": VERIFICATION_SOURCE_SCOPE,
-        "packaged_source": {
-            name: identity[name]
-            for name in ("code_commit", "dirty_worktree", "source_sha256")
-        },
-    }, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    verification.write_text(
+        json.dumps(
+            {
+                "schema": "lapsim.build-verification.v1",
+                "full_suite": suite,
+                "source_scope": VERIFICATION_SOURCE_SCOPE,
+                "packaged_source": {
+                    name: identity[name]
+                    for name in ("code_commit", "dirty_worktree", "source_sha256")
+                },
+            },
+            indent=2,
+            allow_nan=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     archive = output / "LapSim-Windows-x64.zip"
     with ZipFile(archive, "w", ZIP_DEFLATED, compresslevel=6) as bundle:
         for path in (executable, report_path, output / "checksums.json"):

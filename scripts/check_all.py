@@ -48,7 +48,8 @@ def run_module(path: Path, root: Path, reports: Path, environment: dict[str, str
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--output-dir", type=Path,
+        "--output-dir",
+        type=Path,
         help="Write reports here instead of the repository's work directory",
     )
     args = parser.parse_args(argv)
