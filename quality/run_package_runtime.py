@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from hashlib import sha256
 import json
 import os
 import subprocess
@@ -53,6 +54,58 @@ finally:
 result['native_core']={'backend':'native_c','compiler':receipt['compiler_version'],'binary_sha256':receipt['binary_sha256']}
 Path(sys.argv[1]).write_text(json.dumps(result,indent=2)+'\n',encoding='utf8')
 """
+
+
+def _recipient_grid_identity(report: dict) -> dict:
+    """Compare declared inputs across recipients, keeping run provenance separate."""
+    try:
+        if (
+            report["status"] != "passed"
+            or report["checks"]["imported_course_grid"] is not True
+        ):
+            raise ValueError("imported-course check did not pass")
+        grid = report["recipient_grid"]
+        if grid["status"] != "passed":
+            raise ValueError("imported-course workflow did not pass")
+        fixture = {
+            name: grid["fixture"][name]
+            for name in ("input_sha256", "bundle_sha256", "geometry_sha256")
+        }
+        if any(
+            not isinstance(pin, str) or len(pin) != 64
+            or set(pin) - set("0123456789abcdef")
+            for pin in fixture.values()
+        ):
+            raise ValueError("fixture identities are missing or malformed")
+        cases = grid["cases"]
+        if [
+            (row["requested_maximum_cell_length_m"], row["cell_count"])
+            for row in cases
+        ] != [(5.0, 32), (0.5, 128)]:
+            raise ValueError("imported-course grids differ from the contract")
+        identities = []
+        for row in cases:
+            expected_hash = sha256(json.dumps(
+                row["expected_inputs"], sort_keys=True, separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")).hexdigest()
+            if (
+                row["expected_inputs_sha256"] != expected_hash
+                or row["recorded_inputs_sha256"] != expected_hash
+                or row["record_unchanged"] is not True
+                or row["replay"]["model_agreement"] is not True
+                or row["replay"]["replay_completed"] is not True
+            ):
+                raise ValueError("saved inputs or replay differ from the request")
+            identities.append({
+                "requested_maximum_cell_length_m": row["requested_maximum_cell_length_m"],
+                "cell_count": row["cell_count"],
+                "geometry_sha256": row["geometry_sha256"],
+                "inputs_sha256": expected_hash,
+            })
+        return {"fixture": fixture, "cases": identities}
+    except (KeyError, TypeError, ValueError) as error:
+        raise RuntimeError(f"Recipient imported-grid report is invalid: {error}") from error
 
 
 def run(argv: list[str], cwd: Path, log: Path, *, timeout=300, offline=False) -> None:
@@ -161,6 +214,7 @@ def verify(output: Path, *, desktop: bool) -> dict:
             assert reference == {"tests": 538, "failures": 0, "errors": 0, "skipped": 0}
             results[kind]["reference_suite"] = reference
             if desktop:
+                desktop_report = output / (kind + "-desktop.json")
                 run(
                     [
                         str(python),
@@ -168,16 +222,24 @@ def verify(output: Path, *, desktop: bool) -> dict:
                         "-m",
                         "lapsim.desktop",
                         "--self-test",
-                        str(output / (kind + "-desktop.json")),
+                        str(desktop_report),
                     ],
                     outside,
                     output / (kind + "-desktop.log"),
                     timeout=120,
                 )
+                results[kind]["recipient_grid_inputs"] = _recipient_grid_identity(
+                    json.loads(desktop_report.read_text(encoding="utf-8"))
+                )
         assert (
             results["wheel"]["source"]["source_sha256"]
             == results["sdist"]["source"]["source_sha256"]
         )
+        if desktop and (
+            results["wheel"]["recipient_grid_inputs"]
+            != results["sdist"]["recipient_grid_inputs"]
+        ):
+            raise RuntimeError("Wheel and sdist imported-course inputs differ")
         extracted = outside / "source space λ"
         extracted.mkdir()
         with tarfile.open(packages["sdist"]) as archive:
@@ -194,6 +256,12 @@ def verify(output: Path, *, desktop: bool) -> dict:
             output / "bootstrap.log",
             timeout=420,
         )
+        if desktop:
+            bootstrap_grid = _recipient_grid_identity(json.loads(
+                (output / "bootstrap-desktop.json").read_text(encoding="utf-8")
+            ))
+            if bootstrap_grid != results["wheel"]["recipient_grid_inputs"]:
+                raise RuntimeError("Source bootstrap and wheel imported-course inputs differ")
         marker = source / ".venv/.lapsim-ready.json"
         previous = (marker.read_bytes(), marker.stat().st_mtime_ns)
         run(
@@ -213,6 +281,7 @@ def verify(output: Path, *, desktop: bool) -> dict:
         "source_identity_preserved_through_sdist": True,
         "source_bootstrap_from_non_ascii_snapshot": True,
         "offline_readonly_repeat": True,
+        "recipient_grid_inputs_match": True if desktop else None,
         "artifacts_published": False,
     }
     (output / "summary.json").write_text(
