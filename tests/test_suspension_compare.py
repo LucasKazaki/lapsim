@@ -124,6 +124,29 @@ def fixture_record(*, step=0.001, logging=0.02, stock=False):
     return record
 
 
+def canonical_world_si_claims(record):
+    """Declare analytic fixture coordinates, not native/physical validity."""
+    record["payload"]["frame"] = (
+        "right-handed world X initially forward, Y left, Z up; chassis COM"
+    )
+    record["payload"]["units"] = (
+        "SI; steering request normalized, tire slip ratio dimensionless"
+    )
+
+    def digest(value):
+        return sha256(
+            json.dumps(
+                value, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode("utf-8")
+        ).hexdigest()
+
+    record["content_id"] = digest(record["payload"])
+    record["receipt_id"] = digest(
+        {key: value for key, value in record.items() if key != "receipt_id"}
+    )
+    return record
+
+
 @pytest.fixture
 def records():
     return fixture_record(), fixture_record(logging=0.05)
@@ -270,7 +293,10 @@ def test_null_force_clock_stays_unknown_and_counts_as_shared_difference(records)
 def test_plant_step_reports_signed_deltas_and_distinct_cached_origins():
     from lapsim.experiments.suspension_compare import compare_study_records
 
-    left, right = fixture_record(), fixture_record(step=0.0005)
+    left, right = (
+        canonical_world_si_claims(fixture_record()),
+        canonical_world_si_claims(fixture_record(step=0.0005)),
+    )
     final = right["payload"]["samples"][-1]
     final["velocity_mps"][0] += 0.02
     final["position_m"][2] -= 0.003
@@ -299,7 +325,7 @@ def test_plant_step_reports_signed_deltas_and_distinct_cached_origins():
 
 def claimed_stock_record(step):
     """Claim metadata for testing criterion arithmetic; not native evidence."""
-    record = fixture_record(step=step, stock=True)
+    record = canonical_world_si_claims(fixture_record(step=step, stock=True))
     record["payload"]["model"]["profile_id"] = (
         "chrono10_synthetic_sedan_shafts_brakes_v1"
     )
@@ -473,7 +499,10 @@ def test_profile_name_alone_does_not_apply_reference_fixture_criterion():
 def test_finite_subtraction_overflow_is_explicit(number):
     from lapsim.experiments.suspension_compare import compare_study_records
 
-    left, right = fixture_record(), fixture_record(step=0.0005)
+    left, right = (
+        canonical_world_si_claims(fixture_record()),
+        canonical_world_si_claims(fixture_record(step=0.0005)),
+    )
     left["payload"]["samples"][-1]["position_m"][2] = number
     right["payload"]["samples"][-1]["position_m"][2] = -number
     seal(left)
