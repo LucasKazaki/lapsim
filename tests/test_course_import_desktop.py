@@ -307,11 +307,14 @@ def test_saved_catalog_skips_tampered_and_conflicting_files(tmp_path: Path) -> N
     assert not catalog or catalog[f"imported:{bundle.catalog_id}"].bundle_sha256 == conflict.bundle_sha256
     assert any("bundle" in warning for warning in warnings)
 
+
 def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Exercise real worker/polling; the withdrawn root is not a render check."""
     from hashlib import sha256
+    from itertools import pairwise
     import json
     from math import cos, isfinite, sin
     import threading
@@ -323,7 +326,9 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
     import lapsim.ui.app as app_module
     from lapsim.ui.course_catalog import solver_track_for_course
     from lapsim.ui.simulation import (
-        apply_uniform_road_grip, endurance_run_config, path_solver_settings,
+        apply_uniform_road_grip,
+        endurance_run_config,
+        path_solver_settings,
     )
 
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local"))
@@ -360,21 +365,31 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
         worker_events.append(("entry", threading.get_ident()))
         try:
             return original_worker(
-                self, profile_id, profile_name, setup, step_m,
-                torque_fraction, road_grip_multiplier,
+                self,
+                profile_id,
+                profile_name,
+                setup,
+                step_m,
+                torque_fraction,
+                road_grip_multiplier,
             )
         finally:
             worker_events.append(("exit", threading.get_ident()))
 
     def callback_failed(
-        exception_type: type[BaseException], error: BaseException, trace: Any,
+        exception_type: type[BaseException],
+        error: BaseException,
+        trace: Any,
     ) -> None:
         callback_errors.append(
             "".join(traceback.format_exception(exception_type, error, trace))
         )
 
     def observe_error(
-        title: str, message: str, *_args: Any, **_kwargs: Any,
+        title: str,
+        message: str,
+        *_args: Any,
+        **_kwargs: Any,
     ) -> None:
         # Test-only observation prevents modal hangs; no native-dialog claim.
         dialog_errors.append((title, str(message)))
@@ -392,14 +407,20 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
         assert source_track.curvature_per_m == (0.1,) * 32
         assert source_track.length_m == pytest.approx(20.0 * pi, rel=0, abs=1e-12)
         for station, x_m, y_m in zip(
-            source_track.distance_m, source_track.x_m, source_track.y_m,
+            source_track.distance_m,
+            source_track.x_m,
+            source_track.y_m,
             strict=True,
         ):
             assert x_m == pytest.approx(
-                10.0 * sin(station / 10.0), rel=0, abs=1e-12,
+                10.0 * sin(station / 10.0),
+                rel=0,
+                abs=1e-12,
             )
             assert y_m == pytest.approx(
-                10.0 * (1.0 - cos(station / 10.0)), rel=0, abs=1e-12,
+                10.0 * (1.0 - cos(station / 10.0)),
+                rel=0,
+                abs=1e-12,
             )
 
         app._import_course_bundle(source_file)
@@ -419,11 +440,12 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
         # Four subarcs per declared source cell, with every source end retained.
         stations = [source_track.distance_m[0]]
         for lower, upper in zip(
-            source_track.distance_m[:-1], source_track.distance_m[1:], strict=True,
+            source_track.distance_m[:-1],
+            source_track.distance_m[1:],
+            strict=True,
         ):
             stations.extend(
-                lower + fraction * (upper - lower)
-                for fraction in (0.25, 0.5, 0.75)
+                lower + fraction * (upper - lower) for fraction in (0.25, 0.5, 0.75)
             )
             stations.append(upper)
 
@@ -432,27 +454,36 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
             assert geometry["distance_m"] == stations and len(stations) == 129
             assert geometry["curvature_per_m"] == [0.1] * 128
             assert all(
-                0.0 < upper - lower <= 0.5
-                for lower, upper in zip(stations, stations[1:])
+                0.0 < upper - lower <= 0.5 for lower, upper in pairwise(stations)
             )
             for key, source_values in (
                 ("distance_m", source_track.distance_m),
-                ("x_m", source_track.x_m), ("y_m", source_track.y_m),
+                ("x_m", source_track.x_m),
+                ("y_m", source_track.y_m),
             ):
                 assert len(geometry[key]) == 129
                 assert geometry[key][::4] == list(source_values)
             for station, x_m, y_m in zip(
-                stations, geometry["x_m"], geometry["y_m"], strict=True,
+                stations,
+                geometry["x_m"],
+                geometry["y_m"],
+                strict=True,
             ):
                 assert x_m == pytest.approx(
-                    10.0 * sin(station / 10.0), rel=0, abs=1e-12,
+                    10.0 * sin(station / 10.0),
+                    rel=0,
+                    abs=1e-12,
                 )
                 assert y_m == pytest.approx(
-                    10.0 * (1.0 - cos(station / 10.0)), rel=0, abs=1e-12,
+                    10.0 * (1.0 - cos(station / 10.0)),
+                    rel=0,
+                    abs=1e-12,
                 )
 
         expected_track = solver_track_for_course(
-            app.course_spec.course_id, source_track, 0.5,
+            app.course_spec.course_id,
+            source_track,
+            0.5,
         )
         vehicle, profile = build_vehicle("repository_baseline")
         apply_uniform_road_grip(vehicle, 1.0)
@@ -494,14 +525,15 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
             finished = bool(worker_threads) and all(
                 not thread.is_alive() for thread in worker_threads
             )
-            if finished and (
-                not app.run_in_progress
-                or timed_out
-                or callback_errors
-                or cleanup_requested
-            ):
-                root.quit()
-            elif (timed_out or callback_errors) and not run_attempted:
+            if (
+                finished
+                and (
+                    not app.run_in_progress
+                    or timed_out
+                    or callback_errors
+                    or cleanup_requested
+                )
+            ) or ((timed_out or callback_errors) and not run_attempted):
                 root.quit()
             else:
                 root.after(10, observe_terminal)
@@ -546,7 +578,7 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
         assert app.driver_playback.track == expected_track
         assert app.saved_runs_button is not None
         assert app.saved_runs_button.cget("state") == "normal"
-        (label, run_id), = app._displayed_run_records
+        ((label, run_id),) = app._displayed_run_records
         assert label == "Lap result" and len(run_id) == 64
         assert set(run_directory.glob("*.json")) == {run_directory / f"{run_id}.json"}
 
@@ -561,38 +593,44 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
             "effective_vehicle_config": document["configuration"][
                 "effective_vehicle_config"
             ],
-            "base_vehicle_config": document["configuration"][
-                "base_profile_manifest"
-            ]["model_config"],
+            "base_vehicle_config": document["configuration"]["base_profile_manifest"][
+                "model_config"
+            ],
             "selected_profile_id": document["configuration"]["selected_profile_id"],
         }
         assert recorded_inputs == expected_inputs
-        assert sha256(
-            json.dumps(
-                recorded_inputs,
-                sort_keys=True,
-                separators=(",", ":"),
-                allow_nan=False,
-            ).encode()
-        ).hexdigest() == expected_hash
+        assert (
+            sha256(
+                json.dumps(
+                    recorded_inputs,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                ).encode()
+            ).hexdigest()
+            == expected_hash
+        )
         assert document["settings"]["track"]["source_course"] == source_metadata
         assert document["result"]["starting_speed_mps"] == (
             app._last_result.starting_speed_mps
         )
-        assert document["settings"]["endurance_config"][
-            "starting_speed_mps"
-        ] is None
+        assert document["settings"]["endurance_config"]["starting_speed_mps"] is None
         replay = replay_lap_record(saved).to_dict()
         assert replay["run_id"] == run_id
         assert replay["model_agreement"] is True and replay["replay_completed"] is True
         assert replay["recorded_sample_count"] == replay["replayed_sample_count"] == 128
         assert not replay["mismatch_reasons"]
         tolerances = {
-            "driving_time_s": 0.01, "lap_time_s": 0.01,
-            "starting_speed_mps": 0.01, "ending_speed_mps": 0.01,
-            "pack_energy_kwh": 1e-5, "final_state_of_charge": 1e-5,
-            "sample_time_s": 0.01, "sample_distance_m": 1e-8,
-            "speed_trace_mps": 0.01, "path_speed_ceiling_mps": 0.01,
+            "driving_time_s": 0.01,
+            "lap_time_s": 0.01,
+            "starting_speed_mps": 0.01,
+            "ending_speed_mps": 0.01,
+            "pack_energy_kwh": 1e-5,
+            "final_state_of_charge": 1e-5,
+            "sample_time_s": 0.01,
+            "sample_distance_m": 1e-8,
+            "speed_trace_mps": 0.01,
+            "path_speed_ceiling_mps": 0.01,
             "controls.motor_torque_request_nm": 0.0,
             "controls.front_brake_pressure_psi": 0.0,
             "controls.rear_brake_pressure_psi": 0.0,
@@ -616,20 +654,19 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
         )
         assert (saved.read_bytes(), saved.stat().st_mtime_ns) == saved_before
         assert (
-            source_file.read_bytes(), source_file.stat().st_mtime_ns
+            source_file.read_bytes(),
+            source_file.stat().st_mtime_ns,
         ) == source_before
     finally:
         cleanup_requested = True
         # Invocation may have started a thread whose delegate has not entered.
         # Only an observed exit proves it is safe to retire Tk and storage.
         while run_attempted and (
-            not worker_threads
-            or any(thread.is_alive() for thread in worker_threads)
+            not worker_threads or any(thread.is_alive() for thread in worker_threads)
         ):
             root.after(0, observe_terminal)
             root.mainloop()
         assert not run_attempted or (
-            worker_threads
-            and all(not thread.is_alive() for thread in worker_threads)
+            worker_threads and all(not thread.is_alive() for thread in worker_threads)
         )
         root.destroy()
