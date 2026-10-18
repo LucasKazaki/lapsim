@@ -914,24 +914,21 @@ def test_fused_consumer_context_hashes_stay_local_and_inputs_are_not_mutated(
         "fused_csv": "a" * 64,
         "fusion_metadata_json": "b" * 64,
     }
+    resource_hashes = {
+        "analysis/data/track/gnss_imu_endurance_track.csv": "a" * 64,
+        "analysis/data/track/gnss_imu_endurance_track.json": "b" * 64,
+    }
     second["build"] = {
-        "files_sha256": {
-            "analysis/data/track/gnss_imu_endurance_track.csv": "a" * 64,
-            "analysis/data/track/gnss_imu_endurance_track.json": "b" * 64,
-        }
+        "files_sha256": resource_hashes,
+        "source_sha256": sha256(
+            (
+                json.dumps(resource_hashes, sort_keys=True)
+                if frozen
+                else json.dumps(resource_hashes, sort_keys=True, separators=(",", ":"))
+            ).encode()
+        ).hexdigest(),
     }
     second["frozen"] = frozen
-    second["build"]["source_sha256"] = sha256(
-        (
-            json.dumps(second["build"]["files_sha256"], sort_keys=True)
-            if frozen
-            else json.dumps(
-                second["build"]["files_sha256"],
-                sort_keys=True,
-                separators=(",", ":"),
-            )
-        ).encode()
-    ).hexdigest()
     row = second["recipient_fused_grid"]["cases"][0]
     row["geometry"]["curvature_per_m"][0] = nextafter(
         row["geometry"]["curvature_per_m"][0], float("inf")
