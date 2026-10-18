@@ -1,0 +1,486 @@
+{
+  "schema": "lapsim.recipient-fused-grid-verification.v1",
+  "status": "locally_verified_bounded_E05_increment",
+  "date": "2026-10-18",
+  "source": "37263779c0f990372e9a5e2c72180fbbc997895d",
+  "tree": "28d68e7dcb338db7c9c8660b322caee09006ffab",
+  "source_git_lf_sha256": {
+    "src/lapsim/core/controls.py": "f10e40386d5f78284c742b62959517227562ffe64e68c7b4849675d1dbaba474",
+    "src/lapsim/desktop.py": "ae0574f3c24e8ff56f8a2ae9327639c51ccfbe6c8ccb0efcb4e83ea6c82759b6",
+    "quality/run_package_runtime.py": "355411bac07ad0f4908e7753e34ed77b2ba733cc63fd840c35deb81035030ac1",
+    "tests/test_state_update.py": "d54db6a9b75fcc61a284cedcae00d22c9a96a8953ee923a6ceb7d9c52733abce",
+    "tests/test_recipient_grid_self_test.py": "c6cd24d3ea272cba2ee74b9af15c7852370437e1dbb56a02bc9fc80b98c3be8b",
+    "docs/simulator_flowchart/data/source-inventory.js": "667eba8a6a249ef74ab114ca24f39da188e20d2f46e5ed2ca7e53fba3866195f"
+  },
+  "scope": "Bounded E05 coarse5m/198-cell fused recipient selection, synchronous worker, genuine save/load/replay and validated control-scalar boundary. Source, wheel, sdist, extracted-source bootstrap and original/copied Windows EXE are locally accepted at runtime sourceS3; actual Pyodide export/native-replay checks are separate. Future docs/head/main are not runtime artifacts.",
+  "correctness_change": {
+    "problem": "Numerically equal saved controls could produce different force arithmetic when live NumPy brake-pressure scalars became Python floats through JSON. The original valid coarse fused run completed198 cells while its same-input replay accepted116 and then failed its curvature gate.",
+    "independent_evidence": "One solver and three genuine runs: automatic198 reproduced saved values; raw held controls198 reproduced all shared telemetry bits; float-converted held controls116 reproduced the failed prefix despite equal six-field command bits. A separate first-cell regression failed exact complete telemetry equality.",
+    "fix": "Controls validates each supplied scalar as finite, converts all six fields to Python float, then retains the original final finite/range/drive-regeneration/steering validation. Custom conversion to nonfinite or negative requests is rejected by final validation.",
+    "boundary": "Canonical finite float values are the public control contract; input scalar-object identity is not retained. No grid, equations, solver limits, replay tolerances or historical archive IDs are changed. Older records may still mismatch under the clarified arithmetic boundary; no dtype reconstruction or archive rewrite."
+  },
+  "recipient_inputs": {
+    "retained_imported_cases": [
+      {
+        "requested_maximum_cell_length_m": 5.0,
+        "cell_count": 32
+      },
+      {
+        "requested_maximum_cell_length_m": 0.5,
+        "cell_count": 128
+      }
+    ],
+    "retained_catalog_cells": 392,
+    "fused": {
+      "identity": {
+        "course_id": "team_endurance_fused_gnss_imu",
+        "source_geometry_sha256": "264e73a7cfeebcc902394d97140b2f754190a58e0274b8687a871884864e34ae",
+        "declared_inputs_sha256": "e15c4089e7d844e03465639693e839b840a3e01b64983d7261485831ac9fa544"
+      },
+      "requested_maximum_cell_length_m": 5.0,
+      "cells": 198,
+      "stations": 199,
+      "length_m": 989.0,
+      "final_cell_m": 4.0,
+      "source_claims": {
+        "source_kind": "recorded_fusion_unverified",
+        "coordinate_frame": "legacy_map_registered_xy_unknown_origin",
+        "boundary_status": "absent",
+        "bundle_id": null,
+        "bundle_sha256": null,
+        "bundle_hash_scope": null,
+        "revision": "legacy_unversioned",
+        "source_geometry_sha256": "264e73a7cfeebcc902394d97140b2f754190a58e0274b8687a871884864e34ae"
+      },
+      "oracle": "Independent raw CSV/Fraction full198 distance-weighted means; all station/x/y channels exact, curvature abs1e-12/rel0. Genuine catalog resolves legacy coherent_arcs=False. Fraction oracle does not construct or rehash the physics grid.",
+      "maximum_curvature_oracle_error": 2.7755575615628914e-17,
+      "comparison_scope": "Complete configured inputs compared across source/wheel/sdist/bootstrap/original-EXE/copied-EXE except exactly four contextual leaves: full effective geometry, its hash and the two raw source-artifact hashes. Every remaining unknown input/configuration key is retained. Full expected/recorded input hashes remain exact within each context; run IDs and traces are not equated.",
+      "contextual_observations": {
+        "source": {
+          "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+          "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+          "recorded_inputs_equal": true,
+          "recorded_replayed_samples": [
+            198,
+            198
+          ],
+          "metrics_passed": 17,
+          "all_metric_errors_measured_zero": true,
+          "mismatch_reasons": [],
+          "provenance_warning_count": 0
+        },
+        "wheel": {
+          "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+          "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+          "recorded_inputs_equal": true,
+          "recorded_replayed_samples": [
+            198,
+            198
+          ],
+          "metrics_passed": 17,
+          "all_metric_errors_measured_zero": true,
+          "mismatch_reasons": [],
+          "provenance_warning_count": 0
+        },
+        "sdist": {
+          "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+          "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+          "recorded_inputs_equal": true,
+          "recorded_replayed_samples": [
+            198,
+            198
+          ],
+          "metrics_passed": 17,
+          "all_metric_errors_measured_zero": true,
+          "mismatch_reasons": [],
+          "provenance_warning_count": 0
+        },
+        "bootstrap": {
+          "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+          "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+          "recorded_inputs_equal": true,
+          "recorded_replayed_samples": [
+            198,
+            198
+          ],
+          "metrics_passed": 17,
+          "all_metric_errors_measured_zero": true,
+          "mismatch_reasons": [],
+          "provenance_warning_count": 0
+        },
+        "frozen_original": {
+          "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+          "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+          "recorded_inputs_equal": true,
+          "recorded_replayed_samples": [
+            198,
+            198
+          ],
+          "metrics_passed": 17,
+          "all_metric_errors_measured_zero": true,
+          "mismatch_reasons": [],
+          "provenance_warning_count": 0
+        },
+        "frozen_copied": {
+          "geometry_sha256": "d1ca281d7f5a9df8a156c5508a46f52798db376ab6f380a332e9e026977f8fa0",
+          "full_inputs_sha256": "b3e09c30105f3c71caf09aa9eb068dd1276c5eb52557978def66659348a09422",
+          "recorded_inputs_equal": true,
+          "recorded_replayed_samples": [
+            198,
+            198
+          ],
+          "metrics_passed": 17,
+          "all_metric_errors_measured_zero": true,
+          "mismatch_reasons": [],
+          "provenance_warning_count": 0
+        }
+      }
+    }
+  },
+  "verification": {
+    "focused": {
+      "source": "37263779c0f990372e9a5e2c72180fbbc997895d",
+      "recipient_module": {
+        "raw": 38,
+        "reported": 38,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "state_module_in_fresh_full": {
+        "raw": 20,
+        "reported": 20,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "earlier_controls_fused_focus": {
+        "source": "23e428deb09a4d5035614c67eac92121dab25736",
+        "raw": 107,
+        "reported": 715,
+        "scope": "Earlier five-module actual; finalS3 recipient38 and ordinary full100 separately accepted."
+      }
+    },
+    "quality": {
+      "source": "37263779c0f990372e9a5e2c72180fbbc997895d",
+      "baseline": "0c15da6afb66e958ee38c6c19d852e013a41879a",
+      "paths": 5,
+      "types_current_baseline": [
+        20,
+        20
+      ],
+      "new_type_fingerprints": 0,
+      "broad_current_baseline": [
+        0,
+        0
+      ],
+      "critical_exit": 0,
+      "recipient_test_formatter_exit": 0,
+      "formatter": "13/13 exact inherited desktop edit-line hunk fingerprints; both whole-format exits1. Introduced state/fixture formatting repaired. No clean whole-repository lint/type/format claim.",
+      "security": {
+        "actual_python_rules": 151,
+        "mapped_files_scanned": 5,
+        "matches": 0,
+        "top_level_errors": 0,
+        "scope": "Exact byte-mapped flat copies outside repository ignores; not direct repository-path or complete security attestation."
+      },
+      "tool_versions": [
+        "pyright==1.1.414",
+        "pytest==9.1.1",
+        "ruff==0.17.0",
+        "semgrep==1.180.0"
+      ],
+      "resources": {
+        "wall_s": 19.52244420000352,
+        "minimum_headroom_gib": {
+          "physical_gib": 8.87905502319336,
+          "commit_gib": 14.626483917236328
+        },
+        "scope": "Direct WSL child and shell-owned phase groups; no kernel peak or active-process census."
+      }
+    },
+    "source_maps": {
+      "source_checks": 23,
+      "map_commands": [
+        "site",
+        "inventory",
+        "graph"
+      ],
+      "map_exits": [
+        0,
+        0,
+        0
+      ],
+      "source_wall_s": 18.255410799989477,
+      "map_wall_s": 2.461751600028947,
+      "source_active_owned_before_close": 0,
+      "map_active_owned_before_close": 0
+    },
+    "full": {
+      "command": "python scripts/check_all.py --output-dir <fresh>",
+      "exit": 0,
+      "modules": 100,
+      "reported": {
+        "tests": 2641,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "raw": 1625,
+      "aggregate_sha256": "18b3859ac3afaf6334376ce280b4623d88e2e4208f9a8b3edd4511adb20ee469",
+      "module_IDs": "Other98 module IDs/order equal accepted catalog full; actual recipient38 and state20 references match. Normal checker does not record a separate100-process exit census.",
+      "skip": [
+        {
+          "module": "test_native_closed_loop.xml",
+          "case": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c",
+          "message": "POSIX multicall-symlink regression runs in Linux CI; Windows actual native build is tested above"
+        }
+      ],
+      "warning": {
+        "observed_summary_blocks": 1,
+        "observed_category_occurrences": {
+          "RuntimeWarning": 1
+        },
+        "scope": "Unresolved Tcl finalizer RuntimeWarning; exact private block equals earlier catalog full. No suppression, frequency, cause or fix claim."
+      },
+      "resources": {
+        "outer_wall_s": 860.5031880000024,
+        "peak_job_commit_bytes": 606629888,
+        "minimum_headroom_gib": {
+          "physical_gib": 9.657020568847656,
+          "commit_gib": 12.441265106201172
+        },
+        "active_owned_before_final_close": 0
+      },
+      "command_scope": "Sanitized logical command; literal interpreter and output paths remain in private launch evidence."
+    },
+    "browser": {
+      "command_sequence": [
+        "python scripts/build_web.py",
+        "pwsh -File scripts/stage_team_site.ps1 -OutputDirectory <fresh-staged-site>",
+        "python quality/run_web_runtime.py"
+      ],
+      "exit": 0,
+      "profiles": [
+        {
+          "profile": "repository_baseline",
+          "native_model_replay": true,
+          "absolute_differences": {
+            "elapsedTimeS": 0.0,
+            "energyKwh": 0.0,
+            "socFinal": 0.0
+          },
+          "axe": {
+            "violations": 0,
+            "incomplete_records": 1,
+            "incomplete_nodes": 14,
+            "incomplete_rule_ids": [
+              "color-contrast"
+            ]
+          }
+        },
+        {
+          "profile": "prius_2026_le",
+          "native_model_replay": true,
+          "absolute_differences": {
+            "elapsedTimeS": 0.0,
+            "energyKwh": 0.0,
+            "socFinal": 0.0
+          },
+          "axe": {
+            "violations": 0,
+            "incomplete_records": 1,
+            "incomplete_nodes": 14,
+            "incomplete_rule_ids": [
+              "color-contrast"
+            ]
+          }
+        }
+      ],
+      "native_comparison_tolerance": {
+        "relative": 1e-09,
+        "absolute": 1e-09
+      },
+      "mobile_overflow_check": true,
+      "page_error_check": true,
+      "raw_artifacts": {
+        "exports": 2,
+        "axe_reports": 2,
+        "screenshots": 3,
+        "results": 1
+      },
+      "runtime": {
+        "pyodide_pinned_version": "314.0.7",
+        "exported_python": "3.14.2",
+        "exported_dependencies": {
+          "matplotlib": "3.10.8",
+          "numpy": "2.4.6",
+          "scipy": "1.18.0"
+        },
+        "platform": "Emscripten/wasm32"
+      },
+      "resources": {
+        "outer_wall_s": 38.0577220999985,
+        "peak_job_commit_bytes": 1304244224,
+        "minimum_headroom_gib": {
+          "physical_gib": 9.941631317138672,
+          "commit_gib": 16.024211883544922
+        },
+        "active_owned_before_final_close": 0
+      },
+      "scope": "Real Pyodide physics, downloads and native replay/comparison; model-agreement booleans and three scalar comparisons retained per profile, no separately saved full native replay report. Known axe incompletes retained. No visual/full accessibility certification, legacy layout/native-map rerun or site publication."
+    },
+    "package": {
+      "command": "build-env-python quality/run_package_runtime.py --output-dir <fresh> --desktop",
+      "exit": 0,
+      "desktop_checks": {
+        "wheel": 23,
+        "sdist": 23,
+        "bootstrap": 23
+      },
+      "reference": {
+        "wheel": {
+          "tests": 538,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "sdist": {
+          "tests": 538,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "artifacts": {
+        "wheel": {
+          "sha256": "a4ebd5dc5b31b855ffe6699b40586874b4303ab4f02ebed9343d6980e68513a5",
+          "bytes": 4597422,
+          "source_sha256": "15aa6b69f3dfc54ee2e3c238935bcc0c4252651a734847fb9f4f9b2788ac3764",
+          "declared_resource_files_verified": 836
+        },
+        "sdist": {
+          "sha256": "bd05f02167d782b992fecd0e4a4602d02de5ca4fab37e1311e695236c5be256f",
+          "bytes": 3684592,
+          "source_sha256": "15aa6b69f3dfc54ee2e3c238935bcc0c4252651a734847fb9f4f9b2788ac3764",
+          "declared_resource_files_verified": 836
+        }
+      },
+      "retained_gates": "Original startup/native-C/reference/offline/non-ASCII extracted-source bootstrap plus imported32/128/catalog392; actual source identity through sdist retained.",
+      "resources": {
+        "status": "passed",
+        "exit": 0,
+        "active_processes_before_final_close": 0,
+        "outer_wall_s": 295.25194960000226,
+        "peak_job_commit_bytes": 363745280,
+        "minimum_headroom_GiB": {
+          "physical_gib": 10.208507537841797,
+          "commit_gib": 15.200687408447266
+        }
+      },
+      "archive_reference_scope": "Exactly two retained sdist regular member bytes independently equal the explicitly labeled archive-reference files; never a surviving/reconstructed actual bootstrap payload. Producer checked its actual extracted source before cleanup."
+    },
+    "frozen": {
+      "source": "37263779c0f990372e9a5e2c72180fbbc997895d",
+      "command": "build-env-python scripts/build_windows.py --skip-tests --output-dir <fresh>",
+      "command_scope": "Sanitized logical build command; actual local argv retained privately.",
+      "exit": 0,
+      "checks": {
+        "original": 23,
+        "copied": 24
+      },
+      "routes": [
+        0,
+        2,
+        1,
+        1
+      ],
+      "route_order": [
+        "saved record",
+        "same-path alias",
+        "unsupported frame",
+        "unsupported units"
+      ],
+      "artifacts": {
+        "LapSim.exe": {
+          "sha256": "01e6893875f9922c2959a14d5bc66ff5243ba819143e6223a55fae9956642dca",
+          "bytes": 79379377
+        },
+        "LapSim-Windows-x64.zip": {
+          "sha256": "7da3639b607d7a51019c5022a9e69d8bbecd6c7d766ff7a23fd4a319c5d08d17",
+          "bytes": 87374405
+        }
+      },
+      "packaged_source_sha256": "eb80fd330b92fddaca6460c6c4c35711e8fe04fb209308d22c75c2e0b45a8ffb",
+      "source_hash_framing": "Frozen source file-index hash uses default-spaced sorted JSON; wheel/sdist source-index compact framing remains a separate identity.",
+      "suite": "Skipped/null command+report, no fresh module XML or totals; accepted ordinary full100 separately hash-bound. No rebuilding at later docs/head/main.",
+      "resources": {
+        "status": "passed",
+        "exit": 0,
+        "active_processes_before_final_close": 0,
+        "outer_wall_s": 125.16149209998548,
+        "peak_job_commit_bytes": 377491456,
+        "minimum_headroom_GiB": {
+          "physical_gib": 9.336101531982422,
+          "commit_gib": 12.46664810180664
+        }
+      },
+      "original_files_indexed": 2039,
+      "copies": 0,
+      "preservation_scope": "Actual retained original artifact/report/guard/caller sandbox/assets paths indexed; no removed private GUI payload or default-temp reconstruction.",
+      "saved_native_record_scope": "Separate copiedEXE saved telemetry viewing, alias rejection and two independently resealed unsupported claims. No fresh native3D physics/replay or same-process recovery."
+    }
+  },
+  "runtime": {
+    "native_python": "3.13.15",
+    "source_numpy": "2.5.4",
+    "build_lock_numpy": "2.5.3",
+    "build_lock_distributions": 26,
+    "wheel_sdist_numpy": {
+      "wheel": "2.5.3",
+      "sdist": "2.5.3"
+    },
+    "bootstrap_selected_versions": {
+      "numpy": "2.5.4",
+      "fonttools": "4.67.0",
+      "pillow": "13.0.0"
+    },
+    "scope": "Actual selected environments only, not a complete supported-version matrix or cross-runtime numerical identity claim."
+  },
+  "retained_history": [
+    "Initial missing-helper RED:9old passed/new2 failed. First implemented positive reached genuine replay and failed, while old9 and wrong-curvature negative passed.",
+    "The same-bit scalar counterfactual and one-cell RED established a model-visible boundary defect; the canonical float fix passed actual107 and final recipient38/full100.",
+    "One introduced fixture type diagnostic and an introduced state-test formatter hunk were corrected before final acceptance; actual final quality retains20/20 type diagnostics and13/13 inherited formatter hunks. Original failed evidence remains private."
+  ],
+  "limits": [
+    "Shipped fused x/y and curvature remain geometrically inconsistent and unverified; origin unknown, no surveyed boundary, calibration or physical validation.",
+    "Fine0.5m/1978 fused recipient, native picker and actual asynchronous Run acceptance remain open. Current checks invoke synchronous worker routes.",
+    "Full/native package gates run existing CPU fast-model calculations, replays and native C reference checks; no fresh PyChrono/native3D saved-study replay.",
+    "Scratch records are observed save/load/replay reports. Hash-only receipts cannot reconstruct deleted lap payloads. Bootstrap producer checked its actual source before cleanup; retained archive-reference data are labeled separately.",
+    "Older imported/catalog public receipts and binaries remain historical. Current artifacts identify S3; later docs/head/main do not rebuild them. Current frozen artifacts are freshly bound toS3; olderEXEs do not establish this control fix.",
+    "Raw logs, JUnit, telemetry and local receipts are private hash-bound evidence; this selected projection does not sanitize those raw files. No acceleration, release or deployment claim."
+  ],
+  "local_evidence_sha256": {
+    "focused38": "66bbcaf8de866c142fcf1356f09a94bc7fd7938d76baf0a045e065b1025d715b",
+    "quality5": "adc89b9e1793fc651070911ca8847906d458a69d566f470dd03daa80089f4e55",
+    "source_maps": "70a148ab1b7a94b38d0208a68c435cdc73db0c13d77734a11821d671763298b1",
+    "full100": "c2f52469bfc635a0cf517fe90d066cc9155abada2a1e76367092cef2944180f8",
+    "package": "7d657a1b1eaf16e0370a5d0593947c0bdb0bb24a12eeea8ec4554ec19c169bf8",
+    "browser_stage": "66fafc101d9880f8e51841fb5426ac7fa748fa7994cc231dcdea4e0670a665d4",
+    "browser_guard": "c6f54624100b5a887bd972d08489090ebd37f7d762e6649b37779170639f337c",
+    "scalar_counterfactual": "e3db7c9443759344ef097ba06be4e8da945faddc1eafa473e365839549a320d2",
+    "single_cell_RED": "7048400917b1a231faec49aee596531d384b068b16410317e48e520a464d29de",
+    "controls_fused_GREEN107": "0ec7ad1493f88b9f91f98a3c589d973aeebb0144bd804b2798321dc6becba8bd",
+    "initial_missing_helper_RED": "9cc8cb342991f8d52505d6712144bfc40628c25f412033c29948b85dd068511a",
+    "initial_replay_failure": "511b88302727492be078a0211f42155df54879f906316e31469a94fb5fe83e84",
+    "frozen": "d3886f2f45014a937e8a0b31b24d909979abeb72802c88470d2b79c4d87e3c5b",
+    "frozen_stage": "4fdbb31dac7999613267953e085dd5c97e96c3b3a325f928c2513df8b3a34a94",
+    "frozen_guard": "db4f749293e27214f44fc2a62847c719eb72b1a62e5237becca7ecd6dec6133b",
+    "browser_peer": "9316d6447b1585731e72d01ab6a1861a2f2276f76b048155d6d29d91b6c36f83",
+    "final_implementation": "53d0b75838fd9215455fbf522a6420379f2a10be721b6d5db3bb1a36247bfd4c"
+  },
+  "integration": null,
+  "postmerge": null,
+  "execution": "Native Windows x64 PC, AMD Ryzen9 7950X3D/32GB RAM; RTX5080 present, CPU calculations with no GPU-physics claim. Browser physics executes WebAssembly in Chromium.",
+  "finalization_scope": "This receipt and the E05 status paragraph are documentation-only additions after runtime source 37263779c0f990372e9a5e2c72180fbbc997895d. All six implementation/inventory LF pins remain unchanged. Later branch-head CI, integration and literal-main verification are separate evidence; these local artifacts are not rebuilt by documentation commits."
+}
