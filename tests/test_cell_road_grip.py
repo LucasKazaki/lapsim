@@ -248,3 +248,25 @@ def test_speed_periodic_passes_use_one_frozen_schedule_and_restore_cars() -> Non
     assert result.run.telemetry["tire.road_grip_multiplier"] == schedule
     assert source.tire.road_grip_multiplier == 0.95
     assert result.vehicle.tire.road_grip_multiplier == 0.95
+
+
+@pytest.mark.parametrize("curvature", [0.1, -0.1])
+def test_declared_fractional_cells_keep_explicit_grip_schedule_alignment(
+    curvature: float,
+) -> None:
+    track = SpatialTrack.from_cells(
+        cell_length_m=(0.1, 0.1),
+        curvature_per_m=(curvature, 0.0),
+        closed=False,
+    )
+    schedule = (0.6, 1.0)
+    constraints = PathSpeedConstraints(
+        track=track,
+        local_corner_speed_mps=(2.0, 2.0),
+        braking_speed_ceiling_mps=(2.0, 2.0),
+        passes=1,
+        cell_road_grip_multiplier=schedule,
+    )
+    assert constraints.track.cell_count == len(schedule) == 2
+    assert constraints.cell_road_grip_multiplier is schedule
+    assert constraints.track.distance_m == (0.0, 0.1, 0.2)

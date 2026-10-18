@@ -1,6 +1,6 @@
 """Tests for generic vehicle-independent spatial tracks."""
 
-from math import hypot, pi, sqrt
+from math import cos, hypot, pi, sin, sqrt, ulp
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
@@ -356,3 +356,128 @@ class SpatialTrackTests(TestCase):
         self.assertAlmostEqual(legacy.total_length_m, spatial.length_m)
         self.assertIsInstance(legacy.segments[0], Straight)
         self.assertIsInstance(legacy.segments[1], Curve)
+
+    def test_declared_fractional_arc_keeps_one_cell(self) -> None:
+        for curvature in (0.1, -0.1):
+            with self.subTest(curvature=curvature):
+                spatial = SpatialTrack.from_cells(
+                    cell_length_m=(0.1,),
+                    curvature_per_m=(curvature,),
+                    closed=False,
+                )
+                self.assertEqual(spatial.cell_count, 1)
+                self.assertEqual(spatial.distance_m, (0.0, 0.1))
+                self.assertEqual(spatial.curvature_per_m, (curvature,))
+                self.assertAlmostEqual(spatial.x_m[-1], 10.0 * sin(0.01), delta=1e-14)
+                self.assertAlmostEqual(
+                    spatial.y_m[-1],
+                    (1.0 if curvature > 0.0 else -1.0) * 10.0 * (1.0 - cos(0.01)),
+                    delta=1e-14,
+                )
+
+    def test_declared_fractional_arc_and_straight_keep_two_cells(self) -> None:
+        for curvature in (0.1, -0.1):
+            with self.subTest(curvature=curvature):
+                spatial = SpatialTrack.from_cells(
+                    cell_length_m=(0.1, 0.1),
+                    curvature_per_m=(curvature, 0.0),
+                    closed=False,
+                )
+                sign = 1.0 if curvature > 0.0 else -1.0
+                self.assertEqual(spatial.cell_count, 2)
+                self.assertEqual(spatial.distance_m, (0.0, 0.1, 0.2))
+                self.assertEqual(spatial.curvature_per_m, (curvature, 0.0))
+                self.assertAlmostEqual(
+                    spatial.x_m[-1],
+                    10.0 * sin(0.01) + 0.1 * cos(0.01),
+                    delta=1e-14,
+                )
+                self.assertAlmostEqual(
+                    spatial.y_m[-1],
+                    sign * (10.0 * (1.0 - cos(0.01)) + 0.1 * sin(0.01)),
+                    delta=1e-14,
+                )
+
+    def test_declared_equal_curvatures_are_not_merged(self) -> None:
+        spatial = SpatialTrack.from_cells(
+            cell_length_m=(0.1, 0.1, 0.1),
+            curvature_per_m=(0.1, 0.1, 0.1),
+            closed=False,
+        )
+        self.assertEqual(spatial.cell_count, 3)
+        self.assertEqual(
+            spatial.distance_m,
+            (0.0, 0.1, 0.2, 0.30000000000000004),
+        )
+        self.assertEqual(spatial.curvature_per_m, (0.1, 0.1, 0.1))
+        self.assertEqual(len(spatial.to_track().segments), 3)
+
+    def test_declared_mixed_lengths_keep_ordered_float_stations(self) -> None:
+        spatial = SpatialTrack.from_cells(
+            cell_length_m=(0.1, 0.2),
+            curvature_per_m=(0.1, -0.1),
+            closed=False,
+        )
+        self.assertEqual(spatial.cell_count, 2)
+        self.assertEqual(spatial.distance_m, (0.0, 0.1, 0.30000000000000004))
+        self.assertEqual(spatial.curvature_per_m, (0.1, -0.1))
+        # Subtracting rounded stations need not recover each input bit-for-bit.
+        for recovered, declared in zip(
+            spatial.cell_length_m,
+            (0.1, 0.2),
+            strict=True,
+        ):
+            self.assertAlmostEqual(
+                recovered,
+                declared,
+                delta=2.0 * ulp(spatial.length_m),
+            )
+
+    def test_declared_cells_keep_closed_map_correction_and_end_station(self) -> None:
+        opened = SpatialTrack.from_cells(
+            cell_length_m=(0.1, 0.1),
+            curvature_per_m=(0.1, 0.0),
+            closed=False,
+        )
+        closed = SpatialTrack.from_cells(
+            cell_length_m=(0.1, 0.1),
+            curvature_per_m=(0.1, 0.0),
+        )
+        self.assertEqual(closed.cell_count, 2)
+        self.assertEqual(closed.distance_m, opened.distance_m)
+        self.assertEqual(closed.curvature_per_m, opened.curvature_per_m)
+        self.assertEqual(closed.length_m, 0.2)
+        self.assertTrue(closed.closed)
+        self.assertFalse(opened.closed)
+        self.assertEqual(closed.x_m[0], closed.x_m[-1])
+        self.assertEqual(closed.y_m[0], closed.y_m[-1])
+        self.assertEqual(closed.x_m[1], opened.x_m[1] - 0.5 * opened.x_m[-1])
+        self.assertEqual(closed.y_m[1], opened.y_m[1] - 0.5 * opened.y_m[-1])
+
+    def test_declared_near_zero_curvature_keeps_existing_straight_policy(self) -> None:
+        for curvature in (1e-16, -1e-16):
+            with self.subTest(curvature=curvature):
+                spatial = SpatialTrack.from_cells(
+                    cell_length_m=(0.1,),
+                    curvature_per_m=(curvature,),
+                    closed=False,
+                )
+                self.assertEqual(spatial.distance_m, (0.0, 0.1))
+                self.assertEqual(spatial.curvature_per_m, (0.0,))
+                self.assertEqual(spatial.x_m, (0.0, 0.1))
+                self.assertEqual(spatial.y_m, (0.0, 0.0))
+
+    def test_segment_factory_keeps_ceil_for_its_own_declared_length(self) -> None:
+        # This segment really is one ULP longer than the requested maximum.
+        # Its resampling contract differs from an explicitly supplied cell.
+        spatial = SpatialTrack.from_track(
+            Track.from_segments([Curve(10.0, 0.010000000000000002)]),
+            maximum_cell_length_m=0.1,
+            closed=False,
+        )
+        self.assertEqual(spatial.cell_count, 2)
+        self.assertEqual(
+            spatial.distance_m,
+            (0.0, 0.05000000000000001, 0.10000000000000002),
+        )
+        self.assertEqual(spatial.curvature_per_m, (0.1, 0.1))

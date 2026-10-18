@@ -593,6 +593,24 @@ class SpatialTrack:
             cell_lengths_m.extend([cell_length_m] * cell_count)
             curvatures_per_m.extend([curvature_per_m] * cell_count)
 
+        return cls._from_cell_geometry(
+            cell_lengths_m,
+            curvatures_per_m,
+            closed=closed,
+            close_geometry=close_geometry,
+        )
+
+    @classmethod
+    def _from_cell_geometry(
+        cls,
+        cell_lengths_m: Sequence[float],
+        curvatures_per_m: Sequence[float],
+        *,
+        closed: bool,
+        close_geometry: bool,
+    ) -> SpatialTrack:
+        """Integrate an already chosen grid without resampling its cells."""
+
         distance_m = [0.0]
         x_m = [0.0]
         y_m = [0.0]
@@ -639,29 +657,30 @@ class SpatialTrack:
         curvature_per_m: Sequence[float],
         closed: bool = True,
     ) -> "SpatialTrack":
-        """Build generic geometry directly from cell lengths and curvature."""
+        """Build one cell per supplied length/curvature pair, without merging.
+
+        Stations use ordered float addition. Near-zero curvature keeps the
+        existing straight policy; closed geometry keeps its linear correction.
+        """
 
         if len(cell_length_m) != len(curvature_per_m) or not cell_length_m:
             raise ValueError(
                 "Cell lengths and curvature must have equal nonzero length"
             )
-        segments: list[Straight | Curve] = []
+        cell_lengths_m: list[float] = []
+        curvatures_per_m: list[float] = []
         for length_m, curvature in zip(cell_length_m, curvature_per_m, strict=True):
             if length_m <= 0:
                 raise ValueError("Cell lengths must be positive")
-            if abs(curvature) <= 1e-15:
-                segments.append(Straight(float(length_m)))
-            else:
-                segments.append(
-                    Curve(
-                        radius_m=1.0 / abs(float(curvature)),
-                        span_rad=float(curvature) * float(length_m),
-                    )
-                )
-        return cls.from_track(
-            Track.from_segments(segments),
-            maximum_cell_length_m=max(float(value) for value in cell_length_m),
+            cell_lengths_m.append(float(length_m))
+            curvatures_per_m.append(
+                0.0 if abs(curvature) <= 1e-15 else float(curvature)
+            )
+        return cls._from_cell_geometry(
+            cell_lengths_m,
+            curvatures_per_m,
             closed=closed,
+            close_geometry=True,
         )
 
 

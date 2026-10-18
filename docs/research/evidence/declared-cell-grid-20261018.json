@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "E_ID": "E05 bounded declared-cell grid repair; E05 remains open",
+  "as_of": "2026-10-18T12:16:54.506111+00:00",
+  "scope": "Closed local acceptance before final documentation map checks, publication, normal integration and actual-main verification. Later receipts record those gates separately.",
+  "source": {
+    "full_and_catalog_commit": "eba302a3daa641c3feee18ffaf09e9bb9470d787",
+    "full_and_catalog_tree": "282cbe227353eaa6a5daea7947b6560fee68e8dc",
+    "final_typing_fixture_commit": "1fc152bda00c0792c30f9e4b8a24fd91d6e4ab0a",
+    "first_numerical_GREEN_commit": "eac6e16aa5a7f62f23272b8110ae31d3728022bd",
+    "rebased_tests_only_commit": "ecd2eae18aa1c5f4f613ff741ca6321d95054779",
+    "integrated_main_baseline": "64416d6e5ba916c16d5c814125c1dd8337a7e9b9",
+    "six_accepted_source_Git_LF_sha256": {
+      "src/lapsim/courses/spatial_track.py": "908db8c51dea52c6cc7924cdf35f93ddfd5d7e3bd3b7a6ffcee359b9ef1d4eb3",
+      "tests/test_spatial_track.py": "8187da68553054e5dc49c383a00059e06b4477e1eb59d71aa47cd4a19fe34cf0",
+      "tests/test_cell_road_grip.py": "78c0880ed5e4b77b6aae1bd37305bc7d1446bd5c5da78870f1dd69c9c01a5bc5",
+      "src/lapsim/solvers/path_constraints.py": "09a619cdbdcc25c58c9959db14f7fd216a9ee39cb5b95668140fe15be5207c53",
+      "tests/test_path_constraint_convergence.py": "43a4ef08ae68ae91db0d690d3a0b20c38b7c5f2b2281dc208a07a92000f1b27e",
+      "tests/test_lap_replay.py": "7b2f87cc020faf5afc09f8dcc8d4ba6ba5127e7e4964f9372bda81488b087227"
+    }
+  },
+  "behavior": {
+    "counterexample": "Declared length0.1 m and curvature0.1/m round-tripped through radius/span to length0.10000000000000002 m, spuriously producing2 cells.",
+    "repair": "One supplied length/curvature pair produces one cell, without merging or a segment round-trip. Stations retain ordered float addition and the existing near-zero curvature policy.",
+    "retained": "The from_track segment ceil prefix and shared analytic integration/linear closed-map correction remain unchanged. Saved records restore embedded arrays directly.",
+    "limits": "Station differences can contain ordinary float rounding. New grid counts/hashes and numerical results may differ from formerly spuriously subdivided inputs. No new broad type/finite/extreme-value policy or physical geometry validation is claimed."
+  },
+  "local_checks": {
+    "execution": "Verified local native Windows PC; CPU physics/tests, no GPU-physics claim.",
+    "rebased_RED": {
+      "reported": 57,
+      "raw": 44,
+      "failure_entries": 9,
+      "failed_raw_cases": 7,
+      "errors": 0,
+      "skipped": 0,
+      "old35_pass_and_order_exact": true
+    },
+    "first_nine_module_GREEN": {
+      "source": "eac6e16aa5a7f62f23272b8110ae31d3728022bd",
+      "reported": 156,
+      "raw": 143,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "typing_style_successor": "Only private return-annotation spelling and explicit equivalent closure-fixture keyword setup changed; production statement and all assertion ASTs retained.",
+    "final_two_module_GREEN": {
+      "source": "1fc152bda00c0792c30f9e4b8a24fd91d6e4ab0a",
+      "reported": 57,
+      "raw": 44,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "all44_frozen_IDs_order_exact": true
+    },
+    "quality": {
+      "baseline": "64416d6e5ba916c16d5c814125c1dd8337a7e9b9",
+      "current_and_baseline_type_errors": 63,
+      "current_and_baseline_broad_findings": 9,
+      "new_type_or_broad_findings": 0,
+      "current_and_baseline_format_groups": 36,
+      "format_diff_bytes_equal": true,
+      "critical_exit": 0,
+      "mapped_security_exit": 0,
+      "mapped_security_files": 3,
+      "mapped_security_rules": 151,
+      "security_matches": 0,
+      "security_errors": 0,
+      "limits": "Existing type/lint/format debt retained. Mapped scanning is an additional check with rule/path/context limitations, not complete security validation."
+    },
+    "full": {
+      "modules": 99,
+      "reported_totals": {
+        "tests": 2601,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "raw_testcases": 1585,
+      "old_a7_IDs_order_exact_after9_new_raw_cases_removed": true,
+      "final44_focused_IDs_exact": true,
+      "expected_Windows_skip": {
+        "module": "test_native_closed_loop.xml",
+        "case": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c",
+        "message": "POSIX multicall-symlink regression runs in Linux CI; Windows actual native build is tested above"
+      },
+      "warnings": {
+        "observed_summary_blocks": 1,
+        "category_occurrences": {
+          "RuntimeWarning": 1
+        },
+        "exact_logical_blocks_equal_prior_a7": true,
+        "stderr_bytes": 0,
+        "limit": "Historical Tcl finalizer warning remains unresolved; no cause, fix or frequency conclusion. Exact warning streams stay in private evidence."
+      },
+      "resource_guard": {
+        "status": "passed",
+        "active_processes_before_final_close": 0,
+        "stage_wall_s": 990.5207746000378,
+        "outer_wall_s": 990.5820173000102,
+        "peak_job_commit_bytes": 605937664,
+        "minimum_headroom_GiB": {
+          "physical_gib": 11.612388610839844,
+          "commit_gib": 15.74197006225586
+        },
+        "scope": "Actual unchanged kernel-owned metrics; no unrelated-process census or fabricated99 exit receipts."
+      },
+      "runner_limit": "Ordinary check_all aggregate and99 fresh XML reports; no separate99 subprocess-exit census or reconstructed default-temp census."
+    },
+    "source_map": {
+      "normal_commands": 3,
+      "all_exit0": true,
+      "catalog_sha256": "b23aec8aee2ea621416301cf57effc0315c797129021c6560b5a8e16d87dd09a",
+      "counts": {
+        "modules": 102,
+        "equation": 4329,
+        "variable": 8843,
+        "data": 1496,
+        "solver": 1194
+      }
+    },
+    "distribution_limit": "No recipient executable/ZIP rebuild or release is claimed; complete source/installed/frozen recipient-route reproduction remains E05 work."
+  },
+  "environment_metadata_observed_after_closed_full": {
+    "python": "3.13.15",
+    "implementation": "CPython",
+    "OS": "Windows",
+    "packages": {
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "matplotlib": "3.11.2",
+      "pytest": "9.1.1",
+      "openpyxl": "3.1.5",
+      "defusedxml": "0.7.1"
+    }
+  },
+  "reproduce": [
+    "python -m pytest -q tests/test_spatial_track.py tests/test_cell_road_grip.py",
+    "python scripts/check_all.py --output-dir work/check-all",
+    "python scripts/check_flowchart_site.py",
+    "python docs/simulator_flowchart/generate_inventory.py --check",
+    "node scripts/check_flowchart_data.mjs"
+  ],
+  "raw_evidence_bindings": [
+    {
+      "role": "rebased_RED_peer",
+      "relative_local_path": "work/e05-declared-cell-red-rebased-ecd2eae-independent-preserved-20261018/independent-proof.json",
+      "sha256": "96221ec9ab2d7e036469a0a143a1f94346176d3a0201ead2984e702d1f2895fa"
+    },
+    {
+      "role": "rebased_RED_XML",
+      "relative_local_path": "work/e05-declared-cell-red-rebased-ecd2eae-20261018/result.xml",
+      "sha256": "58cf59fa7316a307e67fbc9edd2c4a818fc555cf3face9026d043357252cb049"
+    },
+    {
+      "role": "prior_nine_module_GREEN_peer",
+      "relative_local_path": "work/e05-focused-green-peer-eac6e16-20261018/independent-proof.json",
+      "sha256": "146903fd0d050d5723b3eae7bf08c1164422a941456f6e1ea27dfd7a4b838f07"
+    },
+    {
+      "role": "failed_quality_peer",
+      "relative_local_path": "work/e05-declared-cell-quality-eac-failed-preserved-20261018/independent-proof.json",
+      "sha256": "da7c34971aedab5d439a05de2038580d9b0b2d0d3979161e906762425c00be31"
+    },
+    {
+      "role": "final_focused_and_quality_peer",
+      "relative_local_path": "work/e05-declared-cell-final-1fc152b-independent-preserved-20261018/independent-proof.json",
+      "sha256": "2ba324d06ed1375f536123e62ca8488da1cb5b185712450adcde5d268e5be924"
+    },
+    {
+      "role": "inventory_author_peer",
+      "relative_local_path": "work/e05-grid-inventory-1fc152b-independent-preserved-20261018/independent-proof.json",
+      "sha256": "a1ca40cd04f8ab311f81621d9ae214b0f6445163de93aa9b71b2a2b90b826647"
+    },
+    {
+      "role": "map_and_full_startup_review",
+      "relative_local_path": "work/e05-generated-full-and-map-eba302a-independent-review-20261018/review.json",
+      "sha256": "f492b8975c9392b84fe053d039802e6ee6d1d37a7685f0fddbaa5204c39269f7"
+    },
+    {
+      "role": "closed_full_peer",
+      "relative_local_path": "work/e05-declared-cell-full-eba302a-independent-preserved-20261018/independent-proof.json",
+      "sha256": "f28f4b87de22c58a9c6a88d97fde5f1388a18be884a9d9cce9172685ab43572c"
+    },
+    {
+      "role": "closed_full_allocation",
+      "relative_local_path": "work/e05-declared-cell-full-eba302a-20261018/root-allocation.json",
+      "sha256": "ba3d8290ddaeaee906b146ab5a19dff2387634542891cec279e364869ed6b9ca"
+    },
+    {
+      "role": "closed_full_guard",
+      "relative_local_path": "work/detailed-study/e05-declared-cell-full-eba302a-attempt-1-job/summary.json",
+      "sha256": "d579acbe7fb789a2ade4213636054fb81d4d12a49207f935431ac2eff31b8bbe"
+    },
+    {
+      "role": "closed_full_XML",
+      "relative_local_path": "work/e05-declared-cell-full-eba302a-20261018/check-all/test-results.xml",
+      "sha256": "359033faad95f6693c5173a21d0db0afd82329698dd08c362d1dc5aaa1bf9712"
+    }
+  ],
+  "privacy": "Exact raw JUnit, streams and machine-specific records stay in ignored local storage. Paths here are relative local references and hashes, not shipped raw artifacts."
+}
