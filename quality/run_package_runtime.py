@@ -118,6 +118,78 @@ def _recipient_grid_identity(report: dict) -> dict:
         ) from error
 
 
+def _catalog_grid_identity(report: dict) -> dict:
+    """Bind declared demo inputs without comparing per-run numerical traces."""
+    try:
+        if (
+            report["status"] != "passed"
+            or report["checks"]["catalog_course_grid"] is not True
+        ):
+            raise ValueError("catalog-course check did not pass")
+        grid = report["recipient_catalog_grid"]
+        if (
+            grid["status"] != "passed"
+            or grid["course_id"] != "synthetic_rounded_rectangle_v1"
+            or len(grid["cases"]) != 1
+        ):
+            raise ValueError("catalog-course identity is incorrect")
+        source = grid["source"]
+        geometry = grid["source_geometry"]
+        geometry_hash = sha256(
+            json.dumps(
+                geometry, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode("utf-8")
+        ).hexdigest()
+        if (
+            source["selected_course_id"] != grid["course_id"]
+            or source["source_kind"] != "synthetic"
+            or source["revision"] != "generator_v1"
+            or source["source_generator"]
+            != "lapsim.ui.course_catalog._synthetic_demo_track"
+            or source["source_geometry_sha256"] != geometry_hash
+        ):
+            raise ValueError("catalog-source claims are incorrect")
+        row = grid["cases"][0]
+        inputs = row["expected_inputs"]
+        inputs_hash = sha256(
+            json.dumps(
+                inputs, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode("utf-8")
+        ).hexdigest()
+        if (
+            row["requested_maximum_cell_length_m"] != 5.0
+            or row["cell_count"] != 392
+            or row["geometry"] != geometry
+            or row["geometry_sha256"] != geometry_hash
+            or row["expected_inputs_sha256"] != inputs_hash
+            or row["recorded_inputs_sha256"] != inputs_hash
+            or inputs["settings"]["track"]["source_course"] != source
+            or inputs["settings"]["track"]["geometry"] != geometry
+            or inputs["selected_profile_id"] != "repository_baseline"
+            or row["record_unchanged"] is not True
+            or row["replay"]["model_agreement"] is not True
+            or row["replay"]["replay_completed"] is not True
+        ):
+            raise ValueError("catalog grid or saved inputs/replay are incorrect")
+        return {
+            "course_id": grid["course_id"],
+            "source": source,
+            "source_geometry_sha256": geometry_hash,
+            "cases": [
+                {
+                    "requested_maximum_cell_length_m": 5.0,
+                    "cell_count": 392,
+                    "geometry_sha256": geometry_hash,
+                    "inputs_sha256": inputs_hash,
+                }
+            ],
+        }
+    except (KeyError, TypeError, ValueError) as error:
+        raise RuntimeError(
+            f"Recipient catalog-grid report is invalid: {error}"
+        ) from error
+
+
 def run(argv: list[str], cwd: Path, log: Path, *, timeout=300, offline=False) -> None:
     env = dict(
         os.environ,
@@ -241,6 +313,9 @@ def verify(output: Path, *, desktop: bool) -> dict:
                 results[kind]["recipient_grid_inputs"] = _recipient_grid_identity(
                     json.loads(desktop_report.read_text(encoding="utf-8"))
                 )
+                results[kind]["catalog_grid_inputs"] = _catalog_grid_identity(
+                    json.loads(desktop_report.read_text(encoding="utf-8"))
+                )
         assert (
             results["wheel"]["source"]["source_sha256"]
             == results["sdist"]["source"]["source_sha256"]
@@ -250,6 +325,11 @@ def verify(output: Path, *, desktop: bool) -> dict:
             != results["sdist"]["recipient_grid_inputs"]
         ):
             raise RuntimeError("Wheel and sdist imported-course inputs differ")
+        if desktop and (
+            results["wheel"]["catalog_grid_inputs"]
+            != results["sdist"]["catalog_grid_inputs"]
+        ):
+            raise RuntimeError("Wheel and sdist catalog-course inputs differ")
         extracted = outside / "source space λ"
         extracted.mkdir()
         with tarfile.open(packages["sdist"]) as archive:
@@ -276,6 +356,15 @@ def verify(output: Path, *, desktop: bool) -> dict:
                 raise RuntimeError(
                     "Source bootstrap and wheel imported-course inputs differ"
                 )
+            bootstrap_catalog = _catalog_grid_identity(
+                json.loads(
+                    (output / "bootstrap-desktop.json").read_text(encoding="utf-8")
+                )
+            )
+            if bootstrap_catalog != results["wheel"]["catalog_grid_inputs"]:
+                raise RuntimeError(
+                    "Source bootstrap and wheel catalog-course inputs differ"
+                )
         marker = source / ".venv/.lapsim-ready.json"
         previous = (marker.read_bytes(), marker.stat().st_mtime_ns)
         run(
@@ -296,6 +385,7 @@ def verify(output: Path, *, desktop: bool) -> dict:
         "source_bootstrap_from_non_ascii_snapshot": True,
         "offline_readonly_repeat": True,
         "recipient_grid_inputs_match": True if desktop else None,
+        "catalog_grid_inputs_match": True if desktop else None,
         "artifacts_published": False,
     }
     (output / "summary.json").write_text(

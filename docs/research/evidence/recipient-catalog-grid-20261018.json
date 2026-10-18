@@ -1,0 +1,296 @@
+{
+  "schema": "lapsim.recipient-catalog-grid-verification.v1",
+  "status": "locally_verified_bounded_E05_increment",
+  "date": "2026-10-18",
+  "source": "fa3c4c5b7ce3e8ea56a79ad8c6c3b31da184f17a",
+  "tree": "b4eb53bca263fce5601a386a0d71c374f0055fd5",
+  "source_git_lf_sha256": {
+    "src/lapsim/desktop.py": "25ee67f7b881ffcccaece9a16608537c0774d8d11c8a52fe0f4ed666a8a33bc5",
+    "tests/test_recipient_grid_self_test.py": "03833dc97ab15f339c57844bfe9fb216c58abe0fc9231760a4f1e4bb138bb354",
+    "quality/run_package_runtime.py": "1b45ccac2b0f102f5816a3ce1f00f6ea4d945c428284ccf937a3ca42829d2701"
+  },
+  "execution": "Native local Windows 11 x64 PC; CPU calculations. RTX 5080 present, no GPU-physics claim.",
+  "scope": "Real synchronous app selection, configured calculation, save/load/replay of the shipped synthetic-loop catalog392; imported32/128 remains separately checked. Input hashes are compared before outputs; run IDs/traces are not equated.",
+  "recipient_inputs": {
+    "imported": {
+      "fixture": {
+        "input_sha256": "3a3d808ca40f9c83dac64384943f44b9410b9da9e5d77a43558972aaa118a5f6",
+        "bundle_sha256": "a6449483424f3d72dc0fc4df5ff185c573750e0919a15170a31d798f14defbe0",
+        "geometry_sha256": "6b433f39bd18cbd877ed871f1fc58829b7a5493e0b4658c403eab599b6b3607a"
+      },
+      "cases": [
+        {
+          "requested_maximum_cell_length_m": 5.0,
+          "cell_count": 32,
+          "geometry_sha256": "6b433f39bd18cbd877ed871f1fc58829b7a5493e0b4658c403eab599b6b3607a",
+          "inputs_sha256": "e63b5a047e59719d02a17749bb115fbf2101f823b5abd00be633db169e1597b9"
+        },
+        {
+          "requested_maximum_cell_length_m": 0.5,
+          "cell_count": 128,
+          "geometry_sha256": "0410129b96b792a56ec783a6040e3ce536a1276d217ac37ca6324e5f46366c6e",
+          "inputs_sha256": "cd5c0f99191e10df3e28a8378d0f1113351299ef028833c4fa1965dca8d9e107"
+        }
+      ]
+    },
+    "catalog": {
+      "course_id": "synthetic_rounded_rectangle_v1",
+      "source": {
+        "boundary_status": "absent",
+        "bundle_hash_scope": null,
+        "bundle_id": null,
+        "bundle_sha256": null,
+        "coordinate_frame": "analytic_local_cartesian_xy_m",
+        "metadata_version": 1,
+        "revision": "generator_v1",
+        "selected_course_id": "synthetic_rounded_rectangle_v1",
+        "source_generator": "lapsim.ui.course_catalog._synthetic_demo_track",
+        "source_geometry_hash_scope": "canonical loaded closed/distance_m/x_m/y_m/curvature_per_m",
+        "source_geometry_sha256": "a094b5c46cda594bf131c36d48b434cf35b7bf4c1198cd36bce5980d96569784",
+        "source_kind": "synthetic"
+      },
+      "source_geometry_sha256": "a094b5c46cda594bf131c36d48b434cf35b7bf4c1198cd36bce5980d96569784",
+      "cases": [
+        {
+          "requested_maximum_cell_length_m": 5.0,
+          "cell_count": 392,
+          "geometry_sha256": "a094b5c46cda594bf131c36d48b434cf35b7bf4c1198cd36bce5980d96569784",
+          "inputs_sha256": "6584fec7ee98232ce9f72055b3333c5553dbecab165ee9b566937533b818e7d6"
+        }
+      ]
+    }
+  },
+  "verification": {
+    "focused": {
+      "source": "fa3c4c5b7ce3e8ea56a79ad8c6c3b31da184f17a",
+      "reported": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "raw": 9,
+      "assertions": 98,
+      "genuine_replay_report_transparency": true
+    },
+    "quality": {
+      "source": "fa3c4c5b7ce3e8ea56a79ad8c6c3b31da184f17a",
+      "baseline": "0c15da6afb66e958ee38c6c19d852e013a41879a",
+      "paths": 3,
+      "types": [
+        0,
+        0
+      ],
+      "broad": [
+        0,
+        0
+      ],
+      "new": 0,
+      "critical_exit": 0,
+      "security": {
+        "mapped_files": 3,
+        "actual_python_rules": 151,
+        "matches": 0,
+        "errors": 0
+      },
+      "format": "Test formatter0;13 exact inherited desktop edit-line hunk fingerprints each side. Whole-format exits1, no whole-repo clean type/lint/format/security claim."
+    },
+    "source_maps": {
+      "source_checks": 22,
+      "map_names": [
+        "site",
+        "inventory",
+        "graph"
+      ],
+      "map_exits": [
+        0,
+        0,
+        0
+      ],
+      "resources": {
+        "source": {
+          "wall_time_s": 13.536860199994408,
+          "minimum_headroom_gib": {
+            "physical_gib": 11.121540069580078,
+            "commit_gib": 15.562458038330078
+          },
+          "peak_job_committed_bytes": 322084864,
+          "active_owned_processes_before_final_close": 0
+        },
+        "map": {
+          "wall_time_s": 2.4826113999588415,
+          "minimum_headroom_gib": {
+            "physical_gib": 11.745086669921875,
+            "commit_gib": 17.360889434814453
+          },
+          "peak_job_committed_bytes": 172146688,
+          "active_owned_processes_before_final_close": 0
+        }
+      }
+    },
+    "full": {
+      "command": "python scripts/check_all.py --output-dir <fresh>",
+      "exit": 0,
+      "modules": 100,
+      "reported": {
+        "tests": 2610,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "raw": 1594,
+      "aggregate_sha256": "1aaef137582e6dcc2b797d01a07a5aa8891dad12f0e9e7d8196ddbefb2a198fc",
+      "skip": [
+        {
+          "module": "test_native_closed_loop.xml",
+          "case": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c",
+          "message": "POSIX multicall-symlink regression runs in Linux CI; Windows actual native build is tested above"
+        }
+      ],
+      "warning": {
+        "actual_stdout_summary_blocks": 1,
+        "actual_stdout_category_occurrences": {
+          "RuntimeWarning": 1
+        },
+        "stderr_bytes": 0,
+        "exact_block_list_equal_accepted728": true,
+        "scope": "Observed Tcl finalizer RuntimeWarning remains unresolved; matching baseline is not a fix."
+      },
+      "resources": {
+        "stage_wall_s": 843.2143978000386,
+        "outer_wall_s": 843.2644304999849,
+        "minimum_headroom_GiB": {
+          "physical_gib": 9.898956298828125,
+          "commit_gib": 14.399276733398438
+        },
+        "peak_job_commit_bytes": 606711808,
+        "active_processes_before_final_close": 0
+      }
+    },
+    "package": {
+      "command": "build-env-python quality/run_package_runtime.py --output-dir <fresh> --desktop",
+      "exit": 0,
+      "reference": {
+        "wheel": {
+          "tests": 538,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "sdist": {
+          "tests": 538,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "artifacts": {
+        "wheel": {
+          "sha256": "3f4c07d193d449d6560934a989a5d0c59bd95468c34b036e97657f5d381f79f3",
+          "bytes": 4582141
+        },
+        "sdist": {
+          "sha256": "152dff8fafd5fa0b053a9afbcf50dd647df08930527e2987799a886d541837e6",
+          "bytes": 3671436
+        }
+      },
+      "resources": {
+        "stage_wall_s": 271.6876578000374,
+        "outer_wall_s": 271.7387368999771,
+        "minimum_headroom_GiB": {
+          "physical_gib": 10.151287078857422,
+          "commit_gib": 13.048656463623047
+        },
+        "peak_job_commit_bytes": 351109120,
+        "active_processes_before_final_close": 0
+      }
+    },
+    "frozen": {
+      "command": "build-env-python scripts/build_windows.py --skip-tests --output-dir <fresh>",
+      "exit": 0,
+      "checks": {
+        "original": 22,
+        "copied": 23
+      },
+      "routes": [
+        0,
+        2,
+        1,
+        1
+      ],
+      "route_order": [
+        "saved record",
+        "same-path alias",
+        "unsupported frame",
+        "unsupported units"
+      ],
+      "artifacts": {
+        "LapSim.exe": {
+          "sha256": "6136882bd11ad4dedd1d4fc3aff20cb7d0ba0f10224395ee4f90233d440df6ec",
+          "bytes": 79361651
+        },
+        "LapSim-Windows-x64.zip": {
+          "sha256": "eca89ccbe81dc7fe430e417b7a7419f631b08a76e4a29397a634e882bc3996a0",
+          "bytes": 87256309
+        }
+      },
+      "suite": "Skipped/null/noXML; separately passed full100 above. No rebuild at later docs/main.",
+      "resources": {
+        "outer_wall_s": 96.72682350000832,
+        "minimum_headroom_GiB": {
+          "physical_gib": 11.22793960571289,
+          "commit_gib": 15.188289642333984
+        },
+        "active_processes_before_final_close": 0
+      }
+    }
+  },
+  "runtime": {
+    "python": "3.13.15",
+    "source_numpy": "2.5.4",
+    "declared_build_lock_numpy": "2.5.3",
+    "build_lock_distributions": 26,
+    "wheel_sdist_observed_numpy": {
+      "wheel": "2.5.3",
+      "sdist": "2.5.3"
+    },
+    "bootstrap_observed": {
+      "numpy": "2.5.4",
+      "fonttools": "4.67.0",
+      "pillow": "13.0.0"
+    },
+    "scope": "Normal bootstrap resolves independently; declared inputs match, not cross-recipient numerical traces."
+  },
+  "retained_history": [
+    "Published PR118 head426 had14 passing applicable checks and one Native4 failure at a test-only empty-provenance-warning assertion. Real native dirty-source RED1 reproduced it; no GREEN or implementation defect was inferred.",
+    "S changes only that test: one genuine replay report is captured, numerical mismatch remains empty and the reported replay including warnings equals its genuine result. Dirty GREEN9 passed; warnings are not suppressed.",
+    "Missing-helper RED9 had2 new failures and7 old passes.",
+    "First catalog quality retained B023x2 and failed test formatting; source repair binds loop values and applies only new formatter recommendations.",
+    "An unchanged98-cell atomic fixture is distinct from the392-cell catalog positive and40-cell rejected generic grid; metadata scope correction retained without project rerun."
+  ],
+  "limits": [
+    "Prior imported receipt remains byte-identical. These fresh source/artifacts identify fa3c4c5; later docs/head/main do not rebuild them. Prior f4b artifacts stay historical.",
+    "Private scratch report IDs/hashes describe observed round trips; deleted lap payloads are not reconstructed. Standard fast-model calculations/replays run, no fresh native3D physics.",
+    "The observed Tcl finalizer warning remains unresolved; exact raw streams are privately bound. Full JUnit/raw reports are not sanitized public artifacts.",
+    "E05 remains open for other built-in/fused recipient routes, ordinary picker and asynchronous Run. No calibration, hardware, performance, release or site publication claim."
+  ],
+  "local_evidence_sha256": {
+    "full": "741f2529e1f1d271c4d170d120aa0a619fac2000fc9ed927fbd65865df02978f",
+    "source_maps": "bd24492732ae74efe4f08a990f5bb137793b9533298f8f7ed101d0a1f3babce4",
+    "package": "787293ddf8d4c045650cf9161a49f8966897d888ac2de239d10b1817ccd5e646",
+    "frozen": "ec9aa84fd6b521d33481c1c25b1f1da086f41caa62e21168d2ec5aaf3550fc99",
+    "source_stage": "2ff7f4f9490a99d7f7ace926677855bd9a0627f82cf0bf9f32cb8d507f26c586",
+    "focused9": "913883275ef926d779e04167124f9b913ee31991c72bf9c1f151dbc3300f7a76",
+    "quality3": "80ad69f6ef6131be03c91a12efac483e33013583fad0824d5c5a386cc6e1841e",
+    "inventory": "6f51499469ec279732968e251b6599d6f6c8f06623a2c0469e0fab7aa5eab54e",
+    "missing_helper_RED": "fc3d9bf94e50e64adad3ddefc67fd4f99cf9ed20e4382222d9ce2cf8b0564117",
+    "failed_quality": "e2d41e91e6b8b4f50c2cbc83f23ab6dde58f63314c48c55b9cacae9c1c43ef1c",
+    "dirty_native_RED": "6b0afa4bd61d5216f7e944808b44763dd874ad22b9e1d8d269faf373ba85a9d3",
+    "test_R2_proposal": "445317e25bca8688519a2ea8d1745a6e853938c0579c6d19da68c95a9cd95141",
+    "test_R2_source_review": "a3970b4b12b3848211ea9cae40dbe40042f381f57372a131c4eab2ab274419b2",
+    "record_scope_supplement": "a27de91b35a924121103af7424e9dac6242c84ada395199ded97f32951582fdc"
+  },
+  "finalization_scope": "Manifest-only successor; source/artifact S is distinct from future docs/head/main. Existing release/plan text stays unchanged. Historical inventory source review is reused; S maps ran --check, no regeneration claimed.",
+  "integration": null,
+  "postmerge": null
+}
