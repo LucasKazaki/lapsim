@@ -80,9 +80,8 @@ lifetime warning remains unresolved. The failed earlier GUI-fixture run is
 retained; only its world/SI claims and independently derived IDs changed for the
 successful fresh run. Installed, browser, source-map and copied-executable
 checks have their own recorded scope. The ZIP's older bundled full-suite report
-is not current acceptance evidence. Repairing build-owned verification
-attachments is the next bounded dependency; normal PR integration and local
-post-merge checks remain separate from this source acceptance.
+is outside that source acceptance; the separate build-owned verification
+follow-up below records its repair and later normal integration.
 
 PR #108's first hosted native shard later failed an unchanged initial-load wait.
 The test-only follow-up at `829df7d` removes the fault-injection fixture's
@@ -128,9 +127,13 @@ preserves the [PR #110 finding](https://github.com/LucasKazaki/lapsim/pull/110#d
 four red failures and failed style gate alongside passed targeted/global
 quality, existing debt and security warnings. Full pytest had no warning-summary
 blocks; PyInstaller's existing hidden-import warning is separate and the
-historical Tcl cause remains unresolved. Final map and normal successor
-PR/integration/postmerge results remain pending. Artifacts retain `6ed6153`,
-separate from future docs heads; raw JUnit privacy and release limits remain.
+historical Tcl cause remains unresolved. The normal successor
+[PR #111](https://github.com/LucasKazaki/lapsim/pull/111) merged at `13076f6`
+after 14 exact-head checks, with the complete tree equal to accepted `9bb6338`.
+Thirty post-merge contracts and all three source-map entrypoints passed; the
+separate local packaging acceptance record binds those checks. Artifacts retain
+`6ed6153`, separate from later documentation heads; raw JUnit privacy and
+release limits remain.
 
 The engine-free saved-pair API/CLI merged normally through
 [PR #99](https://github.com/LucasKazaki/lapsim/pull/99) at `591728b` for declared
@@ -159,6 +162,22 @@ source files and adds the shared exporter guard as an eighth, changing new
 recipe/calculation/receipt identities without rewriting historical reports or
 the seven saved native records. Native-three replay identity, physical-claim
 fingerprint and numerical criterion limits remain unchanged.
+
+The [claim-eligibility receipt](docs/research/evidence/chrono-native-comparison-claims-20261018.json)
+separates the isolated 71-case red/green contracts from combined candidate
+`a582eda`: 96 focused checks, a fresh 99-module sequence (2,487 reported / 1,477
+raw cases, one expected Windows POSIX-only skip), targeted five-file quality
+and the original global/inventory gates passed. The compiler case passed on
+local WSL; existing debt and structured security warnings remain in the receipt.
+Five ordinary saved-pair CLI routes also passed with their expected exits.
+The earlier `ecca1b3` attempt retains seven opaque plant-step presentation-fixture
+failures; their setup-only correction preserves assertions and opaque logging
+controls. At the same source, both installed wheel and source-distribution
+formats passed 538 reference cases, 13 saved-pair cases, three saved-record CSV
+conversions and all five comparison CLI routes with expected exits. The earlier
+`6ed6153` executable checks remain a separate scope. Normal API integration
+and post-merge checks remain separately tracked in
+[issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
 
 A further E16 follow-up exposes the saved-pair API from the existing native
 record viewer: one explicit-kind/second-file review window, read-only

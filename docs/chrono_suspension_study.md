@@ -293,6 +293,25 @@ logging reports whose compared observations are unchanged. Source-file counts
 are separate from the seven saved records in the dated native evidence; no
 historical record or report is rewritten.
 
+The [claim-eligibility receipt](research/evidence/chrono-native-comparison-claims-20261018.json)
+retains the isolated counterexamples and combined `a582eda` acceptance:
+96 focused cases and a fresh 99-module sequence passed (2,487 reported / 1,477
+raw cases, one expected Windows POSIX-only skip). Targeted five-file quality
+introduced no type or broad diagnostics; the original global/inventory and
+actual POSIX compiler gates passed with their recorded debt and coverage limits.
+Five ordinary source CLI routes passed, including fixed-reason rejection of
+matching unsupported claims and exact opaque logging comparison. The earlier
+seven presentation-fixture failures and setup-only repair remain retained.
+At the same source, both installed wheel and source-distribution formats
+passed the five comparison CLI routes, 538 reference cases, 13 saved-pair cases
+and three CSV conversions with input preservation. Their recorded eight-source
+recipes and report IDs agree with source checks; normal cleanup removed the
+installed prefixes, so retained archive bytes support those source receipts.
+These saved-record routes run no fresh native physics or native saved-study
+replay; legacy fast-model replays ran in the retained package gates. The earlier
+`6ed6153` executable checks are separate. Normal API integration and post-merge
+verification remain tracked separately in issue #19.
+
 This limited source scope is not a complete transitive environment fingerprint,
 an executable attestation or a fresh native test. Python, third-party packages
 and native binaries are outside it. The named native quality test is a reference,

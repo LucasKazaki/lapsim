@@ -1,0 +1,1247 @@
+{
+  "schema": "lapsim.native-comparison-claims-evidence.v1",
+  "status": "DRAFT_LOCAL_ACCEPTANCE_COMPLETE_INTEGRATION_PENDING",
+  "draft_as_of_utc": "2026-10-18T06:11:23.663022+00:00",
+  "scope": "Passive saved-record claim eligibility and limited eight-source comparison recipe, with closed local source and installed wheel/sdist acceptance at a582eda. No fresh PyChrono physics, native saved-study replay, calibration, release or normal API integration/postmerge is established.",
+  "candidate": {
+    "source": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+    "tree": "d748b257f0626ad48b92c19e3c25315bc6269990",
+    "normal_actual_main_reconciliation": {
+      "commit": "44cebe747810b212d79f6741c2f9144ca89ae8e2",
+      "parents": [
+        "ecca1b30bda453cdd645e928eb2660e471806fcb",
+        "13076f6170c14c74df03f32ba6c9998b62b56373"
+      ],
+      "tree_equals_ecca": true,
+      "actual_main_is_ancestor": true
+    },
+    "API_normal_main_integration": false
+  },
+  "behavior": {
+    "plant_step": "Exact supported world/SI labels required on each side before endpoint arithmetic. Matching unsupported labels retain inspection claims and fixed role/context reasons, with result null.",
+    "logging_period": "Matching opaque labels still permit exact stored timestamps and raw observation equality, without fixed-label endpoint quantities or physical meaning validation.",
+    "provenance": "Original seven source files retained; shared suspension_export guard is eighth. New recipe/report/receipt identities change; historical records/reports are not rewritten.",
+    "native_numerics": "Native-three replay scope, endpoint criterion thresholds, numerical operations and command/force clocks unchanged.",
+    "counts_scope": "Eight source FILES are separate from seven historical native saved RECORDS."
+  },
+  "source_hashes": {
+    "normalization": "CRLF to LF only",
+    "recipe8": {
+      "experiments/suspension_compare.py": "da4c27c3511c8dda8b47a44ec428b72720ec3751933419491942467e6702d0d2",
+      "experiments/suspension_study.py": "a228930bc9b15abb0fbc191fbc29b92a0e602973c5cf35374a1e3804664d0ffe",
+      "dynamics/native_plant.py": "de45a767e78cf393f354776dbc1ae51600b4558f9533e05d25d577c9d7b4c4c8",
+      "dynamics/chrono_vehicle.py": "dac1cab560b2ea6c19dafea98641a48071f1cf309331564ab3558f0e0422e670",
+      "experiments/dynamics_record.py": "edd2842d0b98c31b805fa5bb830238e66aeaceef9eea983fdd15da933fe25373",
+      "experiments/record_io.py": "32b68f49460f89b83244693b131e15dd7c23dfec36ee9ddca93bf4fd82368a91",
+      "experiments/basic_dynamics.py": "34ff3f7390d322ecb879a357cd53d03150ad0b94edd59608cbb08737625e3ff9",
+      "experiments/suspension_export.py": "975b58bc89efcb6e5c1a69aa363cd6d4db04a461692c3803802ea39731e62c82"
+    },
+    "targeted_current5": {
+      "src/lapsim/experiments/suspension_compare.py": "da4c27c3511c8dda8b47a44ec428b72720ec3751933419491942467e6702d0d2",
+      "tests/test_suspension_compare.py": "b3b4380cbae2c99ce0cff3901a7a9409d583caa69801ab83c4ae764bed5a5882",
+      "tests/test_suspension_compare_provenance.py": "186b895610c47c82199aae111405d227bdde31e4796b06670489e692e064f38f",
+      "tests/test_suspension_compare_claims.py": "92b0e783189cc5937d993990de98882861a917d3304a3d84ed3a9c84f7c70928",
+      "tests/test_native_comparison_presentation.py": "cab35438620ce8608b4a27f1ca26c6bab5465a2de6358422d6d5cc19b8ae1b33"
+    },
+    "scope": "Limited observed source closure, not transitive environment/executable attestation."
+  },
+  "closed_phases": {
+    "isolated_red": {
+      "source": "487a82eaae5c7d547fa8c6ead9056e3a2283d9f4",
+      "tree": "37024c572b26b134541ad73d0d202f50366574ef",
+      "status": "failed_expected_counterexamples",
+      "tests": 71,
+      "passes": 50,
+      "failures": 21,
+      "errors": 0,
+      "skips": 0,
+      "failure_categories": {
+        "explicit eighth recipe file not observed": 7,
+        "unsupported matching frame/unit was compared": 12,
+        "unsupported finite-extreme endpoint subtraction attempted": 2
+      },
+      "proof": "red",
+      "index": "red_index",
+      "scope": "Frozen tests before repair; comparison.main CLI cases are in-process calls, not external normal processes."
+    },
+    "isolated_green": {
+      "source": "a85a0c9855e8df2627519782ba20c66c44968a61",
+      "tree": "a5e6328026048fdf45b1802ab9be48b887fefa17",
+      "status": "passed",
+      "tests": 71,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "same_test_names_order_as_red": true,
+      "proof": "green",
+      "index": "green_index",
+      "scope": "Isolated source-focused checks only."
+    },
+    "failed_combined_ecca_full99": {
+      "source": {
+        "commit": "ecca1b30bda453cdd645e928eb2660e471806fcb",
+        "tree": "5c7a8bdfe038bc603661815c250e765c9bd0125a",
+        "status_porcelain": ""
+      },
+      "status": "FAILED_PARTIAL",
+      "actual_guard_exit": 1,
+      "resource_or_STOP_failure": false,
+      "accepted_prefix_modules": 48,
+      "observed_module_processes_reports": 49,
+      "failed_module": "test_native_comparison_presentation.py",
+      "failed_module_counts": {
+        "tests": 25,
+        "failures": 7,
+        "errors": 0,
+        "skipped": 0
+      },
+      "proof": "failed_ecca",
+      "index": "failed_ecca_index",
+      "scope": "Seven fixed-label analytic plant-step presentation fixtures retained opaque claims and correctly received no result. No complete99 acceptance; prefix48 cannot seed a new gate."
+    },
+    "presentation_setup_repair": {
+      "source": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+      "tree": "d748b257f0626ad48b92c19e3c25315bc6269990",
+      "only_changed_path": "tests/test_native_comparison_presentation.py",
+      "all_other_Git_entries_exact": 895,
+      "whole_module_inverse_AST_exact": true,
+      "all72_assertions_decorators_parameter_order_exact": true,
+      "eligibility_controls_and_opaque_logging_setup_retained": true,
+      "proof": "fixture_setup",
+      "scope": "Setup-only canonical plant-step labels and independently resealed IDs; no tolerance/assertion weakening."
+    },
+    "combined_focused96": {
+      "source": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+      "tree": "d748b257f0626ad48b92c19e3c25315bc6269990",
+      "status": "passed",
+      "reported": {
+        "tests": 96,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "raw": {
+        "testcases": 96,
+        "failure": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "module_counts": {
+        "tests.test_suspension_compare": 32,
+        "tests.test_suspension_compare_provenance": 22,
+        "tests.test_suspension_compare_claims": 17,
+        "tests.test_native_comparison_presentation": 25
+      },
+      "actual_pytest_exit": 0,
+      "actual_wrapper_exit": 0,
+      "warning_summary_blocks": 0,
+      "stderr_bytes": 0,
+      "resources": {
+        "wall_time_s": 11.135053300007712,
+        "minimum_headroom_gib": {
+          "physical_gib": 12.79608154296875,
+          "commit_gib": 18.0780029296875
+        },
+        "preflight_gib": {
+          "physical_gib": 10,
+          "commit_gib": 8.5
+        },
+        "runtime_floor_gib": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        },
+        "peak_owned_job_commit_bytes": 121593856,
+        "active_before_final_close": 0,
+        "scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed."
+      },
+      "preservation": {
+        "sources": 19,
+        "outputs": 29,
+        "actual_pytest_inputs": 153,
+        "aliases_excluded": 13,
+        "bytes_mtime_exact": true
+      },
+      "proof": "focused96",
+      "index": "focused96_index",
+      "XML": "focused96_XML",
+      "guard": "focused96_guard",
+      "actual_command_binding": "focused96_allocation",
+      "command_scope": "Exact argv retained in hash-bound local allocation/stage; no separate pytest-invocation JSON. Not full99 or external CLI acceptance."
+    },
+    "targeted5": {
+      "source": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+      "tree": "d748b257f0626ad48b92c19e3c25315bc6269990",
+      "status": "passed",
+      "baseline_main": "13076f6170c14c74df03f32ba6c9998b62b56373",
+      "current_files": 5,
+      "actual_baseline_files": 4,
+      "claims_absent_in_baseline": true,
+      "type": {
+        "current_errors": 26,
+        "current_warnings": 0,
+        "baseline_errors": 26,
+        "baseline_warnings": 0,
+        "all26_fingerprints_equal": true,
+        "zero_new": true,
+        "scope": "Current5 versus actual main4; claims absent in baseline and never copied. Additive to separate global src-only1e8 audit, not clean type certification."
+      },
+      "lint_format": {
+        "current_broad": 0,
+        "baseline_broad": 0,
+        "zero_new_broad": true,
+        "critical_exit": 0,
+        "current5_format_exit": 0,
+        "baseline4_format_exit": 0,
+        "new_claims_format_exit": 0
+      },
+      "security": {
+        "actual_exit": 0,
+        "exact_byte_mapped_files_observed_scanned": 5,
+        "rules_run": 151,
+        "matches": 0,
+        "top_level_errors": 0,
+        "time_fixpoint_timeout_metadata": [],
+        "all_raw_JSON_and_log_warning_context_preserved": true,
+        "scope": "Actual flat-copy scan of exact mapped bytes. Raw time.fixpoint_timeouts is empty, not a full scanner-warning census; no repository-path, complete security or complete taint coverage assertion."
+      },
+      "resources": {
+        "actual_exit": 0,
+        "state": "finished",
+        "stop_reason": null,
+        "wall_time_s": 31.55309150001267,
+        "headroom_before_gib": {
+          "physical_gib": 12.683025360107422,
+          "commit_gib": 18.10653305053711
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 10.682960510253906,
+          "commit_gib": 15.547615051269531
+        },
+        "preflight_floors_gib": {
+          "physical_gib": 10,
+          "commit_gib": 8.5
+        },
+        "running_floors_gib": {
+          "physical_gib": 8,
+          "commit_gib": 7
+        },
+        "maximum_s": 180,
+        "scope": "Recorded direct held child exit and Linux phase-group ownership; no kernel peak or active-zero census/isolated performance claim."
+      },
+      "commands": {
+        "receipts": 10,
+        "all_actual_argv_roots_exits_verified": true,
+        "pyright_actual_exits": [
+          1,
+          1
+        ],
+        "other_actual_exits": 0,
+        "helper_two_stage_strict_inverses_verified": true
+      },
+      "preservation": {
+        "sources": 19,
+        "outputs": 29,
+        "all_bytes_mtimes_exact": true
+      },
+      "proof": "targeted5",
+      "index": "targeted5_index",
+      "summary": "targeted5_summary",
+      "actual_commands_binding": "targeted5_commands",
+      "guard": "targeted5_guard",
+      "scope": "Original current5/main4 delta and exact mapped5 scan. No copying candidate claims into main; separate from global src-only1e8 audit."
+    },
+    "fresh_full_windows99": {
+      "source": {
+        "commit": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+        "tree": "d748b257f0626ad48b92c19e3c25315bc6269990",
+        "status_porcelain": ""
+      },
+      "status": "passed",
+      "actual_exit_zero_module_processes": 99,
+      "reported": {
+        "tests": 2487,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "raw": {
+        "testcase_elements": 1477,
+        "failure_elements": 0,
+        "error_elements": 0,
+        "skipped_elements": 1
+      },
+      "seeded_reports": false,
+      "aggregate_sha256": "6edd351ef53957187c354240fdd00ea1bffe8a88338f233c639ca7b642c1f664",
+      "aggregate_Windows_serialization_byte_exact": true,
+      "runtime_identity_sha256": "4898ddc0bb764ef9cc06479b719868be5782cee76513de5e7a900872bf3ca2c8",
+      "recorded_environment_sha256": "4475cb1a0514815dc648bb270e28375d9c2e081d719709fb0f8e5e54f41eb66f",
+      "environment_scope": "Recorded hash/relevant values/pip/tool/Tcl bytes verified; undisclosed full values not reconstructed or attested.",
+      "complete_sequences_exact": [
+        "comparison71",
+        "fixture96",
+        "presentation25",
+        "checker_then_snapshot30"
+      ],
+      "warnings": {
+        "stdout_bytes": 18371,
+        "stdout_sha256": "1f4637dd85893adf398e865a5c1dca372994a1b7a60de67e23e4188c55fe0365",
+        "pytest_warning_summary_blocks": 0,
+        "textual_warning_mentions": [],
+        "inherited_outer_stderr_bytes": 0,
+        "inherited_outer_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "pip_freeze_stderr_bytes": 0,
+        "scope": "Only retained actual outer stdout warning-summary text and inherited raw outer/pip stderr are counted. No separate per-module stderr disaggregation, hidden/filtered logger/native warning census, historical Tcl resolution or blanket warning-free/security claim."
+      },
+      "guard": {
+        "status": "passed",
+        "actual_exit": 0,
+        "wall_s": 1087.6725130000268,
+        "stage_wall_s": 1087.5812688999576,
+        "preflight_floors_gib": {
+          "physical_gib": 10,
+          "commit_gib": 8.5
+        },
+        "initial_headroom_gib": {
+          "physical_gib": 11.853160858154297,
+          "commit_gib": 16.718490600585938
+        },
+        "runtime_floors_gib": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 11.252605438232422,
+          "commit_gib": 16.348552703857422
+        },
+        "job_metrics_before_final_close": {
+          "peak_single_process_committed_bytes": 593027072,
+          "peak_job_committed_bytes": 613036032,
+          "total_processes": 3310,
+          "active_processes": 0,
+          "cpu_time_s": 1013.640625
+        },
+        "resource_scope": "Sampled whole-machine headroom and kernel job peak committed bytes; not physical working set or an isolated performance/deadline claim. Zero owned processes is the recorded final pre-close observation."
+      },
+      "preservation": {
+        "source_files": 19,
+        "outputs": 29,
+        "exact": true
+      },
+      "archive": {
+        "indexed_artifacts": 316,
+        "ZIP_members": 317,
+        "ZIP_sha256": "1e83753db16dd630597196cfec4a37c635cdf883d0f1c7f98ba64fb7786f1506",
+        "ZIP_bytes": 332065,
+        "receipt": "full99_archive_receipt",
+        "index": "full99_archive_index"
+      },
+      "root_proof": "full99_root_proof",
+      "independent_review": "full99_independent_review",
+      "aggregate": "full99_aggregate",
+      "guard_binding": "full99_guard",
+      "allocation": "full99_allocation",
+      "scope": "One fresh observed99 sequence using unchanged run_module/merge_reports and99 actual process exits0; not uninterrupted check_all CLI. One expected Windows POSIX-only skip; no historical Tcl resolution/blanket warning-free, native or release claim."
+    },
+    "original_global_source_inventory_POSIX": {
+      "source": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+      "tree": "d748b257f0626ad48b92c19e3c25315bc6269990",
+      "status": "passed",
+      "outcomes": {
+        "source_audit_exit": 0,
+        "inventory_check_exit": 0,
+        "posix_compiler_exit": 0
+      },
+      "strict_index": {
+        "sha256": "54a0200471c4319f923b36fc36a81f0c628c11768f0a7762bf71b7c29a92af0d",
+        "indexed_members_verified": 31,
+        "actual_regular_files_including_index": 32,
+        "membership_exact": true,
+        "all_original_bytes_mtimes_unchanged": true,
+        "external_captures4_and_allocation_outside_index": true,
+        "no_self_stdout_mismatch": true
+      },
+      "types": {
+        "scope": "Original src-only current versus actual1e8 baseline; no tests/scripts coverage claim.",
+        "current_errors": 241,
+        "current_warnings": 48,
+        "baseline_errors": 241,
+        "baseline_warnings": 48,
+        "all289_fingerprint_multisets_equal": true,
+        "zero_new": true
+      },
+      "lint_format": {
+        "critical_exit": 0,
+        "broad_diagnostics": 634,
+        "broad_exit": 1,
+        "format_files_would_reformat": 125,
+        "format_files_already_formatted": 101,
+        "format_exit": 1,
+        "scope": "Raw existing diagnostic debt retained. No clean broad lint/format or no-new-broad/format certification."
+      },
+      "security": {
+        "actual_exit": 0,
+        "scanned_files": 283,
+        "rules_run": 219,
+        "matches": 0,
+        "top_level_errors": 0,
+        "over1MB_skips": 4,
+        "ignore_pattern_skips": 101,
+        "fixpoint_warning_records": 8,
+        "exact_warning_file": "semgrep-exact-fixpoint-warning-records.json",
+        "exact_warning_sha256": "2dfec7944cdaca291c5ebae4f134c89b17137191403d748b2512ca874e2e633c",
+        "app_js_aggregate_rules": 2,
+        "app_js_first_named_rule": "typescript.react.security.audit.react-unsanitized-method.react-unsanitized-method",
+        "app_js_second_rule_identity": "unreported",
+        "scope": "All eight actual time.fixpoint_timeouts warn objects retained despite human log not printing them. Not complete warning census, full taint/security coverage or historical warning multiset equality. Original tracked/default/test exclusions remain."
+      },
+      "POSIX": {
+        "actual_exit": 0,
+        "tests": 1,
+        "passed": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "testcase": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c",
+        "XML_sha256": "1c78e2fd0e6e4bdb6fd9f00ef253cc7d84114e715c4b7ceb601a49f16a48314b"
+      },
+      "selected_tools": [
+        "pyright==1.1.414",
+        "pytest==9.1.1",
+        "ruff==0.17.0",
+        "semgrep==1.180.0"
+      ],
+      "resources": {
+        "actual_exit": 0,
+        "guard_state": "finished",
+        "stop_reason": null,
+        "wall_time_s": 71.56931849999819,
+        "fresh_headroom_gib": {
+          "physical_gib": 12.92071533203125,
+          "commit_gib": 18.146839141845703
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 10.3582763671875,
+          "commit_gib": 15.025222778320312
+        },
+        "fresh_floors_gib": {
+          "physical_gib": 10,
+          "commit_gib": 8.5
+        },
+        "runtime_floors_gib": {
+          "physical_gib": 8,
+          "commit_gib": 7
+        },
+        "scope": "Direct held child exit and Linux persistent phase-group wait/trap ownership; no kernel peak/active0 census or isolated performance claim."
+      },
+      "preservation": {
+        "source_files": 19,
+        "outputs": 29,
+        "exact": true
+      },
+      "metadata_correction": "Initial metadata assertion used historical100 ignore skips. Actual raw log reports101; failed precheck retained before copy/pass proof. No project/tool rerun, policy change or gate waiver.",
+      "proof": "global_independent_review",
+      "summary": "global_summary",
+      "strict_index_binding": "global_strict_index",
+      "guard": "global_guard",
+      "allocation": "global_allocation",
+      "preservation_index": "global_preservation_index",
+      "scope": "Original source-only1e8 audit, inventory --check and actual local POSIX compiler case. Retained634 broad/125 format files,8 structured fixpoint warnings,4large/101ignored paths. No clean broad/type/format, complete scanner-warning/taint/security or kernel-owned peak/census claim."
+    },
+    "current_genuine_normal_external_CLI": {
+      "source": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+      "tree": "d748b257f0626ad48b92c19e3c25315bc6269990",
+      "status": "passed",
+      "ordinary_module_commands": 5,
+      "ordered_routes": [
+        "plant-step",
+        "logging-period",
+        "unsupported-frame plant-step",
+        "unsupported-units plant-step",
+        "opaque logging-period"
+      ],
+      "actual_exits": [
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "identities": {
+        "recipe_files": 8,
+        "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966",
+        "canonical_reports": {
+          "plant-step": {
+            "report_id": "96b61a77e32849f3d800d5b358df4b8281af3a518d01f7796f19aa197b5dde71",
+            "receipt_id": "e48348fc6be05c0428722a47e15505e72ba5cea528f02f21fe88531d244fd896"
+          },
+          "logging-period": {
+            "report_id": "b5db0bf3ba4c47fe45dc048aeaf14a61f93803c443e74d8fc43864a1d86c6a53",
+            "receipt_id": "23d532690657b47be6d4a21036d70e58ba446958bfb2dc03f85023888821e0e1"
+          },
+          "unsupported-frame": {
+            "report_id": "9ddc79a81bf237df515163440d87160f822b664d17be99ffe09cb7a00ae40d1c",
+            "receipt_id": "699867bd6af4a9321af5ff4ba0dbdb847c3b1d40a0b062034d781e98266c97c7"
+          },
+          "unsupported-units": {
+            "report_id": "f83b71763f663d266510a93205c57ef884332fcb72cfcb9f5f610a7612fde8f0",
+            "receipt_id": "8db5d9fd538e8e2fd1e7d1ac6347643a32cc008ca63eb7abfa0f899e9b1441c4"
+          },
+          "opaque-logging": {
+            "report_id": "d2a875dee27f6a2288fe0f1f88b6ac1504f191c0c559cb52b022e53fab53ff3c",
+            "receipt_id": "c41ed7ff666fe54287899e083bfb639ee60f3011fa9f06833218b21e7d784aa9"
+          }
+        },
+        "original_and_derived_record_seals_recomputed": 9,
+        "all_report_projections_and_fullreceipt_IDs_recomputed": true
+      },
+      "independent_oracles": {
+        "endpoint_quantities": 6,
+        "all_four_springs_exact": true,
+        "final_force_arrays_completed_commands_and_all_five_clocks_exact": true,
+        "time_counts": {
+          "shared": 81,
+          "left_unmatched": 320,
+          "right_unmatched": 80
+        },
+        "all_shared_whole_observations_equal": true,
+        "criterion_six_saved_claim_limits_independently_recomputed": true
+      },
+      "claim_controls": {
+        "matching_unsupported_frame_and_units_fixed_role_reasons_and_null_results": true,
+        "no_claim_echo": true,
+        "equal_opaque_logging_result_exact_original": true,
+        "initial_five_clocks_nulls_retained": true,
+        "six_variants_only_intended_claims_plus_derived_IDs_change": true
+      },
+      "preservation": {
+        "regular_files": 85,
+        "original_inputs": 3,
+        "derived_inputs": 6,
+        "source_files": 19,
+        "recipe_files": 8,
+        "prior_user_outputs": 29,
+        "original_before_after_and_copy_bytes_hash_mtime_exact": true,
+        "all19_LF_source_bytes_match_immutable_Git": true
+      },
+      "guard": {
+        "actual_exit": 0,
+        "active_processes": 0,
+        "outer_wall_time_s": 7.205168299959041,
+        "peak_kernel_job_committed_bytes": 109273088,
+        "minimum_headroom_gib": {
+          "physical_gib": 11.492080688476562,
+          "commit_gib": 16.66659164428711
+        },
+        "fresh_preflight_floors_gib": {
+          "physical_gib": 10,
+          "commit_gib": 8.5
+        },
+        "actual_start_headroom_gib": {
+          "physical_gib": 11.592021942138672,
+          "commit_gib": 16.76543426513672
+        },
+        "running_floors_gib": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        }
+      },
+      "limitations": [
+        "Captured UTF-8 LF subprocess text, not raw pipe bytes",
+        "Guard kernel-job ownership covers the held commands; no child-import census",
+        "Static calculation on historical saved claims, not fresh native physics/native replay/convergence/calibration/authenticity validation",
+        "No project/helper execution during independent metadata review"
+      ],
+      "proof": "genuine_independent_review",
+      "index": "genuine_preservation_index",
+      "summary": "genuine_summary",
+      "actual_commands_binding": "genuine_commands",
+      "guard_binding": "genuine_guard",
+      "allocation": "genuine_allocation",
+      "scope": "Five actual normal source Python module CLI processes on three historical genuine saved records plus six independently resealed claim variants. Six endpoint quantities and own clocks are static saved-claim checks, not new native physics/replay/calibration or installed/frozen/main acceptance."
+    },
+    "current_installed_package": {
+      "source": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+      "tree": "d748b257f0626ad48b92c19e3c25315bc6269990",
+      "status": "passed",
+      "artifacts_published": false,
+      "archives": {
+        "wheel": {
+          "file": "python_lapsim-0.1.0-py3-none-any.whl",
+          "bytes": 4548320,
+          "sha256": "38f347ca46e84d342793d9ca6e0c31d77c33ca43307a73a41736c472006ab4e9",
+          "regular_file_members": 941,
+          "resource_files_verified": 835,
+          "identity_entry": "lapsim/_resources/build-info.json",
+          "layout_scope": "Installed resource bundle",
+          "build_source_sha256": "cb6207b9d1ef60f71a27dd8ab5971b5f53d068d0e47f2891d4637f9ebe8c266a"
+        },
+        "sdist": {
+          "file": "python_lapsim-0.1.0.tar.gz",
+          "bytes": 3640710,
+          "sha256": "3b425afe8b5911fcdd2da211414712e084a64c324aea42a7eacf1e25ccd3c478",
+          "regular_file_members": 843,
+          "resource_files_verified": 835,
+          "identity_entry": "python_lapsim-0.1.0/.lapsim-source-info.json",
+          "layout_scope": "Source snapshot manifest and original source paths; installed bundle generated by sdist build",
+          "build_source_sha256": "cb6207b9d1ef60f71a27dd8ab5971b5f53d068d0e47f2891d4637f9ebe8c266a"
+        }
+      },
+      "formats": {
+        "wheel": {
+          "reference_cases": 538,
+          "CSV": {
+            "drive": {
+              "csv_sha256": "2fb1fa4b118da9303cd0bda2f986180fbc256428bdeae08402f70bf8ef9705ac",
+              "columns": 100,
+              "counts": {
+                "metadata": 1,
+                "sample": 401,
+                "controller_event": 800
+              },
+              "exact_bytes_equal_accepted_source_all_cell_oracle": true
+            },
+            "half": {
+              "csv_sha256": "adbd9d4f75e21e6adef9ced0773f11f2c97749523349a7b1781b0ccdc6246d06",
+              "columns": 100,
+              "counts": {
+                "metadata": 1,
+                "sample": 401,
+                "controller_event": 800
+              },
+              "exact_bytes_equal_accepted_source_all_cell_oracle": true
+            },
+            "sparse": {
+              "csv_sha256": "1247eeec6c04ebaea8cde70e57216eee96be4db314de76d00383cb0485608262",
+              "columns": 100,
+              "counts": {
+                "metadata": 1,
+                "sample": 161,
+                "controller_event": 800
+              },
+              "exact_bytes_equal_accepted_source_all_cell_oracle": true
+            }
+          },
+          "alias_cases": 2,
+          "negative_desktop_cases": [
+            {
+              "claim": "frame",
+              "actual_exit": 1,
+              "sealed_input_sha256": "d78f2ebefcd7c0fe1b923ccfe1c13de6dfa19b151180e803620236d4d5a8e07b",
+              "content_id": "53b70df9c4562f0caf5406328f5092480da665324b2447fd17aee691311763a3",
+              "receipt_id": "ec69078f1634c41ee1829255fb7f48ffa4b5150b162f7ab2e2aa444f92af072b",
+              "failed_report_sha256": "fa19b6dcbe71512e41a5f7909806536f9767420c46e5abeb39bed4a54b0374cb",
+              "terminal_error": "RuntimeError: Native saved-record workflow failed: Open failed: Unsupported recorded frame for fixed world-frame plots",
+              "report_mtime_inside_actual_guard_interval": true
+            },
+            {
+              "claim": "units",
+              "actual_exit": 1,
+              "sealed_input_sha256": "397d28bd67156ef78d84d51fbcbcd92a7effd0effb24ac1a7d9c78cb80dcda5e",
+              "content_id": "c1c17d21a27144a81d54d52182f1a607e82e409565fb44d9489e47d01c6cba35",
+              "receipt_id": "8b506448f95a0548698baffe14d439e236f62dd611952e2dfc100f0fa365305e",
+              "failed_report_sha256": "45c608cc65aa0bb7f72044f47872320cf7d654cd52bb78337da4bb217e272ea3",
+              "terminal_error": "RuntimeError: Native saved-record workflow failed: Open failed: Unsupported recorded units for fixed SI plots",
+              "report_mtime_inside_actual_guard_interval": true
+            }
+          ],
+          "loaded_sources_inside_recorded_installed_prefix": true,
+          "recorded_installed_prefix_exists_after_cleanup": false,
+          "loaded_viewer_LF_sha256": "8d81cbc661ddf0f695bd940392a919183e991b19ff4c3e98a4625a1b6c41fd3b",
+          "loaded_exporter_LF_sha256": "975b58bc89efcb6e5c1a69aa363cd6d4db04a461692c3803802ea39731e62c82",
+          "normal_pair_cases": 13,
+          "configured_CLI_cases": 4,
+          "legacy_fast_model_replays": {
+            "bicycle": 2,
+            "components": 2
+          }
+        },
+        "sdist": {
+          "reference_cases": 538,
+          "CSV": {
+            "drive": {
+              "csv_sha256": "2fb1fa4b118da9303cd0bda2f986180fbc256428bdeae08402f70bf8ef9705ac",
+              "columns": 100,
+              "counts": {
+                "metadata": 1,
+                "sample": 401,
+                "controller_event": 800
+              },
+              "exact_bytes_equal_accepted_source_all_cell_oracle": true
+            },
+            "half": {
+              "csv_sha256": "adbd9d4f75e21e6adef9ced0773f11f2c97749523349a7b1781b0ccdc6246d06",
+              "columns": 100,
+              "counts": {
+                "metadata": 1,
+                "sample": 401,
+                "controller_event": 800
+              },
+              "exact_bytes_equal_accepted_source_all_cell_oracle": true
+            },
+            "sparse": {
+              "csv_sha256": "1247eeec6c04ebaea8cde70e57216eee96be4db314de76d00383cb0485608262",
+              "columns": 100,
+              "counts": {
+                "metadata": 1,
+                "sample": 161,
+                "controller_event": 800
+              },
+              "exact_bytes_equal_accepted_source_all_cell_oracle": true
+            }
+          },
+          "alias_cases": 2,
+          "negative_desktop_cases": [
+            {
+              "claim": "frame",
+              "actual_exit": 1,
+              "sealed_input_sha256": "d78f2ebefcd7c0fe1b923ccfe1c13de6dfa19b151180e803620236d4d5a8e07b",
+              "content_id": "53b70df9c4562f0caf5406328f5092480da665324b2447fd17aee691311763a3",
+              "receipt_id": "ec69078f1634c41ee1829255fb7f48ffa4b5150b162f7ab2e2aa444f92af072b",
+              "failed_report_sha256": "01d590ea5d610725b34752fb6e4f93c3ba87e2e658a999b5555d04849eff0032",
+              "terminal_error": "RuntimeError: Native saved-record workflow failed: Open failed: Unsupported recorded frame for fixed world-frame plots",
+              "report_mtime_inside_actual_guard_interval": true
+            },
+            {
+              "claim": "units",
+              "actual_exit": 1,
+              "sealed_input_sha256": "397d28bd67156ef78d84d51fbcbcd92a7effd0effb24ac1a7d9c78cb80dcda5e",
+              "content_id": "c1c17d21a27144a81d54d52182f1a607e82e409565fb44d9489e47d01c6cba35",
+              "receipt_id": "8b506448f95a0548698baffe14d439e236f62dd611952e2dfc100f0fa365305e",
+              "failed_report_sha256": "242ebb0cda0f6c0db9fe514ce7c75b49d0fe5791f9b3f5f7ce0430b5b4ee8318",
+              "terminal_error": "RuntimeError: Native saved-record workflow failed: Open failed: Unsupported recorded units for fixed SI plots",
+              "report_mtime_inside_actual_guard_interval": true
+            }
+          ],
+          "loaded_sources_inside_recorded_installed_prefix": true,
+          "recorded_installed_prefix_exists_after_cleanup": false,
+          "loaded_viewer_LF_sha256": "8d81cbc661ddf0f695bd940392a919183e991b19ff4c3e98a4625a1b6c41fd3b",
+          "loaded_exporter_LF_sha256": "975b58bc89efcb6e5c1a69aa363cd6d4db04a461692c3803802ea39731e62c82",
+          "normal_pair_cases": 13,
+          "configured_CLI_cases": 4,
+          "legacy_fast_model_replays": {
+            "bicycle": 2,
+            "components": 2
+          }
+        }
+      },
+      "comparison_normal_CLI_labels_each": [
+        "supported-plant-step",
+        "supported-logging-period",
+        "unsupported-frame",
+        "unsupported-units",
+        "opaque-logging"
+      ],
+      "comparison_normal_CLI_exits_each": [
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "comparison_IDs": {
+        "wheel": {
+          "plant-step": {
+            "report_id": "96b61a77e32849f3d800d5b358df4b8281af3a518d01f7796f19aa197b5dde71",
+            "receipt_id": "e48348fc6be05c0428722a47e15505e72ba5cea528f02f21fe88531d244fd896",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          },
+          "logging-period": {
+            "report_id": "b5db0bf3ba4c47fe45dc048aeaf14a61f93803c443e74d8fc43864a1d86c6a53",
+            "receipt_id": "23d532690657b47be6d4a21036d70e58ba446958bfb2dc03f85023888821e0e1",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          },
+          "unsupported-frame": {
+            "report_id": "9ddc79a81bf237df515163440d87160f822b664d17be99ffe09cb7a00ae40d1c",
+            "receipt_id": "699867bd6af4a9321af5ff4ba0dbdb847c3b1d40a0b062034d781e98266c97c7",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          },
+          "unsupported-units": {
+            "report_id": "f83b71763f663d266510a93205c57ef884332fcb72cfcb9f5f610a7612fde8f0",
+            "receipt_id": "8db5d9fd538e8e2fd1e7d1ac6347643a32cc008ca63eb7abfa0f899e9b1441c4",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          },
+          "opaque-logging": {
+            "report_id": "d2a875dee27f6a2288fe0f1f88b6ac1504f191c0c559cb52b022e53fab53ff3c",
+            "receipt_id": "c41ed7ff666fe54287899e083bfb639ee60f3011fa9f06833218b21e7d784aa9",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          }
+        },
+        "sdist": {
+          "plant-step": {
+            "report_id": "96b61a77e32849f3d800d5b358df4b8281af3a518d01f7796f19aa197b5dde71",
+            "receipt_id": "e48348fc6be05c0428722a47e15505e72ba5cea528f02f21fe88531d244fd896",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          },
+          "logging-period": {
+            "report_id": "b5db0bf3ba4c47fe45dc048aeaf14a61f93803c443e74d8fc43864a1d86c6a53",
+            "receipt_id": "23d532690657b47be6d4a21036d70e58ba446958bfb2dc03f85023888821e0e1",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          },
+          "unsupported-frame": {
+            "report_id": "9ddc79a81bf237df515163440d87160f822b664d17be99ffe09cb7a00ae40d1c",
+            "receipt_id": "699867bd6af4a9321af5ff4ba0dbdb847c3b1d40a0b062034d781e98266c97c7",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          },
+          "unsupported-units": {
+            "report_id": "f83b71763f663d266510a93205c57ef884332fcb72cfcb9f5f610a7612fde8f0",
+            "receipt_id": "8db5d9fd538e8e2fd1e7d1ac6347643a32cc008ca63eb7abfa0f899e9b1441c4",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          },
+          "opaque-logging": {
+            "report_id": "d2a875dee27f6a2288fe0f1f88b6ac1504f191c0c559cb52b022e53fab53ff3c",
+            "receipt_id": "c41ed7ff666fe54287899e083bfb639ee60f3011fa9f06833218b21e7d784aa9",
+            "recipe_id": "da7d2d2ad264e4b6ce60cbc113527e4083de39bca5880e50e9397918ee1ff966"
+          }
+        }
+      },
+      "eight_source_LF_hashes_equal_current_recipe": true,
+      "all_five_report_and_receipt_IDs_equal_genuine_source_CLI": true,
+      "original_package_gates_retained": true,
+      "non_ASCII_source_bootstrap_offline_repeat_sdist_identity_preserved": true,
+      "three_original_input_bytes_hash_mtime_IDs_preserved": true,
+      "preservation": {
+        "actual_files": 270,
+        "bytes": 73134283,
+        "source_files": 19,
+        "prior_user_outputs": 29,
+        "original_and_copy_bytes_hash_mtime_exact": true,
+        "actual_installed_prefixes_removed": 2,
+        "recorded_installed_source_files_absent_after_cleanup": 16,
+        "installed_files_reconstructed": false
+      },
+      "guard": {
+        "actual_exit": 0,
+        "maximum_wall_s": 900,
+        "outer_wall_s": 398.12555870000506,
+        "stage_wall_s": 398.06867459998466,
+        "fresh_floors_gib": {
+          "physical_gib": 10,
+          "commit_gib": 8.5
+        },
+        "actual_start_headroom_gib": {
+          "physical_gib": 13.03945541381836,
+          "commit_gib": 18.224910736083984
+        },
+        "running_floors_gib": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 12.082088470458984,
+          "commit_gib": 17.050334930419922
+        },
+        "job_metrics_before_final_close": {
+          "peak_single_process_committed_bytes": 303038464,
+          "peak_job_committed_bytes": 335003648,
+          "total_processes": 674,
+          "active_processes": 0,
+          "cpu_time_s": 260.125
+        },
+        "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed."
+      },
+      "runtime": {
+        "python": "3.13.15",
+        "build_interpreter": {
+          "bytes": 241152,
+          "sha256": "6975311631e93d9e28c5c209b4869b66d9283853211fea5acc4eef2b8b018eb9",
+          "mtime_ns": 1792126685171708500
+        },
+        "build_pyvenv_cfg": {
+          "bytes": 541,
+          "sha256": "a37d0cb5246e5276827e405054014c4de58f6a68ec4e5babb66ffd5aa2222fc3",
+          "mtime_ns": 1792212617278081700
+        },
+        "command_binding": "installed_allocation",
+        "scope": "Actual interpreter/pyvenv hashes, selected context and exact argv bound locally. Installed -I origins/source hashes are recorded; removed prefixes are not reconstructed. No full environment or child import census."
+      },
+      "metadata_validation_history": {
+        "initial_static_findings": 3,
+        "initial_findings_binding": "installed_initial_oracle_source_findings",
+        "initial_scope": "Unexecuted source-review findings, not a failed actual package run.",
+        "R2_all37_prior_route_assertions_retained": true,
+        "R2_route_assertions": 47,
+        "R2_review_binding": "installed_R2_oracle_source_review",
+        "only3_actual_closed_hash_literals_materialized": true,
+        "materialization_binding": "installed_oracle_pin_materialization",
+        "metadata_oracle_binding": "installed_materialized_metadata_oracle",
+        "proof": "installed_metadata_proof",
+        "independent_peer": "installed_independent_peer"
+      },
+      "warnings": {
+        "retained_log_files": 15,
+        "retained_log_pytest_warning_summary_blocks": 0,
+        "retained_log_warning_text_lines": 0,
+        "guard_stdout_bytes": 5033,
+        "guard_stderr_bytes": 0,
+        "scope": "Raw retained logs only; diagnostics wording/hidden or filtered logs not a complete warning census. CLI captures are normalized UTF8 LF per actual receipt."
+      },
+      "proof": "installed_metadata_proof",
+      "index": "installed_preservation_index",
+      "summary": "installed_summary",
+      "guard_binding": "installed_guard",
+      "allocation": "installed_allocation",
+      "independent_peer": "installed_independent_peer",
+      "scope": "Actual wheel/sdist installed checks at a582eda. Five normal comparison CLI routes in each format preserve supported quantities/clocks and reject unsupported plant-step claims or compare opaque logging. Original native C/reference/runtime/CSV/pair/configured CLI/bootstrap/offline checks remain. Legacy fast-model replays executed; no fresh PyChrono physics or native saved-study replay. Negative desktop routes are separate processes, not same-process recovery or child-import census. Capture hashes/dimensions alone do not certify appearance/accessibility. These archives are distinct from earlier 6ed6153 EXEs; no new frozen API, publication, release or normal integration acceptance."
+    },
+    "final_implementation_source_review": {
+      "source": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+      "tree": "d748b257f0626ad48b92c19e3c25315bc6269990",
+      "status": "clear_no_actionable_findings",
+      "proof": "final_implementation_review",
+      "scope": "Exact premerge source/AST inspection; eight added production lines, original numerical/clock/native3/replay and assertion scopes unchanged. Separate from runtime/hosted review."
+    }
+  },
+  "inherited_packaging": {
+    "PR": "https://github.com/LucasKazaki/lapsim/pull/111",
+    "accepted_head": "9bb6338499b183847e822a67296274beb1f175bf",
+    "normally_merged_main": "13076f6170c14c74df03f32ba6c9998b62b56373",
+    "tree": "ca696c938acb5be5b3618a39a0c8611b43126ea7",
+    "normal_merge": true,
+    "whole_tree_equal_accepted_head": true,
+    "exact_head_hosted_success": 14,
+    "postmerge_focused30": {
+      "tests": 30,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "postmerge_source_map_commands_exit0": 3,
+    "output_binding": "packaging111_output",
+    "historical_manifest_binding": "historical_portable_manifest",
+    "scope": "Earlier actual CB/6ed/full/skip build identities and limitations remain in unchanged packaging manifest. PR111/postmerge30 is inherited packaging context, not a fresh eight-source API package or installed test.",
+    "acceptance_record_privacy": "The separately bound output29 is a local packaging acceptance record containing absolute machine paths, not a sanitized public deliverable. The unchanged tracked portable manifest uses role-relative bindings."
+  },
+  "pending_phases": {
+    "API_normal_integration_postmerge": null
+  },
+  "pending_scope": "Final documentation/source-map validation, normal API PR/checks/integration and postmerge verification remain pending as of this local acceptance freeze. Historical/local premerge checks are not relabeled as actual main acceptance.",
+  "raw_bindings": {
+    "red": {
+      "role": "BACKEND",
+      "path": "work/comparison-claim-baseline-487a82e-preserved-20261017/independent-proof.json",
+      "sha256": "1c7cc7785402ee4f7cba90841e03c12ebf04402ae926112cfa50591da3d5bc9b",
+      "bytes": 20241
+    },
+    "red_index": {
+      "role": "BACKEND",
+      "path": "work/comparison-claim-baseline-487a82e-preserved-20261017/evidence-inventory.json",
+      "sha256": "eadad13b75e43b09d564ba1e25d6e2047744944f122d94d502f2108426779ad8",
+      "bytes": 128298
+    },
+    "green": {
+      "role": "BACKEND",
+      "path": "work/comparison-claim-green-a85a0c9-preserved-20261017/independent-proof.json",
+      "sha256": "dd4e4c1eb59df71c540a4a02f0a14c4a5e54c8bde35319b54d83db5de8cfbc41",
+      "bytes": 9577
+    },
+    "green_index": {
+      "role": "BACKEND",
+      "path": "work/comparison-claim-green-a85a0c9-preserved-20261017/evidence-inventory.json",
+      "sha256": "9b255d9409f8c8c681156ef29d6cb23d2c04228ef0f18b202d6421eccf4a4d08",
+      "bytes": 188367
+    },
+    "failed_ecca": {
+      "role": "BACKEND",
+      "path": "work/api99-ecca-failed-preserved-20261018/independent-proof.json",
+      "sha256": "a0f895e2d5d506f328da243d18792fcda6a57e562a58b104461a90bae8babda8",
+      "bytes": 41473
+    },
+    "failed_ecca_index": {
+      "role": "BACKEND",
+      "path": "work/api99-ecca-failed-preserved-20261018/inventory.json",
+      "sha256": "8fa904890112fa8480f5f8e559140b82463d464188a871c806535b6d768d5f44",
+      "bytes": 134817
+    },
+    "fixture_setup": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-fixture-application-independent-review-a582eda-20261018/independent-proof.json",
+      "sha256": "677297156a4f9dc9f8336bfb5adc614e99165a0758fed5fd17743e025ca45928",
+      "bytes": 1993
+    },
+    "focused96": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-fixture-focused96-a582eda-preserved-20261018/independent-proof.json",
+      "sha256": "b0c5f8d37e3641aca8690dbcdff804c1185e4899c4b669a8f71a2c9dceb4ad24",
+      "bytes": 5211
+    },
+    "focused96_index": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-fixture-focused96-a582eda-preserved-20261018/evidence-inventory.json",
+      "sha256": "a62d591ac8b1e6433554a817dd55cf0a487509ee47eed8d5d8d3629945e0653a",
+      "bytes": 101784
+    },
+    "focused96_XML": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-fixture-focused96-a582eda-20261018/focused.xml",
+      "sha256": "b23c9de0680f193082b324e70c7a39890de5a97456a5acfd3c2bf6d67d449923",
+      "bytes": 15478
+    },
+    "focused96_allocation": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-fixture-focused96-a582eda-20261018/root-allocation.json",
+      "sha256": "06fabacf9fea5ed01a120d7ce35e58a89742067afb29b312aaffe32318a64912",
+      "bytes": 12175
+    },
+    "focused96_guard": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/native-comparison-fixture-focused96-a582eda-attempt-1-job/summary.json",
+      "sha256": "828e49353addf03faad11f37867adb996b2170ab99736f3ae0c238259ef7e087",
+      "bytes": 2958
+    },
+    "targeted5": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/native-comparison-targeted5-a582eda-independent-proof.json",
+      "sha256": "c842a91248d2d9e0a840ebd9cf8a15eceabbbb5b51b545e637dd584732e1a5e3",
+      "bytes": 3414
+    },
+    "targeted5_index": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-targeted5-a582eda-independent-review-20261018/artifacts.json",
+      "sha256": "dfefda7509a0d2a8c226375d186e962e6360e458dd3b2c7a4f7d1f552d9c33a5",
+      "bytes": 32727
+    },
+    "targeted5_summary": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-presentation-targeted-quality-a582eda-20261018/native-comparison-presentation-targeted-a582eda-attempt-1/summary.json",
+      "sha256": "ab9bb62e80beecaa4492d44e7a8ba414e91593e034fb9f93c1042524baf57161",
+      "bytes": 8274
+    },
+    "targeted5_commands": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-presentation-targeted-quality-a582eda-20261018/native-comparison-presentation-targeted-a582eda-attempt-1/commands.json",
+      "sha256": "278a442709f48874cd05a408d0500e2177b6a2445338637b666d91bad0ca77af",
+      "bytes": 4419
+    },
+    "targeted5_guard": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-presentation-targeted-quality-a582eda-20261018/wsl-native-comparison-presentation-targeted-a582eda-attempt-1-command.json",
+      "sha256": "5d2c68fdbc952cd0b96d94f2a998d7f097c8e33885881310d68e471b433cc8d0",
+      "bytes": 2115
+    },
+    "targeted5_allocation": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-presentation-targeted-quality-a582eda-20261018/root-allocation.json",
+      "sha256": "4bec237590a5929b2e41aa31ced1dfe16bdd897f9b6d336e306dd33f959a2fcc",
+      "bytes": 11432
+    },
+    "packaging111_output": {
+      "role": "CURRENTCHAT",
+      "path": "outputs/portable-build-verification-13076f6-20261018.json",
+      "sha256": "56b098c4ce0abd61028c6988fd1fe03d5b3575cf3406371d2c8bc12e42478ae9",
+      "bytes": 31655
+    },
+    "historical_portable_manifest": {
+      "role": "BACKEND",
+      "path": "docs/research/evidence/portable-build-verification-20261017.json",
+      "sha256": "9929977a8f6fdc0ff358cfb44e78efb77efd4200072564383ff5e8e625390d81",
+      "bytes": 82648,
+      "hash_framing": {
+        "binding_sha256_scope": "Raw BACKEND checkout bytes, CRLF,82648B.",
+        "CRLF_to_LF_sha256": "88d877b05679b39ef654c9d1aa5a841b142fc3a1c185b8350a13ae651c896baa",
+        "Git_source": "13076f6170c14c74df03f32ba6c9998b62b56373",
+        "Git_blob_sha256": "88d877b05679b39ef654c9d1aa5a841b142fc3a1c185b8350a13ae651c896baa",
+        "Git_blob_bytes": 80881,
+        "PRIMARY_raw_binding": {
+          "role": "PRIMARY",
+          "path": "docs/research/evidence/portable-build-verification-20261017.json",
+          "sha256": "88d877b05679b39ef654c9d1aa5a841b142fc3a1c185b8350a13ae651c896baa",
+          "bytes": 80881
+        },
+        "scope": "PRIMARY raw and immutable Git bytes are LF. Original raw BACKEND binding remains unchanged; no tracked manifest bytes rewritten."
+      }
+    },
+    "full99_root_proof": {
+      "role": "PRIMARY",
+      "path": "work/detailed-study/comparison-full99-a582eda-independent-proof.json",
+      "sha256": "0787e4cd6087def9e0305c3e8bce4666eab76d781b8883addbbc60105df01957",
+      "bytes": 726394
+    },
+    "full99_independent_review": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-full99-a582eda-independent-review-20261018/independent-review.json",
+      "sha256": "f026007a3323866358e6f45a4dc1de507e578746fed3e579ebd41389680cb716",
+      "bytes": 8830
+    },
+    "full99_archive_receipt": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-observed-gate-a582eda-20261018/completed-archive-receipt.json",
+      "sha256": "30616dc55b2fb9d4be725e165abdab8fc168ce68670ba6be287b46a15e159408",
+      "bytes": 1323
+    },
+    "full99_archive_index": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-observed-gate-a582eda-20261018/completed-observed-gate/artifacts-sha256.json",
+      "sha256": "2d91d6b61d447c7b1a7213950498595e30001145eea0ee16a3ec45502b4ad91c",
+      "bytes": 56136
+    },
+    "full99_aggregate": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-observed-gate-a582eda-20261018/observed-gate/segment-1/test-results.xml",
+      "sha256": "6edd351ef53957187c354240fdd00ea1bffe8a88338f233c639ca7b642c1f664",
+      "bytes": 247676
+    },
+    "full99_guard": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/native-comparison-claim-full-a582eda-segment-1-job/summary.json",
+      "sha256": "3d840c66da9ed02b59531aa3eb37fe94fda1fa3d36fd94c2ba3cdc84e68f7207",
+      "bytes": 2895
+    },
+    "full99_allocation": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-observed-gate-a582eda-20261018/root-allocation.json",
+      "sha256": "3ca5aea7b61ffc45df97142d3dd37ec4931e799c5cac43771357bd272ab5c400",
+      "bytes": 11797
+    },
+    "global_independent_review": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/native-comparison-global-quality-a582eda-independent-proof.json",
+      "sha256": "34afac0a73d40712e2c5ed6f015757432ae3b7b3cf65c264f4f040056592c929",
+      "bytes": 4737
+    },
+    "global_strict_index": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-global-quality-a582eda-20261018/evidence-sha256.json",
+      "sha256": "54a0200471c4319f923b36fc36a81f0c628c11768f0a7762bf71b7c29a92af0d",
+      "bytes": 3015
+    },
+    "global_summary": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-global-quality-a582eda-20261018/wsl-gate-summary.json",
+      "sha256": "6a44395126d22020faef1f434a57755ffefa6e95f7da8489d3708af7ef95dd7b",
+      "bytes": 2667
+    },
+    "global_guard": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-global-quality-a582eda-20261018/wsl-gates-command.json",
+      "sha256": "58ad505974d6ec002f0d230455c5c25b08610dcce3815895c951ab7563f64b0c",
+      "bytes": 1699
+    },
+    "global_allocation": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/native-comparison-global-quality-a582eda-20261018-root-allocation.json",
+      "sha256": "3c26c247efff94c6721c28d87f385792384a7c93185af2107608a65fd1a2f606",
+      "bytes": 12500
+    },
+    "global_preservation_index": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-global-a582eda-independent-review-r2-20261018/artifacts.json",
+      "sha256": "58b2552982ac6ec93a15bac94817fdc1a1d6367be5abcd408534e696aff0fee8",
+      "bytes": 35410
+    },
+    "genuine_independent_review": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-genuine-a582eda-independent-review-20261018/independent-proof.json",
+      "sha256": "c9391e578e03a1928bbf45e30272573e40ad57af5c150ba557354ef73b69e6f1",
+      "bytes": 4321
+    },
+    "genuine_preservation_index": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-genuine-a582eda-independent-review-20261018/inventory.json",
+      "sha256": "15d661816849d5b8d679d6335210d0ac231fc270a9b0893167c2e45256e8ff40",
+      "bytes": 55728
+    },
+    "genuine_summary": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/comparison-claim-genuine-a582eda/summary.json",
+      "sha256": "f3a0832217f037568e723780484745747247d4abc5b50206dfea177f9b5db652",
+      "bytes": 21149
+    },
+    "genuine_commands": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/comparison-claim-genuine-a582eda/commands.json",
+      "sha256": "d12e1a1051940ffb67b7c43898a32ec76fa18b1230a0a24238da18e93533392a",
+      "bytes": 4914
+    },
+    "genuine_guard": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/comparison-claim-genuine-a582eda-attempt-1-job/summary.json",
+      "sha256": "59346e4e03d384ccc27ca8107378e6bedf2e82abe962ad61cd8efe404398aa13",
+      "bytes": 3460
+    },
+    "genuine_allocation": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-genuine-a582eda-preparation-20261018/root-allocation.json",
+      "sha256": "5fa269ee864074216ffe769c57e0ce0a166f0494badaf2815e32688646360a6c",
+      "bytes": 2381
+    },
+    "installed_metadata_proof": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-installed-a582eda-preserved-20261018/independent-proof.json",
+      "sha256": "476e511d857b644c4b8d9d4323b434b5137a5426f02c2420d146f2b49d21c6bb",
+      "bytes": 31949
+    },
+    "installed_preservation_index": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-installed-a582eda-preserved-20261018/evidence-inventory.json",
+      "sha256": "9c64d200428ad70c3f0dacae245ce61412ad05e64e3c0f3fabe67a49faa46959",
+      "bytes": 120790
+    },
+    "installed_independent_peer": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-installed-a582eda-peer-review-20261018/acceptance-review.json",
+      "sha256": "730101acddab206e56a9ac148a0fbac464cfa8820f63a853aeab461a4caecc95",
+      "bytes": 6004
+    },
+    "installed_summary": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/package-comparison-claims-a582eda-attempt-1/summary.json",
+      "sha256": "3875702cd7aefce6201f62b62c1e5582dd2fa4555359e1f9a10cca8b9e39547c",
+      "bytes": 98263
+    },
+    "installed_guard": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/package-comparison-claims-a582eda-attempt-1-job/summary.json",
+      "sha256": "60a259f81b9cc26ebae14e8e83084c4bac71b296f7365fd9e74edb0c12ce2037",
+      "bytes": 3395
+    },
+    "installed_allocation": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-installed-a582eda-preparation-20261018/root-allocation.json",
+      "sha256": "59b876aa3093b1e29da0e2b9258f42226ee9cf39a5bedd45f03e4a793bc07405",
+      "bytes": 12724
+    },
+    "installed_wheel_archive": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/package-comparison-claims-a582eda-attempt-1/artifacts/python_lapsim-0.1.0-py3-none-any.whl",
+      "sha256": "38f347ca46e84d342793d9ca6e0c31d77c33ca43307a73a41736c472006ab4e9",
+      "bytes": 4548320
+    },
+    "installed_sdist_archive": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/package-comparison-claims-a582eda-attempt-1/artifacts/python_lapsim-0.1.0.tar.gz",
+      "sha256": "3b425afe8b5911fcdd2da211414712e084a64c324aea42a7eacf1e25ccd3c478",
+      "bytes": 3640710
+    },
+    "installed_initial_oracle_source_findings": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-installed-oracle-static-review-20261018/findings-c90c7b98.json",
+      "sha256": "c669c32d88987114e76e0ca2f5011abb933b471b6e095638fef54c2e0360f348",
+      "bytes": 3048
+    },
+    "installed_R2_oracle_source_review": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-installed-oracle-static-review-20261018/clear-r2-4bd6e0db.json",
+      "sha256": "c46b428dcee24717b2b140be3e29bbe81b819890323902e07fd5f414b6cb6702",
+      "bytes": 2180
+    },
+    "installed_oracle_pin_materialization": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-installed-closed-validation-a582eda-20261018/materialization.json",
+      "sha256": "13e76794caf9afd4139029be8317e22fde42057764953ac72077e5658090840a",
+      "bytes": 1361
+    },
+    "installed_materialized_metadata_oracle": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-claim-installed-closed-validation-a582eda-20261018/verify.py",
+      "sha256": "ab7523a22e10a8e562d9209fa6acaffcd8cc8f711b0a59008a0e94eab203aee0",
+      "bytes": 57067
+    },
+    "final_implementation_review": {
+      "role": "BACKEND",
+      "path": "work/native-comparison-final-implementation-review-a582eda-20261018/final-review.json",
+      "sha256": "7ed067d9117ecca7ee7834bc7184d7f16dbb510c7056bf82b158213fe2a60b91",
+      "bytes": 9003
+    }
+  },
+  "privacy_scope": "This draft embeds logical relative role/hash bindings only. Bound local acceptance records/raw evidence may contain absolute machine paths and remain local; those contents are not embedded here. No raw telemetry/assets/logs, hostname or unrelated environment values copied."
+}
