@@ -394,6 +394,24 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
         # Test-only observation prevents modal hangs; no native-dialog claim.
         dialog_errors.append((title, str(message)))
 
+    def observe_terminal() -> None:
+        observer_threads.add(threading.get_ident())
+        finished = bool(worker_threads) and all(
+            not thread.is_alive() for thread in worker_threads
+        )
+        if (
+            finished
+            and (
+                not app.run_in_progress
+                or timed_out
+                or callback_errors
+                or cleanup_requested
+            )
+        ) or ((timed_out or callback_errors) and not run_attempted):
+            root.quit()
+        else:
+            root.after(10, observe_terminal)
+
     monkeypatch.setattr(root, "report_callback_exception", callback_failed)
     monkeypatch.setattr(app_module.messagebox, "showerror", observe_error)
     try:
@@ -519,24 +537,6 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
                 allow_nan=False,
             ).encode()
         ).hexdigest()
-
-        def observe_terminal() -> None:
-            observer_threads.add(threading.get_ident())
-            finished = bool(worker_threads) and all(
-                not thread.is_alive() for thread in worker_threads
-            )
-            if (
-                finished
-                and (
-                    not app.run_in_progress
-                    or timed_out
-                    or callback_errors
-                    or cleanup_requested
-                )
-            ) or ((timed_out or callback_errors) and not run_attempted):
-                root.quit()
-            else:
-                root.after(10, observe_terminal)
 
         def deadline() -> None:
             nonlocal timed_out
