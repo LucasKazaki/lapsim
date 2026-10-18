@@ -23,6 +23,7 @@ from uuid import uuid4
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.events.endurance import EnduranceRunConfig, EnduranceRunResult
 from lapsim.profiles import ResolvedManifest, snapshot_vehicle_config
+from lapsim.resources import _io_path
 from vehicle_model import Vehicle
 
 
@@ -327,7 +328,9 @@ class RunRecord:
 
         destination = Path(path).expanduser().resolve()
         destination.parent.mkdir(parents=True, exist_ok=True)
-        temporary = destination.with_name(f"{destination.name}.{uuid4().hex}.tmp")
+        temporary = _io_path(
+            destination.with_name(f"{destination.name}.{uuid4().hex}.tmp")
+        )
         try:
             content = json.dumps(
                 self.to_dict(), indent=2, ensure_ascii=False, allow_nan=False,

@@ -65,6 +65,8 @@ Windows GUI subsystem, an ordinary interactive PowerShell invocation may return
 before self-test finishes. `Start-Process -Wait -PassThru` above waits and exposes
 the completed process's exit code.
 
+`--self-test` also imports a public synthetic circular course at two requested cell sizes. It verifies the resulting 32-cell and 128-cell grids, saved inputs and replay through the desktop calculation path. These GUI checks use temporary course, profile and run storage. The report retains hashes and IDs; its scratch lap files are removed when the test finishes.
+
 Self-test is software evidence. It does not establish real-car accuracy or
 surveyed course boundaries. The complete repository tests and the packaged
 smoke workflow are described in [verification](verification.md).
