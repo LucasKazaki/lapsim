@@ -9,6 +9,7 @@ from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Straight, Track
 from lapsim.solvers.path_constraints import PathConstraintSolver
 from vehicle_model import Vehicle
+from vehicle_model.powertrain import Drivetrain
 
 
 @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf"), True])
@@ -195,8 +196,10 @@ def test_uint64_maximum_passes_converges_on_first_pass_without_overflow() -> Non
     value: Any = np.uint64((1 << 64) - 1)
     solver = PathConstraintSolver(maximum_passes=value)
     vehicle = Vehicle()
+    assert isinstance(vehicle.drivetrain, Drivetrain)
     vehicle.drivetrain.configured_speed_limit_mps = 1.0
     reference_vehicle = Vehicle()
+    assert isinstance(reference_vehicle.drivetrain, Drivetrain)
     reference_vehicle.drivetrain.configured_speed_limit_mps = 1.0
     reference = PathConstraintSolver(maximum_passes=1).solve(track, reference_vehicle)
     assert reference.passes == 1
