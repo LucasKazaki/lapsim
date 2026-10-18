@@ -1040,17 +1040,23 @@ An auxiliary AI path record identifies its own `eligible_lap_time_s`, `diagnosti
 `PathConstraintSolver` requires `maximum_passes`, `maximum_entry_iterations`,
 and `steady_state_iterations` to be nonboolean, positive `numbers.Integral`
 values. Accepted ordinary and NumPy integer scalar objects are retained
-without coercion; booleans and floating-point values are rejected. The
-constructor defaults remain **500/40/50**, and the desktop settings remain
+without coercion; booleans and floating-point values are rejected. The pass
+loop uses `operator.index(maximum_passes)` to obtain a Python integer before
+adding one for the exclusive `range` bound. The stored object is unchanged;
+the bound arithmetic avoids legacy NumPy promotion and fixed-width overflow.
+The constructor defaults remain **500/40/50**, and the desktop settings remain
 **120/20/24**, in that order. Archival loading through `RunRecord.load` remains
 inspectable for intact records with malformed finite counts. Executable
 `replay_lap_record` instead reports a field-specific `ValueError` beginning
-`saved path constraint settings are invalid` before solver work. This is
-configuration validation: the numerical loops and vehicle models are
-unchanged, with no optimization, performance, or native-backend claim.
+`saved path constraint settings are invalid` before solver work. Solver
+equations, configured iteration limits and vehicle models are unchanged;
+this boundary repair makes no performance or physical-validation claim.
 
-The [verification manifest](research/evidence/path-iteration-count-validation-20261018.json)
-records the regression, full-suite and diagnostic evidence for this contract.
+The historical [count-validation manifest](research/evidence/path-iteration-count-validation-20261018.json)
+retains the regression, full-suite and diagnostic evidence for `b27b280`.
+The separate [integer-execution manifest](research/evidence/path-iteration-integer-execution-20261018.json)
+records the follow-up execution boundary and its specific runtime evidence,
+rather than a complete supported-version matrix.
 
 The `LapReplayReport` separately states `model_agreement`, completion, saved/replayed sample counts, named per-output maximum absolute errors and limits, `mismatch_reasons`, and `provenance_warnings`. It checks summary driving/lap time, start/end speed, net pack energy and final SOC; the aligned sample time, station, speed, and next path-speed ceiling traces; and exact agreement of the six recorded control traces and any available tire-grip trace. Default absolute limits are **0.01 s** for time, **0.01 m/s** for speed, **1e-5 kWh** for energy, **1e-5** for SOC, and **1e-8 m** for station; control and grip traces use zero tolerance. The limits can be supplied explicitly with `LapReplayTolerances`; they measure numerical agreement, not prediction accuracy. The checker does not compare every component telemetry channel. An incomplete/misaligned record, malformed explicit grip conditions, unsupported model snapshot, missing explicit AI start speed, or v1 schema is rejected; a modeled rerun that stops or disagrees returns a structured failed report. It compares saved/current source commit, dirty flags, Python/platform, and selected dependency versions as provenance warnings independently of numerical agreement. Exact agreement on a dirty checkout is still numerically possible, while a clean but different code version can disagree. This operation requires a Python environment with the model and may take a full lap solve; the desktop has no replay-check button.
 

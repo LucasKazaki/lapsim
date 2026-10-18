@@ -1,0 +1,496 @@
+{
+  "schema": "lapsim.path-iteration-integer-execution.evidence.v1",
+  "status": "CLOSED_LOCAL_ACCEPTANCE_SNAPSHOT_BEFORE_FINAL_DOCUMENTATION_MAP_AND_NORMAL_INTEGRATION",
+  "scope": "Executable integer-count boundary: actual closed runtime, full-suite, quality and inventory evidence at the recorded sources.",
+  "historical_manifest": {
+    "path": "docs/research/evidence/path-iteration-count-validation-20261018.json",
+    "sha256": "fa4b328fdad47fd6a356fd75bbc283c3ce7e1264f59d4bdc82c867d565d64268",
+    "scope": "Unchanged constructor/replay evidence at its original roles; positive retention alone did not establish executable uint64 bounds."
+  },
+  "source_roles": {
+    "prior_reviewed_boundary": {
+      "commit": "63b78a69a607aa7de311b8ee7b48fdcbd0846307",
+      "tree": "3523c52afdf710c5e6c16049f4793983150a6f8c"
+    },
+    "frozen_RED": {
+      "commit": "70f7c6eaecf30c8fbffca8a4d776ee2e2b32d1a9",
+      "tree": "368649fb76a37bd1c1d10a8e8a5a4057cca8f18c"
+    },
+    "index_fix_and_prior176": {
+      "commit": "85318a97dc473ae2edb3882fb25ef9a93abbf62d",
+      "tree": "690583b4fdc3ab26bab7576dcfd50038852c5c35"
+    },
+    "fixture_guards_final148_quality": {
+      "commit": "231dff6b199219a64b279d276e80ad1eab8402b9",
+      "tree": "4f62868d0626ec99cbf71965f5cfe14a99104763"
+    },
+    "catalog_and_full_candidate": {
+      "commit": "a7f681c6a1f036deae70fc7fcbfb5ef873f01b09",
+      "tree": "09ae1c399777abe382400f536b83c5707d63bfd1"
+    }
+  },
+  "motivation": {
+    "review": "https://github.com/LucasKazaki/lapsim/pull/114#discussion_r4306618512",
+    "declared_dependency": "numpy>=1.26",
+    "actual_scalar_probe": {
+      "binding": "scalar_probe",
+      "python": "3.12.15",
+      "numpy": "1.26.4",
+      "scipy": "1.14.1",
+      "uint64_5_plus_1_stop": "float64(6.0)",
+      "original_range": "TypeError"
+    },
+    "background": [
+      "https://numpy.org/neps/nep-0050-scalar-promotion.html",
+      "https://numpy.org/doc/2.0/numpy_2_0_migration_guide.html"
+    ],
+    "scope": "Official scalar-promotion context explains version sensitivity. The local probe and real solver RED establish the exact NumPy1.26 counterexample."
+  },
+  "repair": {
+    "delta": "Import operator.index; range(1, index(self.maximum_passes) + 1).",
+    "production_LF_sha256": "09a619cdbdcc25c58c9959db14f7fd216a9ee39cb5b95668140fe15be5207c53",
+    "scope": "Only the exclusive bound becomes a Python integer before adding one. Stored Integral objects, validation/defaults, numerical solver body and vehicle models remain unchanged; no added cap.",
+    "regressions": "12 real stadium solves: int/int32/int64/uint64 at 5 across three fields, exact same-runtime int-reference constraints and retained identity. A two-semicircle uint64-max fixture first proves ordinary-int convergence on pass1, then requires exact candidate agreement."
+  },
+  "closed_phases": {
+    "RED70f": {
+      "binding": "RED_peer",
+      "results": [
+        {
+          "runtime": "primary",
+          "tests": 148,
+          "failures": 1,
+          "errors": 0,
+          "skips": 0,
+          "stdout_warning_blocks": 1,
+          "stderr_bytes": 0
+        },
+        {
+          "runtime": "numpy126",
+          "tests": 148,
+          "failures": 2,
+          "errors": 0,
+          "skips": 0,
+          "stdout_warning_blocks": 0,
+          "stderr_bytes": 0
+        }
+      ],
+      "old135_pass_and_order_exact": true,
+      "added_each": 13,
+      "primary": "Only uint64-max fails: +1 wraps, no pass executes, RuntimeError plus scalar-add overflow warning.",
+      "numpy126": "At5 and uint64-max maximum_passes fail: +1 produces float64; range raises TypeError.",
+      "actual_guard_and_pytest_exit_each": 1,
+      "closed_active0_each": true
+    },
+    "prior_GREEN853": {
+      "binding": "GREEN176_peer",
+      "results": [
+        {
+          "runtime": "primary",
+          "tests": 176,
+          "failures": 0,
+          "errors": 0,
+          "skips": 0,
+          "stdout_warning_blocks": 0,
+          "stderr_bytes": 0
+        },
+        {
+          "runtime": "numpy126",
+          "tests": 176,
+          "failures": 0,
+          "errors": 0,
+          "skips": 0,
+          "stdout_warning_blocks": 0,
+          "stderr_bytes": 0
+        }
+      ],
+      "scope": "148 contract/replay +28 progress/grip/grid cases. The 28 remain scoped853, not a claimed176 run on231."
+    },
+    "failed_quality853": {
+      "binding": "failed853_quality",
+      "actual_exit": 1,
+      "types_current_baseline": [
+        13,
+        11
+      ],
+      "new": "Two fixture reportAttributeAccessIssue occurrences at protocol-typed drivetrain speed-cap assignments; retained as failed."
+    },
+    "fixture231": {
+      "binding": "fixture_guards",
+      "delta": "Concrete Drivetrain import and two positive isinstance guards before existing assignments; prior assertions/parameters retained.",
+      "test_LF_sha256": "43a4ef08ae68ae91db0d690d3a0b20c38b7c5f2b2281dc208a07a92000f1b27e"
+    },
+    "final_GREEN231": {
+      "binding": "GREEN148_peer",
+      "results": [
+        {
+          "runtime": "primary",
+          "tests": 148,
+          "failures": 0,
+          "errors": 0,
+          "skips": 0,
+          "stdout_warning_blocks": 0,
+          "stderr_bytes": 0
+        },
+        {
+          "runtime": "numpy126",
+          "tests": 148,
+          "failures": 0,
+          "errors": 0,
+          "skips": 0,
+          "stdout_warning_blocks": 0,
+          "stderr_bytes": 0
+        }
+      ],
+      "148_ids_order_exact_to_respective_RED": true,
+      "prior28_reference": "GREEN176_peer",
+      "prior28_not_rerun_here": true,
+      "production_extra_modules_and_runtimes_exact_to853": true,
+      "actual_guard_and_pytest_exit_each": 0,
+      "closed_active0_each": true
+    },
+    "final_quality231": {
+      "binding": "final231_quality",
+      "actual_exit": 0,
+      "fixed_baseline": "d2482bd435c37ede3c2e97ef0edc6d4c6452bbf1",
+      "types_current_baseline": [
+        11,
+        11
+      ],
+      "broad_current_baseline": [
+        1,
+        1
+      ],
+      "new_fingerprints": 0,
+      "critical_exit": 0,
+      "formatter_groups_current_baseline": [
+        94,
+        94
+      ],
+      "introduced_or_missing_groups": 0,
+      "whole_and_changed_tests_format_exit": 1,
+      "mapped_security": {
+        "binding": "security_raw_scope",
+        "actual_Python_rules": 151,
+        "files": 3,
+        "findings": 0,
+        "errors": 0
+      },
+      "scope": "Existing diagnostic/format debt retained; mapped files have rule/path/context limits, not a complete security/import census."
+    },
+    "inventory231": {
+      "binding": "inventory231_peer",
+      "generator_exit": 0,
+      "actual_Git_sources": 102,
+      "artifact_sha256": "83b4eb669b0807836326b7ebae1ee11a8ad11ff6137000f137d2d54c726cac90",
+      "scope": "Ordinary unchanged generator on immutable Git231 input mirror; root application separate."
+    },
+    "map_a7": {
+      "summary": "map_a7_summary",
+      "guard": "map_a7_guard",
+      "exits": [
+        0,
+        0,
+        0
+      ],
+      "catalog_sha256": "83b4eb669b0807836326b7ebae1ee11a8ad11ff6137000f137d2d54c726cac90",
+      "bytes_mtime_preserved": true,
+      "scope": "Site, inventory --check and Node graph only; no browser, simulation, build or publication."
+    }
+  },
+  "full_suite": {
+    "status": "CLOSED_PASSED",
+    "source_role": "catalog_and_full_candidate",
+    "command": "python scripts/check_all.py --output-dir <fresh-directory>",
+    "actual_check_all_process_exit": 0,
+    "modules": 99,
+    "reported_totals": {
+      "tests": 2586,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "raw_testcase_count": 1576,
+    "reported_minus_raw": 1010,
+    "reported_raw_note": "JUnit reported checks include successful unittest subtests; raw testcase elements are counted separately.",
+    "all_old_module_ID_orders_exact_after_only13_new_case_removal": true,
+    "all148_focused_IDs_and_within_module_order_exact": true,
+    "aggregate_reconstructed_exact_bytes": true,
+    "XML_sha256": "e4707925253e701b0372aafc6bc5e5acb69a38b4ee491f3c12061721a2aaf824",
+    "skip": [
+      {
+        "module": "test_native_closed_loop.xml",
+        "case": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c",
+        "message": "POSIX multicall-symlink regression runs in Linux CI; Windows actual native build is tested above"
+      }
+    ],
+    "warning": {
+      "actual_stdout_summary_blocks": 1,
+      "actual_stdout_category_occurrences": {
+        "RuntimeWarning": 1
+      },
+      "stderr_bytes": 0,
+      "raw_stdout_sha256": "4aaada1115123b2d4e2cd23234dcb65eb70868d209b803bf69b10a06b2a4f1e0",
+      "raw_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prior_b27_stdout_summary_blocks": 1,
+      "exact_block_list_equal_prior_b27": true,
+      "same_three_warning_input_Git_blobs": [
+        {
+          "path": "tests/test_native_comparison_viewer.py",
+          "Git_LF_sha256": "1a2b4c5dfb6762e6897fe082153533e9822890f1eb9ff1311be8cbc7bfc84a19",
+          "same_b27_current": true
+        },
+        {
+          "path": "src/lapsim/ui/native_record_viewer.py",
+          "Git_LF_sha256": "8d81cbc661ddf0f695bd940392a919183e991b19ff4c3e98a4625a1b6c41fd3b",
+          "same_b27_current": true
+        },
+        {
+          "path": "src/lapsim/experiments/run_record.py",
+          "Git_LF_sha256": "e1f21dcbf574a878ed900bd220674d95def61a7307d8dc152a1c50ba395f3581",
+          "same_b27_current": true
+        }
+      ],
+      "scope": "Retain every actual block and exact raw streams. Prior unresolved Tcl warning remains historical even if this run emits none; no causality/lifecycle/frequency/zero-global-warning claim. No extensive historical search or new execution."
+    },
+    "resources": {
+      "status": "passed",
+      "active_processes_before_final_close": 0,
+      "stage_wall_s": 1056.2882422999828,
+      "outer_wall_s": 1056.347973899974,
+      "peak_job_commit_bytes": 605605888,
+      "minimum_headroom_GiB": {
+        "physical_gib": 11.410369873046875,
+        "commit_gib": 16.03188705444336
+      },
+      "scope": "Actual unchanged kernel-owned metrics; no unrelated-process census or fabricated99 exit receipts."
+    },
+    "native_recipe_LF_unchanged": true,
+    "outputs31_bytes_hash_mtime_exact": true,
+    "bindings": [
+      "full_peer",
+      "full_XML",
+      "full_allocation",
+      "full_guard",
+      "full_plan"
+    ],
+    "scope": "Ordinary isolated-module runner on the recorded primary runtime. Individual 99 subprocess-exit receipts and a full NumPy1.26 suite are not claimed."
+  },
+  "controls": {
+    "one_project_job": true,
+    "pools": 1,
+    "fresh_GiB": {
+      "physical": 10,
+      "commit": 8.5
+    },
+    "running_GiB": {
+      "physical": 8,
+      "commit": 7
+    },
+    "scope": "Focused kernel-owned jobs; targeted WSL direct held child/Linux watcher. No unrelated-process census or physical working-set peak claim."
+  },
+  "limits": [
+    "Runtime coverage is limited to the recorded combinations; it is not a complete supported-version matrix.",
+    "Raw evidence uses relative roles and hashes in this public projection; retained private logs contain ordinary machine metadata.",
+    "Historical count-validation evidence remains byte-exact at its original sources. The failed 853 type check and its two fixture findings remain recorded.",
+    "The detailed backend sources and eight recipe sources are unchanged. No fresh detailed 3D study, rebuilt package, calibration, physical validation, hardware timing or performance-adoption result is claimed.",
+    "The historical Tcl cleanup warning remains unresolved; actual full-run warnings are recorded above without a lifecycle or frequency conclusion.",
+    "This snapshot precedes final documentation-map verification and normal integration. A later integration receipt records PR, merge and literal-main postmerge gates."
+  ],
+  "raw_bindings": [
+    {
+      "role": "scalar_probe",
+      "root_role": "backend",
+      "path": "work/numpy126-compat-setup-20261018/runtime-probe-stdout.txt",
+      "bytes": 926,
+      "sha256": "5c855725a7b372b8f8d95cf073775c22fd38a8118bb3161ca9503b8239d3e60c"
+    },
+    {
+      "role": "RED_peer",
+      "root_role": "backend",
+      "path": "work/e14-integral-count-reds-70f7c6e-independent-preserved-r2-20261018/independent-proof.json",
+      "bytes": 23319,
+      "sha256": "31c331be1d804c5a85aac1b88dfba39478b4c60be2ca11601f553af18715b48a"
+    },
+    {
+      "role": "production_application",
+      "root_role": "backend",
+      "path": "work/path-count-integral-solve-cycle-20261018/production-application.json",
+      "bytes": 588,
+      "sha256": "e19c4060b1e9dba034b9f5e94caf137bcf9ed4b093a8cb6f3085a1aff31f03ae"
+    },
+    {
+      "role": "GREEN176_peer",
+      "root_role": "backend",
+      "path": "work/e14-integral-count-greens-85318a9-independent-preserved-20261018/independent-proof.json",
+      "bytes": 4613,
+      "sha256": "748ea14668f424bc53f268f873d6eabf3b623f910914e4929f3090454ba948d5"
+    },
+    {
+      "role": "failed853_quality",
+      "root_role": "backend",
+      "path": "work/e14-integral-count-quality-853-failed-preserved-20261018/independent-proof.json",
+      "bytes": 5763,
+      "sha256": "63598a858d142dee03db0812ed5233382f65d5ac4e68bed617266ff2fd503ca1"
+    },
+    {
+      "role": "fixture_guards",
+      "root_role": "backend",
+      "path": "work/path-count-integral-solve-cycle-20261018/concrete-fixture-type-guards.json",
+      "bytes": 691,
+      "sha256": "e80db2f4b61ae56bb11de8cd9fe58f673d33442edbbcd7e956be6b3fd6ae06d5"
+    },
+    {
+      "role": "GREEN148_peer",
+      "root_role": "backend",
+      "path": "work/e14-integral-count-greens-231dff6-independent-preserved-20261018/independent-proof.json",
+      "bytes": 4999,
+      "sha256": "b36707bbfd0fa3505017c505ba0534936ea2d7f00e3c467dbcc9ae8a98409c1b"
+    },
+    {
+      "role": "final231_quality",
+      "root_role": "backend",
+      "path": "work/e14-integral-count-quality-231-passed-preserved-20261018/independent-proof.json",
+      "bytes": 4946,
+      "sha256": "78b19e52a62b4239f5609331f7c7e66792f0c9a16202e04c1d82e62272797863"
+    },
+    {
+      "role": "security_raw_scope",
+      "root_role": "backend",
+      "path": "work/e14-path-count-targeted-quality-integral-231dff6-20261018/changed-path-count-integral-231dff6-attempt-1/mapped-security.log",
+      "bytes": 807,
+      "sha256": "f0ca931c233f289a473fdd260c79c4f77740d0ab08d1891257a4a4fb3df098ad"
+    },
+    {
+      "role": "inventory231_peer",
+      "root_role": "backend",
+      "path": "work/integral-map231-peer-20261018/independent-proof.json",
+      "bytes": 4355,
+      "sha256": "35d8ca101e9e3473c7a6bd95dcaccdcaecef1866f161565217f549183b42048a"
+    },
+    {
+      "role": "catalog_application",
+      "root_role": "backend",
+      "path": "work/path-count-integral-solve-cycle-20261018/catalog-application.json",
+      "bytes": 528,
+      "sha256": "3b47fd79f8d7519e51611ed62b67a615e04c66b08ce7c97319f0e89e2667f869"
+    },
+    {
+      "role": "map_a7_summary",
+      "root_role": "backend",
+      "path": "work/detailed-study/cli-static-map-a7f681c/summary.json",
+      "bytes": 2352,
+      "sha256": "e31f5b99c555d8ad002e2a2ff789c1a392e403ca8b3d2f7344a5abf3eada4366"
+    },
+    {
+      "role": "map_a7_guard",
+      "root_role": "backend",
+      "path": "work/detailed-study/integral-count-map-check-a7f681c-attempt-1-job/summary.json",
+      "bytes": 2728,
+      "sha256": "ad9aa42efd1c1cb38278f7368d6d285d493f89c3e9224cc7286f346a8567afad"
+    },
+    {
+      "role": "full_peer",
+      "root_role": "backend",
+      "path": "work/e14-solver-count-successor-full-a7f681c-independent-preserved-20261018/independent-proof.json",
+      "bytes": 59259,
+      "sha256": "e71950a5d52c862d70c03c20266d8bc9c900e6d0aecdb61e9a036785f6e86c9d"
+    },
+    {
+      "role": "full_XML",
+      "root_role": "backend",
+      "path": "work/e14-solver-count-successor-full-a7f681c-20261018/check-all/test-results.xml",
+      "bytes": 265296,
+      "sha256": "e4707925253e701b0372aafc6bc5e5acb69a38b4ee491f3c12061721a2aaf824"
+    },
+    {
+      "role": "full_allocation",
+      "root_role": "backend",
+      "path": "work/e14-solver-count-successor-full-a7f681c-20261018/root-allocation.json",
+      "bytes": 55700,
+      "sha256": "245b9d8541c6578369028c74e95821913d10d23b45d12e59486f4dd0c487d222"
+    },
+    {
+      "role": "full_guard",
+      "root_role": "backend",
+      "path": "work/detailed-study/e14-solver-count-successor-full-a7f681c-attempt-1-job/summary.json",
+      "bytes": 2834,
+      "sha256": "d882a4790177da27131af13a4aad54387d79848ccc4447e1bc7c36ea12fbb130"
+    },
+    {
+      "role": "full_plan",
+      "root_role": "backend",
+      "path": "work/e14-solver-count-successor-full-preparation-r3-20261018/plan.json",
+      "bytes": 10407,
+      "sha256": "84df3c5c3d44de46eb960152991002343744ee6016472d93c70a3932b238abe1"
+    },
+    {
+      "role": "environment_setup_peer",
+      "root_role": "backend",
+      "path": "work/np126-setup-peer-20261018/independent-proof.json",
+      "bytes": 16387,
+      "sha256": "e9738b73ce9c0b6d18a343b7e32550ba7d75b2eadbbf381634ec313f41b8ed86"
+    },
+    {
+      "role": "independent_source_review",
+      "root_role": "backend",
+      "path": "work/path-count-integral-solve-r2-independent-source-review-20261018/typed-successor-clear.json",
+      "bytes": 1009,
+      "sha256": "0120275f1247431d11409a0a1cfd4fd40c917ce89649acc2160b2df4c5acf9f9"
+    },
+    {
+      "role": "reviewed_documentation_proposal",
+      "root_role": "backend",
+      "path": "work/path-iteration-integer-execution-docs-proposal-20261018/proposal.json",
+      "bytes": 2395,
+      "sha256": "50a72d3dd71a99391473161baec2b13ffc17af29e8d6e3d2bb4fbb1d395d9f2c"
+    }
+  ],
+  "runtimes": {
+    "primary": {
+      "python": "3.13.15",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "packages": {
+        "pytest": "9.1.1",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "matplotlib": "3.11.2",
+        "openpyxl": "3.1.5",
+        "defusedxml": "0.7.1"
+      },
+      "execution_device": "CPU"
+    },
+    "numpy126": {
+      "python": "3.12.15",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "packages": {
+        "pytest": "9.1.1",
+        "numpy": "1.26.4",
+        "scipy": "1.14.1",
+        "matplotlib": "3.11.2",
+        "openpyxl": "3.1.5",
+        "defusedxml": "0.7.1"
+      },
+      "execution_device": "CPU"
+    }
+  },
+  "reproduction": {
+    "focused_each_recorded_runtime": "python -m pytest -q -rs --capture=sys tests/test_path_constraint_convergence.py tests/test_lap_replay.py --basetemp <fresh-directory> --junitxml <fresh-report.xml>",
+    "maps": [
+      "python scripts/check_flowchart_site.py",
+      "python docs/simulator_flowchart/generate_inventory.py --check",
+      "node scripts/check_flowchart_data.mjs"
+    ],
+    "runtime_note": "Use the recorded isolated runtime and single numerical-library threads; the setup peer binds the official wheel report and complete freeze."
+  },
+  "documentation_projection": [
+    {
+      "path": "docs/engineering_handoff.md",
+      "Git_LF_sha256": "6b88253ca8ba7069645ab1e4c7cd23866984ed2eb9f31d6c8bcbe6e45656bca7"
+    },
+    {
+      "path": "ENME408_IMPLEMENTATION_PLAN.md",
+      "Git_LF_sha256": "5562ed047c1945a032ccc2414af7349bc3a4b57cd00035b252787b6e3bad33df"
+    }
+  ]
+}
