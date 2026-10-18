@@ -534,3 +534,58 @@ def test_own_verification_does_not_contaminate_real_git_source_identity(
     if sibling is not None:
         assert (sibling.read_bytes(), sibling.stat().st_mtime_ns) == sibling_before
     assert_build_inputs_preserved(build)
+
+
+@pytest.mark.parametrize("skip", (False, True), ids=("full", "skip"))
+@pytest.mark.parametrize("descendant", (False, True), ids=("assets", "descendant"))
+def test_output_in_asset_staging_is_rejected_before_mutation(
+    archive_build, capsys, skip, descendant
+):
+    build = archive_build
+    assets = build.root / "build/assets"
+    staging_sentinel = assets / "existing/staging-sentinel.bin"
+    staging_sentinel.parent.mkdir(parents=True)
+    staging_sentinel.write_bytes(b"existing asset bytes must survive refusal\n")
+    source_sentinel = build.root / "README.md"
+    source_sentinel.write_bytes(b"existing source bytes must survive refusal\n")
+    input_sentinel = build.root / "work/supplied-record.json"
+    input_sentinel.write_bytes(b"existing input bytes; never loaded\n")
+    build.output = assets / "release" if descendant else assets
+    assert build.output.exists() is (not descendant)
+    # Exercise real staging in this test's temporary source root; retain the
+    # fixture's full-suite/PyInstaller/copied-EXE external-command stubs.
+    build.real_stage_assets = True
+
+    def snapshot():
+        files = {
+            path.relative_to(build.root).as_posix(): (
+                path.read_bytes(),
+                path.stat().st_mtime_ns,
+            )
+            for path in build.root.rglob("*")
+            if path.is_file()
+        }
+        directories = {
+            path.relative_to(build.root).as_posix()
+            for path in build.root.rglob("*")
+            if path.is_dir()
+        }
+        return files, directories
+
+    before = snapshot()
+    try:
+        with pytest.raises(SystemExit) as rejected:
+            build.invoke(skip=skip)
+        assert rejected.value.code == 2
+        assert "Output directory must be outside asset staging tree" in (
+            capsys.readouterr().err
+        )
+    finally:
+        # Also retain the independent preservation oracle if an old builder
+        # reaches staging and raises for an unrelated missing fixture asset.
+        assert snapshot() == before
+        assert build.output.exists() is (not descendant)
+        assert build.calls == []
+        assert build.test_commands == []
+        assert build.portable_commands == []
+        assert_build_inputs_preserved(build)

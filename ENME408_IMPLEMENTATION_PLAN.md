@@ -1,6 +1,6 @@
 # ENME408 implementation and team-delivery plan
 
-Updated: **17 October 2026**. Tracking: [issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
+Updated: **18 October 2026**. Tracking: [issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
 
 **Status, 16 October implementation:** the consolidated main baseline includes
 the controller source closure, source/resource repairs and the real dynamic
@@ -12,7 +12,7 @@ PR/issue state before treating a candidate as merged. Public release and site
 deployment are deferred by the owner; physical PIL remains unavailable. The
 contracts below retain the acceptance work and staged future scope.
 
-## Active local native-backend cycle (16–17 October 2026)
+## Active local native-backend cycle (16–18 October 2026)
 
 The owner's new continuous engineering request supersedes the completed window
 below. The old coordinator released its lease and its scheduler remains paused;
@@ -135,6 +135,23 @@ separate local packaging acceptance record binds those checks. Artifacts retain
 `6ed6153`, separate from later documentation heads; raw JUnit privacy and
 release limits remain.
 
+A separate E04 follow-up at `5466c65` rejects output equal to or below
+resolved `ROOT/build/assets`, for full and skipped builds, with exit 2 before
+output/evidence creation or test/generator/staging work. Four retained RED cases
+became 34 passing focused contracts with the old 30 unchanged. Targeted four-file
+quality has zero new type/broad findings against fixed `1153e7c`; critical,
+checker format and mapped security passed, with existing debt retained. The
+normal build completed 99 fresh reports (2,491 reported / 1,481 raw cases,
+zero failures/errors, one expected POSIX-only skip on Windows). Full and separate
+skipped builds each passed 20 original and 21 copied checks and command exits
+0/2/1/1; skipped verification attaches no XML or suite totals. Full
+and skipped-build independent preservation reviews passed.
+All three map entrypoints passed. The [dated receipt](docs/research/evidence/portable-output-assets-20261018.json)
+keeps the artifacts and limits distinct; original `a582eda` global/POSIX evidence
+is reused only for unchanged scope. Artifacts retain `5466c65`; no new native
+physics. Normal integration and post-merge verification are tracked separately
+in [issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
+
 The engine-free saved-pair API/CLI merged normally through
 [PR #99](https://github.com/LucasKazaki/lapsim/pull/99) at `591728b` for declared
 plant-step or logging-period comparisons. It checks recorded physical/source
@@ -175,9 +192,12 @@ failures; their setup-only correction preserves assertions and opaque logging
 controls. At the same source, both installed wheel and source-distribution
 formats passed 538 reference cases, 13 saved-pair cases, three saved-record CSV
 conversions and all five comparison CLI routes with expected exits. The earlier
-`6ed6153` executable checks remain a separate scope. Normal API integration
-and post-merge checks remain separately tracked in
-[issue #19](https://github.com/LucasKazaki/lapsim/issues/19).
+`6ed6153` executable checks remain a separate scope. Normal
+[PR #112](https://github.com/LucasKazaki/lapsim/pull/112) merged at `cb91a82`
+after 16 exact-head checks, with the complete tree equal to accepted `944d19e`.
+On merged main, 96 focused checks, five genuine CLI routes and all three map
+entrypoints passed; their separate local API acceptance record binds those results.
+Installed archives retain `a582eda`; this adds no fresh native solver claim.
 
 A further E16 follow-up exposes the saved-pair API from the existing native
 record viewer: one explicit-kind/second-file review window, read-only
@@ -354,6 +374,8 @@ Refresh these against live GitHub before making changes. A dated SHA is an audit
 |---|---|---|
 | LapSim main at the original October 14 handoff | `466f612f88bcaf9fe88f61e1e1ccfafed540245d` | Historical integrated application |
 | LapSim main refreshed October 17 for packaging acceptance | `1153e7cfddd0ddc2467236b1403cc23b61f11a6e` | Viewer follow-up integrated normally through [#109](https://github.com/LucasKazaki/lapsim/pull/109), with actual local post-merge desktop checks |
+| LapSim main refreshed October 18 after API claim eligibility | `cb91a82b4cce4266581439963cac30d778a0c877` | PR #112 merged normally, tree equal to accepted `944d19e`; actual merged-main 96 focused, five genuine CLI and three map checks passed |
+| E04 output/staging overlap local candidate, October 18 | `5466c657bfaa4e06db8ed5f72ef572a5b597bc62` | Focused34, targeted4, map3 and actual full99/separate skip passed; full and skip peers clear; integration tracked separately |
 | Viewer frame/unit local acceptance source, October 17 | `caa51fa62c00dd180548071e3b986fd58d471345` | Tested source; PR integration and post-merge verification tracked separately |
 | Viewer renderer test-fixture follow-up, October 17 | `829df7d8ea12ad42c85f4bc05f2cca180f2f4e79` | Fresh focused86/full98; runtime unchanged, prior hosted failure and Tcl warning retained; Normally integrated through PR #109; original PR #108 closed as superseded |
 | [LapSim #13](https://github.com/LucasKazaki/lapsim/pull/13) | `24698ed5e590f2d2e0d6bfa51a78c5446e436928` | Torque-replay viewer, based on main |

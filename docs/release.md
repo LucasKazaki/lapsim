@@ -106,6 +106,10 @@ of the same final checkout:
 .\build_lapsim.cmd --output-dir C:\path\to\release
 ```
 
+`--output-dir` must resolve outside the repository's `build/assets` tree,
+including every descendant. Both full and `--skip-tests` builds reject overlap
+with exit 2 before output/evidence creation, tests, inventory generation or staging.
+
 Each invocation keeps a fresh `verification-*` directory beneath its output,
 including on a failed or missing full-suite report. Its local
 `full-suite-invocation.json` records the literal test command before execution
@@ -151,11 +155,32 @@ The separate local packaging acceptance record contains absolute paths; it is
 not a sanitized public deliverable. These artifacts keep source `6ed6153`,
 with raw-JUnit privacy and internal-only publication limits unchanged.
 
+At `5466c65`, four retained overlap RED cases became 34 passing focused
+contracts with the original 30 unchanged. Targeted four-file quality introduced
+no type/broad findings against fixed main `1153e7c`; critical, checker format
+and mapped security passed, with whole-file format debt retained. The actual
+normal build completed 99 fresh reports (2,491 reported / 1,481 raw cases,
+zero failures/errors, one expected POSIX-only skip on Windows). Full and separate
+skipped builds each completed 20 original and 21 copied checks and command exits
+0/2/1/1. Full and skipped-build independent preservation reviews passed.
+The skipped receipt has null suite command/report and
+attaches no XML or totals, while preserving all 1,748 full-build copies.
+The [dated evidence](research/evidence/portable-output-assets-20261018.json)
+binds the distinct artifacts, guard measurements and unchanged global-scope
+reuse. Normal integration and post-merge verification are tracked separately in
+[issue #19](https://github.com/LucasKazaki/lapsim/issues/19). Raw-JUnit privacy,
+PyInstaller warning and historical Tcl limits remain; no release or fresh native
+solver claim.
+
 The [comparison claim receipt](research/evidence/chrono-native-comparison-claims-20261018.json)
 separately binds wheel/source-distribution acceptance at `a582eda`, including
 five saved-record comparison CLI routes per format. Those archives are not
-published and do not replace the earlier `6ed6153` executable checks. Normal
-API integration and post-merge verification are tracked separately.
+published and do not replace the earlier `6ed6153` executable checks.
+[PR #112](https://github.com/LucasKazaki/lapsim/pull/112) merged normally at
+`cb91a82` after 16 exact-head checks, with its tree equal to accepted `944d19e`.
+Merged-main 96 focused checks, five genuine CLI routes and three map entrypoints
+passed; their separate local acceptance record is not a sanitized public artifact.
+The installed archives keep `a582eda`, with no fresh native solver claim.
 
 Frozen read-only resources resolve through `lapsim.resources.repository_root()`
 to the extraction root's `bundle` directory. Source runs resolve to the checkout.

@@ -1,0 +1,707 @@
+{
+  "schema": "lapsim.portable-output-assets-evidence.v1",
+  "status": "DRAFT_PREMERGE_ACCEPTED_LOCAL_PHASES_INTEGRATION_PENDING",
+  "draft_utc": "2026-10-18T07:27:18.578676+00:00",
+  "source": "5466c657bfaa4e06db8ed5f72ef572a5b597bc62",
+  "tree": "705d9ecdecad0c6e44e149cb9bcca272b7348fd8",
+  "base": "cb91a82b4cce4266581439963cac30d778a0c877",
+  "behavior": {
+    "output_rule": "Resolved output directory must be outside resolved ROOT/build/assets, including descendants.",
+    "rejection": "argparse exit2 before output.mkdir, fresh verification leaf, suite, inventory generation or stage_assets.",
+    "case_matrix": [
+      "assets-full",
+      "assets-skip",
+      "descendant-full",
+      "descendant-skip"
+    ],
+    "preservation": "Real staging occurs only inside pytest temporary source ROOTs. Existing staging/source/input sentinels and complete temporary file-byte/mtime/directory snapshots survive refusal.",
+    "alias_scope": "Existing Path.resolve semantics retained; these four cases do not claim exhaustive filesystem alias/race coverage.",
+    "production_delta": "Three added lines/two AST nodes; other builder behavior and native/recipe/runner inputs remain unchanged."
+  },
+  "source4_LF_hashes": {
+    "scripts/build_windows.py": "3b9e5c3a962b0a52090decaa51335e59fd2acc39c25d93e07bbd5600c192a3b5",
+    "scripts/check_all.py": "62b603f1501992da4b06d4bdf6fd11bbc6d942198a0841e00ffd1aaa61c157ac",
+    "tests/test_snapshot_build.py": "6bca1819a5dff19cef37647c77eb5f1a5b36b844ac3c6adcc76245fd9a7a0210",
+    "tests/test_check_all.py": "80ba84c45df2d95d962d932d7fb945fbf57c7a5e9adf6f66547c435938d4c2d8"
+  },
+  "closed_phases": {
+    "red4": {
+      "source": "e80a11e52f9c0eccfddcbc9927d32589422d3cab",
+      "tree": "55720e48f0b489d28a8551d10e5a4177037610d0",
+      "actual_guard_exit": 1,
+      "reported": {
+        "tests": 4,
+        "failures": 4,
+        "errors": 0,
+        "skipped": 0
+      },
+      "raw_cases": 4,
+      "resource_or_STOP_failure": false,
+      "guard": {
+        "actual_exit": 1,
+        "active_processes": 0,
+        "outer_wall_s": 1.137363399961032,
+        "peak_job_committed_bytes": 39038976,
+        "minimum_headroom_gib": {
+          "physical_gib": 12.62295913696289,
+          "commit_gib": 17.450149536132812
+        },
+        "resource_or_STOP_failure": false,
+        "source_after_field_present": false,
+        "source_scope": "Failed guard records source_before only; current clean exact Git source and all recorded19 original byte/hash/mtime snapshots independently rechecked, no source_after invented."
+      },
+      "proof": "red4",
+      "scope": "Expected RED on unchanged production before guard. No successful repair or actual frozen/full-suite build inferred."
+    },
+    "green34": {
+      "source": "5466c657bfaa4e06db8ed5f72ef572a5b597bc62",
+      "tree": "705d9ecdecad0c6e44e149cb9bcca272b7348fd8",
+      "counts": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "raw_cases": 34,
+      "old30_case_order_exact": true,
+      "new4_case_order": [
+        "test_output_in_asset_staging_is_rejected_before_mutation[assets-full]",
+        "test_output_in_asset_staging_is_rejected_before_mutation[assets-skip]",
+        "test_output_in_asset_staging_is_rejected_before_mutation[descendant-full]",
+        "test_output_in_asset_staging_is_rejected_before_mutation[descendant-skip]"
+      ],
+      "all_old_tests_and_assertions_unchanged": true,
+      "guard": {
+        "exit": 0,
+        "active_processes": 0,
+        "wall_s": 13.565694899996743,
+        "peak_job_commit_bytes": 104898560,
+        "minimum_headroom_gib": {
+          "physical_gib": 12.064258575439453,
+          "commit_gib": 17.012298583984375
+        },
+        "fresh10_8point5_and_running8_7_unchanged": true,
+        "clean_source_before_after": true
+      },
+      "warnings": {
+        "retained_summary_blocks": 0,
+        "retained_stderr_bytes": 0
+      },
+      "XML_sha256": "4438e14fc49590856c8c33675bb8765e9781968badac64aaaeb403f1dc56511b",
+      "guard_sha256": "eccff6ec2693ec07a3292581c69321dd8bd5e799dc0347b040f3bfe93ff7949b",
+      "proof": "green34",
+      "scope": "Actual34 focused contracts only, with real staging guarded inside pytest temporary ROOTs and existing expensive full-suite/PyInstaller/copied-EXE seams stubbed. No actual full build/new EXE/release/native physics or broad quality acceptance inferred. Metadata read/copy only; original RED remains separately failed and preserved."
+    },
+    "targeted4": {
+      "fixed_baseline": "1153e7cfddd0ddc2467236b1403cc23b61f11a6e",
+      "type": {
+        "current": 8,
+        "baseline": 8,
+        "warnings_each": 0,
+        "all_fingerprints_equal": true,
+        "new": 0
+      },
+      "broad": {
+        "current": 2,
+        "baseline": 2,
+        "all_fingerprints_equal_excluding_line_only": true,
+        "new": 0
+      },
+      "critical_exit": 0,
+      "checker_format_exit": 0,
+      "whole_four_format": {
+        "current_exit": 1,
+        "baseline_exit": 1,
+        "would_reformat_each": 3,
+        "already_formatted_each": 1,
+        "introduced_line_intersections": {
+          "scripts/build_windows.py": [],
+          "scripts/check_all.py": [],
+          "tests/test_snapshot_build.py": [],
+          "tests/test_check_all.py": []
+        },
+        "scope": "All raw format --check/--diff outputs retained; no new formatter edit touches a line introduced by5466 versus actual prior maincb91. Not whole-scope clean format certification or an old/new complete hunk multiset equality claim."
+      },
+      "security": {
+        "mapped_files": 4,
+        "rules_run_from_raw_log": 151,
+        "all_expected_paths_observed_scanned": true,
+        "exit": 0,
+        "matches": 0,
+        "top_level_errors": [],
+        "fixpoint_timeout_metadata": [],
+        "scope": "Exact-byte flat mapping current4, with original raw JSON/log retained. Not direct repository-path, complete warning census, complete security/taint attestation or global default-scan result."
+      },
+      "actual_guard_exit": 0,
+      "wall_s": 17.519573600031435,
+      "minimum_headroom_gib": {
+        "physical_gib": 10.418731689453125,
+        "commit_gib": 14.773292541503906
+      },
+      "resource_scope": "Direct held Windows child and Linux phase-group wait/trap; no kernel active0/peak or isolated performance claim.",
+      "proof": "targeted4",
+      "index": "targeted4_index",
+      "summary": "targeted4_summary",
+      "guard": "targeted4_guard"
+    },
+    "historical_global_reuse": {
+      "actual_source": "a582eda61c5efb8070be9c9152bbb5b529ea83a2",
+      "type_baseline": "1e8e35ac64093742caafa67c118ca02efa6e6537",
+      "source_equivalence": "src/quality/web Git subtree objects, root tool configs, POSIX compiler test, check_all and inventory inputs are exact at a582/cb91/5466.",
+      "proof": "global_reuse_source",
+      "historical_actual_proof": "historical_global_a582",
+      "scope": "Historical original source-only/global and actual POSIX results keep their measured source/debt/warnings/exclusions. Changed builder/snapshot paths have current targeted4 coverage. No fresh global/default-security scan, warning multiset equality or complete taint/security claim."
+    },
+    "actual_non_skipped_build": {
+      "status": "closed_passed_execution_root_preservation_and_independent_peer",
+      "source": "5466c657bfaa4e06db8ed5f72ef572a5b597bc62",
+      "tree": "705d9ecdecad0c6e44e149cb9bcca272b7348fd8",
+      "role_bound_commands": {
+        "build": [
+          "BUILD_PYTHON",
+          "scripts/build_windows.py",
+          "--output-dir",
+          "FULL_BUILD_OUTPUT"
+        ],
+        "suite": [
+          "BUILD_PYTHON",
+          "scripts/check_all.py",
+          "--output-dir",
+          "FRESH_BUILD_VERIFICATION_DIRECTORY"
+        ],
+        "scope": "Role substitutions, not literal public argv; exact local commands are hash-bound."
+      },
+      "full_suite": {
+        "actual_literal_invocation_exit": 0,
+        "module_reports": 99,
+        "reported": {
+          "tests": 2491,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 1
+        },
+        "raw_testcase_elements": 1481,
+        "exact_module_case_sequence_and_original_Windows_serialization": true,
+        "individual_subprocess_exit_receipts": "not recorded by normal check_all; none invented",
+        "pytest_warning_blocks": [],
+        "warning_scope": "Only pytest full-suite stdout interval; PyInstaller/build log warnings remain separate. Historical Tcl warning is not erased or causally explained."
+      },
+      "public_verification": {
+        "schema": "lapsim.build-verification.v1",
+        "full_suite": {
+          "status": "passed",
+          "command": [
+            "python",
+            "scripts/check_all.py",
+            "--output-dir",
+            "<build-owned-report-directory>"
+          ],
+          "command_scope": "Sanitized logical command; actual argv is retained only in local build evidence.",
+          "report": {
+            "path": "verification/test-results.xml",
+            "sha256": "e7734a0811bc05d2e5c78a8d3b3f6c6ca5e52191371a9a0b23ed056666295fc2"
+          }
+        },
+        "source_scope": "When run, full repository tests precede inventory generation; packaged snapshot identity is separate.",
+        "packaged_source": {
+          "code_commit": "5466c657bfaa4e06db8ed5f72ef572a5b597bc62",
+          "dirty_worktree": false,
+          "source_sha256": "38f24f3461c477941c05e23828f3f1072a7c37bfd1c2535e84c09527a59684ae"
+        }
+      },
+      "ZIP_verification_allowlist": [
+        "verification/build-verification.json",
+        "verification/test-results.xml"
+      ],
+      "exact_current_XML_in_ZIP": true,
+      "local_literal_argv_excluded_from_ZIP": true,
+      "XML_privacy_limit": "Exact raw JUnit retains normal hostname and may contain local diagnostics. Sanitized public JSON does not establish fully sanitized ZIP/report or authorize publication. Raw XML unchanged.",
+      "artifacts": {
+        "EXE_bytes": 79283149,
+        "EXE_sha256": "b1911b01008bab22d2574a6e04256e8acaa33de29fff7fb6b6a6c317d4c1c358",
+        "ZIP_bytes": 87084285,
+        "ZIP_sha256": "ffb6dcaa51abbf7193f4444623016d43bdf2dda20577d148a92e3c4e173c8ccc",
+        "ZIP_members": 949,
+        "source_assets_verified": 943,
+        "original_checks": 20,
+        "copied_checks": 21,
+        "copied_actual_exits": [
+          0,
+          2,
+          1,
+          1
+        ]
+      },
+      "preservation": {
+        "files": 1748,
+        "actual_surviving_pytest_files": 573,
+        "prior_user_outputs": 30,
+        "all_bytes_hash_mtime_exact": true,
+        "scope": "Only actual surviving uniquely attributable same-run regular files. Earlier pytest temp directories may have been removed; no reconstruction, assumed basetemp or old focused-file substitution."
+      },
+      "guard": {
+        "actual_exit": 0,
+        "owned_active_before_final_close": 0,
+        "wall_time_s": 1115.133279200003,
+        "metrics": {
+          "peak_single_process_committed_bytes": 593965056,
+          "peak_job_committed_bytes": 646574080,
+          "total_processes": 2184,
+          "active_processes": 0,
+          "cpu_time_s": 998.171875
+        },
+        "minimum_headroom_gib": {
+          "physical_gib": 10.954353332519531,
+          "commit_gib": 15.281539916992188
+        },
+        "fresh_preflight": {
+          "physical_gib": 11.400848388671875,
+          "commit_gib": 15.977909088134766
+        },
+        "runtime_floors_gib": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        },
+        "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed."
+      },
+      "runtime_versions": {
+        "python": "3.13.15",
+        "Tcl_runtime": "8.6.12",
+        "Tk_compiled": "8.6",
+        "pytest": "9.1.1",
+        "pyinstaller": "6.22.0",
+        "numpy": "2.5.3",
+        "scipy": "1.18.1",
+        "matplotlib": "3.11.2",
+        "pillow": "12.3.0",
+        "scope": "Selected versions only; executable/prefix/base_prefix remain only in raw local receipts."
+      },
+      "package_warning_signature": "WARNING: Hidden import \"scipy.special._cdflib\" not found!",
+      "warning_scope": "PyInstaller/build stderr warning is separate from actual pytest suite interval. No blanket warning-free claim; historical Tcl cause remains unresolved.",
+      "scope": "Actual normal full check_all/build plus PyInstaller/original copied smoke and four separate copied supplied-record commands. Standard fast lap/bicycle/control/component calculations and replays execute; supplied native records are viewed passively, no fresh native physics or native saved-study replay. No release, publication, physical validation, calibration, same-process recovery, complete a11y, module-import or kernel-wide process census claim.",
+      "proof": "full_build_proof",
+      "inventory": "full_build_inventory",
+      "module_index": "full_module_index",
+      "source_verifier_review": "full_verifier_source_review",
+      "independent_peer": {
+        "binding": "full_independent_peer",
+        "status": "closed_full_metadata_review_clear",
+        "all1748_original_copy_bytes_hash_mtime_equal": true,
+        "safe_assets_pytest_hold_release": true
+      }
+    },
+    "static_map": {
+      "source": "5466c657bfaa4e06db8ed5f72ef572a5b597bc62",
+      "tree": "705d9ecdecad0c6e44e149cb9bcca272b7348fd8",
+      "commands": [
+        {
+          "name": "site",
+          "role_bound_argv": [
+            "PRIMARY_PYTHON",
+            "scripts/check_flowchart_site.py"
+          ],
+          "actual_exit": 0,
+          "stdout_sha256": "800812ce537c4f8b0b1a986b8a68edf7df8593b11ed6791743ecb627b3424d00",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "inventory",
+          "role_bound_argv": [
+            "PRIMARY_PYTHON",
+            "docs/simulator_flowchart/generate_inventory.py",
+            "--check"
+          ],
+          "actual_exit": 0,
+          "stdout_sha256": "dbca7c2de57f7228a33d69c895cd108d6ba7370a4b2a398ca9ad5551b466db05",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "graph",
+          "role_bound_argv": [
+            "NODE",
+            "scripts/check_flowchart_data.mjs"
+          ],
+          "actual_exit": 0,
+          "stdout_sha256": "a3b95d15830a48a0ab53f8420108fab6ebb5c1e4b6cda2d479d9345f77906198",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "source_clean_before_after": true,
+      "catalog_sha256": "72148aa4c2e79cbc5e00996f2ee7dcd7d71c49642297ce805c54ce67e28cb85c",
+      "catalog_bytes_mtime_preserved": true,
+      "guard": {
+        "actual_exit": 0,
+        "active_processes": 0,
+        "wall_s": 2.694255999987945,
+        "peak_job_commit_bytes": 172376064,
+        "minimum_headroom_gib": {
+          "physical_gib": 12.374332427978516,
+          "commit_gib": 17.235126495361328
+        }
+      },
+      "summary": "static_map_summary",
+      "guard_binding": "static_map_guard",
+      "scope": "Local HTML/asset structure, generated Python-source inventory and assembled JavaScript graph checks; no browser simulation, build or publication."
+    },
+    "actual_separate_skip_build": {
+      "status": "closed_passed_execution_root_preservation_and_independent_peer",
+      "source": "5466c657bfaa4e06db8ed5f72ef572a5b597bc62",
+      "tree": "705d9ecdecad0c6e44e149cb9bcca272b7348fd8",
+      "role_bound_build_command": [
+        "BUILD_PYTHON",
+        "scripts/build_windows.py",
+        "--skip-tests",
+        "--output-dir",
+        "SKIP_BUILD_OUTPUT"
+      ],
+      "command_scope": "Role substitutions; literal local argv remains in bound allocation/summary.",
+      "skip_contract": {
+        "local_status": "skipped",
+        "local_command_exit_report_path_report_hash": "all null",
+        "public_full_suite": {
+          "status": "skipped",
+          "command": null,
+          "report": null
+        },
+        "current_suite_XML_modules_or_totals": "none",
+        "ZIP_verification_members": [
+          "verification/build-verification.json"
+        ],
+        "public_JSON_sanitized": true,
+        "local_literal_invocation_excluded_from_ZIP": true
+      },
+      "public_verification": {
+        "schema": "lapsim.build-verification.v1",
+        "full_suite": {
+          "status": "skipped",
+          "command": null,
+          "report": null
+        },
+        "source_scope": "When run, full repository tests precede inventory generation; packaged snapshot identity is separate.",
+        "packaged_source": {
+          "code_commit": "5466c657bfaa4e06db8ed5f72ef572a5b597bc62",
+          "dirty_worktree": false,
+          "source_sha256": "38f24f3461c477941c05e23828f3f1072a7c37bfd1c2535e84c09527a59684ae"
+        }
+      },
+      "fresh_module_report_count": 0,
+      "measured_full_suite": null,
+      "artifacts": {
+        "EXE_bytes": 79281398,
+        "EXE_sha256": "1d37a6f24f1b77121fa8838bb18732d7cb08f6328cc239aaf4476941fb06629e",
+        "ZIP_bytes": 87048295,
+        "ZIP_sha256": "a6b7001d5ab5d2157c083081381c844ba0d2ccd913f11f2e4ce4a5654e99477a",
+        "ZIP_members": 948,
+        "source_assets_verified": 943,
+        "original_checks": 20,
+        "copied_checks": 21,
+        "copied_actual_exits": [
+          0,
+          2,
+          1,
+          1
+        ],
+        "native_saved_IDs": {
+          "content_id": "62386b59d501a23132e53b2f39448e7d756cbada9e6063c2db8ffe16c9327291",
+          "receipt_id": "2335a00b34f76775bb36bbccf660a5b91470e9d9f4ddae2b38937077ae525a25"
+        }
+      },
+      "full_build_preservation": {
+        "proof_sha256": "fc52d83813b1ae2f5f04ccc8d642b942878e78064e01f1e5da0b9d70ba4813fe",
+        "all_measured_full_copies_bytes_hash_mtime_unchanged": true,
+        "raw_full_output_outside_guard_and_sentinels_checked": 149,
+        "original_check_index_sha256": "021a314b2ba31cf070c24aa9c83c092cb49d005d3591e1ad585cfc2f34295c57",
+        "raw_full_output_membership_unchanged": true,
+        "intentional_exception": "Original ROOT/build/assets are intentionally regenerated by the second build. Prior full asset COPIES remain exact; no unchanged-original-asset-mtime claim.",
+        "measured_full_copies": 1748
+      },
+      "preservation": {
+        "files": 1075,
+        "bytes": 318375033,
+        "prior_user_outputs_unchanged": 30
+      },
+      "guard": {
+        "actual_exit": 0,
+        "owned_active_before_final_close": 0,
+        "wall_time_s": 102.69941860000836,
+        "metrics": {
+          "peak_single_process_committed_bytes": 303255552,
+          "peak_job_committed_bytes": 347176960,
+          "total_processes": 82,
+          "active_processes": 0,
+          "cpu_time_s": 78.859375
+        },
+        "fresh_preflight": {
+          "physical_gib": 12.639240264892578,
+          "commit_gib": 17.294597625732422
+        },
+        "runtime_floors": {
+          "physical_gib": 8.0,
+          "commit_gib": 7.0
+        },
+        "minimum_headroom": {
+          "physical_gib": 12.219963073730469,
+          "commit_gib": 16.852378845214844
+        },
+        "resource_scope": "Kernel job peak commit, not physical working set; whole-machine physical/commit sampled0.1s. Worker floor within authorized range; no system limits changed."
+      },
+      "runtime_scope": "Skip runtime/26 locked versions equal actual passed same-source full5466 runtime; current four raw sources and full preserved source bytes/mtime exact. No skip full-suite execution/counts claim.",
+      "package_warning_lines": [
+        "23329 WARNING: Hidden import \"scipy.special._cdflib\" not found!"
+      ],
+      "package_warning_scope": "Actual PyInstaller/build stderr warnings remain separate from skipped pytest (none executed); historical Tcl cause not resolved and no blanket warning-free claim.",
+      "scope": "Actual separate --skip-tests build and four ordinary copied EXE commands; no pytest/full-suite execution or totals attached. Existing standard fast-model calculations/replays run; native supplied record viewing passive. No native physics/native saved-study replay, same-process recovery, publication/release, physical validation or complete process/import/a11y census claim. Full raw JUnit privacy limitation remains in its separate full-build proof.",
+      "proof": "skip_build_proof",
+      "inventory": "skip_build_inventory",
+      "source_verifier_review": "skip_verifier_source_review",
+      "independent_peer": {
+        "binding": "skip_independent_peer",
+        "status": "closed_skip_metadata_review_clear",
+        "all1075_original_copy_bytes_hash_mtime_equal": true,
+        "all1748_full_copies_unchanged": true,
+        "applicable_full_originals_exact": 149,
+        "safe_assets_inputs_source_hold_release": true,
+        "outside_preservation_boundary": "Seven direct actual EXE/input/report files; extracted user-data documentation cache is outside the accepted preservation inventory. A metadata-only initial recursive-membership assertion was preserved, then aligned with this original direct-file contract."
+      }
+    }
+  },
+  "pending_phases": {
+    "normal_integration_and_postmerge": null
+  },
+  "pending_scope": "As of this premerge local freeze, full and separate skipped build executions, preservation and independent peer reviews are accepted. This E04 normal integration and post-merge verification remain separately pending; no future outcome inferred.",
+  "raw_bindings": {
+    "red4": {
+      "role": "BACKEND",
+      "path": "work/portable-output-overlap-red-e80a11e-independent-preserved-r2-20261018/independent-proof.json",
+      "bytes": 8937,
+      "sha256": "69d06f16729a242ab0feb650a448c4a952e9e245512d8c71d83aa6cfe09f0585"
+    },
+    "green34": {
+      "role": "BACKEND",
+      "path": "work/portable-output-overlap-green-5466c65-independent-preserved-20261018/independent-proof.json",
+      "bytes": 2927,
+      "sha256": "3940db34d2b070653928d823809212fd7d7d087064d0be0fab9c57e4c92cd835"
+    },
+    "targeted4": {
+      "role": "BACKEND",
+      "path": "work/poa-q5466-preserved-20261018/independent-proof.json",
+      "bytes": 5646,
+      "sha256": "22829b1f2ae9e673a248b1e03ac458f91024aa8285c6b034a1eb59c403fb911b"
+    },
+    "targeted4_index": {
+      "role": "BACKEND",
+      "path": "work/poa-q5466-preserved-20261018/inventory.json",
+      "bytes": 25268,
+      "sha256": "96839a1934729d1f3f085da34188c2f4d62b2e2cf21019cc5ce22f26a6e3d1b8"
+    },
+    "targeted4_summary": {
+      "role": "BACKEND",
+      "path": "work/portable-output-assets-targeted-quality-5466c65-20261018/changed-files-5466c65-attempt-1/summary.json",
+      "bytes": 6942,
+      "sha256": "5c9fd5a9f3e38b1266087836932b7b150b8aa6357609a3f2407cc59b745799d8"
+    },
+    "targeted4_guard": {
+      "role": "BACKEND",
+      "path": "work/portable-output-assets-targeted-quality-5466c65-20261018/wsl-portable-output-assets-5466c65-attempt-1-command.json",
+      "bytes": 2049,
+      "sha256": "5c4e4d4187908fcf655967448a672a4a1ed20e4d281333771adbce9a9ff9573d"
+    },
+    "global_reuse_source": {
+      "role": "BACKEND",
+      "path": "work/portable-output-assets-global-quality-5466c65-preparation-20261018/global-scope-reuse-source-proof.json",
+      "bytes": 2703,
+      "sha256": "aff11b52b3c6d4e20bda176920e11ec244dd97e8babb3a80e23ad5bad1434648"
+    },
+    "historical_global_a582": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/native-comparison-global-quality-a582eda-independent-proof.json",
+      "bytes": 4737,
+      "sha256": "34afac0a73d40712e2c5ed6f015757432ae3b7b3cf65c264f4f040056592c929"
+    },
+    "applied_source_review": {
+      "role": "BACKEND",
+      "path": "work/portable-output-assets-overlap-independent-source-review-20261018/applied-5466c65-source-review.json",
+      "bytes": 1300,
+      "sha256": "2879c6828e75f5eca986d0d646e81a61276ab8629020a6c6120d39089ac66110"
+    },
+    "full_build_proof": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-full-5466c65-independent-preservation-20261018/independent-proof.json",
+      "bytes": 12755,
+      "sha256": "fc52d83813b1ae2f5f04ccc8d642b942878e78064e01f1e5da0b9d70ba4813fe"
+    },
+    "full_build_inventory": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-full-5466c65-independent-preservation-20261018/evidence-inventory.json",
+      "bytes": 1263945,
+      "sha256": "a0a32ab0c0b80106fd1d7365998d270243344ae5afe1b37282130acc979e0301"
+    },
+    "full_module_index": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-full-5466c65-independent-preservation-20261018/module-index.json",
+      "bytes": 28948,
+      "sha256": "bc062c2695b1715de13137dc0cf5788a7d1a7156080e26ca2c209f456a8134ed"
+    },
+    "full_ZIP_index": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-full-5466c65-independent-preservation-20261018/ZIP-member-index.json",
+      "bytes": 106118,
+      "sha256": "589fd24d8c72be3f386b50c85c445b78d6ed4e6be1d13da6ff5e0aa7e9b404a2"
+    },
+    "full_summary": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-full-5466c65/native-viewer-preservation.json",
+      "bytes": 40302,
+      "sha256": "6c54273b6febdf13448e3239b82ae18fd9da6ca69ab65e2b9d4c32afb67a067a"
+    },
+    "full_guard": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-full-5466c65-attempt-1-job/summary.json",
+      "bytes": 3107,
+      "sha256": "a4dcf28d5eddf1c3b653139a8b7405366eebaf3e5d9b0f1c56aa2fc28510146e"
+    },
+    "full_allocation": {
+      "role": "BACKEND",
+      "path": "work/portable-output-overlap-build-preparation-20261018/root-full-allocation.json",
+      "bytes": 2088,
+      "sha256": "fc8e59b58c115767da42e11dde31bdcc92574c35e0c8d921848b1da10170d135"
+    },
+    "full_public_verification": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-full-5466c65/verification-qjiyo7nn/build-verification.json",
+      "bytes": 836,
+      "sha256": "05d3c4ffb2c87ca251ac6a5e67b4ae0f0bb89b10953706d1e2a95db6a7e9f252"
+    },
+    "full_local_invocation": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-full-5466c65/verification-qjiyo7nn/full-suite-invocation.json",
+      "bytes": 1055,
+      "sha256": "6a79afe0c0b30de52133af8c9dc9cd24bbc08540a9d98a2a41f36b3539e1a666"
+    },
+    "full_aggregate_XML": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-full-5466c65/verification-qjiyo7nn/test-results.xml",
+      "bytes": 248242,
+      "sha256": "e7734a0811bc05d2e5c78a8d3b3f6c6ca5e52191371a9a0b23ed056666295fc2"
+    },
+    "full_verifier_source_review": {
+      "role": "BACKEND",
+      "path": "work/portable-output-overlap-full-verifier-source-review-20261018/r3-source-clear-353f01ee.json",
+      "bytes": 6757,
+      "sha256": "30db12ce0657c0f7b0764cc3be4e01e64093dd64ee3fe90b80d201b4b849bff4"
+    },
+    "full_independent_peer": {
+      "role": "BACKEND",
+      "path": "work/portable-overlap-full-5466c65-secondary-review-20261018/independent-review.json",
+      "bytes": 2405,
+      "sha256": "7a6620a236adda000e8b03e6cd561c293f7b5f8025647f692cc1e587dcc4b9f5"
+    },
+    "static_map_summary": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/cli-static-map-5466c65/summary.json",
+      "bytes": 2352,
+      "sha256": "9152b923a8b3a61f21cf44499f8713b2f175c5896afcf4b2d7bdd0801e16a2f8"
+    },
+    "static_map_guard": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-output-overlap-map-5466c65-attempt-1-job/summary.json",
+      "bytes": 2690,
+      "sha256": "b61cc706772b166b438bce4602ec581fbcb25793d185682e964d3b06a7368965"
+    },
+    "prior_API112_output30": {
+      "role": "CURRENTCHAT",
+      "path": "outputs/native-comparison-claims-verification-cb91a82-20261018.json",
+      "bytes": 102206,
+      "sha256": "d8fbebda5472d59b0000a649256491ca3d6baafccb62590bc92d3113ce8aa7dd"
+    },
+    "skip_build_proof": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-skip-5466c65-independent-preservation-20261018/independent-proof.json",
+      "bytes": 7905,
+      "sha256": "1894ac657ff65d6f5af81cc006b7774eea22afb680d9daf9fba7de84aeb44d2c"
+    },
+    "skip_build_inventory": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-skip-5466c65-independent-preservation-20261018/evidence-inventory.json",
+      "bytes": 698015,
+      "sha256": "9d89b59b66270192fd80275774e0c330cece5fbea3b31c2aa8c972ed0593c4cc"
+    },
+    "skip_ZIP_index": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-skip-5466c65-independent-preservation-20261018/ZIP-member-index.json",
+      "bytes": 106021,
+      "sha256": "b064a6e9334b7a48b8fb2118fd1c75c09febf635e78738bc424ec5560f459739"
+    },
+    "skip_full_originals_index": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-skip-5466c65-independent-preservation-20261018/full-originals-checked.json",
+      "bytes": 10565,
+      "sha256": "021a314b2ba31cf070c24aa9c83c092cb49d005d3591e1ad585cfc2f34295c57"
+    },
+    "skip_summary": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-skip-5466c65/native-viewer-preservation.json",
+      "bytes": 14683,
+      "sha256": "131602ebaa8656ff244b8e9904bc78908731c2134f7c798cbf71c9d06b5a7a0d"
+    },
+    "skip_guard": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-skip-5466c65-attempt-1-job/summary.json",
+      "bytes": 3105,
+      "sha256": "d727ddd661cc2f0b228a6123720749d3446144825f89e38ad7f384230ba4bf5a"
+    },
+    "skip_allocation": {
+      "role": "BACKEND",
+      "path": "work/portable-output-overlap-build-preparation-20261018/root-skip-allocation.json",
+      "bytes": 2087,
+      "sha256": "35a81a39d6de6d0eccff842b01a574f7f719c7fb3d5745873c2535e91ad5fd44"
+    },
+    "skip_public_verification": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-skip-5466c65/verification-7k2k08ni/build-verification.json",
+      "bytes": 480,
+      "sha256": "fdf9beb2bb169c7403474afe58771c541459e82cf4354a5c2c55fcfcdc099202"
+    },
+    "skip_local_invocation": {
+      "role": "BACKEND",
+      "path": "work/detailed-study/portable-overlap-skip-5466c65/verification-7k2k08ni/full-suite-invocation.json",
+      "bytes": 344,
+      "sha256": "9f4f8a7fb9871b65e3da7a72438463b91bdd87d1773f2be45b4a41d31e255d51"
+    },
+    "skip_verifier_source_review": {
+      "role": "BACKEND",
+      "path": "work/portable-output-overlap-skip-verifier-source-review-20261018/source-clear-c5c229a9.json",
+      "bytes": 6990,
+      "sha256": "9fce5dc7896ff0d2f963b912ad294d20046d8db362809369ec6e2ed7cc027ef3"
+    },
+    "skip_independent_peer": {
+      "role": "BACKEND",
+      "path": "work/portable-overlap-skip-5466c65-secondary-review-20261018/independent-review.json",
+      "bytes": 3081,
+      "sha256": "540c9d83139b92d4b400c9e95c24f829e31ede4ec497433ea7b5a5b4b53cbd32"
+    }
+  },
+  "historical_scope": "Earlier portable/native/API evidence remains unchanged. Actual full5466 execution, preservation and peer have their own scope. Standard fast-model smoke calculations/replays execute; native supplied records are viewed passively. No fresh native physics/native saved-study replay, calibration, release or publication claim.",
+  "privacy_scope": "Only role-relative hash bindings and selected measurements embedded. Bound local raw receipts/XML may contain machine paths and remain local; this JSON does not sanitize those raw artifacts.",
+  "prior_API112_status": {
+    "normal_main": "cb91a82b4cce4266581439963cac30d778a0c877",
+    "tree": "ebdd81094ce2c0e9d10042bec97dc251c5045f55",
+    "accepted_head": "944d19ef69fb3b741d74957c4630aaca632e90d3",
+    "entire_tree_equal": true,
+    "successful_exact_head_checks": 16,
+    "postmerge": {
+      "focused": 96,
+      "genuine_CLI_exits": [
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "map_commands": 3,
+      "actual_exit": 0
+    },
+    "binding": "prior_API112_output30",
+    "scope": "Completed prior API112 at cb91, separate from5466. Installed archives retain a582. Output30 and raw receipts are local-only, not sanitized public artifacts; no fresh native physics."
+  }
+}

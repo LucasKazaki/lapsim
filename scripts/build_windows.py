@@ -201,6 +201,9 @@ def main() -> int:
     for variable in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
         os.environ[variable] = "1"
     output = args.output_dir.resolve()
+    asset_staging = (ROOT / "build" / "assets").resolve()
+    if output.is_relative_to(asset_staging):
+        parser.error("Output directory must be outside asset staging tree")
     output.mkdir(parents=True, exist_ok=True)
     evidence = Path(mkdtemp(prefix="verification-", dir=output))
     print(f"Build verification evidence: {evidence}", flush=True)
