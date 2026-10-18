@@ -308,7 +308,7 @@ def test_saved_catalog_skips_tampered_and_conflicting_files(tmp_path: Path) -> N
     assert any("bundle" in warning for warning in warnings)
 
 
-def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
+def _probe_ordinary_run_button_finishes_async_and_replays_imported_grid(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -670,3 +670,111 @@ def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
             worker_threads and all(not thread.is_alive() for thread in worker_threads)
         )
         root.destroy()
+
+
+def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
+    tmp_path: Path,
+) -> None:
+    """Keep direct pytest bounded while the child owns its real Tk/worker lifetime."""
+    import json
+    import subprocess
+    import sys
+
+    import lapsim.ui.app as app_module
+
+    app_origin = app_module.__file__
+    assert app_origin is not None
+    app_file = Path(app_origin).resolve()
+    source_root = app_file.parents[2]
+    probe_directory = tmp_path / "async-child"
+    probe_directory.mkdir()
+    payload = tmp_path / "async-child-result.json"
+    child_code = """
+import json
+from pathlib import Path
+import runpy
+import sys
+
+import pytest
+
+test_file, source_root, expected_app, probe_directory, payload = map(Path, sys.argv[1:])
+sys.path.insert(0, str(source_root))
+import lapsim.ui.app as app_module
+
+assert app_module.__file__ is not None
+assert Path(app_module.__file__).resolve() == expected_app.resolve()
+namespace = runpy.run_path(str(test_file))
+assert namespace["LapSimDesktop"] is app_module.LapSimDesktop
+try:
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        namespace["_probe_ordinary_run_button_finishes_async_and_replays_imported_grid"](
+            probe_directory, monkeypatch,
+        )
+except pytest.skip.Exception as error:
+    payload.write_text(
+        json.dumps({"status": "skipped", "reason": str(error), "app_origin": str(expected_app)}),
+        encoding="utf-8",
+    )
+    raise SystemExit(77)
+payload.write_text(
+    json.dumps({"status": "passed", "app_origin": str(expected_app)}),
+    encoding="utf-8",
+)
+"""
+
+    def retain_streams(
+        stdout: bytes | str | None,
+        stderr: bytes | str | None,
+    ) -> tuple[str, str]:
+        stdout_bytes = (
+            stdout.encode("utf-8") if isinstance(stdout, str) else stdout or b""
+        )
+        stderr_bytes = (
+            stderr.encode("utf-8") if isinstance(stderr, str) else stderr or b""
+        )
+        (tmp_path / "async-child-stdout.txt").write_bytes(stdout_bytes)
+        (tmp_path / "async-child-stderr.txt").write_bytes(stderr_bytes)
+        return (
+            stdout_bytes.decode("utf-8", errors="replace"),
+            stderr_bytes.decode("utf-8", errors="replace"),
+        )
+
+    command = [
+        sys.executable,
+        "-X",
+        "utf8",
+        "-I",
+        "-B",
+        "-u",
+        "-c",
+        child_code,
+        str(Path(__file__).resolve()),
+        str(source_root),
+        str(app_file),
+        str(probe_directory),
+        str(payload),
+    ]
+    try:
+        result = subprocess.run(command, capture_output=True, timeout=60, check=False)
+    except subprocess.TimeoutExpired as error:
+        stdout, stderr = retain_streams(error.stdout, error.stderr)
+        pytest.fail(
+            "Async Tk/worker child exceeded the 60-second process bound. "
+            "subprocess.run killed and waited for the child; this does not "
+            "promise termination of arbitrary descendant processes.\n"
+            f"stdout:\n{stdout}\nstderr:\n{stderr}"
+        )
+    stdout, stderr = retain_streams(result.stdout, result.stderr)
+    if result.returncode not in (0, 77):
+        pytest.fail(
+            f"Async Tk/worker child exited {result.returncode}.\n"
+            f"stdout:\n{stdout}\nstderr:\n{stderr}"
+        )
+    outcome = json.loads(payload.read_text(encoding="utf-8"))
+    assert outcome["app_origin"] == str(app_file)
+    if result.returncode == 77:
+        assert outcome["status"] == "skipped"
+        reason = outcome["reason"]
+        assert isinstance(reason, str) and reason.startswith("Tk display unavailable:")
+        pytest.skip(reason)
+    assert outcome["status"] == "passed"
