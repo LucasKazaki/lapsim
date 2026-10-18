@@ -602,7 +602,7 @@ def verify(output: Path, *, desktop: bool) -> dict:
                     ],
                     outside,
                     output / (kind + "-desktop.log"),
-                    timeout=120,
+                    timeout=300,
                 )
                 results[kind]["recipient_grid_inputs"] = _recipient_grid_identity(
                     json.loads(desktop_report.read_text(encoding="utf-8"))

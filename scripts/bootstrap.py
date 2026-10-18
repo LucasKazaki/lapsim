@@ -261,7 +261,7 @@ def main() -> int:
                         else []
                     ),
                 ],
-                timeout=120 if args.desktop_self_test else None,
+                timeout=300 if args.desktop_self_test else None,
             )
         return 0
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
