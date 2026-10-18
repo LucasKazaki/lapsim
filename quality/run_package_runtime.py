@@ -267,11 +267,15 @@ def verify(output: Path, *, desktop: bool) -> dict:
             timeout=420,
         )
         if desktop:
-            bootstrap_grid = _recipient_grid_identity(json.loads(
-                (output / "bootstrap-desktop.json").read_text(encoding="utf-8")
-            ))
+            bootstrap_grid = _recipient_grid_identity(
+                json.loads(
+                    (output / "bootstrap-desktop.json").read_text(encoding="utf-8")
+                )
+            )
             if bootstrap_grid != results["wheel"]["recipient_grid_inputs"]:
-                raise RuntimeError("Source bootstrap and wheel imported-course inputs differ")
+                raise RuntimeError(
+                    "Source bootstrap and wheel imported-course inputs differ"
+                )
         marker = source / ".venv/.lapsim-ready.json"
         previous = (marker.read_bytes(), marker.stat().st_mtime_ns)
         run(

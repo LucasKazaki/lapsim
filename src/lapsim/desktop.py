@@ -570,7 +570,9 @@ def self_test(report_path: Path, *, native_record_path: Path | None = None) -> d
                 checks["component_invalid_input_clears_result"] = component.record is None
             component.close()
             lab.close()
-            recipient_grid = _check_imported_course_grid(app, user_storage / "course-grid")
+            recipient_grid = _check_imported_course_grid(
+                app, user_storage / "course-grid"
+            )
             checks["imported_course_grid"] = recipient_grid["status"] == "passed"
             # Child widgets are destroyed by root, allowing their lifecycle hooks to run.
         finally:
