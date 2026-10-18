@@ -553,7 +553,7 @@ def test_recipient_fused_coarse_selects_saves_loads_and_replays(
         patch.setattr(LapSimDesktop, "_calculate_single", worker)
         patch.setattr(course_catalog, "resolve_solver_grid", resolve)
         patch.setattr(lap_replay, "replay_lap_record", capture_replay)
-        report = check_fused(app)
+        report = check_fused(app, maximum_cell_lengths_m=(5.0,))
     assert selected == ["Fused GNSS/IMU · default"]
     assert policies and all(value == (5.0, False) for value in policies)
     assert len(frozen) == len(replay_reports) == 1
@@ -729,7 +729,7 @@ def test_recipient_fused_coarse_rejects_worker_start_sample_curvature(
             RuntimeError,
             match="Recipient fused grid cell count or curvature is incorrect",
         ):
-            check_fused(app)
+            check_fused(app, maximum_cell_lengths_m=(5.0,))
     assert injected == [wrong_curvature]
     assert worker_calls == [True]
     assert {

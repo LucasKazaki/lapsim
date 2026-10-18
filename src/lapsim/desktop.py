@@ -447,12 +447,14 @@ def _check_catalog_course_grid(app) -> dict:
         ) from error
 
 
-def _check_fused_course_grid(app) -> dict:
-    """Check one coarse legacy fused recipient without changing its geometry."""
+def _check_fused_course_grid(
+    app, *, maximum_cell_lengths_m: tuple[float, ...] = (5.0, 0.5)
+) -> dict:
+    """Check requested legacy fused recipients against original source cells."""
     import csv
     from fractions import Fraction
     from hashlib import sha256
-    from math import isclose
+    from math import ceil, isclose
     from .ui.course_catalog import course_source_metadata, solver_track_for_course
     from .ui.simulation import ENDURANCE_TRACK_PATH
 
@@ -462,6 +464,8 @@ def _check_fused_course_grid(app) -> dict:
     course_id = "team_endurance_fused_gnss_imu"
     paths = (ENDURANCE_TRACK_PATH, ENDURANCE_TRACK_PATH.with_suffix(".json"))
     try:
+        if maximum_cell_lengths_m not in ((5.0,), (0.5,), (5.0, 0.5)):
+            raise ValueError("Fused recipient requests must be 5 m and/or 0.5 m")
         source_before = {path: snapshot(path) for path in paths}
         selected = next(
             option for option in app.course_options if option.course_id == course_id
@@ -519,74 +523,83 @@ def _check_fused_course_grid(app) -> dict:
             "source_geometry_sha256"
         ] != _self_test_json_sha256(source_geometry):
             raise RuntimeError("Recipient fused source channels are incorrect")
-        coarse_stations = [Fraction(index * 5) for index in range(198)]
-        coarse_stations.append(Fraction(989))
-        indices = [int(station * 2) for station in coarse_stations]
-        expected_curvature = []
-        for lower, upper, first, stop in zip(
-            coarse_stations[:-1],
-            coarse_stations[1:],
-            indices[:-1],
-            indices[1:],
-            strict=True,
-        ):
-            turn = sum(
-                (
-                    curvature[index] * (stations[index + 1] - stations[index])
-                    for index in range(first, stop)
-                ),
-                Fraction(0),
-            )
-            expected_curvature.append(float(turn / (upper - lower)))
-        expected_stations = [float(value) for value in coarse_stations]
-        expected_x = [float(rows[index]["x_m"]) for index in indices]
-        expected_y = [float(rows[index]["y_m"]) for index in indices]
+        cases = []
+        for step_m in maximum_cell_lengths_m:
+            requested = Fraction(str(step_m))
+            cell_count = ceil(stations[-1] / requested)
+            effective_stations = [index * requested for index in range(cell_count)]
+            effective_stations.append(stations[-1])
+            indices = [int(station * 2) for station in effective_stations]
+            expected_curvature = []
+            for lower, upper, first, stop in zip(
+                effective_stations[:-1],
+                effective_stations[1:],
+                indices[:-1],
+                indices[1:],
+                strict=True,
+            ):
+                turn = sum(
+                    (
+                        curvature[index] * (stations[index + 1] - stations[index])
+                        for index in range(first, stop)
+                    ),
+                    Fraction(0),
+                )
+                expected_curvature.append(float(turn / (upper - lower)))
+            expected_stations = [float(value) for value in effective_stations]
+            expected_x = [float(rows[index]["x_m"]) for index in indices]
+            expected_y = [float(rows[index]["y_m"]) for index in indices]
 
-        def check_geometry(value):
-            if (
-                value["closed"] is not True
-                or len(value["curvature_per_m"]) != 198
-                or any(
-                    not isclose(observed, wanted, rel_tol=0.0, abs_tol=1e-12)
-                    for observed, wanted in zip(
-                        value["curvature_per_m"], expected_curvature, strict=True
+            def check_geometry(value):
+                if (
+                    value["closed"] is not True
+                    or len(value["curvature_per_m"]) != cell_count
+                    or any(
+                        not isclose(observed, wanted, rel_tol=0.0, abs_tol=1e-12)
+                        for observed, wanted in zip(
+                            value["curvature_per_m"], expected_curvature, strict=True
+                        )
                     )
-                )
-            ):
-                raise RuntimeError(
-                    "Recipient fused grid cell count or curvature is incorrect"
-                )
-            if (
-                value["distance_m"] != expected_stations
-                or value["x_m"] != expected_x
-                or value["y_m"] != expected_y
-                or expected_stations[-1] - expected_stations[-2] != 4.0
-            ):
-                raise RuntimeError("Recipient fused grid stations or x/y are incorrect")
+                ):
+                    raise RuntimeError(
+                        "Recipient fused grid cell count or curvature is incorrect"
+                    )
+                if (
+                    value["distance_m"] != expected_stations
+                    or value["x_m"] != expected_x
+                    or value["y_m"] != expected_y
+                    or expected_stations[-1] - expected_stations[-2]
+                    != (4.0 if step_m == 5.0 else 0.5)
+                ):
+                    raise RuntimeError(
+                        "Recipient fused grid stations or x/y are incorrect"
+                    )
 
-        # The genuine catalog resolver retains coherent_arcs=False for this source.
-        # Fraction values check channels; they never replace the physics input.
-        expected_track = solver_track_for_course(course_id, app.track, 5.0)
-        expected_geometry = {
-            "closed": expected_track.closed,
-            "distance_m": list(expected_track.distance_m),
-            "x_m": list(expected_track.x_m),
-            "y_m": list(expected_track.y_m),
-            "curvature_per_m": list(expected_track.curvature_per_m),
-        }
-        check_geometry(expected_geometry)
-        case = _check_recipient_course_case(
-            app,
-            source,
-            expected_track,
-            5.0,
-            check_geometry,
-            worker_error="Recipient fused-grid inputs or worker calculation failed",
-        )
+            # The genuine catalog resolver retains coherent_arcs=False for this source.
+            # Fraction values check channels; they never replace the physics input.
+            expected_track = solver_track_for_course(course_id, app.track, step_m)
+            expected_geometry = {
+                "closed": expected_track.closed,
+                "distance_m": list(expected_track.distance_m),
+                "x_m": list(expected_track.x_m),
+                "y_m": list(expected_track.y_m),
+                "curvature_per_m": list(expected_track.curvature_per_m),
+            }
+            check_geometry(expected_geometry)
+            case = _check_recipient_course_case(
+                app,
+                source,
+                expected_track,
+                step_m,
+                check_geometry,
+                worker_error="Recipient fused-grid inputs or worker calculation failed",
+            )
+            if case["geometry"] != expected_geometry:
+                raise RuntimeError("Recipient fused work changed its effective inputs")
+            cases.append(case)
         if (
             app.course_spec.course_id != course_id
             or app.course_source_json != source_json
-            or case["geometry"] != expected_geometry
             or {
                 "closed": app.track.closed,
                 "distance_m": list(app.track.distance_m),
@@ -603,13 +616,13 @@ def _check_fused_course_grid(app) -> dict:
             "course_id": course_id,
             "source": source,
             "source_geometry": source_geometry,
-            "cases": [case],
+            "cases": cases,
             "scope": (
-                "Coarse 5 m/198-cell legacy fused selection and synchronous "
+                "Requested legacy fused selection and synchronous "
                 "worker/save/load/replay in isolated GUI storage. Its separately "
                 "fused x/y and curvature remain unverified and geometrically "
                 "inconsistent, with unknown origin and no surveyed boundary. "
-                "No fine-grid, async Run, native physics or physical validation "
+                "No async Run, native physics or physical validation "
                 "claim. Scratch record hashes describe observed round trips."
             ),
         }
