@@ -192,7 +192,7 @@ def test_uint64_maximum_passes_converges_on_first_pass_without_overflow() -> Non
         close_geometry=False,
     )
     track.validate_coherent_arcs()
-    value = np.uint64((1 << 64) - 1)
+    value: Any = np.uint64((1 << 64) - 1)
     solver = PathConstraintSolver(maximum_passes=value)
     vehicle = Vehicle()
     vehicle.drivetrain.configured_speed_limit_mps = 1.0
