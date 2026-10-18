@@ -360,3 +360,67 @@ class VehicleStateUpdateTests(TestCase):
             deceleration_with_inertia,
             deceleration_without_inertia,
         )
+
+
+def test_json_control_round_trip_preserves_first_cell_dynamics() -> None:
+    # Saved coarse fused-lap regression: identical command bits changed the
+    # first cell forces when NumPy brake pressures crossed the JSON boundary.
+    from dataclasses import asdict
+    import json
+    from math import isfinite
+
+    import numpy as np
+
+    from lapsim.profiles import build_vehicle, snapshot_vehicle_config
+
+    live_controls = Controls(
+        motor_torque_request_nm=0.0,
+        front_brake_pressure_psi=np.float64(299.99951495819613),
+        rear_brake_pressure_psi=np.float64(299.9995149581961),
+        rear_regenerative_brake_force_request_n=0.0,
+        steering_angle_rad=-0.0135083817152179,
+        front_regenerative_brake_force_request_n=0.0,
+    )
+    restored_controls = Controls(
+        **json.loads(json.dumps(asdict(live_controls), allow_nan=False))
+    )
+    assert {
+        name: float(value).hex() for name, value in asdict(live_controls).items()
+    } == {name: float(value).hex() for name, value in asdict(restored_controls).items()}
+
+    live_vehicle, _live_manifest = build_vehicle("repository_baseline")
+    restored_vehicle, _restored_manifest = build_vehicle("repository_baseline")
+    assert snapshot_vehicle_config(live_vehicle) == snapshot_vehicle_config(
+        restored_vehicle
+    )
+    for vehicle in (live_vehicle, restored_vehicle):
+        vehicle.reset_state()
+        vehicle.speed_mps = 23.035080160648832
+
+    live_vehicle.update_state(live_controls, 5.0)
+    restored_vehicle.update_state(restored_controls, 5.0)
+    assert live_vehicle.current_controls is live_controls
+    assert restored_vehicle.current_controls is restored_controls
+    live_snapshot = live_vehicle.telemetry_snapshot()
+    restored_snapshot = restored_vehicle.telemetry_snapshot()
+    assert live_snapshot.keys() == restored_snapshot.keys()
+    assert all(isfinite(value) for value in live_snapshot.values())
+    assert all(isfinite(value) for value in restored_snapshot.values())
+    assert live_snapshot == restored_snapshot
+
+
+def test_control_conversion_cannot_bypass_request_validation() -> None:
+    import pytest
+
+    class NonfiniteOnConversion(float):
+        def __float__(self) -> float:
+            return float("inf")
+
+    class NegativeOnConversion(float):
+        def __float__(self) -> float:
+            return -1.0
+
+    with pytest.raises(ValueError, match="control requests must be finite"):
+        Controls(front_brake_pressure_psi=NonfiniteOnConversion(1.0))
+    with pytest.raises(ValueError, match="motor_torque_request_nm cannot be negative"):
+        Controls(motor_torque_request_nm=NegativeOnConversion(1.0))

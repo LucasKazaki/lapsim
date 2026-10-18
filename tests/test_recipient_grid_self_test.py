@@ -380,3 +380,713 @@ def test_recipient_catalog_rejects_catalog_only_generic_grid(
         ):
             desktop._check_catalog_course_grid(app)
     assert observed_cells == [40]
+
+
+def _fused_coarse_source_oracle():
+    import csv
+    from fractions import Fraction
+
+    from lapsim.ui.simulation import ENDURANCE_TRACK_PATH
+
+    path = ENDURANCE_TRACK_PATH
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    stations = [Fraction(row["distance_m"]) for row in rows]
+    assert stations == [Fraction(index, 2) for index in range(1979)]
+    assert rows[-1]["curvature_per_m"] == ""
+    curvature = [Fraction(row["curvature_per_m"]) for row in rows[:-1]]
+    coarse_stations = [Fraction(index * 5) for index in range(198)]
+    coarse_stations.append(Fraction(989))
+    indices = [int(station * 2) for station in coarse_stations]
+    weighted = []
+    for lower, upper, first, stop in zip(
+        coarse_stations[:-1],
+        coarse_stations[1:],
+        indices[:-1],
+        indices[1:],
+        strict=True,
+    ):
+        turn = sum(
+            (
+                curvature[index] * (stations[index + 1] - stations[index])
+                for index in range(first, stop)
+            ),
+            Fraction(0),
+        )
+        weighted.append(float(turn / (upper - lower)))
+    source_geometry = {
+        "closed": True,
+        "distance_m": [float(value) for value in stations],
+        "x_m": [float(row["x_m"]) for row in rows],
+        "y_m": [float(row["y_m"]) for row in rows],
+        "curvature_per_m": [float(value) for value in curvature],
+    }
+    coarse = {
+        "closed": True,
+        "distance_m": [float(value) for value in coarse_stations],
+        "x_m": [float(rows[index]["x_m"]) for index in indices],
+        "y_m": [float(rows[index]["y_m"]) for index in indices],
+        "curvature_per_m": weighted,
+    }
+    wrong = tuple(float(curvature[index]) for index in indices[:-1])
+    assert len(weighted) == len(wrong) == 198
+    assert coarse["distance_m"][-1] - coarse["distance_m"][-2] == 4.0
+    assert all(
+        abs(start_sample - mean) > 1e-12
+        for start_sample, mean in zip(wrong, weighted, strict=True)
+    )
+    return path, source_geometry, coarse, wrong
+
+
+def _assert_fused_coarse_channels(geometry, oracle) -> None:
+    assert geometry["closed"] is True
+    assert len(geometry["curvature_per_m"]) == 198
+    for name in ("distance_m", "x_m", "y_m"):
+        assert geometry[name] == oracle[name]
+    for observed, expected in zip(
+        geometry["curvature_per_m"],
+        oracle["curvature_per_m"],
+        strict=True,
+    ):
+        assert observed == pytest.approx(expected, rel=0.0, abs=1e-12)
+
+
+def test_recipient_fused_coarse_selects_saves_loads_and_replays(
+    app: LapSimDesktop,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from math import isfinite
+
+    from lapsim.experiments import LapRunSettings, lap_replay
+    from lapsim.experiments.lap_replay import LapReplayReport
+    from lapsim.profiles import snapshot_vehicle_config
+    from lapsim.ui import course_catalog
+    from lapsim.ui.simulation import (
+        apply_uniform_road_grip,
+        endurance_run_config,
+        path_solver_settings,
+    )
+
+    app._select_course("Synthetic loop · AI demo")
+    assert app.course_spec.course_id == "synthetic_rounded_rectangle_v1"
+    initial_source = json.loads(app.course_source_json)
+    assert initial_source["selected_course_id"] == app.course_spec.course_id
+    assert initial_source["source_kind"] == "synthetic"
+    assert initial_source["source_generator"] == (
+        "lapsim.ui.course_catalog._synthetic_demo_track"
+    )
+    check_fused = desktop._check_fused_course_grid
+    path, source_geometry, oracle, _wrong = _fused_coarse_source_oracle()
+    files = (path, path.with_suffix(".json"))
+    source_before = {
+        source: (source.read_bytes(), source.stat().st_mtime_ns) for source in files
+    }
+    selected, frozen, policies = [], [], []
+    replay_reports: list[LapReplayReport] = []
+    original_select = LapSimDesktop._select_course
+    original_worker = LapSimDesktop._calculate_single
+    original_resolve = course_catalog.resolve_solver_grid
+    original_replay = lap_replay.replay_lap_record
+
+    def select(instance: LapSimDesktop, label: str) -> None:
+        selected.append(label)
+        original_select(instance, label)
+
+    def resolve(track, step_m, *, coherent_arcs):
+        policies.append((step_m, coherent_arcs))
+        return original_resolve(track, step_m, coherent_arcs=coherent_arcs)
+
+    def worker(instance, profile_id, profile_name, setup, step_m, torque, grip):
+        assert profile_id == "repository_baseline" and setup is None
+        assert profile_name == "Recipient grid self-test"
+        assert (step_m, torque, grip) == (5.0, 0.8, 1.0)
+        assert instance.course_spec.course_id == "team_endurance_fused_gnss_imu"
+        source = json.loads(instance.course_source_json)
+        resolved = course_catalog.solver_track_for_course(
+            instance.course_spec.course_id, instance.track, step_m
+        )
+        geometry = {
+            "closed": resolved.closed,
+            "distance_m": list(resolved.distance_m),
+            "x_m": list(resolved.x_m),
+            "y_m": list(resolved.y_m),
+            "curvature_per_m": list(resolved.curvature_per_m),
+        }
+        _assert_fused_coarse_channels(geometry, oracle)
+        vehicle, manifest = build_vehicle(profile_id)
+        apply_uniform_road_grip(vehicle, grip)
+        settings = LapRunSettings.from_track(
+            resolved,
+            track_id=instance.course_spec.course_id,
+            solver_step_m=step_m,
+            solver_settings=path_solver_settings(vehicle),
+            torque_request_fraction=torque,
+            road_grip_multiplier=grip,
+            endurance_config=endurance_run_config(vehicle),
+            profile_id=profile_id,
+            profile_label=profile_name,
+            source_course=source,
+        ).to_dict()
+        inputs = json.loads(
+            json.dumps(
+                {
+                    "settings": settings,
+                    "effective_vehicle_config": snapshot_vehicle_config(vehicle),
+                    "base_vehicle_config": manifest.to_dict()["model_config"],
+                    "selected_profile_id": profile_id,
+                },
+                allow_nan=False,
+            )
+        )
+        frozen.append((source, geometry, inputs))
+        return original_worker(
+            instance, profile_id, profile_name, setup, step_m, torque, grip
+        )
+
+    def capture_replay(record_path: str | Path) -> LapReplayReport:
+        result = original_replay(record_path)
+        replay_reports.append(result)
+        return result
+
+    with monkeypatch.context() as patch:
+        patch.setattr(LapSimDesktop, "_select_course", select)
+        patch.setattr(LapSimDesktop, "_calculate_single", worker)
+        patch.setattr(course_catalog, "resolve_solver_grid", resolve)
+        patch.setattr(lap_replay, "replay_lap_record", capture_replay)
+        report = check_fused(app)
+    assert selected == ["Fused GNSS/IMU · default"]
+    assert policies and all(value == (5.0, False) for value in policies)
+    assert len(frozen) == len(replay_reports) == 1
+    source, resolved_geometry, inputs = frozen[0]
+    assert report["status"] == "passed"
+    assert (
+        report["course_id"]
+        == app.course_spec.course_id
+        == "team_endurance_fused_gnss_imu"
+    )
+    assert report["source"] == source == json.loads(app.course_source_json)
+    assert source != initial_source
+    assert source["metadata_version"] == 1
+    assert source["selected_course_id"] == report["course_id"]
+    assert source["source_kind"] == "recorded_fusion_unverified"
+    assert source["revision"] == "legacy_unversioned"
+    assert source["coordinate_frame"] == "legacy_map_registered_xy_unknown_origin"
+    assert source["boundary_status"] == "absent"
+    assert source["source_geometry_hash_scope"] == (
+        "canonical loaded closed/distance_m/x_m/y_m/curvature_per_m"
+    )
+    assert (
+        source["bundle_id"]
+        is source["bundle_sha256"]
+        is source["bundle_hash_scope"]
+        is None
+    )
+    assert source["source_artifact_sha256"] == {
+        "fused_csv": sha256(source_before[path][0]).hexdigest(),
+        "fusion_metadata_json": sha256(
+            source_before[path.with_suffix(".json")][0]
+        ).hexdigest(),
+    }
+    assert report["source_geometry"] == source_geometry
+    assert (
+        source["source_geometry_sha256"]
+        == sha256(
+            json.dumps(
+                source_geometry, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode()
+        ).hexdigest()
+    )
+    assert {
+        "closed": app.track.closed,
+        "distance_m": list(app.track.distance_m),
+        "x_m": list(app.track.x_m),
+        "y_m": list(app.track.y_m),
+        "curvature_per_m": list(app.track.curvature_per_m),
+    } == source_geometry
+    (row,) = report["cases"]
+    assert row["requested_maximum_cell_length_m"] == 5.0 and row["cell_count"] == 198
+    _assert_fused_coarse_channels(row["geometry"], oracle)
+    assert row["geometry"] == resolved_geometry
+    assert (
+        row["geometry_sha256"]
+        == sha256(
+            json.dumps(
+                resolved_geometry,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode()
+        ).hexdigest()
+    )
+    assert row["expected_inputs"] == inputs
+    assert inputs["settings"]["solver"]["requested_maximum_cell_length_m"] == 5.0
+    assert inputs["settings"]["driver"] == {"torque_request_fraction": 0.8}
+    assert inputs["settings"]["conditions"]["road_grip_multiplier"] == 1.0
+    assert inputs["settings"]["endurance_config"]["starting_speed_mps"] is None
+    assert inputs["settings"]["track"]["source_course"] == source
+    assert (
+        row["expected_inputs_sha256"]
+        == row["recorded_inputs_sha256"]
+        == sha256(
+            json.dumps(
+                inputs, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode()
+        ).hexdigest()
+    )
+    record_path = default_run_directory() / f"{row['record_run_id']}.json"
+    before = record_path.read_bytes(), record_path.stat().st_mtime_ns
+    record = RunRecord.load(record_path)
+    document = record.to_dict()
+    assert record.run_id == row["record_run_id"]
+    assert (
+        len(before[0]) == row["record_bytes"]
+        and sha256(before[0]).hexdigest() == row["record_sha256"]
+    )
+    assert document["settings"] == inputs["settings"]
+    assert (
+        document["configuration"]["effective_vehicle_config"]
+        == inputs["effective_vehicle_config"]
+    )
+    assert (
+        document["configuration"]["base_profile_manifest"]["model_config"]
+        == inputs["base_vehicle_config"]
+    )
+    assert (
+        document["configuration"]["selected_profile_id"]
+        == inputs["selected_profile_id"]
+    )
+    assert row["record_unchanged"] is True
+    assert row["starting_speed"]["configured_override_mps"] is None
+    assert (
+        isfinite(row["starting_speed"]["resolved_mps"])
+        and row["starting_speed"]["resolved_mps"] >= 0.0
+    )
+    assert (
+        row["starting_speed"]["resolved_mps"]
+        == document["result"]["starting_speed_mps"]
+    )
+    replay = row["replay"]
+    assert replay == replay_reports[0].to_dict()
+    assert replay["model_agreement"] is replay["replay_completed"] is True
+    assert replay["run_id"] == record.run_id
+    assert replay["recorded_sample_count"] == replay["replayed_sample_count"] == 198
+    assert not replay["mismatch_reasons"] and replay["metrics"]
+    for metric in replay["metrics"]:
+        assert metric["passed"] is True
+        assert metric["maximum_absolute_error"] is not None
+        assert isfinite(metric["maximum_absolute_error"]) and isfinite(
+            metric["tolerance"]
+        )
+        assert metric["maximum_absolute_error"] == 0.0 <= metric["tolerance"]
+    assert (record_path.read_bytes(), record_path.stat().st_mtime_ns) == before
+    assert {
+        source: (source.read_bytes(), source.stat().st_mtime_ns) for source in files
+    } == source_before
+
+
+def test_recipient_fused_coarse_rejects_worker_start_sample_curvature(
+    app: LapSimDesktop,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from dataclasses import replace
+
+    from lapsim.ui import app as app_module
+
+    check_fused = desktop._check_fused_course_grid
+    path, _source_geometry, oracle, wrong_curvature = _fused_coarse_source_oracle()
+    files = (path, path.with_suffix(".json"))
+    source_before = {
+        source: (source.read_bytes(), source.stat().st_mtime_ns) for source in files
+    }
+    original = app_module.solver_track_for_course
+    original_worker = LapSimDesktop._calculate_single
+    injected = []
+    worker_calls = []
+
+    def worker(instance, *args, **kwargs):
+        worker_calls.append(True)
+        return original_worker(instance, *args, **kwargs)
+
+    def wrong_worker_grid(course_id, track, step_m):
+        resolved = original(course_id, track, step_m)
+        if course_id == "team_endurance_fused_gnss_imu" and step_m == 5.0:
+            assert worker_calls == [True]
+            assert resolved.cell_count == 198 and resolved.closed is True
+            for name in ("distance_m", "x_m", "y_m"):
+                assert list(getattr(resolved, name)) == oracle[name]
+            changed = replace(resolved, curvature_per_m=wrong_curvature)
+            assert changed.distance_m == resolved.distance_m
+            assert changed.x_m == resolved.x_m and changed.y_m == resolved.y_m
+            assert changed.cell_count == resolved.cell_count
+            injected.append(changed.curvature_per_m)
+            return changed
+        return resolved
+
+    with monkeypatch.context() as patch:
+        patch.setattr(LapSimDesktop, "_calculate_single", worker)
+        patch.setattr(app_module, "solver_track_for_course", wrong_worker_grid)
+        with pytest.raises(
+            RuntimeError,
+            match="Recipient fused grid cell count or curvature is incorrect",
+        ):
+            check_fused(app)
+    assert injected == [wrong_curvature]
+    assert worker_calls == [True]
+    assert {
+        source: (source.read_bytes(), source.stat().st_mtime_ns) for source in files
+    } == source_before
+
+
+def _fused_consumer_report() -> dict:
+    from copy import deepcopy
+
+    path, source_geometry, geometry, _wrong = _fused_coarse_source_oracle()
+
+    def digest(value):
+        return sha256(
+            json.dumps(
+                value, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode()
+        ).hexdigest()
+
+    source = {
+        "metadata_version": 1,
+        "selected_course_id": "team_endurance_fused_gnss_imu",
+        "source_geometry_sha256": digest(source_geometry),
+        "source_geometry_hash_scope": (
+            "canonical loaded closed/distance_m/x_m/y_m/curvature_per_m"
+        ),
+        "source_kind": "recorded_fusion_unverified",
+        "revision": "legacy_unversioned",
+        "coordinate_frame": "legacy_map_registered_xy_unknown_origin",
+        "boundary_status": "absent",
+        "bundle_id": None,
+        "bundle_sha256": None,
+        "bundle_hash_scope": None,
+        "source_artifact_sha256": {
+            "fused_csv": sha256(path.read_bytes()).hexdigest(),
+            "fusion_metadata_json": sha256(
+                path.with_suffix(".json").read_bytes()
+            ).hexdigest(),
+        },
+    }
+    inputs = {
+        "settings": {
+            "track": {
+                "id": source["selected_course_id"],
+                "cell_count": 198,
+                "length_m": 989.0,
+                "closed": True,
+                "geometry": deepcopy(geometry),
+                "geometry_sha256": digest(geometry),
+                "source_course": deepcopy(source),
+            },
+            "solver": {"future_solver_key": {"value": 7}},
+            "endurance_config": {"laps": 1},
+            "driver": {"torque_request_fraction": 0.8},
+            "conditions": {"road_grip_multiplier": 1.0},
+        },
+        "effective_vehicle_config": {"future_effective_key": [1, 2]},
+        "base_vehicle_config": {"future_base_key": {"tag": "fixture"}},
+        "selected_profile_id": "repository_baseline",
+        "future_top_level_key": {"do_not_drop": True},
+    }
+    report = {
+        "status": "passed",
+        "checks": {"fused_course_grid": True},
+        "build": None,
+        "frozen": False,
+        "recipient_fused_grid": {
+            "status": "passed",
+            "course_id": source["selected_course_id"],
+            "source": source,
+            "source_geometry": source_geometry,
+            "cases": [
+                {
+                    "requested_maximum_cell_length_m": 5.0,
+                    "cell_count": 198,
+                    "geometry": geometry,
+                    "geometry_sha256": digest(geometry),
+                    "expected_inputs": inputs,
+                    "expected_inputs_sha256": digest(inputs),
+                    "recorded_inputs_sha256": digest(inputs),
+                    "record_unchanged": True,
+                    "record_run_id": "1" * 64,
+                    "replay": {
+                        "run_id": "1" * 64,
+                        "model_agreement": True,
+                        "replay_completed": True,
+                        "recorded_sample_count": 198,
+                        "replayed_sample_count": 198,
+                        "mismatch_reasons": [],
+                        "provenance_warnings": ["Synthetic report fixture only"],
+                        "metrics": [
+                            {
+                                "name": name,
+                                "maximum_absolute_error": (
+                                    0.005 if name == "driving_time_s" else 0.0
+                                ),
+                                "tolerance": tolerance,
+                                "passed": True,
+                            }
+                            for name, tolerance in (
+                                ("driving_time_s", 0.01),
+                                ("lap_time_s", 0.01),
+                                ("starting_speed_mps", 0.01),
+                                ("ending_speed_mps", 0.01),
+                                ("pack_energy_kwh", 1e-5),
+                                ("final_state_of_charge", 1e-5),
+                                ("sample_time_s", 0.01),
+                                ("sample_distance_m", 1e-8),
+                                ("speed_trace_mps", 0.01),
+                                ("path_speed_ceiling_mps", 0.01),
+                                ("controls.motor_torque_request_nm", 0.0),
+                                ("controls.front_brake_pressure_psi", 0.0),
+                                ("controls.rear_brake_pressure_psi", 0.0),
+                                (
+                                    "controls.rear_regenerative_brake_force_request_n",
+                                    0.0,
+                                ),
+                                ("controls.steering_angle_rad", 0.0),
+                                (
+                                    "controls.front_regenerative_brake_force_request_n",
+                                    0.0,
+                                ),
+                                ("tire.road_grip_multiplier", 0.0),
+                            )
+                        ],
+                    },
+                }
+            ],
+        },
+    }
+    return report
+
+
+def _fused_consumer():
+    import importlib.util
+
+    path = Path(__file__).resolve().parents[1] / "quality/run_package_runtime.py"
+    spec = importlib.util.spec_from_file_location("recipient_package_consumer", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module._fused_grid_identity
+
+
+def _reseal_fused_consumer_report(report: dict) -> None:
+    row = report["recipient_fused_grid"]["cases"][0]
+
+    def digest(value):
+        return sha256(
+            json.dumps(
+                value, sort_keys=True, separators=(",", ":"), allow_nan=False
+            ).encode()
+        ).hexdigest()
+
+    row["geometry_sha256"] = digest(row["geometry"])
+    track = row["expected_inputs"]["settings"]["track"]
+    track["geometry"] = json.loads(json.dumps(row["geometry"]))
+    track["geometry_sha256"] = row["geometry_sha256"]
+    track["source_course"] = json.loads(
+        json.dumps(report["recipient_fused_grid"]["source"])
+    )
+    row["expected_inputs_sha256"] = row["recorded_inputs_sha256"] = digest(
+        row["expected_inputs"]
+    )
+
+
+@pytest.mark.parametrize("frozen", [False, True])
+def test_fused_consumer_context_hashes_stay_local_and_inputs_are_not_mutated(
+    frozen: bool,
+) -> None:
+    from copy import deepcopy
+    from math import nextafter
+
+    consume = _fused_consumer()
+    first = _fused_consumer_report()
+    original = deepcopy(first)
+    baseline = consume(first)
+    assert first == original
+    second = deepcopy(first)
+    source = second["recipient_fused_grid"]["source"]
+    source["source_artifact_sha256"] = {
+        "fused_csv": "a" * 64,
+        "fusion_metadata_json": "b" * 64,
+    }
+    resource_hashes = {
+        "analysis/data/track/gnss_imu_endurance_track.csv": "a" * 64,
+        "analysis/data/track/gnss_imu_endurance_track.json": "b" * 64,
+    }
+    second["build"] = {
+        "files_sha256": resource_hashes,
+        "source_sha256": sha256(
+            (
+                json.dumps(resource_hashes, sort_keys=True)
+                if frozen
+                else json.dumps(resource_hashes, sort_keys=True, separators=(",", ":"))
+            ).encode()
+        ).hexdigest(),
+    }
+    second["frozen"] = frozen
+    row = second["recipient_fused_grid"]["cases"][0]
+    row["geometry"]["curvature_per_m"][0] = nextafter(
+        row["geometry"]["curvature_per_m"][0], float("inf")
+    )
+    row["record_run_id"] = "2" * 64
+    row["replay"]["run_id"] = row["record_run_id"]
+    _reseal_fused_consumer_report(second)
+    observed = consume(second)
+    assert observed["identity"] == baseline["identity"]
+    assert observed["observed"] != baseline["observed"]
+    assert (
+        observed["observed"]["expected_inputs_sha256"]
+        != baseline["observed"]["expected_inputs_sha256"]
+    )
+
+
+@pytest.mark.parametrize("channel", ["distance_m", "x_m", "y_m", "curvature_per_m"])
+def test_fused_consumer_rejects_truthfully_rehashed_wrong_geometry(
+    channel: str,
+) -> None:
+    report = _fused_consumer_report()
+    report["recipient_fused_grid"]["cases"][0]["geometry"][channel][1] += 0.01
+    _reseal_fused_consumer_report(report)
+    with pytest.raises(RuntimeError, match="independent cell oracle"):
+        _fused_consumer()(report)
+
+
+@pytest.mark.parametrize(
+    "section",
+    [
+        "settings",
+        "effective_vehicle_config",
+        "base_vehicle_config",
+        "future_top_level_key",
+    ],
+)
+def test_fused_consumer_compares_unknown_configuration_keys(section: str) -> None:
+    consume = _fused_consumer()
+    report = _fused_consumer_report()
+    before = consume(report)
+    row = report["recipient_fused_grid"]["cases"][0]
+    row["expected_inputs"][section]["new_unknown_key"] = {"must_compare": 42}
+    _reseal_fused_consumer_report(report)
+    assert consume(report)["identity"] != before["identity"]
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "check",
+        "recorded_hash",
+        "resource_hash",
+        "replay",
+        "record_changed",
+        "partial_count",
+        "failed_metric",
+        "null_error",
+        "run_id",
+        "mismatch",
+        "no_metrics",
+        "truncated_metrics",
+        "duplicate_metric",
+        "altered_tolerance",
+    ],
+)
+def test_fused_consumer_rejects_incomplete_local_evidence(fault: str) -> None:
+    report = _fused_consumer_report()
+    row = report["recipient_fused_grid"]["cases"][0]
+    if fault == "check":
+        report["checks"].clear()
+    elif fault == "recorded_hash":
+        row["recorded_inputs_sha256"] = "0" * 64
+    elif fault == "resource_hash":
+        report["recipient_fused_grid"]["source"]["source_artifact_sha256"][
+            "fused_csv"
+        ] = "a" * 64
+    elif fault == "replay":
+        row["replay"]["model_agreement"] = False
+    elif fault == "record_changed":
+        row["record_unchanged"] = False
+    elif fault == "partial_count":
+        row["replay"]["replayed_sample_count"] = 197
+    elif fault == "failed_metric":
+        row["replay"]["metrics"][0]["passed"] = False
+    elif fault == "null_error":
+        row["replay"]["metrics"][0]["maximum_absolute_error"] = None
+    elif fault == "run_id":
+        row["replay"]["run_id"] = "another-run"
+    elif fault == "mismatch":
+        row["replay"]["mismatch_reasons"] = ["Contradictory local report"]
+    elif fault == "no_metrics":
+        row["replay"]["metrics"] = []
+    elif fault == "truncated_metrics":
+        row["replay"]["metrics"] = [row["replay"]["metrics"][2]]
+    elif fault == "duplicate_metric":
+        row["replay"]["metrics"].append(dict(row["replay"]["metrics"][0]))
+    else:
+        row["replay"]["metrics"][0].update(
+            maximum_absolute_error=100.0, tolerance=1000.0
+        )
+    with pytest.raises(RuntimeError, match="Recipient fused-grid report is invalid"):
+        _fused_consumer()(report)
+
+
+def test_fused_consumer_binds_actual_source_root_before_normalizing(
+    tmp_path: Path,
+) -> None:
+    consume = _fused_consumer()
+    report = _fused_consumer_report()
+    baseline = consume(report)
+    path, _source, _geometry, _wrong = _fused_coarse_source_oracle()
+    target = tmp_path / "analysis/data/track"
+    target.mkdir(parents=True)
+    for source in (path, path.with_suffix(".json")):
+        original = source.read_bytes()
+        lf = original.replace(b"\r\n", b"\n")
+        changed = lf if original != lf else lf.replace(b"\n", b"\r\n")
+        (target / source.name).write_bytes(changed)
+    raw = report["recipient_fused_grid"]["source"]["source_artifact_sha256"]
+    raw["fused_csv"] = sha256((target / path.name).read_bytes()).hexdigest()
+    raw["fusion_metadata_json"] = sha256(
+        (target / path.with_suffix(".json").name).read_bytes()
+    ).hexdigest()
+    _reseal_fused_consumer_report(report)
+    with pytest.raises(RuntimeError, match="raw source hashes"):
+        consume(report)
+    observed = consume(report, source_root=tmp_path)
+    assert observed["identity"] == baseline["identity"]
+    assert (
+        observed["observed"]["raw_source_sha256"]
+        != baseline["observed"]["raw_source_sha256"]
+    )
+
+
+@pytest.mark.parametrize("field", ["curvature_per_m", "x_m"])
+def test_fused_consumer_rejects_semantic_source_root_with_truthful_raw_hashes(
+    field: str,
+    tmp_path: Path,
+) -> None:
+    import csv
+
+    path, _source, _geometry, _wrong = _fused_coarse_source_oracle()
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    rows[0][field] = str(float(rows[0][field]) + 0.01)
+    target = tmp_path / "analysis/data/track"
+    target.mkdir(parents=True)
+    with (target / path.name).open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]), lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    metadata = target / path.with_suffix(".json").name
+    metadata.write_bytes(path.with_suffix(".json").read_bytes())
+    report = _fused_consumer_report()
+    raw = report["recipient_fused_grid"]["source"]["source_artifact_sha256"]
+    raw["fused_csv"] = sha256((target / path.name).read_bytes()).hexdigest()
+    raw["fusion_metadata_json"] = sha256(metadata.read_bytes()).hexdigest()
+    _reseal_fused_consumer_report(report)
+    # Raw hashes and full input hashes are truthful; the claimed264e source is not.
+    with pytest.raises(RuntimeError, match="source geometry differs"):
+        _fused_consumer()(report, source_root=tmp_path)

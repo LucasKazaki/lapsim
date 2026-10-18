@@ -447,6 +447,178 @@ def _check_catalog_course_grid(app) -> dict:
         ) from error
 
 
+def _check_fused_course_grid(app) -> dict:
+    """Check one coarse legacy fused recipient without changing its geometry."""
+    import csv
+    from fractions import Fraction
+    from hashlib import sha256
+    from math import isclose
+    from .ui.course_catalog import course_source_metadata, solver_track_for_course
+    from .ui.simulation import ENDURANCE_TRACK_PATH
+
+    def snapshot(path):
+        return path.read_bytes(), path.stat().st_mtime_ns
+
+    course_id = "team_endurance_fused_gnss_imu"
+    paths = (ENDURANCE_TRACK_PATH, ENDURANCE_TRACK_PATH.with_suffix(".json"))
+    try:
+        source_before = {path: snapshot(path) for path in paths}
+        selected = next(
+            option for option in app.course_options if option.course_id == course_id
+        )
+        app._select_course(selected.label)
+        if app.course_spec.course_id != course_id:
+            raise RuntimeError("Recipient fused selection chose a different course")
+        source_json = app.course_source_json
+        source = json.loads(source_json)
+        if source != course_source_metadata(app.course_spec, app.track):
+            raise RuntimeError("Recipient fused source metadata changed")
+        if (
+            source["metadata_version"] != 1
+            or source["selected_course_id"] != course_id
+            or source["source_kind"] != "recorded_fusion_unverified"
+            or source["revision"] != "legacy_unversioned"
+            or source["coordinate_frame"] != "legacy_map_registered_xy_unknown_origin"
+            or source["boundary_status"] != "absent"
+            or any(
+                source[key] is not None
+                for key in ("bundle_id", "bundle_sha256", "bundle_hash_scope")
+            )
+            or source["source_artifact_sha256"]
+            != {
+                "fused_csv": sha256(source_before[paths[0]][0]).hexdigest(),
+                "fusion_metadata_json": sha256(source_before[paths[1]][0]).hexdigest(),
+            }
+        ):
+            raise RuntimeError("Recipient fused source identity is incorrect")
+        rows = list(
+            csv.DictReader(source_before[paths[0]][0].decode("utf-8").splitlines())
+        )
+        stations = [Fraction(row["distance_m"]) for row in rows]
+        if (
+            stations != [Fraction(index, 2) for index in range(1979)]
+            or rows[-1]["curvature_per_m"] != ""
+        ):
+            raise RuntimeError("Recipient fused source stations are incorrect")
+        curvature = [Fraction(row["curvature_per_m"]) for row in rows[:-1]]
+        source_geometry = {
+            "closed": True,
+            "distance_m": [float(value) for value in stations],
+            "x_m": [float(row["x_m"]) for row in rows],
+            "y_m": [float(row["y_m"]) for row in rows],
+            "curvature_per_m": [float(value) for value in curvature],
+        }
+        actual_source = {
+            "closed": app.track.closed,
+            "distance_m": list(app.track.distance_m),
+            "x_m": list(app.track.x_m),
+            "y_m": list(app.track.y_m),
+            "curvature_per_m": list(app.track.curvature_per_m),
+        }
+        if actual_source != source_geometry or source[
+            "source_geometry_sha256"
+        ] != _self_test_json_sha256(source_geometry):
+            raise RuntimeError("Recipient fused source channels are incorrect")
+        coarse_stations = [Fraction(index * 5) for index in range(198)]
+        coarse_stations.append(Fraction(989))
+        indices = [int(station * 2) for station in coarse_stations]
+        expected_curvature = []
+        for lower, upper, first, stop in zip(
+            coarse_stations[:-1],
+            coarse_stations[1:],
+            indices[:-1],
+            indices[1:],
+            strict=True,
+        ):
+            turn = sum(
+                (
+                    curvature[index] * (stations[index + 1] - stations[index])
+                    for index in range(first, stop)
+                ),
+                Fraction(0),
+            )
+            expected_curvature.append(float(turn / (upper - lower)))
+        expected_stations = [float(value) for value in coarse_stations]
+        expected_x = [float(rows[index]["x_m"]) for index in indices]
+        expected_y = [float(rows[index]["y_m"]) for index in indices]
+
+        def check_geometry(value):
+            if (
+                value["closed"] is not True
+                or len(value["curvature_per_m"]) != 198
+                or any(
+                    not isclose(observed, wanted, rel_tol=0.0, abs_tol=1e-12)
+                    for observed, wanted in zip(
+                        value["curvature_per_m"], expected_curvature, strict=True
+                    )
+                )
+            ):
+                raise RuntimeError(
+                    "Recipient fused grid cell count or curvature is incorrect"
+                )
+            if (
+                value["distance_m"] != expected_stations
+                or value["x_m"] != expected_x
+                or value["y_m"] != expected_y
+                or expected_stations[-1] - expected_stations[-2] != 4.0
+            ):
+                raise RuntimeError("Recipient fused grid stations or x/y are incorrect")
+
+        # The genuine catalog resolver retains coherent_arcs=False for this source.
+        # Fraction values check channels; they never replace the physics input.
+        expected_track = solver_track_for_course(course_id, app.track, 5.0)
+        expected_geometry = {
+            "closed": expected_track.closed,
+            "distance_m": list(expected_track.distance_m),
+            "x_m": list(expected_track.x_m),
+            "y_m": list(expected_track.y_m),
+            "curvature_per_m": list(expected_track.curvature_per_m),
+        }
+        check_geometry(expected_geometry)
+        case = _check_recipient_course_case(
+            app,
+            source,
+            expected_track,
+            5.0,
+            check_geometry,
+            worker_error="Recipient fused-grid inputs or worker calculation failed",
+        )
+        if (
+            app.course_spec.course_id != course_id
+            or app.course_source_json != source_json
+            or case["geometry"] != expected_geometry
+            or {
+                "closed": app.track.closed,
+                "distance_m": list(app.track.distance_m),
+                "x_m": list(app.track.x_m),
+                "y_m": list(app.track.y_m),
+                "curvature_per_m": list(app.track.curvature_per_m),
+            }
+            != source_geometry
+            or any(snapshot(path) != source_before[path] for path in paths)
+        ):
+            raise RuntimeError("Recipient fused work changed its source or inputs")
+        return {
+            "status": "passed",
+            "course_id": course_id,
+            "source": source,
+            "source_geometry": source_geometry,
+            "cases": [case],
+            "scope": (
+                "Coarse 5 m/198-cell legacy fused selection and synchronous "
+                "worker/save/load/replay in isolated GUI storage. Its separately "
+                "fused x/y and curvature remain unverified and geometrically "
+                "inconsistent, with unknown origin and no surveyed boundary. "
+                "No fine-grid, async Run, native physics or physical validation "
+                "claim. Scratch record hashes describe observed round trips."
+            ),
+        }
+    except RuntimeError:
+        raise
+    except Exception as error:
+        raise RuntimeError(f"Recipient fused-grid self-test failed: {error}") from error
+
+
 def _check_imported_course_grid(app, directory: Path) -> dict:
     """Exercise the real desktop worker in caller-isolated storage, without threads."""
     from hashlib import sha256
@@ -736,6 +908,8 @@ def self_test(report_path: Path, *, native_record_path: Path | None = None) -> d
             checks["imported_course_grid"] = recipient_grid["status"] == "passed"
             recipient_catalog_grid = _check_catalog_course_grid(app)
             checks["catalog_course_grid"] = recipient_catalog_grid["status"] == "passed"
+            recipient_fused_grid = _check_fused_course_grid(app)
+            checks["fused_course_grid"] = recipient_fused_grid["status"] == "passed"
             # Child widgets are destroyed by root, allowing their lifecycle hooks to run.
         finally:
             root.destroy()
@@ -802,6 +976,7 @@ def self_test(report_path: Path, *, native_record_path: Path | None = None) -> d
         "native_record_viewer": native_viewer,
         "recipient_grid": recipient_grid,
         "recipient_catalog_grid": recipient_catalog_grid,
+        "recipient_fused_grid": recipient_fused_grid,
     }
     _check_self_test_paths(report_path, native_record_path)
     report_path.parent.mkdir(parents=True, exist_ok=True)

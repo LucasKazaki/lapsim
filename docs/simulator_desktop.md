@@ -569,6 +569,13 @@ for metric in report.metrics:
     print(metric.name, metric.maximum_absolute_error, metric.tolerance, metric.passed)
 ```
 
+`Controls` stores all six requests as finite built-in floats before physics
+and JSON storage. This gives live NumPy-generated requests and restored
+requests the same scalar arithmetic. Earlier records preserve the outputs
+of their original code; JSON does not retain the former scalar classes.
+This policy does not rewrite historical records or resolve their replay
+mismatches. Read numerical results and provenance warnings separately.
+
 The checker verifies the record ID and embedded model/track data, restores
 allowlisted vehicle constructor inputs, solves the saved path constraints,
 and feeds each saved accepted-cell control command back through the endurance
