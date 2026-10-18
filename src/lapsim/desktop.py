@@ -184,24 +184,275 @@ def _self_test_json_sha256(value) -> str:
     return sha256(encoded.encode()).hexdigest()
 
 
-def _check_imported_course_grid(app, directory: Path) -> dict:
-    """Exercise the real desktop worker in caller-isolated storage, without threads."""
+def _check_recipient_course_case(
+    app, source, expected_track, step_m, check_geometry, *, worker_error: str
+) -> dict:
+    """Freeze one requested car/grid, then check actual worker save/load/replay."""
     from hashlib import sha256
-    from itertools import pairwise
-    from math import cos, isclose, isfinite, pi, sin
-    from .courses.course_bundle import CourseBundle
+    from math import isfinite
     from .experiments import LapRunSettings, RunRecord, default_run_directory
     from .experiments.lap_replay import replay_lap_record
     from .profiles import build_vehicle, snapshot_vehicle_config
-    from .ui.course_catalog import (
-        course_source_metadata,
-        imported_course_spec,
-        solver_track_for_course,
-    )
     from .ui.simulation import (
         apply_uniform_road_grip,
         endurance_run_config,
         path_solver_settings,
+    )
+
+    def snapshot(path):
+        return path.read_bytes(), path.stat().st_mtime_ns
+
+    vehicle, profile = build_vehicle("repository_baseline")
+    apply_uniform_road_grip(vehicle, 1.0)
+    settings = LapRunSettings.from_track(
+        expected_track,
+        track_id=app.course_spec.course_id,
+        solver_step_m=step_m,
+        solver_settings=path_solver_settings(vehicle),
+        torque_request_fraction=0.8,
+        road_grip_multiplier=1.0,
+        endurance_config=endurance_run_config(vehicle),
+        profile_id="repository_baseline",
+        profile_label="Recipient grid self-test",
+        source_course=source,
+    ).to_dict()
+    check_geometry(settings["track"]["geometry"])
+    expected_inputs = json.loads(
+        json.dumps(
+            {
+                "settings": settings,
+                "effective_vehicle_config": snapshot_vehicle_config(vehicle),
+                "base_vehicle_config": profile.to_dict()["model_config"],
+                "selected_profile_id": "repository_baseline",
+            },
+            allow_nan=False,
+        )
+    )
+    expected_hash = _self_test_json_sha256(expected_inputs)
+    app._calculate_single(
+        "repository_baseline",
+        "Recipient grid self-test",
+        None,
+        step_m,
+        0.8,
+        1.0,
+    )
+    kind, payload, error = app.result_queue.get_nowait()
+    if (
+        error is not None
+        or kind != "single"
+        or payload is None
+        or not payload[2].completed
+    ):
+        raise RuntimeError(worker_error) from error
+    run_id = payload[3]
+    record_path = default_run_directory() / f"{run_id}.json"
+    record_before = snapshot(record_path)
+    document = RunRecord.load(record_path).to_dict()
+    actual_geometry = document["settings"]["track"]["geometry"]
+    check_geometry(actual_geometry)
+    recorded_inputs = {
+        "settings": document["settings"],
+        "effective_vehicle_config": document["configuration"][
+            "effective_vehicle_config"
+        ],
+        "base_vehicle_config": document["configuration"][
+            "base_profile_manifest"
+        ]["model_config"],
+        "selected_profile_id": document["configuration"]["selected_profile_id"],
+    }
+    recorded_hash = _self_test_json_sha256(recorded_inputs)
+    if recorded_hash != expected_hash:
+        raise RuntimeError(
+            "Recipient grid recorded inputs/configuration/profile do not match the request"
+        )
+    resolved_start = payload[2].starting_speed_mps
+    if (
+        resolved_start is None
+        or not isfinite(resolved_start)
+        or resolved_start < 0.0
+        or document["result"].get("starting_speed_mps") != resolved_start
+    ):
+        raise RuntimeError(
+            "Recipient grid resolved starting speed does not match its record"
+        )
+    replay = replay_lap_record(record_path)
+    if not replay.model_agreement or not replay.replay_completed:
+        raise RuntimeError(
+            "Recipient grid saved-record replay did not complete with model agreement"
+        )
+    if snapshot(record_path) != record_before:
+        raise RuntimeError(
+            "Recipient grid replay changed its saved record or source fixture"
+        )
+    return {
+        "requested_maximum_cell_length_m": step_m,
+        "cell_count": expected_track.cell_count,
+        "geometry": actual_geometry,
+        "geometry_sha256": document["settings"]["track"]["geometry_sha256"],
+        "expected_inputs": expected_inputs,
+        "expected_inputs_sha256": expected_hash,
+        "recorded_inputs_sha256": recorded_hash,
+        "record_run_id": run_id,
+        "record_sha256": sha256(record_before[0]).hexdigest(),
+        "record_bytes": len(record_before[0]),
+        "record_unchanged": True,
+        "replay": replay.to_dict(),
+        "starting_speed": {
+            "configured_override_mps": settings["endurance_config"][
+                "starting_speed_mps"
+            ],
+            "resolved_mps": resolved_start,
+        },
+    }
+
+
+def _check_catalog_course_grid(app) -> dict:
+    """Select and retain the shipped analytic demo through save/load/replay."""
+    from math import cos, isclose, pi, sin
+    from .ui.course_catalog import course_source_metadata
+
+    course_id = "synthetic_rounded_rectangle_v1"
+    try:
+        selected = next(
+            option for option in app.course_options if option.course_id == course_id
+        )
+        app._select_course(selected.label)
+        if app.course_spec.course_id != course_id:
+            raise RuntimeError("Recipient catalog selection chose a different course")
+        source_json = app.course_source_json
+        source = json.loads(source_json)
+        if source != course_source_metadata(app.course_spec, app.track):
+            raise RuntimeError("Recipient catalog source metadata changed")
+        if (
+            source["selected_course_id"] != course_id
+            or source["source_kind"] != "synthetic"
+            or source["revision"] != "generator_v1"
+            or source["source_generator"]
+            != "lapsim.ui.course_catalog._synthetic_demo_track"
+            or source["boundary_status"] != "absent"
+            or source["coordinate_frame"] != "analytic_local_cartesian_xy_m"
+            or source["bundle_id"] is not None
+            or source["bundle_sha256"] is not None
+        ):
+            raise RuntimeError("Recipient catalog source identity is incorrect")
+        source_geometry = {
+            "closed": app.track.closed,
+            "distance_m": list(app.track.distance_m),
+            "x_m": list(app.track.x_m),
+            "y_m": list(app.track.y_m),
+            "curvature_per_m": list(app.track.curvature_per_m),
+        }
+        expected_curvature = []
+        for straight_cells in (80, 40, 80, 40):
+            expected_curvature.extend([0.0] * straight_cells + [1.0 / 12.0] * 38)
+
+        def check_geometry(value):
+            if (
+                value["closed"] is not True
+                or value["curvature_per_m"] != expected_curvature
+            ):
+                raise RuntimeError(
+                    "Recipient catalog grid cell count or curvature is incorrect"
+                )
+            if value != source_geometry:
+                raise RuntimeError(
+                    "Recipient catalog grid did not retain the source geometry"
+                )
+
+        check_geometry(source_geometry)
+        # Fixed declared segments, not a count/geometry returned by the resolver.
+        # Straight endpoints/directions and arc centers independently define x/y.
+        segments = (
+            (40.0, 80, (0.0, 0.0, 1.0, 0.0), None),
+            (6.0 * pi, 38, None, (40.0, 12.0, -pi / 2.0)),
+            (20.0, 40, (52.0, 12.0, 0.0, 1.0), None),
+            (6.0 * pi, 38, None, (40.0, 32.0, 0.0)),
+            (40.0, 80, (40.0, 44.0, -1.0, 0.0), None),
+            (6.0 * pi, 38, None, (0.0, 32.0, pi / 2.0)),
+            (20.0, 40, (-12.0, 32.0, 0.0, -1.0), None),
+            (6.0 * pi, 38, None, (0.0, 12.0, pi)),
+        )
+        expected = [(0.0, 0.0, 0.0)]
+        offset = 0.0
+        for length, count, straight, arc in segments:
+            for index in range(1, count + 1):
+                local = length * index / count
+                if straight is not None:
+                    x0, y0, dx, dy = straight
+                    x, y = x0 + local * dx, y0 + local * dy
+                else:
+                    if arc is None:
+                        raise RuntimeError("Recipient catalog oracle is incomplete")
+                    cx, cy, angle = arc
+                    x = cx + 12.0 * cos(angle + local / 12.0)
+                    y = cy + 12.0 * sin(angle + local / 12.0)
+                expected.append((offset + local, x, y))
+            offset += length
+        actual = zip(
+            source_geometry["distance_m"],
+            source_geometry["x_m"],
+            source_geometry["y_m"],
+            strict=True,
+        )
+        if len(expected) != 393 or any(
+            not all(
+                isclose(observed, wanted, rel_tol=0.0, abs_tol=1e-12)
+                for observed, wanted in zip(point, analytic, strict=True)
+            )
+            for point, analytic in zip(actual, expected, strict=True)
+        ):
+            raise RuntimeError("Recipient catalog source differs from the analytic demo")
+        source_hash = _self_test_json_sha256(source_geometry)
+        if source["source_geometry_sha256"] != source_hash:
+            raise RuntimeError("Recipient catalog source geometry hash is incorrect")
+        case = _check_recipient_course_case(
+            app,
+            source,
+            app.track,
+            5.0,
+            check_geometry,
+            worker_error="Recipient catalog-grid inputs or worker calculation failed",
+        )
+        if (
+            app.course_spec.course_id != course_id
+            or app.course_source_json != source_json
+            or case["geometry_sha256"] != source_hash
+            or list(app.track.distance_m) != source_geometry["distance_m"]
+            or list(app.track.x_m) != source_geometry["x_m"]
+            or list(app.track.y_m) != source_geometry["y_m"]
+            or list(app.track.curvature_per_m) != source_geometry["curvature_per_m"]
+        ):
+            raise RuntimeError("Recipient catalog work changed its declared source")
+        return {
+            "status": "passed",
+            "course_id": course_id,
+            "source": source,
+            "source_geometry": source_geometry,
+            "cases": [case],
+            "scope": (
+                "Synthetic built-in catalog selection and synchronous worker/save/load/replay "
+                "inside temporary GUI user storage. No asynchronous Run-button or native physics "
+                "claim. Constructor inputs are frozen configuration, not full dynamic state; "
+                "scratch record hashes are observations before product cleanup."
+            ),
+        }
+    except RuntimeError:
+        raise
+    except Exception as error:
+        raise RuntimeError(f"Recipient catalog-grid self-test failed: {error}") from error
+
+
+def _check_imported_course_grid(app, directory: Path) -> dict:
+    """Exercise the real desktop worker in caller-isolated storage, without threads."""
+    from hashlib import sha256
+    from itertools import pairwise
+    from math import cos, isclose, pi, sin
+    from .courses.course_bundle import CourseBundle
+    from .ui.course_catalog import (
+        course_source_metadata,
+        imported_course_spec,
+        solver_track_for_course,
     )
 
     def snapshot(path):
@@ -323,116 +574,19 @@ def _check_imported_course_grid(app, directory: Path) -> dict:
             expected_track = solver_track_for_course(
                 app.course_spec.course_id, bundle.track, step_m
             )
-            vehicle, profile = build_vehicle("repository_baseline")
-            apply_uniform_road_grip(vehicle, 1.0)
-            settings = LapRunSettings.from_track(
+            case = _check_recipient_course_case(
+                app,
+                source,
                 expected_track,
-                track_id=app.course_spec.course_id,
-                solver_step_m=step_m,
-                solver_settings=path_solver_settings(vehicle),
-                torque_request_fraction=0.8,
-                road_grip_multiplier=1.0,
-                endurance_config=endurance_run_config(vehicle),
-                profile_id="repository_baseline",
-                profile_label="Recipient grid self-test",
-                source_course=source,
-            ).to_dict()
-            check_geometry(settings["track"]["geometry"], subdivisions, step_m)
-            expected_inputs = json.loads(
-                json.dumps(
-                    {
-                        "settings": settings,
-                        "effective_vehicle_config": snapshot_vehicle_config(vehicle),
-                        "base_vehicle_config": profile.to_dict()["model_config"],
-                        "selected_profile_id": "repository_baseline",
-                    },
-                    allow_nan=False,
-                )
-            )
-            expected_hash = _self_test_json_sha256(expected_inputs)
-            app._calculate_single(
-                "repository_baseline",
-                "Recipient grid self-test",
-                None,
                 step_m,
-                0.8,
-                1.0,
+                lambda value: check_geometry(value, subdivisions, step_m),
+                worker_error="Recipient imported-grid inputs or worker calculation failed",
             )
-            kind, payload, error = app.result_queue.get_nowait()
-            if (
-                error is not None
-                or kind != "single"
-                or payload is None
-                or not payload[2].completed
-            ):
-                raise RuntimeError(
-                    "Recipient imported-grid inputs or worker calculation failed"
-                ) from error
-            run_id = payload[3]
-            record_path = default_run_directory() / f"{run_id}.json"
-            record_before = snapshot(record_path)
-            document = RunRecord.load(record_path).to_dict()
-            actual_geometry = document["settings"]["track"]["geometry"]
-            check_geometry(actual_geometry, subdivisions, step_m)
-            recorded_inputs = {
-                "settings": document["settings"],
-                "effective_vehicle_config": document["configuration"][
-                    "effective_vehicle_config"
-                ],
-                "base_vehicle_config": document["configuration"][
-                    "base_profile_manifest"
-                ]["model_config"],
-                "selected_profile_id": document["configuration"]["selected_profile_id"],
-            }
-            recorded_hash = _self_test_json_sha256(recorded_inputs)
-            if recorded_hash != expected_hash:
-                raise RuntimeError(
-                    "Recipient grid recorded inputs/configuration/profile do not match the request"
-                )
-            resolved_start = payload[2].starting_speed_mps
-            if (
-                resolved_start is None
-                or not isfinite(resolved_start)
-                or resolved_start < 0.0
-                or document["result"].get("starting_speed_mps") != resolved_start
-            ):
-                raise RuntimeError(
-                    "Recipient grid resolved starting speed does not match its record"
-                )
-            replay = replay_lap_record(record_path)
-            if not replay.model_agreement or not replay.replay_completed:
-                raise RuntimeError(
-                    "Recipient grid saved-record replay did not complete with model agreement"
-                )
-            if (
-                snapshot(record_path) != record_before
-                or snapshot(source_path) != source_before
-            ):
+            if snapshot(source_path) != source_before:
                 raise RuntimeError(
                     "Recipient grid replay changed its saved record or source fixture"
                 )
-            cases.append(
-                {
-                    "requested_maximum_cell_length_m": step_m,
-                    "cell_count": 32 * subdivisions,
-                    "geometry": actual_geometry,
-                    "geometry_sha256": document["settings"]["track"]["geometry_sha256"],
-                    "expected_inputs": expected_inputs,
-                    "expected_inputs_sha256": expected_hash,
-                    "recorded_inputs_sha256": recorded_hash,
-                    "record_run_id": run_id,
-                    "record_sha256": sha256(record_before[0]).hexdigest(),
-                    "record_bytes": len(record_before[0]),
-                    "record_unchanged": True,
-                    "replay": replay.to_dict(),
-                    "starting_speed": {
-                        "configured_override_mps": settings["endurance_config"][
-                            "starting_speed_mps"
-                        ],
-                        "resolved_mps": resolved_start,
-                    },
-                }
-            )
+            cases.append(case)
         return {
             "status": "passed",
             "fixture": {
@@ -574,6 +728,8 @@ def self_test(report_path: Path, *, native_record_path: Path | None = None) -> d
                 app, user_storage / "course-grid"
             )
             checks["imported_course_grid"] = recipient_grid["status"] == "passed"
+            recipient_catalog_grid = _check_catalog_course_grid(app)
+            checks["catalog_course_grid"] = recipient_catalog_grid["status"] == "passed"
             # Child widgets are destroyed by root, allowing their lifecycle hooks to run.
         finally:
             root.destroy()
@@ -639,6 +795,7 @@ def self_test(report_path: Path, *, native_record_path: Path | None = None) -> d
                             "runs_replayed": 2, "backend_id": "analytic_python"},
         "native_record_viewer": native_viewer,
         "recipient_grid": recipient_grid,
+        "recipient_catalog_grid": recipient_catalog_grid,
     }
     _check_self_test_paths(report_path, native_record_path)
     report_path.parent.mkdir(parents=True, exist_ok=True)
