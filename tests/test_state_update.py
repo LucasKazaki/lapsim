@@ -409,3 +409,20 @@ def test_json_control_round_trip_preserves_first_cell_dynamics() -> None:
     assert all(isfinite(value) for value in live_snapshot.values())
     assert all(isfinite(value) for value in restored_snapshot.values())
     assert live_snapshot == restored_snapshot
+
+
+def test_control_conversion_cannot_bypass_request_validation() -> None:
+    import pytest
+
+    class NonfiniteOnConversion(float):
+        def __float__(self) -> float:
+            return float("inf")
+
+    class NegativeOnConversion(float):
+        def __float__(self) -> float:
+            return -1.0
+
+    with pytest.raises(ValueError, match="control requests must be finite"):
+        Controls(front_brake_pressure_psi=NonfiniteOnConversion(1.0))
+    with pytest.raises(ValueError, match="motor_torque_request_nm cannot be negative"):
+        Controls(motor_torque_request_nm=NegativeOnConversion(1.0))

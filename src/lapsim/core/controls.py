@@ -6,7 +6,11 @@ from math import isfinite, pi
 
 @dataclass(frozen=True, slots=True)
 class Controls:
-    """Driver requests held across one spatial simulation cell."""
+    """Driver requests held across one spatial simulation cell.
+
+    Finite numeric requests are stored as built-in floats so live commands
+    and JSON-restored commands use the same arithmetic.
+    """
 
     motor_torque_request_nm: float = 0.0
     front_brake_pressure_psi: float = 0.0
@@ -16,6 +20,20 @@ class Controls:
     front_regenerative_brake_force_request_n: float = 0.0
 
     def __post_init__(self) -> None:
+        for name in (
+            "motor_torque_request_nm",
+            "front_brake_pressure_psi",
+            "rear_brake_pressure_psi",
+            "rear_regenerative_brake_force_request_n",
+            "steering_angle_rad",
+            "front_regenerative_brake_force_request_n",
+        ):
+            value = getattr(self, name)
+            # Keep numeric strings invalid before converting numeric scalars.
+            if not isfinite(value):
+                raise ValueError("control requests must be finite")
+            object.__setattr__(self, name, float(value))
+
         if not all(
             isfinite(value)
             for value in (
