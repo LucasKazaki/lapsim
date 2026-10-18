@@ -386,9 +386,7 @@ def test_json_control_round_trip_preserves_first_cell_dynamics() -> None:
     )
     assert {
         name: float(value).hex() for name, value in asdict(live_controls).items()
-    } == {
-        name: float(value).hex() for name, value in asdict(restored_controls).items()
-    }
+    } == {name: float(value).hex() for name, value in asdict(restored_controls).items()}
 
     live_vehicle, _live_manifest = build_vehicle("repository_baseline")
     restored_vehicle, _restored_manifest = build_vehicle("repository_baseline")
