@@ -550,7 +550,16 @@ def _check_fused_course_grid(
             expected_x = [float(rows[index]["x_m"]) for index in indices]
             expected_y = [float(rows[index]["y_m"]) for index in indices]
 
-            def check_geometry(value):
+            def check_geometry(
+                value,
+                *,
+                cell_count=cell_count,
+                expected_curvature=expected_curvature,
+                expected_stations=expected_stations,
+                expected_x=expected_x,
+                expected_y=expected_y,
+                final_cell_m=4.0 if step_m == 5.0 else 0.5,
+            ):
                 if (
                     value["closed"] is not True
                     or len(value["curvature_per_m"]) != cell_count
@@ -568,8 +577,7 @@ def _check_fused_course_grid(
                     value["distance_m"] != expected_stations
                     or value["x_m"] != expected_x
                     or value["y_m"] != expected_y
-                    or expected_stations[-1] - expected_stations[-2]
-                    != (4.0 if step_m == 5.0 else 0.5)
+                    or expected_stations[-1] - expected_stations[-2] != final_cell_m
                 ):
                     raise RuntimeError(
                         "Recipient fused grid stations or x/y are incorrect"
