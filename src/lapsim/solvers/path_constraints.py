@@ -7,6 +7,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from math import atan, isfinite
 from numbers import Integral, Real
+from operator import index
 
 from scipy.optimize import brentq
 
@@ -209,7 +210,7 @@ class PathConstraintSolver:
         ceilings = local_limits.copy()
         cell_lengths = track.cell_length_m
 
-        for pass_number in range(1, self.maximum_passes + 1):
+        for pass_number in range(1, index(self.maximum_passes) + 1):
             largest_change_mps = 0.0
             for cell_index in range(track.cell_count - 1, -1, -1):
                 if cell_road_grip_multiplier is not None:
