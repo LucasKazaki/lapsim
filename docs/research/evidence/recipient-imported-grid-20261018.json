@@ -1,0 +1,185 @@
+{
+  "schema": "lapsim.recipient-imported-grid-verification.v1",
+  "status": "locally_verified_bounded_E05_increment",
+  "date": "2026-10-18",
+  "source": "728091c767fda3049ff401b2769d88073055d2c6",
+  "tree": "c6ba9b743c3718d8d4a31b54fb95f9e319f518dc",
+  "source_git_lf_sha256": {
+    "src/lapsim/desktop.py": "cc7081cf5fe5afc287349b0bfa0d24f5c760f52954342cfcddbef6f24665bab7",
+    "tests/test_recipient_grid_self_test.py": "12738d5f819fe464d2ea79f3e0f68a2ce6edcb66a78c192d047d7e48f742945f",
+    "quality/run_package_runtime.py": "504ae0afa84da021e61a7543a26f6072e4bccdf67bfcf3f1443c947cd359e4ce",
+    "src/lapsim/courses/course_bundle.py": "813e7d996ca2860b1b062eea518ced5fe63c9c488aecbf5f469fd20e8f1bbefe",
+    "src/lapsim/experiments/run_record.py": "23a79881e01cc45cc604410c4535c3831f2ad16bd016995423415499228f7613"
+  },
+  "scope": "Real synchronous desktop import, calculation, save, load and replay of one public radius 10 m circle with 32 declared arcs. Requested cell sizes 5 m and 0.5 m produce 32 and 128 cells.",
+  "execution": "Native local Windows 11 x64 PC, 16-core CPU, 32 GiB system RAM, RTX 5080 present. These checks used CPU calculations; no GPU-physics claim.",
+  "recipient_inputs": {
+    "fixture": {
+      "input_sha256": "3a3d808ca40f9c83dac64384943f44b9410b9da9e5d77a43558972aaa118a5f6",
+      "bundle_sha256": "a6449483424f3d72dc0fc4df5ff185c573750e0919a15170a31d798f14defbe0",
+      "geometry_sha256": "6b433f39bd18cbd877ed871f1fc58829b7a5493e0b4658c403eab599b6b3607a"
+    },
+    "cases": [
+      {
+        "requested_maximum_cell_length_m": 5.0,
+        "cell_count": 32,
+        "geometry_sha256": "6b433f39bd18cbd877ed871f1fc58829b7a5493e0b4658c403eab599b6b3607a",
+        "inputs_sha256": "e63b5a047e59719d02a17749bb115fbf2101f823b5abd00be633db169e1597b9"
+      },
+      {
+        "requested_maximum_cell_length_m": 0.5,
+        "cell_count": 128,
+        "geometry_sha256": "0410129b96b792a56ec783a6040e3ce536a1276d217ac37ca6324e5f46366c6e",
+        "inputs_sha256": "cd5c0f99191e10df3e28a8378d0f1113351299ef028833c4fa1965dca8d9e107"
+      }
+    ]
+  },
+  "verification": {
+    "focused": {
+      "source": "66ddbe68e00b5d361015c88df98f61db4883160f",
+      "passed": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "scope": "Same five source blobs as 728091c; inventory-only successor."
+    },
+    "source_desktop": {
+      "exit": 0,
+      "passed_checks": 21
+    },
+    "maps": {
+      "commands": [
+        "python scripts/check_flowchart_site.py",
+        "python docs/simulator_flowchart/generate_inventory.py --check",
+        "node scripts/check_flowchart_data.mjs"
+      ],
+      "exits": [
+        0,
+        0,
+        0
+      ]
+    },
+    "full": {
+      "command": "python scripts/check_all.py --output-dir <fresh>",
+      "exit": 0,
+      "modules": 100,
+      "reported": {
+        "tests": 2608,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "raw_testcases": 1592,
+      "aggregate_sha256": "ada9d77863e04420eba7beeee4d3f3248b1baa185c09d34ff41f68452bed41ba",
+      "skip": "POSIX multicall-symlink case skipped on Windows; actual Windows native build checked separately.",
+      "warning": "One Tcl interpreter-finalizer RuntimeWarning block retained. Cause and fix remain unresolved."
+    },
+    "quality": {
+      "baseline": "81837ecc2eb320a5bcc0405be2c357f96b8bfda2",
+      "type_current_baseline": [
+        6,
+        6
+      ],
+      "broad_current_baseline": [
+        6,
+        6
+      ],
+      "new_type_or_broad_findings": 0,
+      "critical_exit": 0,
+      "mapped_security": {
+        "files": 5,
+        "actual_python_rules": 151,
+        "matches": 0,
+        "errors": 0
+      },
+      "format": "Added helpers/test/consumer have no outstanding formatter recommendations. Existing GUI blocks retain formatter debt after indentation; whole-file format exit remains 1.",
+      "limit": "Targeted checks against a fixed baseline; no whole-repository clean type/lint/format/security claim."
+    },
+    "package": {
+      "command": "build-env-python quality/run_package_runtime.py --output-dir <fresh> --desktop",
+      "exit": 0,
+      "wheel_and_sdist_reference_tests_each": {
+        "tests": 538,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "installed_native_C": "passed in wheel and sdist",
+      "bootstrap": "Passed from non-ASCII extracted source; offline read-only repeat passed.",
+      "artifacts": {
+        "wheel": {
+          "sha256": "1fe9192250c33e4973bf6256bdb4d6df6089ec062c2ca5dbe969732c92cd0bbf",
+          "bytes": 4572273
+        },
+        "sdist": {
+          "sha256": "d637569a1c5f7e427858497c931f08da9e4733b09684e6aaba7db34114f696e9",
+          "bytes": 3663117
+        }
+      }
+    },
+    "frozen": {
+      "command": "build-env-python scripts/build_windows.py --skip-tests --output-dir <fresh>",
+      "exit": 0,
+      "original_checks": 21,
+      "copied_checks": 22,
+      "copied_route_exits": [
+        0,
+        2,
+        1,
+        1
+      ],
+      "route_order": [
+        "saved-record viewing",
+        "same input/output rejection",
+        "unsupported frame",
+        "unsupported units"
+      ],
+      "artifacts": {
+        "LapSim.exe": {
+          "sha256": "3225399ec0df04ae9d07204d73820a3d11e87d1eef628a17b6b4803a2240ff26",
+          "bytes": 79341455
+        },
+        "LapSim-Windows-x64.zip": {
+          "sha256": "d7a97bd851e207ee102323959667a53f0c7d4c29227e3f5bf0e34a21f32743ea",
+          "bytes": 87187657
+        }
+      },
+      "suite": "This build skipped tests. Its sanitized verification receipt has null command/report and no full-suite XML; the separately passed full100 is bound above.",
+      "environment": "Copied EXE outside checkout, System32-only PATH, isolated user data, optional external bundle absent."
+    }
+  },
+  "runtime_versions": {
+    "python": "3.13.15",
+    "source_numpy": "2.5.4",
+    "locked_build_and_wheel_sdist_numpy": "2.5.3",
+    "build_lock_distributions": 26,
+    "bootstrap_observed": {
+      "numpy": "2.5.4",
+      "fonttools": "4.67.0",
+      "pillow": "13.0.0"
+    },
+    "scope": "Normal bootstrap resolves pyproject dependencies independently of the build lock. Declared inputs match across contexts; numerical traces and run IDs are not equated."
+  },
+  "repairs_and_retained_failures": [
+    "CourseBundle.save and RunRecord.save prefix only their UUID temporary path for Windows IO. The ordinary destination must remain addressable; this is not universal long-path support.",
+    "First package attempt failed during pip installation under an overly deep harness TMP. Resource presence was verified. R2 changed only child TMP/TEMP to the normal Windows temp root; original failure retained.",
+    "First frozen preservation script used compact JSON for the source-index hash. The unchanged frozen builder uses default JSON spacing. A metadata-only successor corrects that assertion; no application rebuild was required."
+  ],
+  "limits": [
+    "GUI course/profile/run files use temporary storage; scratch hashes and IDs describe observed round trips after payload deletion. Post-GUI durable map/documentation cache behavior is unchanged.",
+    "Source, installed recipients and frozen artifacts identify source728091c. Later documentation-only commits do not rebuild those artifacts.",
+    "E05 remains open for matched built-in/fused recipient routes, ordinary file picker and asynchronous Run acceptance.",
+    "No fresh native3D physics, physical calibration, performance benchmark, hardware, release or website publication claim.",
+    "Raw local commands, reports and logs are retained privately. Hash bindings identify that evidence; ignored local paths are not public downloads."
+  ],
+  "local_evidence_sha256": {
+    "focused7": "5a49d86314c7f85970223278b93690e3b3d4be8cbd3bf4c0c1922c04c7eb3601",
+    "quality": "79dc6bf7a04f6be0f4b2af8e217729e8ee72bcf8f3419b7b2c8079fbdd1664ef",
+    "format_assessment": "f0632d5a366f7d67dd080b8adb2bae45b0be1af099c34da03d8827a6bd63a6f2",
+    "source_maps": "a3358f64cc5b69fa00022ee1137185009930078568346e67c507c683dd44925a",
+    "full100": "5244d17bd375993f8ccaee0697243b5a80acffff60f9256514b151834140a303",
+    "package_r1_failed": "5a7fa427af4e1c7c91b94aee9b71c7666727c028950d69f12154495e41d590c5",
+    "package_r2": "858b6277480ef7ec5587022f05de4c5dadd229ebb3a26393826e752cf38d03b0",
+    "frozen": "fb61979065392183cfa3bb307c466e9e0f796e660fd5f81f92403abcd682565b"
+  }
+}
