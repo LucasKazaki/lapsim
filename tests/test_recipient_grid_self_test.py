@@ -1090,3 +1090,162 @@ def test_fused_consumer_rejects_semantic_source_root_with_truthful_raw_hashes(
     # Raw hashes and full input hashes are truthful; the claimed264e source is not.
     with pytest.raises(RuntimeError, match="source geometry differs"):
         _fused_consumer()(report, source_root=tmp_path)
+
+
+def test_recipient_fused_fine_preserves_source_and_replays_saved_record(
+    app: LapSimDesktop,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from math import isfinite
+
+    from lapsim.experiments import lap_replay
+
+    path, source_geometry, _coarse, _wrong = _fused_coarse_source_oracle()
+    files = (path, path.with_suffix(".json"))
+    before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in files}
+    replay_reports = []
+    original_replay = lap_replay.replay_lap_record
+
+    def replay(record_path):
+        saved = Path(record_path)
+        unchanged = saved.read_bytes(), saved.stat().st_mtime_ns
+        result = original_replay(record_path)
+        assert (saved.read_bytes(), saved.stat().st_mtime_ns) == unchanged
+        replay_reports.append(result.to_dict())
+        return result
+
+    app._select_course("Synthetic loop · AI demo")
+    with monkeypatch.context() as patch:
+        patch.setattr(lap_replay, "replay_lap_record", replay)
+        report = desktop._check_fused_course_grid(app)
+
+    assert [c["requested_maximum_cell_length_m"] for c in report["cases"]] == [
+        5.0,
+        0.5,
+    ]
+    assert [c["cell_count"] for c in report["cases"]] == [198, 1978]
+    assert report["source_geometry"] == source_geometry
+    assert len(replay_reports) == 2
+    fine = report["cases"][1]
+    geometry = fine["geometry"]
+    assert geometry["closed"] is True
+    for name in ("distance_m", "x_m", "y_m"):
+        assert geometry[name] == source_geometry[name]
+    assert geometry["distance_m"] == [index * 0.5 for index in range(1979)]
+    assert len(geometry["curvature_per_m"]) == 1978
+    for value, expected in zip(
+        geometry["curvature_per_m"], source_geometry["curvature_per_m"], strict=True
+    ):
+        assert value == pytest.approx(expected, rel=0.0, abs=1e-12)
+
+    saved = default_run_directory() / f"{fine['record_run_id']}.json"
+    record_object = RunRecord.load(saved)
+    record = record_object.to_dict()
+    inputs = fine["expected_inputs"]
+    assert record["settings"] == inputs["settings"]
+    assert inputs["settings"]["solver"]["requested_maximum_cell_length_m"] == 0.5
+    assert inputs["settings"]["track"]["geometry"] == geometry
+    assert inputs["settings"]["track"]["source_course"] == report["source"]
+    assert inputs["selected_profile_id"] == "repository_baseline"
+    assert (
+        record["configuration"]["effective_vehicle_config"]
+        == inputs["effective_vehicle_config"]
+    )
+    assert (
+        record["configuration"]["base_profile_manifest"]["model_config"]
+        == inputs["base_vehicle_config"]
+    )
+    assert (
+        record["configuration"]["selected_profile_id"] == inputs["selected_profile_id"]
+    )
+    expected_hash = sha256(
+        json.dumps(
+            inputs, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode()
+    ).hexdigest()
+    assert (
+        fine["expected_inputs_sha256"]
+        == fine["recorded_inputs_sha256"]
+        == expected_hash
+    )
+    assert fine["record_sha256"] == sha256(saved.read_bytes()).hexdigest()
+    assert fine["record_bytes"] == saved.stat().st_size
+    assert fine["record_unchanged"] is True
+    assert fine["replay"] == replay_reports[1]
+    replayed = fine["replay"]
+    assert replayed["run_id"] == record_object.run_id == fine["record_run_id"]
+    assert replayed["model_agreement"] is replayed["replay_completed"] is True
+    assert (
+        replayed["recorded_sample_count"] == replayed["replayed_sample_count"] == 1978
+    )
+    assert not replayed["mismatch_reasons"]
+    assert (
+        len({m["name"] for m in replayed["metrics"]}) == len(replayed["metrics"]) == 17
+    )
+    expected_tolerances = {
+        metric["name"]: metric["tolerance"]
+        for metric in _fused_consumer_report()["recipient_fused_grid"]["cases"][0][
+            "replay"
+        ]["metrics"]
+    }
+    assert {
+        m["name"]: m["tolerance"] for m in replayed["metrics"]
+    } == expected_tolerances
+    assert all(
+        m["passed"] is True
+        and isfinite(m["maximum_absolute_error"])
+        and 0.0 <= m["maximum_absolute_error"] <= m["tolerance"]
+        for m in replayed["metrics"]
+    )
+    assert {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in files} == before
+
+
+def test_recipient_fused_fine_rejects_refined_coarse_worker_grid(
+    app: LapSimDesktop,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from lapsim.ui import app as app_module
+
+    path, source_geometry, _coarse, _wrong = _fused_coarse_source_oracle()
+    files = (path, path.with_suffix(".json"))
+    before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in files}
+    original = app_module.solver_track_for_course
+    original_worker = LapSimDesktop._calculate_single
+    injected = []
+    worker_requests = []
+
+    def worker(instance, profile_id, profile_name, setup, step_m, *args):
+        worker_requests.append(step_m)
+        return original_worker(instance, profile_id, profile_name, setup, step_m, *args)
+
+    def worker_grid(course_id, track, step_m):
+        resolved = original(course_id, track, step_m)
+        if course_id == "team_endurance_fused_gnss_imu" and step_m == 0.5:
+            assert worker_requests == [5.0, 0.5]
+            wrong = resample_track(original(course_id, track, 5.0), 0.5)
+            assert resolved.cell_count == wrong.cell_count == 1978
+            assert list(wrong.distance_m) == source_geometry["distance_m"]
+            assert all(
+                abs(value - expected) > 1e-12
+                for value, expected in zip(
+                    wrong.curvature_per_m,
+                    source_geometry["curvature_per_m"],
+                    strict=True,
+                )
+            )
+            assert list(wrong.x_m) != source_geometry["x_m"]
+            injected.append(wrong)
+            return wrong
+        return resolved
+
+    with monkeypatch.context() as patch:
+        patch.setattr(LapSimDesktop, "_calculate_single", worker)
+        patch.setattr(app_module, "solver_track_for_course", worker_grid)
+        with pytest.raises(
+            RuntimeError,
+            match="Recipient fused grid cell count or curvature is incorrect",
+        ):
+            desktop._check_fused_course_grid(app)
+    assert len(injected) == 1
+    assert worker_requests == [5.0, 0.5]
+    assert {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in files} == before
