@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from lapsim.courses.spatial_track import SpatialTrack
+from lapsim.courses.track import Curve, Straight, Track
 from lapsim.solvers.path_constraints import PathConstraintSolver
 from vehicle_model import Vehicle
 
@@ -137,3 +138,74 @@ def test_default_iteration_limits_are_unchanged() -> None:
             solver.steady_state_iterations,
         )
     )
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "maximum_passes",
+        "maximum_entry_iterations",
+        "steady_state_iterations",
+    ],
+)
+@pytest.mark.parametrize(
+    "scalar_type",
+    [
+        pytest.param(int, id="int"),
+        pytest.param(np.int32, id="numpy-int32"),
+        pytest.param(np.int64, id="numpy-int64"),
+        pytest.param(np.uint64, id="numpy-uint64"),
+    ],
+)
+def test_positive_integral_iteration_limits_solve_like_python_int(
+    field: str,
+    scalar_type: Any,
+) -> None:
+    # A stadium provides coherent straight/curve/straight transitions without
+    # the legacy plotted-coordinate closure correction or from_cells roundtrip.
+    track = SpatialTrack.from_track(
+        Track.from_segments(
+            [Straight(10.0), Curve(25.0, np.pi), Straight(10.0), Curve(25.0, np.pi)]
+        ),
+        maximum_cell_length_m=20.0,
+        close_geometry=False,
+    )
+    track.validate_coherent_arcs()
+    value = scalar_type(5)
+    solver = PathConstraintSolver(**{field: value})
+    reference = PathConstraintSolver(**{field: 5}).solve(track, Vehicle())
+
+    actual = solver.solve(track, Vehicle())
+
+    assert reference.local_corner_speed_mps[0] > reference.local_corner_speed_mps[1]
+    assert reference.braking_speed_ceiling_mps[0] < reference.local_corner_speed_mps[0]
+    assert actual == reference
+    assert getattr(solver, field) is value
+
+
+def test_uint64_maximum_passes_converges_on_first_pass_without_overflow() -> None:
+    # Two coherent semicircles and a low speed cap form a one-pass fixed point;
+    # the Python-int reference proves bounded work before using the huge cap.
+    track = SpatialTrack.from_track(
+        Track.from_segments([Curve(10.0, 2.0 * np.pi)]),
+        maximum_cell_length_m=40.0,
+        close_geometry=False,
+    )
+    track.validate_coherent_arcs()
+    value = np.uint64((1 << 64) - 1)
+    solver = PathConstraintSolver(maximum_passes=value)
+    vehicle = Vehicle()
+    vehicle.drivetrain.configured_speed_limit_mps = 1.0
+    reference_vehicle = Vehicle()
+    reference_vehicle.drivetrain.configured_speed_limit_mps = 1.0
+    reference = PathConstraintSolver(maximum_passes=1).solve(track, reference_vehicle)
+    assert reference.passes == 1
+
+    actual = solver.solve(track, vehicle)
+
+    assert track.cell_count == 2
+    assert actual == reference
+    assert actual.passes == 1
+    assert all(0.0 < speed <= 1.0 for speed in actual.local_corner_speed_mps)
+    assert actual.braking_speed_ceiling_mps == actual.local_corner_speed_mps
+    assert solver.maximum_passes is value
