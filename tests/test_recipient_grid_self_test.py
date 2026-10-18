@@ -11,10 +11,12 @@ import tkinter as tk
 import pytest
 
 from lapsim import desktop
+from lapsim.courses.course_bundle import CourseBundle
 from lapsim.courses.solver_grid import resample_track
 from lapsim.experiments import RunRecord, default_run_directory
 from lapsim.profiles import build_vehicle
 from lapsim.ui.app import LapSimDesktop
+from test_course_bundle import _manifest
 
 
 @pytest.fixture
@@ -83,7 +85,7 @@ def test_recipient_self_test_rejects_generic_resampler(
         "lapsim.ui.app.solver_track_for_course",
         lambda _course, track, step: resample_track(track, step),
     )
-    with pytest.raises(RuntimeError, match="grid|cell"):
+    with pytest.raises(RuntimeError, match="Recipient grid cell count or curvature is incorrect"):
         desktop._check_imported_course_grid(app, tmp_path / "wrong-grid")
 
 
@@ -129,3 +131,51 @@ def test_self_test_user_storage_restores_environment_and_existing_files(
     assert "XDG_DATA_HOME" not in os.environ
     assert Path.cwd() == original_cwd
     assert (saved.read_bytes(), saved.stat().st_mtime_ns) == before
+
+@pytest.mark.parametrize("artifact_kind", ["course_bundle", "run_record"])
+def test_atomic_save_keeps_normal_destination_when_temporary_path_is_long(
+    tmp_path: Path, artifact_kind: str,
+) -> None:
+    if artifact_kind == "course_bundle":
+        source = tmp_path / "short-course.json"
+        source.write_text(json.dumps(_manifest(), allow_nan=False), encoding="utf-8")
+    else:
+        source = Path(__file__).parent / "fixtures" / "legacy_browser_grid_v2.json"
+    source_before = source.read_bytes(), source.stat().st_mtime_ns
+    if artifact_kind == "course_bundle":
+        artifact = CourseBundle.load(source)
+        loader = CourseBundle.load
+    else:
+        artifact = RunRecord.load(source)
+        loader = RunRecord.load
+    expected = artifact.to_dict()
+
+    # Bound the owned parent and filename components on POSIX as well as Windows.
+    root = tmp_path.resolve()
+    parent = root / ("p" * max(1, 80 - len(str(root)) - 1))
+    parent.mkdir()
+    leaf_length = 245 - len(str(parent)) - 1
+    assert 10 <= leaf_length and leaf_length + 37 <= 255
+    destination = parent / ("s" * (leaf_length - len(".json")) + ".json")
+    assert len(str(destination)) == 245
+    assert not str(destination).startswith("\\\\?\\")
+    prospective_temporary = destination.with_name(
+        f"{destination.name}.{'0' * 32}.tmp"
+    )
+    assert len(str(prospective_temporary)) == 282
+    assert parent.is_dir() and not destination.exists()
+
+    saved = artifact.save(destination)
+    assert saved == destination
+    assert not str(saved).startswith("\\\\?\\")
+    loaded = loader(saved)
+    assert loaded.to_dict() == expected
+    if isinstance(artifact, CourseBundle):
+        assert isinstance(loaded, CourseBundle)
+        assert loaded.bundle_sha256 == artifact.bundle_sha256
+        assert loaded.geometry_sha256 == artifact.geometry_sha256
+    else:
+        assert isinstance(loaded, RunRecord)
+        assert loaded.run_id == artifact.run_id
+    assert not tuple(parent.glob(destination.name + ".*.tmp"))
+    assert (source.read_bytes(), source.stat().st_mtime_ns) == source_before
