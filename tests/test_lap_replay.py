@@ -17,6 +17,7 @@ from lapsim.experiments import (
     LapRunSettings, RunRecord, capture_lap_run, replay_lap_record,
 )
 from lapsim.profiles import build_vehicle
+from lapsim.solvers.path_constraints import PathConstraintSolver
 from lapsim.optimization.road_grip_schedule import (
     ROAD_GRIP_SCHEDULE_MAPPING_VERSION, world_patch_grip_schedule,
 )
@@ -574,3 +575,50 @@ def test_rehashed_record_with_malformed_replay_field_has_clear_error(
     )
     with pytest.raises(ValueError, match=message):
         replay_lap_record(path)
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "maximum_passes",
+        "maximum_entry_iterations",
+        "steady_state_iterations",
+    ],
+)
+@pytest.mark.parametrize("value", [True, 1.5], ids=["boolean", "fractional"])
+def test_replay_reports_invalid_iteration_limit_before_solver_work(
+    saved_laps: dict[str, Path],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+    value: object,
+) -> None:
+    path = _mutated_record(
+        saved_laps["repository_baseline"],
+        tmp_path / "invalid_iteration_limit.json",
+        lambda payload: payload["settings"]["solver"][
+            "path_constraint_settings"
+        ].__setitem__(
+            field,
+            value,
+        ),
+    )
+    original_bytes = path.read_bytes()
+    original_mtime_ns = path.stat().st_mtime_ns
+    saved = RunRecord.load(path).to_dict()["settings"]["solver"][
+        "path_constraint_settings"
+    ][field]
+    # Archival loading stays permissive; replay owns executable-setting validation.
+    assert type(saved) is type(value) and saved == value
+
+    def unexpected_solve(*args, **kwargs):
+        pytest.fail("malformed iteration limit reached solver work")
+
+    monkeypatch.setattr(PathConstraintSolver, "solve", unexpected_solve)
+    with pytest.raises(
+        ValueError,
+        match=rf"^saved path constraint settings are invalid: {field} must be a positive integer$",
+    ):
+        replay_lap_record(path)
+    assert path.read_bytes() == original_bytes
+    assert path.stat().st_mtime_ns == original_mtime_ns

@@ -572,6 +572,18 @@ The October 14 issue records 241 Pyright errors/48 warnings; a later PR17 enviro
 
 Separate formatting-only changes from behavior changes. Maintain source-map freshness, docs links, dependency/secret scans, license/redistribution review, keyboard/large-text/manual device checks and honest skip reporting. Add new controller directories to the relevant lint/test/security and distribution inventories without scanning private logs into public reports.
 
+The path-solver count boundary requires positive, nonboolean `numbers.Integral`
+settings before execution and retains accepted integer objects without coercion.
+The pass loop obtains a Python integer through `operator.index` before adding
+one for its exclusive bound, avoiding scalar promotion and fixed-width overflow
+without changing solver equations or configured iteration limits. The historical
+[count-validation manifest](docs/research/evidence/path-iteration-count-validation-20261018.json)
+retains the tests-first, full-suite and diagnostic record for `b27b280`; the
+separate [integer-execution manifest](docs/research/evidence/path-iteration-integer-execution-20261018.json)
+records the follow-up runtime-specific execution evidence. Neither establishes
+a complete supported-version matrix or physical accuracy. One Tcl cleanup
+warning and the existing diagnostic debt remain open; E14 is not complete.
+
 ## 5. Delivery gates, not arbitrary deadlines
 
 | Gate | Required evidence | Work that can proceed without team data |
