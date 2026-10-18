@@ -483,16 +483,18 @@ must also pass Windows CI before integration.
 
 Dependencies: E01. Related: R01/R03.
 
-Two concrete starting findings require tests and repair, not repetition in another report:
+A bounded E05 repair makes `SpatialTrack.from_cells` keep one declared cell per supplied length/curvature pair, while retaining `from_track` ceil subdivision and embedded historical grids during replay. Use the dated [declared-cell receipt](docs/research/evidence/declared-cell-grid-20261018.json) for this repair's source-specific checks and limitations. E05 remains open for complete matched source, installed-package and frozen recipient-route reproduction.
 
-- `web/bridge.py` uses `resample_track`, while `src/lapsim/ui/course_catalog.py::solver_track_for_course` preserves/refines coherent analytic arcs and handles the fused track separately. `tests/test_web_bridge.py` constructs its native expected route with browser-style resampling. That alone does not check desktop-versus-browser equivalence. Move canonical configuration/grid resolution behind a shared, UI-independent entrypoint or explicitly version intentional differences.
-- Older first-lap validation docs point to `scripts/validate_first_endurance_lap.py`, while the newer endurance workflow lives under `analysis/endurance/`. Audit actual commands and inputs. Do not claim the current brake implementation is absent merely because a historical report describes a brake-free model.
+The original interface-grid and documentation findings have source repairs retained from #24:
 
-Test matched synthetic courses, a public imported coherent bundle, coarse/fine cell requests, and the fused course's documented exception. Compare source and effective geometry hashes, stations, cell lengths, curvature, model/profile, limits and initial state before comparing outputs. Then exercise both actual interface adapters, exported records and replay. Run the same fixture from installed-package, source and frozen-resource contexts.
+- `web/bridge.py` now calls `solver_track_for_course`, and `src/lapsim/ui/course_catalog.py` delegates that route to the shared `resolve_solver_grid`. `tests/test_adapter_grid_parity.py` exercises the real desktop worker and browser adapter with synthetic, public imported and fused fixtures at coarse/fine requests, and retains legacy browser-record replay against embedded geometry. These source regressions address the original adapter-comparison gap; they do not establish current installed-package or frozen recipient-route acceptance.
+- `docs/first_endurance_lap_validation.md` now points to `analysis/endurance/analyze_endurance.py`, identifies the former `scripts/validate_first_endurance_lap.py` as absent, and labels the earlier SOC report as historical. Its former brake-free model description does not describe the current pressure-to-brake-torque implementation. This documentation repair does not establish new measured-data correlation.
 
-Publish one current reproducible correlation entrypoint with source/input/parameter IDs; mark older reports as historical. Missing private evidence must be an explicit optional skip, never silently fabricated data. Historical measured results are not replaced by synthetic results under the same title.
+Remaining recipient-route acceptance: run the same matched fixture from clean source, installed-package and frozen-resource contexts. Cover synthetic courses, a public imported coherent bundle, coarse/fine cell requests and the fused course's documented exception. Compare source and effective geometry hashes, stations, cell lengths, curvature, model/profile, limits and initial state before outputs; exercise the actual adapters, exported records and replay in each declared context.
 
-Done when: the previously divergent interface case has a retained regression, current documented public commands execute from a clean checkout, and unsupported/private-only reproduction requirements are labeled.
+Keep the current correlation entrypoint tied to source/input/parameter IDs and authorized recorded lap, control, IMU and track inputs. Missing private evidence must be an explicit optional skip, never fabricated data. Preserve older reports as historical; synthetic results do not replace historical measured results under the same title. No new correlation analysis is asserted by this status correction.
+
+Done when: the retained interface-grid regressions and current documented commands are reproduced through the declared source/installed/frozen recipient routes, with unsupported/private-only reproduction requirements labeled.
 
 ### E06 / P0: constrain four-wheel actuation and battery boundaries
 
