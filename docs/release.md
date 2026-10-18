@@ -143,9 +143,19 @@ retains distinct EXE/ZIP hashes, 30 focused contracts (12 real-Git cases), the P
 finding and failed style gate, plus passed quality gates and their remaining
 debt/warning limits. Native records were viewed passively; standard fast-model
 replays ran. PyInstaller's existing hidden-import warning is separate from the
-full suite's zero warning-summary blocks. Final map and normal reviewed
-integration/postmerge results remain pending; these artifacts keep source
-`6ed6153`, with raw-JUnit privacy and internal-only publication limits unchanged.
+full suite's zero warning-summary blocks. Final map passed, and normal
+[PR #111](https://github.com/LucasKazaki/lapsim/pull/111) merged at `13076f6`
+after 14 exact-head checks, with its full tree equal to accepted `9bb6338`.
+Thirty post-merge contracts and all three source-map entrypoints passed.
+The separate local packaging acceptance record contains absolute paths; it is
+not a sanitized public deliverable. These artifacts keep source `6ed6153`,
+with raw-JUnit privacy and internal-only publication limits unchanged.
+
+The [comparison claim receipt](research/evidence/chrono-native-comparison-claims-20261018.json)
+separately binds wheel/source-distribution acceptance at `a582eda`, including
+five saved-record comparison CLI routes per format. Those archives are not
+published and do not replace the earlier `6ed6153` executable checks. Normal
+API integration and post-merge verification are tracked separately.
 
 Frozen read-only resources resolve through `lapsim.resources.repository_root()`
 to the extraction root's `bundle` directory. Source runs resolve to the checkout.

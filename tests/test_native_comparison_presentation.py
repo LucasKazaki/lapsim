@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from test_suspension_compare import fixture_record, seal
+from test_suspension_compare import canonical_world_si_claims, fixture_record, seal
 
 
 def test_saved_pair_summary_uses_explicit_endpoint_and_receipt_scope():
@@ -20,7 +20,9 @@ def test_saved_pair_summary_uses_explicit_endpoint_and_receipt_scope():
     from lapsim.ui.native_record_viewer import comparison_summary
 
     report = compare_study_records(
-        fixture_record(), fixture_record(step=0.0005), kind="plant-step"
+        canonical_world_si_claims(fixture_record()),
+        canonical_world_si_claims(fixture_record(step=0.0005)),
+        kind="plant-step",
     )
     text = comparison_summary(report)
     assert "Right - Left" in text
@@ -57,6 +59,9 @@ def report_pair(*, kind="logging-period"):
         if kind == "logging-period"
         else fixture_record(step=0.0005)
     )
+    if kind == "plant-step":
+        canonical_world_si_claims(left)
+        canonical_world_si_claims(right)
     return left, right, compare_study_records(left, right, kind=kind)
 
 

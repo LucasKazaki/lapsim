@@ -12,6 +12,7 @@ from pathlib import Path
 import sys
 
 from .dynamics_record import _canonical_json, _content_id
+from .suspension_export import require_native_world_si_claims
 from .suspension_study import (
     SOURCE_HASH_SCOPE,
     SuspensionScenario,
@@ -53,6 +54,7 @@ RECIPE_FILES = (
     "experiments/dynamics_record.py",
     "experiments/record_io.py",
     "experiments/basic_dynamics.py",
+    "experiments/suspension_export.py",
 )
 
 
@@ -380,6 +382,12 @@ def compare_study_records(left, right, *, kind):
     a, b = left["payload"], right["payload"]
     field = KINDS[kind]
     reasons = _compatibility(a, b, field)
+    if kind == "plant-step":
+        for label, record in (("left", left), ("right", right)):
+            try:
+                require_native_world_si_claims(record, context="plant-step quantities")
+            except ValueError as error:
+                reasons.append(f"{label}: {error}")
     git = [
         {key: payload["source"][key] for key in ("code_commit", "dirty_worktree")}
         for payload in (a, b)
