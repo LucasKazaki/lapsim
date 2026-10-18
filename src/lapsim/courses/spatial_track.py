@@ -608,7 +608,7 @@ class SpatialTrack:
         *,
         closed: bool,
         close_geometry: bool,
-    ) -> "SpatialTrack":
+    ) -> SpatialTrack:
         """Integrate an already chosen grid without resampling its cells."""
 
         distance_m = [0.0]

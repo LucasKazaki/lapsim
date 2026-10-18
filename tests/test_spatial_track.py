@@ -434,12 +434,15 @@ class SpatialTrackTests(TestCase):
             )
 
     def test_declared_cells_keep_closed_map_correction_and_end_station(self) -> None:
-        arguments = dict(
+        opened = SpatialTrack.from_cells(
+            cell_length_m=(0.1, 0.1),
+            curvature_per_m=(0.1, 0.0),
+            closed=False,
+        )
+        closed = SpatialTrack.from_cells(
             cell_length_m=(0.1, 0.1),
             curvature_per_m=(0.1, 0.0),
         )
-        opened = SpatialTrack.from_cells(**arguments, closed=False)
-        closed = SpatialTrack.from_cells(**arguments)
         self.assertEqual(closed.cell_count, 2)
         self.assertEqual(closed.distance_m, opened.distance_m)
         self.assertEqual(closed.curvature_per_m, opened.curvature_per_m)
