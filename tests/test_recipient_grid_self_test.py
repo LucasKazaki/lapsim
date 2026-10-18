@@ -252,7 +252,9 @@ def test_recipient_catalog_demo_selects_saves_loads_and_replays(
     expected_config = snapshot_vehicle_config(vehicle)
     expected_model_config = profile.to_dict()["model_config"]
     selected = []
-    original_select = LapSimDesktop._select_course  # Unbound function, no GUI retention.
+    original_select = (
+        LapSimDesktop._select_course
+    )  # Unbound function, no GUI retention.
 
     def select(instance: LapSimDesktop, label: str) -> None:
         selected.append(label)
@@ -272,7 +274,9 @@ def test_recipient_catalog_demo_selects_saves_loads_and_replays(
     assert source["selected_course_id"] == report["course_id"]
     assert source["source_kind"] == "synthetic"
     assert source["revision"] == "generator_v1"
-    assert source["source_generator"] == "lapsim.ui.course_catalog._synthetic_demo_track"
+    assert (
+        source["source_generator"] == "lapsim.ui.course_catalog._synthetic_demo_track"
+    )
     assert source["boundary_status"] == "absent"
     assert source["bundle_id"] is source["bundle_sha256"] is None
     assert source["coordinate_frame"] == "analytic_local_cartesian_xy_m"
@@ -288,7 +292,7 @@ def test_recipient_catalog_demo_selects_saves_loads_and_replays(
     )
     source_hash = sha256(encoded.encode()).hexdigest()
     assert source["source_geometry_sha256"] == source_hash
-    row, = report["cases"]
+    (row,) = report["cases"]
     assert row["requested_maximum_cell_length_m"] == 5.0
     assert row["cell_count"] == 392
     assert row["geometry"] == geometry
@@ -353,7 +357,9 @@ def test_recipient_catalog_rejects_catalog_only_generic_grid(
 
     with monkeypatch.context() as patch:
         patch.setattr("lapsim.ui.app.solver_track_for_course", catalog_only_generic)
-        imported = desktop._check_imported_course_grid(app, tmp_path / "imported-control")
+        imported = desktop._check_imported_course_grid(
+            app, tmp_path / "imported-control"
+        )
         assert imported["status"] == "passed"
         assert [row["cell_count"] for row in imported["cases"]] == [32, 128]
         with pytest.raises(

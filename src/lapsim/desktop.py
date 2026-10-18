@@ -256,9 +256,9 @@ def _check_recipient_course_case(
         "effective_vehicle_config": document["configuration"][
             "effective_vehicle_config"
         ],
-        "base_vehicle_config": document["configuration"][
-            "base_profile_manifest"
-        ]["model_config"],
+        "base_vehicle_config": document["configuration"]["base_profile_manifest"][
+            "model_config"
+        ],
         "selected_profile_id": document["configuration"]["selected_profile_id"],
     }
     recorded_hash = _self_test_json_sha256(recorded_inputs)
@@ -402,7 +402,9 @@ def _check_catalog_course_grid(app) -> dict:
             )
             for point, analytic in zip(actual, expected, strict=True)
         ):
-            raise RuntimeError("Recipient catalog source differs from the analytic demo")
+            raise RuntimeError(
+                "Recipient catalog source differs from the analytic demo"
+            )
         source_hash = _self_test_json_sha256(source_geometry)
         if source["source_geometry_sha256"] != source_hash:
             raise RuntimeError("Recipient catalog source geometry hash is incorrect")
@@ -440,7 +442,9 @@ def _check_catalog_course_grid(app) -> dict:
     except RuntimeError:
         raise
     except Exception as error:
-        raise RuntimeError(f"Recipient catalog-grid self-test failed: {error}") from error
+        raise RuntimeError(
+            f"Recipient catalog-grid self-test failed: {error}"
+        ) from error
 
 
 def _check_imported_course_grid(app, directory: Path) -> dict:
@@ -579,7 +583,9 @@ def _check_imported_course_grid(app, directory: Path) -> dict:
                 source,
                 expected_track,
                 step_m,
-                lambda value: check_geometry(value, subdivisions, step_m),
+                lambda value, subdivisions=subdivisions, step_m=step_m: check_geometry(
+                    value, subdivisions, step_m
+                ),
                 worker_error="Recipient imported-grid inputs or worker calculation failed",
             )
             if snapshot(source_path) != source_before:
