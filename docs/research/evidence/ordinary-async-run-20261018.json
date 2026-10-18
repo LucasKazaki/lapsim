@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "date": "2026-10-18",
+  "work_package": "E05",
+  "status": "locally_verified_source_regression",
+  "source": "cae087b0b6ea3182f3f7a362b212e513e26d4893",
+  "tree": "f57155118275f19e8d875cbecb414f8dcb298863",
+  "base": "9f93493526d0cba14c0e824fa0cc85e553fd8f68",
+  "changed_test": "tests/test_course_import_desktop.py",
+  "test_Git_LF_sha256": "f25c08f6061481ae1773bd84afdfe26c24d3c01f6a8e368be7018f89e966cddd",
+  "test_name": "test_ordinary_run_button_finishes_async_and_replays_imported_grid",
+  "change": "Append one success-path regression to the five existing course-import tests. All 905 other tracked Git entries equal the base; production code, numerical behavior and replay tolerances are unchanged.",
+  "workflow": {
+    "entry": "Programmatic invocation of the ordinary public Run button; actual Thread construction/start, original calculation delegate, scheduled result polling and Tk mainloop.",
+    "fixture": "Public analytic radius-10 m circle with 32 declared arcs; imported through the application import method, without a native file picker.",
+    "configuration": {
+      "profile": "repository_baseline",
+      "driving_mode": "Centerline (default)",
+      "maximum_cell_length_m": 0.5,
+      "torque_request_fraction": 0.8,
+      "road_grip_multiplier": 1.0,
+      "configured_starting_speed_mps": null
+    },
+    "geometry": "128 cells / 129 stations; independently checked stations, circle coordinates, curvature and every original source boundary, with 1e-12 absolute coordinate tolerance.",
+    "inputs": "Complete configured settings, effective vehicle configuration, base profile model and selected profile ID match the saved record. Resolved starting speed is checked separately from the null configured value.",
+    "completion": "One observed non-owner worker enters and exits; owner-thread polling restores controls, complete progress, driver grid and displayed saved-record identity.",
+    "replay": "The actual saved record loads and replays with all 17 existing default metrics passing; all reported errors/tolerances are finite, nonnegative and within their unchanged limits.",
+    "storage": "Temporary LOCALAPPDATA/XDG storage is selected before app construction. Imported source and saved-record bytes and mtimes remain unchanged through replay. Cleanup retains Tk and storage until the observed worker exits.",
+    "display": "Withdrawn native Tk root: UI state and workflow checks, without visible-render acceptance."
+  },
+  "local_environment": {
+    "destination": "User's Windows 11 PC; Ryzen 9 7950X3D, 31.16 GiB visible system RAM, RTX 5080 present.",
+    "python": "3.13.15",
+    "pytest": "9.1.1",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2",
+    "execution": "Native CPU simulation and Tk tests; no GPU physics claim. Linux security scanner runs in local WSL on the same PC.",
+    "numerical_thread_pools": 1
+  },
+  "focused": {
+    "new_case": {"exit": 0, "raw_cases": 1, "failures": 0, "errors": 0, "skipped": 0, "XML_sha256": "bd17b628056ab6524a0b7138472aca8b6f4f37b33525c9f82d799c06427cd72e"},
+    "whole_module": {"exit": 0, "raw_cases": 6, "failures": 0, "errors": 0, "skipped": 0, "XML_sha256": "3b3a8175f8129c9c9fbee46dfa6f4b0eb28b1d179c2ece3e14811ab09eb7fabc"},
+    "independent_review_sha256": "a8a913e98bcaa6d52da7e09326b1733c0313e55830bc7f62fd161b7bf00d21ab"
+  },
+  "quality": {
+    "scope": "Changed test file, differential native diagnostics against fixed 591a9bea7e4efd080d720dabf2d3e652397eb43e; source admission remains the actual base above.",
+    "ruff_version": "0.17.0",
+    "pyright_version": "1.1.414",
+    "pyright_target_python": "3.11",
+    "pyright_current_and_baseline_diagnostics": [0, 0],
+    "broad_ruff_current_and_baseline_diagnostics": [1, 1],
+    "inherited_broad_finding": "SIM117 in the unchanged test prefix",
+    "formatter_current_and_baseline_hunks": [10, 10],
+    "introduced_diagnostics_or_formatter_hunks": 0,
+    "missing_baseline_formatter_hunks": 0,
+    "critical_ruff_exit": 0,
+    "whole_file_ruff_and_formatter_exit": 1,
+    "formatter_scope": "Exact added/deleted-line hunk multiplicities match the fixed baseline; this is not a whole-file clean-format claim.",
+    "semgrep": {"version": "1.180.0", "actual_Python_rules": 151, "configured_Code_rules": 225, "sealed_files_scanned": 1, "matches": 0, "errors": 0, "exit": 0},
+    "security_limits": "Scanner notices and raw JSON are retained privately. The incomplete fixpoint field does not establish a complete warning census or a global security certificate.",
+    "independent_review_sha256": "1730c1d3d18cf0733796eb69c1c2716701c604c76ceb93a548c95c7019fbc349"
+  },
+  "full_suite": {
+    "command": "python scripts/check_all.py --output-dir <evidence>/check-all",
+    "command_scope": "Portable rendering of the actual native command; original absolute argv, streams and JUnit remain private.",
+    "exit": 0,
+    "module_reports": 100,
+    "reported_totals": {"tests": 2658, "failures": 0, "errors": 0, "skipped": 1},
+    "raw_testcases": 1642,
+    "reported_minus_raw": 1016,
+    "count_scope": "Reported totals include subtests; they are distinct from raw JUnit testcase elements. The runner does not emit a separate 100-process exit census.",
+    "skip": "Unchanged Windows POSIX-only multicall compiler-launcher case in test_native_closed_loop.py.",
+    "warning": "One unchanged RuntimeWarning block in test_native_comparison_viewer.py: Tcl interpreter deallocated on a different thread. Cause unresolved; no suppression or lifetime-fix claim.",
+    "aggregate_XML_sha256": "ac77f09e7e6ceb1abd519ef559072238eee1893580d84c27994d21d53662324d",
+    "comparison": "Exact aggregate XML bytes/case order reconstructed from 100 originals; all 99 unchanged module ID orders match the accepted prior full suite. The target matches the fresh six-case reference and retains its old five-case prefix.",
+    "wall_s": 925.6474246999715,
+    "CPU_s": 873.34375,
+    "peak_job_committed_bytes": 607227904,
+    "minimum_free_physical_GiB": 9.377601623535156,
+    "minimum_commit_headroom_GiB": 12.884941101074219,
+    "owned_active_processes_after": 0,
+    "independent_review_sha256": "94c0e0da0f4b599d0849c1adb7532e0b04eb6edd94b0c676f1aad158f9ab6a9c"
+  },
+  "retained_attempts": [
+    {"source": "637b8e10eea74aec9b917f818937741950564785", "result": "Combined WSL quality stopped at the physical-memory reserve before diagnostic commands completed; no quality verdict.", "review_sha256": "6d667ba00dfee37871eba5eb7e060292397bfce349bb532825960dc9edbf93ee"},
+    {"source": "6065df86d0bf4e3caef8c22ffca174ca08ee5671", "result": "Native differential quality found one possibly-unbound cleanup observer. Moving its unchanged definition before guarded setup fixed the diagnostic; focused, quality and full checks were repeated at the current source.", "review_sha256": "70ac1d9339d489f1577462c5cce6e6fe486f1f6a112dbcf7d973e622573ae7ad"}
+  ],
+  "preservation": "Independent checks retained all 37 prior outputs byte/hash/mtime exact. The old five tests and all existing assertions remain unchanged; no solver, policy, tolerance, catalog or artifact substitution.",
+  "limits": [
+    "One imported analytic-circle success path in the source app; no native picker, cancellation/failure-race or general asynchronous-race acceptance.",
+    "No installed wheel/sdist, frozen EXE, browser or visual asynchronous-Run acceptance; prior recipient artifacts retain their original source-specific scope.",
+    "No product defect or general Tcl lifetime repair is claimed. This closes a bounded regression-coverage gap.",
+    "Synthetic numerical verification does not establish measured-vehicle calibration, physical accuracy or hardware approval.",
+    "This source receipt predates PR creation and integration; normal exact-head checks, merge and postmerge results are recorded separately."
+  ]
+}
