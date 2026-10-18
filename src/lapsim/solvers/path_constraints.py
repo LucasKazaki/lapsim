@@ -6,7 +6,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass
 from math import atan, isfinite
-from numbers import Real
+from numbers import Integral, Real
 
 from scipy.optimize import brentq
 
@@ -102,12 +102,24 @@ class PathConstraintSolver:
             or convergence_tolerance_mps <= 0.0
         ):
             raise ValueError("convergence_tolerance_mps must be finite and positive")
-        if maximum_passes <= 0:
-            raise ValueError("maximum_passes must be positive")
-        if maximum_entry_iterations <= 0:
-            raise ValueError("maximum_entry_iterations must be positive")
-        if steady_state_iterations <= 0:
-            raise ValueError("steady_state_iterations must be positive")
+        if (
+            isinstance(maximum_passes, bool)
+            or not isinstance(maximum_passes, Integral)
+            or maximum_passes <= 0
+        ):
+            raise ValueError("maximum_passes must be a positive integer")
+        if (
+            isinstance(maximum_entry_iterations, bool)
+            or not isinstance(maximum_entry_iterations, Integral)
+            or maximum_entry_iterations <= 0
+        ):
+            raise ValueError("maximum_entry_iterations must be a positive integer")
+        if (
+            isinstance(steady_state_iterations, bool)
+            or not isinstance(steady_state_iterations, Integral)
+            or steady_state_iterations <= 0
+        ):
+            raise ValueError("steady_state_iterations must be a positive integer")
         if not isfinite(gravity_mps2) or gravity_mps2 <= 0.0:
             raise ValueError("gravity_mps2 must be finite and positive")
         if not isfinite(air_density_kgpm3) or air_density_kgpm3 <= 0.0:
