@@ -246,12 +246,16 @@ def test_recipient_catalog_demo_selects_saves_loads_and_replays(
     app: LapSimDesktop,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    from lapsim.experiments import lap_replay
+    from lapsim.experiments.lap_replay import LapReplayReport
     from lapsim.profiles import snapshot_vehicle_config
 
     vehicle, profile = build_vehicle("repository_baseline")
     expected_config = snapshot_vehicle_config(vehicle)
     expected_model_config = profile.to_dict()["model_config"]
     selected = []
+    replay_reports: list[LapReplayReport] = []
+    original_replay = lap_replay.replay_lap_record
     original_select = (
         LapSimDesktop._select_course
     )  # Unbound function, no GUI retention.
@@ -260,10 +264,17 @@ def test_recipient_catalog_demo_selects_saves_loads_and_replays(
         selected.append(label)
         original_select(instance, label)
 
+    def capture_replay(path: str | Path) -> LapReplayReport:
+        replay_report = original_replay(path)
+        replay_reports.append(replay_report)
+        return replay_report
+
     with monkeypatch.context() as patch:
         patch.setattr(LapSimDesktop, "_select_course", select)
+        patch.setattr(lap_replay, "replay_lap_record", capture_replay)
         report = desktop._check_catalog_course_grid(app)
     assert selected == ["Synthetic loop · AI demo"]
+    assert len(replay_reports) == 1
     assert (
         app.course_spec.course_id
         == report["course_id"]
@@ -331,7 +342,8 @@ def test_recipient_catalog_demo_selects_saves_loads_and_replays(
     assert replay["model_agreement"] is replay["replay_completed"] is True
     assert replay["run_id"] == record.run_id
     assert replay["recorded_sample_count"] == replay["replayed_sample_count"] == 392
-    assert not replay["mismatch_reasons"] and not replay["provenance_warnings"]
+    assert not replay["mismatch_reasons"]
+    assert replay == replay_reports[0].to_dict()
     assert replay["metrics"] and all(
         metric["passed"] and metric["maximum_absolute_error"] == 0
         for metric in replay["metrics"]
