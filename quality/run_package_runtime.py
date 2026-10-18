@@ -214,7 +214,7 @@ def _fused_grid_identity(report: dict, *, source_root: Path | None = None) -> di
         if (
             grid["status"] != "passed"
             or grid["course_id"] != course_id
-            or len(grid["cases"]) != 1
+            or len(grid["cases"]) != 2
         ):
             raise ValueError("fused-course identity is incorrect")
         names = {
@@ -304,146 +304,177 @@ def _fused_grid_identity(report: dict, *, source_root: Path | None = None) -> di
         }
         if any(source[key] != value for key, value in expected_source.items()):
             raise ValueError("fused source claims differ from the legacy contract")
-        coarse = [Fraction(index * 5) for index in range(198)] + [Fraction(989)]
-        indices = [int(value * 2) for value in coarse]
-        means = [
-            float(
-                sum(
-                    (
-                        curvature[index] * (stations[index + 1] - stations[index])
-                        for index in range(first, stop)
-                    ),
-                    Fraction(0),
+        identities, observations = [], []
+        for row, (maximum_cell_length_m, cell_count) in zip(
+            grid["cases"], ((5.0, 198), (0.5, 1978)), strict=True
+        ):
+            target_stations = (
+                [Fraction(index * 5) for index in range(198)] + [Fraction(989)]
+                if maximum_cell_length_m == 5.0
+                else stations
+            )
+            indices = [int(value * 2) for value in target_stations]
+            means = [
+                float(
+                    sum(
+                        (
+                            curvature[index] * (stations[index + 1] - stations[index])
+                            for index in range(first, stop)
+                        ),
+                        Fraction(0),
+                    )
+                    / (upper - lower)
                 )
-                / (upper - lower)
-            )
-            for lower, upper, first, stop in zip(
-                coarse[:-1], coarse[1:], indices[:-1], indices[1:], strict=True
-            )
-        ]
-        row = grid["cases"][0]
-        geometry = row["geometry"]
-        if (
-            set(geometry) != set(source_geometry)
-            or geometry["closed"] is not True
-            or any(
-                not isinstance(value, (int, float))
-                or isinstance(value, bool)
-                or not isfinite(value)
-                for key in ("distance_m", "x_m", "y_m", "curvature_per_m")
-                for value in geometry[key]
-            )
-        ):
-            raise ValueError("fused effective geometry is malformed or nonfinite")
-        if (
-            geometry["distance_m"] != [float(value) for value in coarse]
-            or geometry["x_m"] != [float(rows[index]["x_m"]) for index in indices]
-            or geometry["y_m"] != [float(rows[index]["y_m"]) for index in indices]
-            or len(geometry["curvature_per_m"]) != 198
-            or any(
-                not isclose(value, expected, rel_tol=0.0, abs_tol=1e-12)
-                for value, expected in zip(
-                    geometry["curvature_per_m"], means, strict=True
+                for lower, upper, first, stop in zip(
+                    target_stations[:-1],
+                    target_stations[1:],
+                    indices[:-1],
+                    indices[1:],
+                    strict=True,
                 )
-            )
-        ):
-            raise ValueError(
-                "fused effective geometry fails the independent cell oracle"
-            )
-        geometry_hash = digest(geometry)
-        inputs = row["expected_inputs"]
-        inputs_hash = digest(inputs)
-        track = inputs["settings"]["track"]
-        if (
-            row["requested_maximum_cell_length_m"] != 5.0
-            or row["cell_count"] != 198
-            or row["geometry_sha256"] != geometry_hash
-            or row["expected_inputs_sha256"] != inputs_hash
-            or row["recorded_inputs_sha256"] != inputs_hash
-            or track["geometry"] != geometry
-            or track["geometry_sha256"] != geometry_hash
-            or track["source_course"] != source
-            or track["id"] != course_id
-            or track["cell_count"] != 198
-            or track["length_m"] != 989.0
-            or track["closed"] is not True
-            or inputs["selected_profile_id"] != "repository_baseline"
-            or row["record_unchanged"] is not True
-            or row["replay"]["model_agreement"] is not True
-            or row["replay"]["replay_completed"] is not True
-        ):
-            raise ValueError("fused saved inputs or replay differ from the request")
-        replay = row["replay"]
-        tolerances = {
-            "driving_time_s": 0.01,
-            "lap_time_s": 0.01,
-            "starting_speed_mps": 0.01,
-            "ending_speed_mps": 0.01,
-            "pack_energy_kwh": 1e-5,
-            "final_state_of_charge": 1e-5,
-            "sample_time_s": 0.01,
-            "sample_distance_m": 1e-8,
-            "speed_trace_mps": 0.01,
-            "path_speed_ceiling_mps": 0.01,
-            "controls.motor_torque_request_nm": 0.0,
-            "controls.front_brake_pressure_psi": 0.0,
-            "controls.rear_brake_pressure_psi": 0.0,
-            "controls.rear_regenerative_brake_force_request_n": 0.0,
-            "controls.steering_angle_rad": 0.0,
-            "controls.front_regenerative_brake_force_request_n": 0.0,
-            "tire.road_grip_multiplier": 0.0,
-        }
-        if (
-            not isinstance(row["record_run_id"], str)
-            or len(row["record_run_id"]) != 64
-            or set(row["record_run_id"]) - set("0123456789abcdef")
-            or replay["run_id"] != row["record_run_id"]
-            or replay["recorded_sample_count"] != 198
-            or replay["replayed_sample_count"] != 198
-            or replay["mismatch_reasons"] != []
-            or not isinstance(replay["metrics"], list)
-            or not replay["metrics"]
-        ):
-            raise ValueError("fused replay identity or accepted-cell counts differ")
-        metric_names = [metric["name"] for metric in replay["metrics"]]
-        if set(metric_names) != set(tolerances) or len(metric_names) != len(tolerances):
-            raise ValueError("fused replay metrics are missing, extra or duplicated")
-        for metric in replay["metrics"]:
-            error, tolerance = metric["maximum_absolute_error"], metric["tolerance"]
+            ]
+            geometry = row["geometry"]
             if (
-                metric["passed"] is not True
+                set(geometry) != set(source_geometry)
+                or geometry["closed"] is not True
                 or any(
                     not isinstance(value, (int, float))
                     or isinstance(value, bool)
                     or not isfinite(value)
-                    or value < 0.0
-                    for value in (error, tolerance)
+                    for key in ("distance_m", "x_m", "y_m", "curvature_per_m")
+                    for value in geometry[key]
                 )
-                or tolerance != tolerances[metric["name"]]
-                or error > tolerance
             ):
-                raise ValueError("fused replay metric contradicts model agreement")
-        # Remove only four reviewed contextual leaves after local validation.
-        declared = json.loads(json.dumps(inputs, allow_nan=False))
-        declared_track = declared["settings"]["track"]
-        del declared_track["geometry"]
-        del declared_track["geometry_sha256"]
-        declared_raw = declared_track["source_course"]["source_artifact_sha256"]
-        del declared_raw["fused_csv"]
-        del declared_raw["fusion_metadata_json"]
+                raise ValueError("fused effective geometry is malformed or nonfinite")
+            if (
+                geometry["distance_m"] != [float(value) for value in target_stations]
+                or geometry["x_m"] != [float(rows[index]["x_m"]) for index in indices]
+                or geometry["y_m"] != [float(rows[index]["y_m"]) for index in indices]
+                or len(geometry["curvature_per_m"]) != cell_count
+                or any(
+                    not isclose(value, expected, rel_tol=0.0, abs_tol=1e-12)
+                    for value, expected in zip(
+                        geometry["curvature_per_m"], means, strict=True
+                    )
+                )
+            ):
+                raise ValueError(
+                    "fused effective geometry fails the independent cell oracle"
+                )
+            geometry_hash = digest(geometry)
+            inputs = row["expected_inputs"]
+            inputs_hash = digest(inputs)
+            track = inputs["settings"]["track"]
+            if (
+                row["requested_maximum_cell_length_m"] != maximum_cell_length_m
+                or row["cell_count"] != cell_count
+                or inputs["settings"]["solver"]["requested_maximum_cell_length_m"]
+                != maximum_cell_length_m
+                or row["geometry_sha256"] != geometry_hash
+                or row["expected_inputs_sha256"] != inputs_hash
+                or row["recorded_inputs_sha256"] != inputs_hash
+                or track["geometry"] != geometry
+                or track["geometry_sha256"] != geometry_hash
+                or track["source_course"] != source
+                or track["id"] != course_id
+                or track["cell_count"] != cell_count
+                or track["length_m"] != 989.0
+                or track["closed"] is not True
+                or inputs["selected_profile_id"] != "repository_baseline"
+                or row["record_unchanged"] is not True
+                or row["replay"]["model_agreement"] is not True
+                or row["replay"]["replay_completed"] is not True
+            ):
+                raise ValueError("fused saved inputs or replay differ from the request")
+            replay = row["replay"]
+            tolerances = {
+                "driving_time_s": 0.01,
+                "lap_time_s": 0.01,
+                "starting_speed_mps": 0.01,
+                "ending_speed_mps": 0.01,
+                "pack_energy_kwh": 1e-5,
+                "final_state_of_charge": 1e-5,
+                "sample_time_s": 0.01,
+                "sample_distance_m": 1e-8,
+                "speed_trace_mps": 0.01,
+                "path_speed_ceiling_mps": 0.01,
+                "controls.motor_torque_request_nm": 0.0,
+                "controls.front_brake_pressure_psi": 0.0,
+                "controls.rear_brake_pressure_psi": 0.0,
+                "controls.rear_regenerative_brake_force_request_n": 0.0,
+                "controls.steering_angle_rad": 0.0,
+                "controls.front_regenerative_brake_force_request_n": 0.0,
+                "tire.road_grip_multiplier": 0.0,
+            }
+            if (
+                not isinstance(row["record_run_id"], str)
+                or len(row["record_run_id"]) != 64
+                or set(row["record_run_id"]) - set("0123456789abcdef")
+                or replay["run_id"] != row["record_run_id"]
+                or replay["recorded_sample_count"] != cell_count
+                or replay["replayed_sample_count"] != cell_count
+                or replay["mismatch_reasons"] != []
+                or not isinstance(replay["metrics"], list)
+                or not replay["metrics"]
+            ):
+                raise ValueError("fused replay identity or accepted-cell counts differ")
+            metric_names = [metric["name"] for metric in replay["metrics"]]
+            if set(metric_names) != set(tolerances) or len(metric_names) != len(
+                tolerances
+            ):
+                raise ValueError(
+                    "fused replay metrics are missing, extra or duplicated"
+                )
+            for metric in replay["metrics"]:
+                error, tolerance = metric["maximum_absolute_error"], metric["tolerance"]
+                if (
+                    metric["passed"] is not True
+                    or any(
+                        not isinstance(value, (int, float))
+                        or isinstance(value, bool)
+                        or not isfinite(value)
+                        or value < 0.0
+                        for value in (error, tolerance)
+                    )
+                    or tolerance != tolerances[metric["name"]]
+                    or error > tolerance
+                ):
+                    raise ValueError("fused replay metric contradicts model agreement")
+            # Remove only four reviewed contextual leaves after local validation.
+            declared = json.loads(json.dumps(inputs, allow_nan=False))
+            declared_track = declared["settings"]["track"]
+            del declared_track["geometry"]
+            del declared_track["geometry_sha256"]
+            declared_raw = declared_track["source_course"]["source_artifact_sha256"]
+            del declared_raw["fused_csv"]
+            del declared_raw["fusion_metadata_json"]
+            identities.append(
+                {
+                    "requested_maximum_cell_length_m": maximum_cell_length_m,
+                    "cell_count": cell_count,
+                    "declared_inputs_sha256": digest(declared),
+                }
+            )
+            observations.append(
+                {
+                    "requested_maximum_cell_length_m": maximum_cell_length_m,
+                    "cell_count": cell_count,
+                    "geometry_sha256": geometry_hash,
+                    "expected_inputs_sha256": inputs_hash,
+                    "recorded_inputs_sha256": row["recorded_inputs_sha256"],
+                    "record_run_id": row["record_run_id"],
+                    "replay": replay,
+                }
+            )
         return {
             "identity": {
                 "course_id": course_id,
                 "source_geometry_sha256": source_hash,
-                "declared_inputs_sha256": digest(declared),
+                "cases": identities,
             },
             "observed": {
                 "raw_source_sha256": dict(raw_hashes),
-                "geometry_sha256": geometry_hash,
-                "expected_inputs_sha256": inputs_hash,
-                "recorded_inputs_sha256": row["recorded_inputs_sha256"],
-                "record_run_id": row["record_run_id"],
-                "replay": replay,
+                "cases": observations,
             },
         }
     except (KeyError, TypeError, ValueError, OSError) as error:
@@ -571,7 +602,7 @@ def verify(output: Path, *, desktop: bool) -> dict:
                     ],
                     outside,
                     output / (kind + "-desktop.log"),
-                    timeout=120,
+                    timeout=300,
                 )
                 results[kind]["recipient_grid_inputs"] = _recipient_grid_identity(
                     json.loads(desktop_report.read_text(encoding="utf-8"))
