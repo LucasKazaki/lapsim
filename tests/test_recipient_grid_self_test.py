@@ -35,7 +35,8 @@ def app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[LapSimDeskt
 
 
 def test_recipient_imported_grid_uses_actual_save_and_replay(
-    app: LapSimDesktop, tmp_path: Path,
+    app: LapSimDesktop,
+    tmp_path: Path,
 ) -> None:
     report = desktop._check_imported_course_grid(app, tmp_path / "case")
     assert report["status"] == "passed"
@@ -52,16 +53,24 @@ def test_recipient_imported_grid_uses_actual_save_and_replay(
         for field in ("distance_m", "x_m", "y_m"):
             assert geometry[field][::subdivisions] == source[field]
         for distance, x, y in zip(
-            geometry["distance_m"], geometry["x_m"], geometry["y_m"], strict=True,
+            geometry["distance_m"],
+            geometry["x_m"],
+            geometry["y_m"],
+            strict=True,
         ):
             assert x == pytest.approx(10.0 * sin(distance / 10.0), rel=0.0, abs=1e-12)
-            assert y == pytest.approx(10.0 * (1.0 - cos(distance / 10.0)), rel=0.0, abs=1e-12)
+            assert y == pytest.approx(
+                10.0 * (1.0 - cos(distance / 10.0)), rel=0.0, abs=1e-12
+            )
         assert row["expected_inputs_sha256"] == row["recorded_inputs_sha256"]
         expected = row["expected_inputs"]
         assert expected["settings"]["profile_id"] == "repository_baseline"
         assert expected["settings"]["driver"] == {"torque_request_fraction": 0.8}
         assert expected["settings"]["conditions"]["road_grip_multiplier"] == 1.0
-        assert expected["settings"]["solver"]["path_constraint_settings"]["maximum_passes"] == 120
+        assert (
+            expected["settings"]["solver"]["path_constraint_settings"]["maximum_passes"]
+            == 120
+        )
         assert expected["settings"]["endurance_config"]["starting_speed_mps"] is None
         record_path = default_run_directory() / f"{row['record_run_id']}.json"
         raw = record_path.read_bytes()
@@ -69,8 +78,14 @@ def test_recipient_imported_grid_uses_actual_save_and_replay(
         assert sha256(raw).hexdigest() == row["record_sha256"]
         loaded = RunRecord.load(record_path).to_dict()
         assert loaded["settings"]["track"]["geometry"] == geometry
-        assert loaded["settings"]["track"]["source_course"]["bundle_sha256"] == report["fixture"]["bundle_sha256"]
-        assert loaded["configuration"]["effective_vehicle_config"] == expected["effective_vehicle_config"]
+        assert (
+            loaded["settings"]["track"]["source_course"]["bundle_sha256"]
+            == report["fixture"]["bundle_sha256"]
+        )
+        assert (
+            loaded["configuration"]["effective_vehicle_config"]
+            == expected["effective_vehicle_config"]
+        )
         assert row["record_unchanged"] is True
         assert row["replay"]["model_agreement"] is True
         assert row["replay"]["replay_completed"] is True
@@ -79,21 +94,29 @@ def test_recipient_imported_grid_uses_actual_save_and_replay(
 
 
 def test_recipient_self_test_rejects_generic_resampler(
-    app: LapSimDesktop, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    app: LapSimDesktop,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
         "lapsim.ui.app.solver_track_for_course",
         lambda _course, track, step: resample_track(track, step),
     )
-    with pytest.raises(RuntimeError, match="Recipient grid cell count or curvature is incorrect"):
+    with pytest.raises(
+        RuntimeError, match="Recipient grid cell count or curvature is incorrect"
+    ):
         desktop._check_imported_course_grid(app, tmp_path / "wrong-grid")
 
 
 def test_recipient_self_test_rejects_different_effective_profile(
-    app: LapSimDesktop, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    app: LapSimDesktop,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        app, "_vehicle_for_profile", lambda *_args: build_vehicle("prius_2026_le"),
+        app,
+        "_vehicle_for_profile",
+        lambda *_args: build_vehicle("prius_2026_le"),
     )
     with pytest.raises(RuntimeError, match="inputs|configuration|profile"):
         desktop._check_imported_course_grid(app, tmp_path / "wrong-profile")
@@ -101,7 +124,9 @@ def test_recipient_self_test_rejects_different_effective_profile(
 
 @pytest.mark.parametrize("raise_inside", [False, True])
 def test_self_test_user_storage_restores_environment_and_existing_files(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, raise_inside: bool,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    raise_inside: bool,
 ) -> None:
     previous = tmp_path / "existing user"
     previous.mkdir()
@@ -132,9 +157,11 @@ def test_self_test_user_storage_restores_environment_and_existing_files(
     assert Path.cwd() == original_cwd
     assert (saved.read_bytes(), saved.stat().st_mtime_ns) == before
 
+
 @pytest.mark.parametrize("artifact_kind", ["course_bundle", "run_record"])
 def test_atomic_save_keeps_normal_destination_when_temporary_path_is_long(
-    tmp_path: Path, artifact_kind: str,
+    tmp_path: Path,
+    artifact_kind: str,
 ) -> None:
     if artifact_kind == "course_bundle":
         source = tmp_path / "short-course.json"
@@ -159,9 +186,7 @@ def test_atomic_save_keeps_normal_destination_when_temporary_path_is_long(
     destination = parent / ("s" * (leaf_length - len(".json")) + ".json")
     assert len(str(destination)) == 245
     assert not str(destination).startswith("\\\\?\\")
-    prospective_temporary = destination.with_name(
-        f"{destination.name}.{'0' * 32}.tmp"
-    )
+    prospective_temporary = destination.with_name(f"{destination.name}.{'0' * 32}.tmp")
     assert len(str(prospective_temporary)) == 282
     assert parent.is_dir() and not destination.exists()
 
