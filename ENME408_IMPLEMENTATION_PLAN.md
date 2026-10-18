@@ -572,6 +572,13 @@ The October 14 issue records 241 Pyright errors/48 warnings; a later PR17 enviro
 
 Separate formatting-only changes from behavior changes. Maintain source-map freshness, docs links, dependency/secret scans, license/redistribution review, keyboard/large-text/manual device checks and honest skip reporting. Add new controller directories to the relevant lint/test/security and distribution inventories without scanning private logs into public reports.
 
+The path-solver count boundary requires positive, nonboolean `numbers.Integral`
+settings before execution and retains valid integer objects without coercion. The
+[verification manifest](docs/research/evidence/path-iteration-count-validation-20261018.json)
+freezes the tests-first counterexamples, full local suite and diagnostic
+comparison for code source `b27b280`. One Tcl cleanup warning and the existing
+diagnostic debt remain open; this increment does not complete E14.
+
 ## 5. Delivery gates, not arbitrary deadlines
 
 | Gate | Required evidence | Work that can proceed without team data |
