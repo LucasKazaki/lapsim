@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "date": "2026-10-18",
+  "work_package": "E05",
+  "status": "local_bounded_run_verified_integration_pending",
+  "source": "a8f4d30bb754275294ade76ac34cdd576bb71dbf",
+  "tree": "87dbff8cd4241ddc28b9c95d38e2fe359ebaece7",
+  "predecessor": "dbb1384a14d0b97595369a395e9b26c6fc7a7e87",
+  "changed_test": "tests/test_course_import_desktop.py",
+  "test_Git_LF_sha256": "ce4b54b5f370077635e0d95fe4ae68848ced6ce49304a7a1f07dc0ebb67612f9",
+  "change": "The public test runs its original 63-assertion Tk/worker probe in an isolated child process. The previous five tests and their 57 assertions remain exact. Production code and numerical/replay tolerances are unchanged.",
+  "workflow": {
+    "entry": "Programmatic invocation of the ordinary public Run button; actual Thread construction/start, original calculation delegate, scheduled result polling and Tk mainloop.",
+    "fixture": "Public analytic radius-10 m circle with 32 declared arcs; imported through the application import method, without a native file picker.",
+    "configuration": {
+      "profile": "repository_baseline",
+      "driving_mode": "Centerline (default)",
+      "maximum_cell_length_m": 0.5,
+      "torque_request_fraction": 0.8,
+      "road_grip_multiplier": 1.0,
+      "configured_starting_speed_mps": null
+    },
+    "geometry": "128 cells / 129 stations; independently checked stations, circle coordinates, curvature and every original source boundary, with 1e-12 absolute coordinate tolerance.",
+    "inputs": "Complete configured settings, effective vehicle configuration, base profile model and selected profile ID match the saved record. Resolved starting speed is checked separately from the null configured value.",
+    "completion": "One observed non-owner worker enters and exits; owner-thread polling restores controls, complete progress, driver grid and displayed saved-record identity.",
+    "replay": "The actual saved record loads and replays with all 17 existing default metrics passing; all reported errors/tolerances are finite, nonnegative and within their unchanged limits.",
+    "storage": "Child-owned LOCALAPPDATA/XDG storage selected before app construction. Normal completion retains Tk/storage until the observed worker exits; source/record bytes and mtimes remain unchanged through replay.",
+    "display": "Withdrawn native Tk root: UI state and workflow checks, without visible-render acceptance."
+  },
+  "process_boundary": {
+    "normal_timeout_s": 60,
+    "command": "selected-python -X utf8 -I -B -u -c <child-script> <test> <selected-source-root> <expected-app> <owned-probe-dir> <payload>",
+    "app_origin": "Exact selected src/lapsim/ui/app.py and LapSimDesktop class identity verified before the real probe. The isolated interpreter prepends that source root before importing the app.",
+    "timeout": "subprocess.run kills and waits for its direct child before reporting timeout failure; raw stdout/stderr retained. No arbitrary descendant-process termination guarantee.",
+    "skip": "Only genuine Tk-display-unavailable child result77 propagates a skip; the actual focused runs had none."
+  },
+  "focused": {
+    "new_case": {
+      "exit": 0,
+      "raw_cases": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "XML_sha256": "1f8d88ef8ee34e3726ad70ca8496a7a0a4110283c528b36c59cba061ff1976a6"
+    },
+    "module": {
+      "exit": 0,
+      "raw_cases": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "XML_sha256": "81913db6cbfb71b6f929a4bccc91932816282a6128f0e3ed737581aa4907fcdc"
+    },
+    "child_payload_and_app_origin_verified": true
+  },
+  "containment": {
+    "criterion": "A deliberate blocked-worker fault must return the expected parent-test failure before the independent outer guard; this is not a numerical pass.",
+    "scaled_parent_child_timeout_s": 6,
+    "scaled_inner_Tk_deadline_ms": 250,
+    "outer_guard_s": 12,
+    "actual_pytest_exit": 1,
+    "actual_guard_exit": 1,
+    "outer_timeout_reached": false,
+    "actual_outer_wall_s": 8.745856199995615,
+    "owned_active_before_final_close": 0,
+    "worker_entry_and_deadline_alive_markers": true,
+    "expected_failure_XML_sha256": "fb8f8fe200914c959c2de6f9711707b77eb9c716e80e4be7cef0794e34d0090c"
+  },
+  "quality": {
+    "scope": "One changed test, native differential gate against fixed 591a9bea7e4efd080d720dabf2d3e652397eb43e.",
+    "versions": {
+      "ruff": "0.17.0",
+      "pyright": "1.1.414",
+      "pyright_target_python": "3.11",
+      "semgrep": "1.180.0"
+    },
+    "types_current_baseline": [
+      0,
+      0
+    ],
+    "broad_current_baseline": [
+      1,
+      1
+    ],
+    "inherited": "SIM117 in unchanged prefix and 10 exact formatter edit-hunk multiplicities.",
+    "formatter_current_baseline": [
+      10,
+      10
+    ],
+    "introduced_diagnostics_or_hunks": 0,
+    "missing_baseline_hunks": 0,
+    "critical_exit": 0,
+    "whole_file_broad_and_format_exits": 1,
+    "security": {
+      "actual_Python_rules": 151,
+      "configured_Code_rules": 225,
+      "sealed_files_scanned": 1,
+      "matches": 0,
+      "errors": 0,
+      "exit": 0
+    },
+    "limits": "Raw notices/JSON remain private; empty fixpoint metadata is not a complete warning census or global security certificate.",
+    "first_attempt": "The 265-character sealed-file path failed an ordinary Windows open before diagnostic commands: no verdict. A fresh 223-character path passed unchanged policy/source; no system-limit change."
+  },
+  "full_suite": {
+    "status": "passed_closed_independent_review",
+    "command": "python scripts/check_all.py --output-dir <evidence>/check-all",
+    "exit": 0,
+    "module_reports": 100,
+    "reported_totals": {
+      "tests": 2658,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "raw_testcases": 1642,
+    "count_scope": "Reported suite totals and serialized testcase elements are distinct counts; both are retained.",
+    "aggregate_XML_sha256": "0bb013af51e1b508227d7b96c7d2b9620ea348143948a89bdc56517fabd88d77",
+    "independent_review_sha256": "c66d3243b4f69c97e21b5b9567c289e26cc652a9ddc51dd9e1afa60520b99a21",
+    "all_99_other_module_ID_orders_and_current_6_exact": true,
+    "skip": [
+      {
+        "module": "test_native_closed_loop.xml",
+        "case": "test_multicall_compiler_launcher_keeps_invoked_name_and_builds_real_c",
+        "message": "POSIX multicall-symlink regression runs in Linux CI; Windows actual native build is tested above"
+      }
+    ],
+    "warning": {
+      "summary_blocks": 1,
+      "categories": {
+        "RuntimeWarning": 1
+      },
+      "block_equal_historical_U": true,
+      "scope": "The unchanged historical Tcl lifetime warning remains unresolved. Raw paths and streams stay private."
+    },
+    "resources": {
+      "wall_s": 917.9896050000098,
+      "CPU_s": 865.9375,
+      "peak_job_committed_bytes": 607440896,
+      "minimum_headroom_GiB": {
+        "physical_gib": 9.359580993652344,
+        "commit_gib": 14.282112121582031
+      },
+      "owned_active_before_final_close": 0
+    }
+  },
+  "history": {
+    "earlier_receipt": {
+      "path": "docs/research/evidence/ordinary-async-run-20261018.json",
+      "sha256": "11a7b5b9a65cc29bc44f9074de68e1760c679c7e96d123ca9bdc360f12ee5c2d",
+      "scope": "Unchanged U local checks/H documentation; historical, not current V acceptance."
+    },
+    "PR123": {
+      "head": "dbb1384a14d0b97595369a395e9b26c6fc7a7e87",
+      "status": "not_accepted_for_integration",
+      "valid_finding": "https://github.com/LucasKazaki/lapsim/pull/123#discussion_r4309253264",
+      "finding": "The Tk deadline did not bound direct pytest when the observed worker remained blocked; cleanup retained Tk/storage."
+    },
+    "original_RED": {
+      "source": "dbb1384a14d0b97595369a395e9b26c6fc7a7e87",
+      "status": "original_deadline_hang_reproduced",
+      "actual_guard_exit": 1,
+      "scaled_inner_deadline_ms": 250,
+      "outer_guard_s": 12,
+      "actual_external_wall_s": 12.065372799988836,
+      "before_close_active_census": 2,
+      "scope": "Deliberate blocked delegate remained alive until the outer guard. No numerical pass or invented whole-job after-close census."
+    },
+    "Tcl_lifetime": "Historical native-comparison wrong-thread Tcl warning remains unresolved. The passive 14-test probe observed no matching warning or worker-thread weak callback; this is inconclusive, not a repair/frequency claim."
+  },
+  "local_environment": {
+    "execution": "Native Windows CPU/Tk source tests; local Linux mapped security phase is distinct. No GPU-physics claim.",
+    "python": "3.13.15",
+    "pytest": "9.1.1",
+    "numpy": "2.5.4",
+    "numerical_thread_pools": 1
+  },
+  "evidence": {
+    "source_review": {
+      "path": "work/e05-ordinary-async-child-process-r2-independent-source-review-20261018/source-review.json",
+      "sha256": "5d1ae582481566d086f33076c499d4884c4cbdbf9494795ac69d81c90440980f"
+    },
+    "focused": {
+      "path": "work/e05-ordinary-async-bounded-focused-a8f4d30-independent-review-20261018/independent-proof.json",
+      "sha256": "690bdebf704fb81c3e77fff17e185e932d187f712a1ace5811044f4e5b3fde10"
+    },
+    "quality": {
+      "path": "work/e05-ordinary-async-bounded-joint-quality-a8f4d30-independent-review-20261018/independent-proof.json",
+      "sha256": "2db56dfadd3de612a3aa7bd2148bac366a49d53d0fe614b2e6a7ffe3942bd62b"
+    },
+    "original_deadline_RED": {
+      "path": "work/e05-ordinary-async-deadline-hang-red-dbb1384-20261018/red-classification.json",
+      "sha256": "94ba990fc2af0eb63bb39d4b5fad71b4c5bea96f1d8463f798e9f004e7cb3a35"
+    },
+    "blocked_worker_containment": {
+      "path": "work/e05-ordinary-async-deadline-contained-a8f4d30-20261018/result.json",
+      "sha256": "42476cbc8741906d021478ec027ac3761c946e851b5b485ce33591424d5d8fa1"
+    },
+    "passive_lifetime": {
+      "path": "work/tcl-lifetime-passive-dbb1384-assoc1-independent-analysis-20261018/analysis.json",
+      "sha256": "7a4f35376e648c0396277ecb7c3df6ed8ae4a299d7bdd8384500b193ca89868d"
+    },
+    "full_suite": {
+      "path": "work/e05-ordinary-async-bounded-full-a8f4d30-independent-review-r2-20261018/independent-proof.json",
+      "sha256": "c66d3243b4f69c97e21b5b9567c289e26cc652a9ddc51dd9e1afa60520b99a21"
+    }
+  },
+  "preservation": "At source V, the closed checks preserve all 907 tracked source files, runtime inputs and all 37 prior outputs by bytes/hash/mtime. Private original streams/XML and observed records remain indexed; this public projection contains no machine paths or payloads.",
+  "limits": [
+    "One analytic imported 128-cell circle at 0.5 m, coordinate absolute 1e-12/relative 0; all 17 default replay tolerances remain unchanged.",
+    "Picker, cancellation/failure races, installed/frozen/browser asynchronous Run and visual acceptance remain open. No artifact rebuild claimed.",
+    "Containment changes the test harness, not application behavior or models. No calibration, physical/hardware validation, release or publication claim.",
+    "Local verification is at the stated runtime source. Exact-head CI, normal integration and postmerge checks are separate gates; this receipt does not claim their future outcomes."
+  ]
+}
