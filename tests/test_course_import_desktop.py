@@ -306,3 +306,475 @@ def test_saved_catalog_skips_tampered_and_conflicting_files(tmp_path: Path) -> N
     catalog, warnings = load_imported_course_catalog(tmp_path)
     assert not catalog or catalog[f"imported:{bundle.catalog_id}"].bundle_sha256 == conflict.bundle_sha256
     assert any("bundle" in warning for warning in warnings)
+
+
+def _probe_ordinary_run_button_finishes_async_and_replays_imported_grid(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Exercise real worker/polling; the withdrawn root is not a render check."""
+    from hashlib import sha256
+    from itertools import pairwise
+    import json
+    from math import cos, isfinite, sin
+    import threading
+    import traceback
+    from typing import Any
+
+    from lapsim.experiments import LapRunSettings, default_run_directory
+    from lapsim.profiles import build_vehicle, snapshot_vehicle_config
+    import lapsim.ui.app as app_module
+    from lapsim.ui.course_catalog import solver_track_for_course
+    from lapsim.ui.simulation import (
+        apply_uniform_road_grip,
+        endurance_run_config,
+        path_solver_settings,
+    )
+
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local"))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "xdg"))
+    run_directory = default_run_directory()
+    assert run_directory.resolve().is_relative_to(tmp_path.resolve())
+    assert not list(run_directory.glob("*.json"))
+    try:
+        root = tk.Tk()
+    except tk.TclError as error:
+        pytest.skip(f"Tk display unavailable: {error}")
+    root.withdraw()
+    owner_thread = threading.get_ident()
+    worker_threads: list[threading.Thread] = []
+    worker_events: list[tuple[str, int]] = []
+    callback_errors: list[str] = []
+    dialog_errors: list[tuple[str, str]] = []
+    observer_threads: set[int] = set()
+    timed_out = False
+    run_attempted = False
+    cleanup_requested = False
+    original_worker = LapSimDesktop._calculate_single
+
+    def observe_worker(
+        self: LapSimDesktop,
+        profile_id: str,
+        profile_name: str,
+        setup: VehicleSetup | None,
+        step_m: float,
+        torque_fraction: float,
+        road_grip_multiplier: float = 1.0,
+    ) -> None:
+        worker_threads.append(threading.current_thread())
+        worker_events.append(("entry", threading.get_ident()))
+        try:
+            return original_worker(
+                self,
+                profile_id,
+                profile_name,
+                setup,
+                step_m,
+                torque_fraction,
+                road_grip_multiplier,
+            )
+        finally:
+            worker_events.append(("exit", threading.get_ident()))
+
+    def callback_failed(
+        exception_type: type[BaseException],
+        error: BaseException,
+        trace: Any,
+    ) -> None:
+        callback_errors.append(
+            "".join(traceback.format_exception(exception_type, error, trace))
+        )
+
+    def observe_error(
+        title: str,
+        message: str,
+        *_args: Any,
+        **_kwargs: Any,
+    ) -> None:
+        # Test-only observation prevents modal hangs; no native-dialog claim.
+        dialog_errors.append((title, str(message)))
+
+    def observe_terminal() -> None:
+        observer_threads.add(threading.get_ident())
+        finished = bool(worker_threads) and all(
+            not thread.is_alive() for thread in worker_threads
+        )
+        if (
+            finished
+            and (
+                not app.run_in_progress
+                or timed_out
+                or callback_errors
+                or cleanup_requested
+            )
+        ) or ((timed_out or callback_errors) and not run_attempted):
+            root.quit()
+        else:
+            root.after(10, observe_terminal)
+
+    monkeypatch.setattr(root, "report_callback_exception", callback_failed)
+    monkeypatch.setattr(app_module.messagebox, "showerror", observe_error)
+    try:
+        app = LapSimDesktop(root)
+        assert app.profile_store.path.resolve().is_relative_to(tmp_path.resolve())
+        source_file = _bundle().save(tmp_path / "async-circle.json")
+        source_before = (source_file.read_bytes(), source_file.stat().st_mtime_ns)
+        bundle = CourseBundle.load(source_file)
+        source_track = bundle.track
+        assert source_track.cell_count == 32
+        assert source_track.curvature_per_m == (0.1,) * 32
+        assert source_track.length_m == pytest.approx(20.0 * pi, rel=0, abs=1e-12)
+        for station, x_m, y_m in zip(
+            source_track.distance_m,
+            source_track.x_m,
+            source_track.y_m,
+            strict=True,
+        ):
+            assert x_m == pytest.approx(
+                10.0 * sin(station / 10.0),
+                rel=0,
+                abs=1e-12,
+            )
+            assert y_m == pytest.approx(
+                10.0 * (1.0 - cos(station / 10.0)),
+                rel=0,
+                abs=1e-12,
+            )
+
+        app._import_course_bundle(source_file)
+        app._select_profile("repository_baseline")
+        app.driving_mode_var.set("Centerline (default)")
+        app.inputs["solver_step_m"].set("0.5")
+        app.inputs["torque_request_percent"].set("80")
+        app.inputs["road_grip_percent"].set("100")
+        pre_run_inputs = app._read_run_inputs()
+        pre_run_grip = app._read_road_grip_multiplier()
+        assert pre_run_inputs == (None, 0.5, 0.8)
+        assert pre_run_grip == 1.0
+        assert app.course_spec.course_id == "imported:practice_circle@r1"
+        assert not app._displayed_run_records and not app.run_in_progress
+        source_metadata = json.loads(app.course_source_json)
+
+        # Four subarcs per declared source cell, with every source end retained.
+        stations = [source_track.distance_m[0]]
+        for lower, upper in zip(
+            source_track.distance_m[:-1],
+            source_track.distance_m[1:],
+            strict=True,
+        ):
+            stations.extend(
+                lower + fraction * (upper - lower) for fraction in (0.25, 0.5, 0.75)
+            )
+            stations.append(upper)
+
+        def check_geometry(geometry: dict[str, Any]) -> None:
+            assert geometry["closed"] is True
+            assert geometry["distance_m"] == stations and len(stations) == 129
+            assert geometry["curvature_per_m"] == [0.1] * 128
+            assert all(
+                0.0 < upper - lower <= 0.5 for lower, upper in pairwise(stations)
+            )
+            for key, source_values in (
+                ("distance_m", source_track.distance_m),
+                ("x_m", source_track.x_m),
+                ("y_m", source_track.y_m),
+            ):
+                assert len(geometry[key]) == 129
+                assert geometry[key][::4] == list(source_values)
+            for station, x_m, y_m in zip(
+                stations,
+                geometry["x_m"],
+                geometry["y_m"],
+                strict=True,
+            ):
+                assert x_m == pytest.approx(
+                    10.0 * sin(station / 10.0),
+                    rel=0,
+                    abs=1e-12,
+                )
+                assert y_m == pytest.approx(
+                    10.0 * (1.0 - cos(station / 10.0)),
+                    rel=0,
+                    abs=1e-12,
+                )
+
+        expected_track = solver_track_for_course(
+            app.course_spec.course_id,
+            source_track,
+            0.5,
+        )
+        vehicle, profile = build_vehicle("repository_baseline")
+        apply_uniform_road_grip(vehicle, 1.0)
+        settings = LapRunSettings.from_track(
+            expected_track,
+            track_id=app.course_spec.course_id,
+            solver_step_m=0.5,
+            solver_settings=path_solver_settings(vehicle),
+            torque_request_fraction=0.8,
+            road_grip_multiplier=1.0,
+            endurance_config=endurance_run_config(vehicle),
+            profile_id="repository_baseline",
+            profile_label=app.profile_id_to_display["repository_baseline"],
+            source_course=source_metadata,
+        ).to_dict()
+        check_geometry(settings["track"]["geometry"])
+        expected_inputs = json.loads(
+            json.dumps(
+                {
+                    "settings": settings,
+                    "effective_vehicle_config": snapshot_vehicle_config(vehicle),
+                    "base_vehicle_config": profile.to_dict()["model_config"],
+                    "selected_profile_id": "repository_baseline",
+                },
+                allow_nan=False,
+            )
+        )
+        expected_hash = sha256(
+            json.dumps(
+                expected_inputs,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode()
+        ).hexdigest()
+
+        def deadline() -> None:
+            nonlocal timed_out
+            timed_out = True
+            # Do not cancel/join the model or retire its storage while it runs.
+            if not run_attempted or (
+                worker_threads
+                and all(not thread.is_alive() for thread in worker_threads)
+            ):
+                root.quit()
+
+        monkeypatch.setattr(LapSimDesktop, "_calculate_single", observe_worker)
+        root.after(60_000, deadline)
+        run_attempted = True
+        app.run_button.invoke()
+        assert app.run_in_progress
+        assert app.run_button.cget("state") == "disabled"
+        assert app.entry_by_key["solver_step_m"].cget("state") == "disabled"
+        assert app.course_menu is not None
+        assert app.course_menu.cget("state") == "disabled"
+        root.after(0, observe_terminal)
+        root.mainloop()
+
+        assert not timed_out, (
+            "Ordinary asynchronous Run exceeded its diagnostic deadline"
+        )
+        assert not callback_errors, callback_errors
+        assert not dialog_errors, dialog_errors
+        assert observer_threads == {owner_thread}
+        assert len(worker_threads) == 1 and not worker_threads[0].is_alive()
+        worker_id = worker_threads[0].ident
+        assert worker_id is not None and worker_id != owner_thread
+        assert worker_events == [("entry", worker_id), ("exit", worker_id)]
+        assert not app.run_in_progress and app.run_button.cget("state") == "normal"
+        assert app._calculation_progress_mode == "complete"
+        assert app._calculation_progress_fraction == 1.0
+        assert app._last_result is not None and app._last_result.completed
+        assert app.driver_playback is not None
+        assert app.driver_playback.track == expected_track
+        assert app.saved_runs_button is not None
+        assert app.saved_runs_button.cget("state") == "normal"
+        ((label, run_id),) = app._displayed_run_records
+        assert label == "Lap result" and len(run_id) == 64
+        assert set(run_directory.glob("*.json")) == {run_directory / f"{run_id}.json"}
+
+        saved = run_directory / f"{run_id}.json"
+        saved_before = (saved.read_bytes(), saved.stat().st_mtime_ns)
+        record = RunRecord.load(saved)
+        document = record.to_dict()
+        assert record.run_id == run_id
+        check_geometry(document["settings"]["track"]["geometry"])
+        recorded_inputs = {
+            "settings": document["settings"],
+            "effective_vehicle_config": document["configuration"][
+                "effective_vehicle_config"
+            ],
+            "base_vehicle_config": document["configuration"]["base_profile_manifest"][
+                "model_config"
+            ],
+            "selected_profile_id": document["configuration"]["selected_profile_id"],
+        }
+        assert recorded_inputs == expected_inputs
+        assert (
+            sha256(
+                json.dumps(
+                    recorded_inputs,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                ).encode()
+            ).hexdigest()
+            == expected_hash
+        )
+        assert document["settings"]["track"]["source_course"] == source_metadata
+        assert document["result"]["starting_speed_mps"] == (
+            app._last_result.starting_speed_mps
+        )
+        assert document["settings"]["endurance_config"]["starting_speed_mps"] is None
+        replay = replay_lap_record(saved).to_dict()
+        assert replay["run_id"] == run_id
+        assert replay["model_agreement"] is True and replay["replay_completed"] is True
+        assert replay["recorded_sample_count"] == replay["replayed_sample_count"] == 128
+        assert not replay["mismatch_reasons"]
+        tolerances = {
+            "driving_time_s": 0.01,
+            "lap_time_s": 0.01,
+            "starting_speed_mps": 0.01,
+            "ending_speed_mps": 0.01,
+            "pack_energy_kwh": 1e-5,
+            "final_state_of_charge": 1e-5,
+            "sample_time_s": 0.01,
+            "sample_distance_m": 1e-8,
+            "speed_trace_mps": 0.01,
+            "path_speed_ceiling_mps": 0.01,
+            "controls.motor_torque_request_nm": 0.0,
+            "controls.front_brake_pressure_psi": 0.0,
+            "controls.rear_brake_pressure_psi": 0.0,
+            "controls.rear_regenerative_brake_force_request_n": 0.0,
+            "controls.steering_angle_rad": 0.0,
+            "controls.front_regenerative_brake_force_request_n": 0.0,
+            "tire.road_grip_multiplier": 0.0,
+        }
+        assert len(replay["metrics"]) == 17
+        assert {metric["name"] for metric in replay["metrics"]} == set(tolerances)
+        for metric in replay["metrics"]:
+            assert metric["passed"] is True
+            assert metric["tolerance"] == tolerances[metric["name"]]
+            for value in (metric["maximum_absolute_error"], metric["tolerance"]):
+                assert isinstance(value, (float, int)) and not isinstance(value, bool)
+                assert isfinite(value) and value >= 0.0
+            assert metric["maximum_absolute_error"] <= metric["tolerance"]
+        # Provenance warnings remain truthful; they are not numerical failures.
+        assert all(
+            isinstance(warning, str) for warning in replay["provenance_warnings"]
+        )
+        assert (saved.read_bytes(), saved.stat().st_mtime_ns) == saved_before
+        assert (
+            source_file.read_bytes(),
+            source_file.stat().st_mtime_ns,
+        ) == source_before
+    finally:
+        cleanup_requested = True
+        # Invocation may have started a thread whose delegate has not entered.
+        # Only an observed exit proves it is safe to retire Tk and storage.
+        while run_attempted and (
+            not worker_threads or any(thread.is_alive() for thread in worker_threads)
+        ):
+            root.after(0, observe_terminal)
+            root.mainloop()
+        assert not run_attempted or (
+            worker_threads and all(not thread.is_alive() for thread in worker_threads)
+        )
+        root.destroy()
+
+
+def test_ordinary_run_button_finishes_async_and_replays_imported_grid(
+    tmp_path: Path,
+) -> None:
+    """Keep direct pytest bounded while the child owns its real Tk/worker lifetime."""
+    import json
+    import subprocess
+    import sys
+
+    import lapsim.ui.app as app_module
+
+    app_origin = app_module.__file__
+    assert app_origin is not None
+    app_file = Path(app_origin).resolve()
+    source_root = app_file.parents[2]
+    probe_directory = tmp_path / "async-child"
+    probe_directory.mkdir()
+    payload = tmp_path / "async-child-result.json"
+    child_code = """
+import json
+from pathlib import Path
+import runpy
+import sys
+
+import pytest
+
+test_file, source_root, expected_app, probe_directory, payload = map(Path, sys.argv[1:])
+sys.path.insert(0, str(source_root))
+import lapsim.ui.app as app_module
+
+assert app_module.__file__ is not None
+assert Path(app_module.__file__).resolve() == expected_app.resolve()
+namespace = runpy.run_path(str(test_file))
+assert namespace["LapSimDesktop"] is app_module.LapSimDesktop
+try:
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        namespace["_probe_ordinary_run_button_finishes_async_and_replays_imported_grid"](
+            probe_directory, monkeypatch,
+        )
+except pytest.skip.Exception as error:
+    payload.write_text(
+        json.dumps({"status": "skipped", "reason": str(error), "app_origin": str(expected_app)}),
+        encoding="utf-8",
+    )
+    raise SystemExit(77)
+payload.write_text(
+    json.dumps({"status": "passed", "app_origin": str(expected_app)}),
+    encoding="utf-8",
+)
+"""
+
+    def retain_streams(
+        stdout: bytes | str | None,
+        stderr: bytes | str | None,
+    ) -> tuple[str, str]:
+        stdout_bytes = (
+            stdout.encode("utf-8") if isinstance(stdout, str) else stdout or b""
+        )
+        stderr_bytes = (
+            stderr.encode("utf-8") if isinstance(stderr, str) else stderr or b""
+        )
+        (tmp_path / "async-child-stdout.txt").write_bytes(stdout_bytes)
+        (tmp_path / "async-child-stderr.txt").write_bytes(stderr_bytes)
+        return (
+            stdout_bytes.decode("utf-8", errors="replace"),
+            stderr_bytes.decode("utf-8", errors="replace"),
+        )
+
+    command = [
+        sys.executable,
+        "-X",
+        "utf8",
+        "-I",
+        "-B",
+        "-u",
+        "-c",
+        child_code,
+        str(Path(__file__).resolve()),
+        str(source_root),
+        str(app_file),
+        str(probe_directory),
+        str(payload),
+    ]
+    try:
+        result = subprocess.run(command, capture_output=True, timeout=60, check=False)
+    except subprocess.TimeoutExpired as error:
+        stdout, stderr = retain_streams(error.stdout, error.stderr)
+        pytest.fail(
+            "Async Tk/worker child exceeded the 60-second process bound. "
+            "subprocess.run killed and waited for the child; this does not "
+            "promise termination of arbitrary descendant processes.\n"
+            f"stdout:\n{stdout}\nstderr:\n{stderr}"
+        )
+    stdout, stderr = retain_streams(result.stdout, result.stderr)
+    if result.returncode not in (0, 77):
+        pytest.fail(
+            f"Async Tk/worker child exited {result.returncode}.\n"
+            f"stdout:\n{stdout}\nstderr:\n{stderr}"
+        )
+    outcome = json.loads(payload.read_text(encoding="utf-8"))
+    assert outcome["app_origin"] == str(app_file)
+    if result.returncode == 77:
+        assert outcome["status"] == "skipped"
+        reason = outcome["reason"]
+        assert isinstance(reason, str) and reason.startswith("Tk display unavailable:")
+        pytest.skip(reason)
+    assert outcome["status"] == "passed"
