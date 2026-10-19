@@ -206,7 +206,8 @@
   .map-shell {
     height: auto;
     min-height: 100svh;
-    grid-template-rows: auto auto auto;
+    grid-template-rows: max-content max-content auto;
+    align-content: start;
     overflow: visible;
   }
 }

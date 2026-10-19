@@ -36,6 +36,7 @@ EXPECTED_SCRIPTS = [
     "data/source-inventory.js",
     "data.js",
     "app.js",
+    "panels.js",
     "anatomy-lap-data.js",
     "anatomy-car-data.js",
     "anatomy-core.js",
