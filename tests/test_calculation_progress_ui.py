@@ -278,19 +278,23 @@ def test_ordinary_run_recovers_when_thread_start_fails(
         name = getattr(target, "__name__", None)
         del target
         if selected:
-            attempts.append({
-                "target": name,
-                "real_thread": type(thread) is thread_type,
-                "ident": thread.ident,
-                "is_alive": thread.is_alive(),
-                "original_delegated": False,
-            })
+            attempts.append(
+                {
+                    "target": name,
+                    "real_thread": type(thread) is thread_type,
+                    "ident": thread.ident,
+                    "is_alive": thread.is_alive(),
+                    "original_delegated": False,
+                }
+            )
             # The actual constructor ran; this branch never calls original_start.
             raise RuntimeError(failure_text)
         return original_start(thread)
 
     def observe_callback_error(
-        exception_type: type[BaseException], error: BaseException, _trace: Any,
+        exception_type: type[BaseException],
+        error: BaseException,
+        _trace: Any,
     ) -> None:
         callback_errors.append(f"{exception_type.__name__}: {error}")
 
@@ -318,7 +322,10 @@ def test_ordinary_run_recovers_when_thread_start_fails(
 
     def storage_snapshot() -> dict[str, tuple[bytes, int]]:
         return {
-            str(path.relative_to(tmp_path)): (path.read_bytes(), path.stat().st_mtime_ns)
+            str(path.relative_to(tmp_path)): (
+                path.read_bytes(),
+                path.stat().st_mtime_ns,
+            )
             for directory in (tmp_path / "local", tmp_path / "xdg")
             for path in directory.rglob("*")
             if path.is_file()
@@ -355,16 +362,22 @@ def test_ordinary_run_recovers_when_thread_start_fails(
         assert no_launch_proven(), "No-worker ownership needs an observed denied start"
         root.mainloop()
 
-        assert not deadline_reached, "Scheduled error recovery did not finish within 1 s"
+        assert not deadline_reached, (
+            "Scheduled error recovery did not finish within 1 s"
+        )
         assert not callback_errors, callback_errors
-        assert attempts == [{
-            "target": target_name,
-            "real_thread": True,
-            "ident": None,
-            "is_alive": False,
-            "original_delegated": False,
-        }]
-        assert dialogs == [("Lap calculation failed", failure_text, owner, "_poll_result")]
+        assert attempts == [
+            {
+                "target": target_name,
+                "real_thread": True,
+                "ident": None,
+                "is_alive": False,
+                "original_delegated": False,
+            }
+        ]
+        assert dialogs == [
+            ("Lap calculation failed", failure_text, owner, "_poll_result")
+        ]
         assert not app.run_in_progress
         assert app.run_button.cget("state") == "normal"
         assert {
@@ -390,5 +403,7 @@ def test_ordinary_run_recovers_when_thread_start_fails(
         } == source_before
     finally:
         # The injected pre-delegation failure proves ownership, unlike no entry.
-        assert not run_attempted or no_launch_proven(), "Do not destroy Tk without no-launch proof"
+        assert not run_attempted or no_launch_proven(), (
+            "Do not destroy Tk without no-launch proof"
+        )
         root.destroy()

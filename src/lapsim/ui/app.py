@@ -3618,21 +3618,28 @@ class LapSimDesktop:
             profile_name,
             preparing=(
                 "Planning AI path and preparing model"
-                if ai_assumptions else "Preparing course and speed limits"
+                if ai_assumptions
+                else "Preparing course and speed limits"
             ),
         )
         self.run_started_at = time.perf_counter()
         self.status_text.set(
             f"Calculating {profile_name}"
-            + (" with experimental AI path…" if ai_assumptions else f" with Cell size (max) {step_m:g} m…")
+            + (
+                " with experimental AI path…"
+                if ai_assumptions
+                else f" with Cell size (max) {step_m:g} m…"
+            )
         )
         try:
             worker = threading.Thread(
-                target=self._calculate_ai_single if ai_assumptions else self._calculate_single,
+                target=self._calculate_ai_single
+                if ai_assumptions
+                else self._calculate_single,
                 args=(profile_id, profile_name, setup, step_m, torque_fraction)
-                     + ((ai_assumptions,) if ai_assumptions else ())
-                     + (road_grip_multiplier,)
-                     + ((ai_road,) if ai_assumptions else ()),
+                + ((ai_assumptions,) if ai_assumptions else ())
+                + (road_grip_multiplier,)
+                + ((ai_road,) if ai_assumptions else ()),
                 daemon=True,
             )
             worker.start()
