@@ -97,6 +97,20 @@ jobs:
           grep --extended-regexp '[1-9][0-9]* total' /tmp/lapsim-flowchart-dom.html >/dev/null
           grep --fixed-strings 'docs/simulator_flowchart/' /tmp/lapsim-root.html >/dev/null
 
+      - name: Check panel layout and drag resizing
+        shell: bash
+        run: |
+          set -euo pipefail
+          browser_packages="$RUNNER_TEMP/lapsim-flowchart-browser"
+          npm install --prefix "$browser_packages" --no-package-lock --no-save --ignore-scripts playwright@1.62.1
+          export NODE_PATH="$browser_packages/node_modules"
+          export LAPSIM_BROWSER_PATH="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [[ -z "$LAPSIM_BROWSER_PATH" ]]; then
+            echo "An installed Chromium browser is required for the layout regression." >&2
+            exit 1
+          fi
+          node docs/simulator_flowchart/browser_layout_check.cjs
+
       - name: Upload browser diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v4
