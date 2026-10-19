@@ -27,6 +27,7 @@ EXPECTED_SCRIPTS = [
     "data/09-verification.js",
     "data.js",
     "app.js",
+    "panels.js",
 ]
 
 
