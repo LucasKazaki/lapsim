@@ -43,6 +43,16 @@ referenced calls/dependencies rather than independent physical quantities.
 
 ## Controls
 
+- Drag the divider between the graph and details to resize both panels. The
+  cursor changes to a resize arrow over the divider. On narrow screens the
+  panels stack and the divider moves vertically; the details scroll inside
+  their panel.
+- Focus the divider and use the arrow keys to resize, or Shift plus an arrow
+  for larger steps. Home and End move to the usable size limits. Double-click
+  the divider or press Enter to restore the default split. Escape cancels an
+  active drag. Panel sizes stay in place when you select or expand a branch.
+
+
 - Click a node to inspect its summary, inputs, outputs, equations, assumptions,
   source files, individual quantities, and related subsystems.
 - Double-click, press Space on a focused node, or use its `+` / `−` control to
@@ -88,6 +98,14 @@ These labels describe software status and evidence, not predictive accuracy.
 Passing implementation or numerical checks does not validate the team car.
 
 ## Files and maintenance
+
+`panels.js` owns the graph/details separator and its pointer, keyboard and
+responsive behavior. Header rows use content sizing so shorter branches cannot
+stretch the controls. `browser_layout_check.cjs` is the real browser regression
+for both source and published layouts. With Playwright available, run it with
+`LAPSIM_BROWSER_PATH` pointing to an installed Chromium browser (or
+`LAPSIM_BROWSER_CHANNEL` naming an installed channel). It runs in the Flowchart
+web checks workflow; no browser package is loaded by the map itself.
 
 - `data/core.js` defines the compact constructor and metadata. The nine numbered
   branch files under `data/` contain the curated hierarchy.

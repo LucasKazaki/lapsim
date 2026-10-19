@@ -1,5 +1,41 @@
 # Flow map verification — 2026-10-09
 
+## Panel sizing repair — 2026-10-19
+
+E14 UI repair, based on main `81ba735e2ef749ae00decc0d307df9eeddfa407b`
+and the separately published map at `67b3659a4d9dcf88a7074fb52b526f19d9aee30b`.
+The published map's all-auto grid rows stretched the controls when a short
+branch left unused viewport height. At 900 × 2200, opening `condition-inputs`
+changed the header from 111.390625 px to 202.96875 px. The retained
+`browser_layout_check.cjs` failed on that baseline before the repair.
+
+Header and toolbar tracks now use their content height. A pointer/keyboard
+separator resizes the graph and details horizontally, or vertically when
+stacked. Minimum panel dimensions and internal details scrolling keep both
+panels usable. No runtime dependency was added to the map.
+
+`LAPSIM_BROWSER_PATH=/path/to/chrome node docs/simulator_flowchart/browser_layout_check.cjs`
+passed on both source variants in Chromium 134.0.6998.35 with Playwright 1.62.1,
+using real offline file pages. It checks the tall-viewport regression, real
+mouse drags, branch-selection persistence, keyboard arrows and limits, default
+reset, responsive orientation and bounds, and absence of runtime errors.
+Independent browser review also checked Escape rollback, a synthetic
+`pointercancel` event, and actual capture release and responsive-breakpoint
+changes during a mouse drag. The
+flowchart CI workflow runs the same regression with an installed browser.
+
+The existing `browser_check.cjs` suite passed in the same Chromium browser,
+covering source search, variable units, keyboard hierarchy, node dragging,
+position reset and complete expansion. Static-site and graph-data checks passed
+for both source variants. Main's inventory freshness check passed, and
+`python -m pytest tests/test_simulator_flowchart.py -q` passed all 22 cases
+after installing the missing test runner in a temporary directory.
+
+This is browser UI evidence. Repository integration and the live deployment
+remain separate from these local results.
+
+## Original verification scope
+
 The map was checked against the final local source checkout, including the
 portable desktop launcher, frozen-application resources, and physics fixes.
 
