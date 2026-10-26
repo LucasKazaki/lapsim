@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from math import isfinite
 from typing import Any, Sequence, TypeGuard
 
-VERSION='lapsim.fsae-inspired-equal-lap-2027v1.1'
+VERSION='lapsim.fsae-inspired-equal-lap.v1.2'
 SOURCE='https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38'
 EV_KG_CO2_PER_KWH=.65
 EV_CAP_KWH_PER_KM=.308
@@ -77,7 +77,7 @@ def score_field(runs: Sequence[ScoringRun]):
         row.update(corrected_time_s=corrected,net_energy_wh=energy_wh,
             co2_kg=co2_kg,distance_m=run.distance_m)
         finishers.append(run)
-    references: dict[str,Any]={'source_url':SOURCE,'version':VERSION,'official_points':False,
+    references: dict[str,Any]={'source_url':SOURCE,'version':VERSION,'rule_edition':'SAE 2027 V1 D12.13 and D13.3-4','official_points':False,
         'fmax_interpretation':'Best eligible observed factor in the matched field',
         'scope':'Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.'}
     if unavailable_inputs:
@@ -89,11 +89,15 @@ def score_field(runs: Sequence[ScoringRun]):
     if not positive(cutoff):
         references['unavailable_reason']='Nonfinite endurance cutoff'
         return {'rows':rows,'references':references,'available':False}
+    endurance_denominator=(cutoff/best)-1.
+    if not positive(endurance_denominator):
+        references['unavailable_reason']='Nonpositive endurance normalization denominator'
+        return {'rows':rows,'references':references,'available':False}
     references.update(best_full_finisher_time_s=best,endurance_cutoff_s=cutoff)
     efficiency=[]
     for run in finishers:
         row=rows[run.candidate_id];time=row['corrected_time_s']
-        row['endurance_points']=25. if time>=cutoff else 250.*((cutoff/time)-1.)/((cutoff/best)-1.)+25.
+        row['endurance_points']=25. if time>=cutoff else 250.*((cutoff/time)-1.)/endurance_denominator+25.
         row['efficiency_points']=0.
         if time>cutoff:row['reasons'].append('Beyond 1.45 fastest full-finisher time')
         if row['net_energy_wh']/1000>EV_CAP_KWH_PER_KM*run.distance_m/1000:
@@ -102,11 +106,23 @@ def score_field(runs: Sequence[ScoringRun]):
     if efficiency:
         time_ref=min(efficiency,key=lambda r:rows[r.candidate_id]['corrected_time_s'])
         energy_ref=min(efficiency,key=lambda r:rows[r.candidate_id]['co2_kg'])
-        tref=rows[time_ref.candidate_id]['corrected_time_s']/time_ref.laps
-        cref=rows[energy_ref.candidate_id]['co2_kg']/energy_ref.laps
-        cap_per_lap=EV_KG_CO2_PER_KWH*EV_CAP_KWH_PER_KM*(time_ref.distance_m/time_ref.laps)/1000
+        try:
+            averages={r.candidate_id:(rows[r.candidate_id]['corrected_time_s']/r.laps,
+                rows[r.candidate_id]['co2_kg']/r.laps,r.distance_m/r.laps) for r in efficiency}
+        except (OverflowError,ZeroDivisionError):
+            references['unavailable_reason']='Unrepresentable per-lap divisor'
+            return {'rows':rows,'references':references,'available':False}
+        if any(not positive(v) for values in averages.values() for v in values):
+            references['unavailable_reason']='Nonfinite or underflowed per-lap reference'
+            return {'rows':rows,'references':references,'available':False}
+        tref=averages[time_ref.candidate_id][0]
+        cref=averages[energy_ref.candidate_id][1]
+        cap_per_lap=EV_KG_CO2_PER_KWH*EV_CAP_KWH_PER_KM*averages[time_ref.candidate_id][2]/1000
+        if not positive(cap_per_lap):
+            references['unavailable_reason']='Nonfinite or underflowed per-lap energy cap'
+            return {'rows':rows,'references':references,'available':False}
         fmin=(1/1.45)*(cref/cap_per_lap)
-        factors={r.candidate_id:(tref/(rows[r.candidate_id]['corrected_time_s']/r.laps))*(cref/(rows[r.candidate_id]['co2_kg']/r.laps)) for r in efficiency}
+        factors={r.candidate_id:(tref/averages[r.candidate_id][0])*(cref/averages[r.candidate_id][1]) for r in efficiency}
         fmax=max(factors.values());denominator=fmax-fmin
         references.update(time_reference_candidate=time_ref.candidate_id,energy_reference_candidate=energy_ref.candidate_id,
             time_reference_per_lap_s=tref,co2_reference_per_lap_kg=cref,fmin=fmin,fmax=fmax)
