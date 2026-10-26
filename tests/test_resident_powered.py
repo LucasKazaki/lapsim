@@ -126,3 +126,24 @@ def test_resident_gpu_inactive_finished_lane_is_frozen_without_reset(device):
         second,_=backend.step(active=[False,True])
         assert second[0]==first[0]
         compare(second[1],cpu(replace(rows[1],state=first[1])))
+
+
+@pytest.mark.parametrize('tau',[1e-12,1e-320])
+def test_resident_host_rejects_unrepresentable_substep_count_before_launch(device,tau):
+    r=sample();r=replace(r,actuation=replace(r.actuation,actuator_time_constant_s=tau))
+    with pytest.raises((ValueError,ArithmeticError)):cpu(r)
+    with pytest.raises(ValueError,match='substep'):
+        with ResidentPowered([r],device_name=device):
+            pass  # Constructor validation only; never launch the unsafe old kernel.
+
+
+@pytest.mark.parametrize('tau',[1e-12,1e-320])
+def test_resident_device_rejects_substep_count_before_integer_conversion(device,tau):
+    r=sample()
+    with ResidentPowered([r],device_name=device) as backend:
+        # Deliberate internal-buffer fault injection exercises defense in depth
+        # after bypassing the constructor's validation. No old kernel is used.
+        backend.parameters[0,77]=tau
+        with pytest.raises(OpenCLError,match='cumulative powered work'):
+            backend.step()
+        assert tuple(backend.host[0,:23])==_vector(r.state)

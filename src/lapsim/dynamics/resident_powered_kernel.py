@@ -154,8 +154,15 @@ __kernel void powered_interval(__global const double *parameters,
     double p[PARAMS],state[STATE],rate[23],candidate[23];
     for(int i=0;i<PARAMS;i++)p[i]=parameters[lane*PARAMS+i];
     for(int i=0;i<STATE;i++)state[i]=saved[i];
-    const int count=(int)ceil(p[84]/fmin(p[87],p[77]/4));
-    int error=count>50000 ? 2 : 0,launch_trials=0;
+    const double step_limit=fmin(p[87],p[77]/4);
+    const double required=ceil(p[84]/step_limit);
+    // Validate in the floating domain BEFORE integer conversion. Casting an
+    // out-of-range count is undefined and must never skip as a valid interval.
+    if(!isfinite(step_limit) || step_limit<=0 || !isfinite(required) || required<1 || required>50000) {
+        saved[27]=2;return;
+    }
+    const int count=(int)required;
+    int error=0,launch_trials=0;
     const double h=p[84]/count;
     for(int step=0;step<count && !error;step++) {
         double remaining=h;

@@ -66,6 +66,12 @@ def _parameters(requests):
             steering_angles_rad=r.steering,drive_torques_nm=r.command_nm,
             brake_torques_nm=r.brakes,wheel_radii_m=r.wheel_radii_m),r.environment))
         step_config=replace(r.config,wheel_radius_m=max(r.wheel_radii_m)) if r.wheel_radii_m else r.config
+        limit=min(step_config.integration_step_limit_s,r.actuation.actuator_time_constant_s/4)
+        if not isfinite(limit) or limit<=0:
+            raise ValueError('Invalid resident integration substep limit')
+        required=r.timestep_s/limit
+        if not isfinite(required) or not 0<required<=50000:
+            raise ValueError('Resident integration substep count exceeds 50000 or finite domain')
         parameters[index,60:]=(*(getattr(r.actuation,name) for name in ACTUATION_FIELDS),
             TOPOLOGIES[r.actuation.topology_id],*r.available,r.timestep_s,r.maximum_work,
             r.driver_proxy_n,step_config.integration_step_limit_s,1.)
