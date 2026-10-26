@@ -34,4 +34,7 @@ get('reset').events.click();assert.equal(get('course').value,'0');assert.equal(g
 const refreshed=structuredClone(data),failed={...structuredClone(data.groups[0].runs[0]),id:'first-lap-failure',accepted:false,selection_eligible:false,status:'failed',completed_laps:0,laps:[]};refreshed.groups[0].runs.push(failed);
 vm.runInNewContext(source,{document:{getElementById:get,createElement:tag=>new Element(tag)},window:{LAPSIM_REVIEW:refreshed},requestAnimationFrame:fn=>{frame=fn;},console});
 assert.equal(get('error').textContent,'');assert.equal(get('results').children.length,6);assert.match(get('results').children.at(-1).children[1].textContent,/failed/i);assert.notEqual(get('winner').textContent,'first-lap-failure');
+get('strategy').value=failed.id;get('strategy').events.change();get('scrub').value='1';get('scrub').events.input();assert.match(get('live').textContent,/lap 1\/10.*saved replay/,'A moving first-lap failed trace is on lap 1');
+get('scrub').value=String(failed.time_s);get('scrub').events.input();assert.match(get('live').textContent,/lap 0\/10.*FAILED/,'At termination show recorded completed count and failed status');
+assert.equal(failed.status,'failed');
 console.log('PASS: no external input/handler; 16 bundled runs, 5 strata, all criteria, heldout extremes, immigrant exclusion, strategy, replay advance, scrub, restart and reset.');
