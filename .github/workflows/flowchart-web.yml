@@ -66,6 +66,13 @@ jobs:
       - name: Validate graph data and source links
         run: node scripts/check_flowchart_data.mjs
 
+      - name: Validate bundled tournament controls and simulated scoring
+        run: |
+          node scripts/test_tournament_review.cjs
+          node scripts/test_tournament_scoring.cjs
+          node web/tournament-review/test-bundled.cjs
+          python -m unittest discover -s tests -p test_tournament_artifacts.py -v
+
       - name: Run headless-browser smoke test
         shell: bash
         run: |

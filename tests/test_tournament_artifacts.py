@@ -72,6 +72,38 @@ class TournamentArtifactTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 BUILDER.provenance_labels(metadata)
 
+    def test_policy_origins_use_recorded_parents_and_heldout_mapping(self):
+        index = {
+            "generation": {
+                "ancestry": {
+                    "seed": 4082610,
+                    "parents": ["elite-a", "elite-b", "elite-c"],
+                    "parents_used": ["elite-a", "elite-c"],
+                },
+                "cases": ["immigrant-tech"],
+            },
+            "final_selection": {"heldout": [{"id": "heldout-1", "parent": "elite-c"}]},
+        }
+
+        def origin(identity, case_id="development"):
+            return BUILDER.policy_origin(
+                {"id": case_id, "profile": {"profile_id": identity}}, index
+            )
+
+        self.assertEqual(
+            origin("r11-structured-offspring")["parents_used"], ["elite-a", "elite-c"]
+        )
+        self.assertNotIn("elite-b", origin("r11-structured-offspring")["label"])
+        self.assertEqual(origin("r11-sample-4082603-2")["kind"], "seeded_sample")
+        self.assertEqual(
+            origin("r11-sample-4082611-0", "immigrant-tech")["kind"], "immigrant"
+        )
+        self.assertEqual(origin("unknown", "heldout-1")["parent"], "elite-c")
+        self.assertEqual(
+            origin("synthetic-four-awd-experimental")["kind"], "recorded_baseline"
+        )
+        self.assertEqual(origin("unknown")["kind"], "unavailable")
+
 
 if __name__ == "__main__":
     unittest.main()

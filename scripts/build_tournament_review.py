@@ -29,6 +29,58 @@ def provenance_labels(data):
     }
 
 
+def policy_origin(case, index):
+    """Report recorded profile/generation ancestry without inferring search success."""
+    identity = case["profile"].get("profile_id", "")
+    generation = index.get("generation") or {}
+    ancestry = generation.get("ancestry", {})
+    for row in index["final_selection"].get("heldout", []):
+        if row["id"] == case["id"]:
+            return {
+                "kind": "heldout_reuse",
+                "parent": row["parent"],
+                "label": f"Held-out reuse of {row['parent']}; historical selection frozen before evaluation",
+            }
+    if identity == "r11-structured-offspring":
+        parents = ancestry.get("parents_used", [])
+        return {
+            "kind": "crossover_mutation",
+            "seed": ancestry.get("seed"),
+            "parents_used": parents,
+            "label": "Crossover + structural mutation"
+            + (
+                " of " + " / ".join(parents)
+                if parents
+                else "; exact parents unavailable"
+            ),
+        }
+    sample = re.fullmatch(r"r11-sample-(\d+)-(\d+)", identity)
+    if sample:
+        seed, draw = map(int, sample.groups())
+        immigrant = (
+            case["id"] in generation.get("cases", [])
+            and seed == ancestry.get("seed", -2) + 1
+        )
+        label = "Seeded immigrant" if immigrant else "Seeded Latin-hypercube sample"
+        return {
+            "kind": "immigrant" if immigrant else "seeded_sample",
+            "seed": seed,
+            "draw": draw,
+            "label": f"{label}; seed {seed}, draw {draw}",
+        }
+    if identity.startswith("synthetic-"):
+        return {
+            "kind": "recorded_baseline",
+            "label": "Recorded topology bridge"
+            if "bridge" in case["id"]
+            else "Recorded baseline policy",
+        }
+    return {
+        "kind": "unavailable",
+        "label": "Sampling origin not retained in this record",
+    }
+
+
 def build(review_root, output, acceptance_commit, numerical_checkpoint):
     index_path = review_root / "review-index.json"
     index = json.loads(index_path.read_text(encoding="utf-8"))
@@ -83,6 +135,8 @@ def build(review_root, output, acceptance_commit, numerical_checkpoint):
             "completed_laps": case["completed_laps"],
             "target_laps": run["round"]["target_laps"],
             "policy": profile["controller"],
+            "profile_id": profile.get("profile_id"),
+            "policy_origin": policy_origin(case, index),
             "architecture": profile["architecture"],
             "metrics": case["metrics"],
             "mode_occupancy": case["mode_occupancy"],
