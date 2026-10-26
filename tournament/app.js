@@ -1,7 +1,24 @@
 /* Saved data renderer. No simulator, remote runtime, or numerical controller. */
 'use strict';
 const ReviewCore=(()=>{
-  function validate(d){if(d?.schema!=='lapsim.static-tournament-review.v1'||!Array.isArray(d.groups)||!d.groups.length||!Array.isArray(d.columns)||d.columns.join('|')!=='t_s|x_m|y_m|heading_rad|u_mps|progress_m|pack_energy_j|pack_power_w|regen_request_nm|brake_shortfall_nm')throw Error('Unsupported review format.');let count=0;for(const g of d.groups){if(!g.geometry_sha256||!g.hardware_sha256||!Array.isArray(g.xy)||g.xy.length<3||!Number.isFinite(g.length_m)||g.length_m<=0||!g.xy.every(p=>p.length===2&&p.every(Number.isFinite))||!Array.isArray(g.runs))throw Error('Invalid course geometry.');for(const r of g.runs){count++;if(!r.id||!Number.isFinite(r.time_s)||!Number.isFinite(r.energy_wh)||!Array.isArray(r.samples)||!r.samples.length||!r.samples.every((s,i)=>s.length===10&&s.every(Number.isFinite)&&(!i||s[0]>r.samples[i-1][0])))throw Error('Invalid or non-monotone saved samples.');}}if(count>500)throw Error('Review is too large.');return d;}
+  function validate(d){
+    const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v),str=v=>typeof v==='string'&&v.length>0,integer=v=>Number.isInteger(v)&&v>=0;
+    const primitiveMap=v=>object(v)&&Object.values(v).every(x=>typeof x==='string'||typeof x==='boolean'||Number.isFinite(x));
+    if(!object(d)||d.schema!=='lapsim.static-tournament-review.v1'||!Array.isArray(d.groups)||!d.groups.length||!Array.isArray(d.columns)||d.columns.join('|')!=='t_s|x_m|y_m|heading_rad|u_mps|progress_m|pack_energy_j|pack_power_w|regen_request_nm|brake_shortfall_nm')throw Error('Unsupported review format.');
+    if(!['coverage','scope','projection','evidence_utc','created_utc','acceptance_commit','numerical_checkpoint','source_index_sha256'].every(k=>str(d[k]))||!Array.isArray(d.excluded)||!d.excluded.every(r=>object(r)&&str(r.id)&&Array.isArray(r.reasons)&&r.reasons.every(str)))throw Error('Invalid review metadata.');
+    let count=0;const ids=new Set();
+    for(const g of d.groups){
+      if(!object(g)||!str(g.label)||!str(g.geometry_sha256)||!str(g.hardware_sha256)||!Array.isArray(g.xy)||g.xy.length<3||!Number.isFinite(g.length_m)||g.length_m<=0||!g.xy.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite))||!Array.isArray(g.runs)||!g.runs.length||(g.provenance!==undefined&&!object(g.provenance)))throw Error('Invalid course geometry or empty stratum.');
+      for(const r of g.runs){
+        count++;
+        if(!object(r)||!str(r.id)||ids.has(r.id)||!str(r.architecture)||typeof r.accepted!=='boolean'||typeof r.selection_eligible!=='boolean'||!str(r.status)||!Number.isFinite(r.time_s)||r.time_s<=0||!Number.isFinite(r.energy_wh)||!integer(r.completed_laps)||!integer(r.target_laps)||r.target_laps===0||r.completed_laps>r.target_laps)throw Error('Invalid run identity or result.');
+        ids.add(r.id);
+        if(!object(r.metrics)||!integer(r.metrics.limited_ticks)||!Number.isFinite(r.metrics.brake_shortfall_nm_s)||!object(r.policy)||!primitiveMap(r.policy.structure)||!primitiveMap(r.policy.parameters)||!primitiveMap(r.mode_occupancy)||!Array.isArray(r.laps)||!r.laps.length||!r.laps.every(l=>object(l)&&Number.isFinite(l.finish_time_s)&&l.finish_time_s>=0))throw Error('Missing or invalid renderer fields.');
+        if(!Array.isArray(r.samples)||!r.samples.length||!r.samples.every((s,i)=>Array.isArray(s)&&s.length===10&&s.every(Number.isFinite)&&s[0]>=0&&(!i||s[0]>r.samples[i-1][0])))throw Error('Invalid or non-monotone saved samples.');
+      }
+    }
+    if(count>500)throw Error('Review is too large.');return d;
+  }
   function score(r,c){return c==='energy'?r.energy_wh:c==='proxy'?r.time_s+.12*r.energy_wh:r.time_s;}
   function winners(g,c){const eligible=g.runs.filter(r=>r.accepted&&r.selection_eligible!==false&&r.status==='completed'&&r.completed_laps===r.target_laps);if(!eligible.length)return [];const min=Math.min(...eligible.map(r=>score(r,c)));return eligible.filter(r=>Math.abs(score(r,c)-min)<1e-9);}
   function frontier(g,r){return r.accepted&&r.selection_eligible!==false&&r.status==='completed'&&!g.runs.some(q=>q.accepted&&q.selection_eligible!==false&&q.status==='completed'&&q.time_s<=r.time_s&&q.energy_wh<=r.energy_wh&&(q.time_s<r.time_s||q.energy_wh<r.energy_wh));}
