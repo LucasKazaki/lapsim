@@ -29,9 +29,10 @@ and energy extremes, excluded immigrant, legitimate ties, rejection of malformed
 samples, endpoint interpolation, and separate hardware strata. The immigrant
 assertion failed before its explicit selection exclusion was implemented.
 
-The page supports course/criterion/strategy selection, synchronized saved replay,
-scrubbing, speed, reset, and validated local review loading. Invalid loads retain
-the current valid review and display an error. No upload is sent to a server.
+This release displays bundled saved results only. It supports course/criterion/
+strategy selection, synchronized replay, scrubbing, speed and reset. External
+file loading is unavailable: both the file input and its handler are absent.
+`node tournament/test-bundled.cjs` checks that absence and the bundled controls.
 
 `python scripts/render_tournament_review.py` creates a 42-second H.264 MP4 from
 three same-course chapters. It uses one encoder thread and enforces at least
