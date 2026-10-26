@@ -14,4 +14,4 @@ assert.deepEqual(c.winners({...holdout,runs:holdout.runs.map(r=>({...r,accepted:
 const r=holdout.runs[0];assert.deepEqual(c.sample(r,-100),r.samples[0]);assert.deepEqual(c.sample(r,10000),r.samples.at(-1));
 const bad=structuredClone(d);bad.groups[0].runs[0].samples[1][0]=0;assert.throws(()=>c.validate(bad));
 for(const g of d.groups){assert.equal(new Set(g.runs.map(r=>r.architecture)).size,1);for(const r of g.runs)assert.equal(r.samples[0][0],0);}
-console.log('PASS: 16 saved runs, heldout criteria, excluded immigrant, ties, no finishers, interpolation endpoints, invalid loading, hardware strata');
+console.log('PASS: 16 saved runs, heldout criteria, excluded immigrant, ties, no finishers, interpolation endpoints, invalid saved samples, hardware strata');
