@@ -157,7 +157,7 @@
   const start=project(xs[0],ys[0],.05);ctx.fillStyle='#c5d4e4';ctx.font='10px system-ui';ctx.fillText('START / FINISH',start[0]+7,start[1]-9);
   items.forEach((s,i)=>line(s.run.telemetry.map(p=>[p.x_m,p.y_m,.07]),colors[i],1.3,.55));
   const boxes=[];
-  items.forEach((s,i)=>{const p=sample(s.run,t);if(!p)return;const alpha=i===0?.93:.34;
+  items.forEach((s,i)=>{const p=sample(s.run,t);if(!p)return;const alpha=i===0 ? 0.93 : 0.34;
    function box(ox,oy,l,b,z,height,color){const local=[[-l/2,-b/2],[l/2,-b/2],[l/2,b/2],[-l/2,b/2]],pts=[];for(const zz of [z,z+height])for(const [xx,yy]of local){const x=xx+ox,y=yy+oy;pts.push([p.x_m+x*Math.cos(p.heading_rad)-y*Math.sin(p.heading_rad),p.y_m+x*Math.sin(p.heading_rad)+y*Math.cos(p.heading_rad),zz]);}for(const face of [[0,1,2,3],[4,5,6,7],[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7]]){const q=face.map(k=>pts[k]);boxes.push({points:q,color,alpha,depth:q.reduce((sum,v)=>sum+project(...v)[2],0)/4});}}
    box(0,0,2.1,.85,.23,.35,colors[i]);box(.2,0,.7,.55,.58,.23,colors[i]);
    for(const x of [-.8,.8])for(const y of [-.61,.61])box(x,y,.43,.22,.08,.32,i===0?'#aebbc9':colors[i]);
