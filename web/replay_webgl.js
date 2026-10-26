@@ -159,7 +159,7 @@
 
   function makeCar(run, color, index) {
     const group=new THREE.Group(); group.name='logged-car-'+index;
-    const ghost=index>0, opacity=ghost?.32:1;
+    const ghost=index>0, opacity=ghost ? .32 : 1;
     const body=new THREE.MeshStandardMaterial({color,metalness:.15,roughness:.6,
       transparent:ghost,opacity,depthTest:true,depthWrite:!ghost});
     const tires=new THREE.MeshStandardMaterial({color:ghost?color:'#26313f',roughness:.9,
