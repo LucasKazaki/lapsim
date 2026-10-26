@@ -15,7 +15,7 @@ def hardware_identity(profile):
 
 def sample_profiles(base,seed,count=4):
     require(type(seed) is int and 0<=seed<2**32 and type(count) is int and 2<=count<=16,'Bounded integer seed/count required')
-    from scipy.stats import qmc
+    from lapsim.qmc_sampler import latin_hypercube
     from lapsim.dynamics.actuation import SINGLE_MOTOR_RWD_TOPOLOGY_ID,SPOOL_RWD_TOPOLOGY_ID,AWD_TOPOLOGY_ID
     rng=random.Random(seed);options={k:list(v) for k,v in STRUCTURES.items()}
     if base.actuation.topology_id in (SINGLE_MOTOR_RWD_TOPOLOGY_ID,SPOOL_RWD_TOPOLOGY_ID):options['yaw']=['off']
@@ -23,7 +23,7 @@ def sample_profiles(base,seed,count=4):
     columns={}
     for key,values in options.items():
         selected=[values[i%len(values)] for i in range(count)];rng.shuffle(selected);columns[key]=selected
-    numeric=qmc.LatinHypercube(d=len(PARAMETERS),seed=seed).random(count)
+    numeric=latin_hypercube(len(PARAMETERS),seed).random(count)
     output=[];seen=set()
     for i,row in enumerate(numeric):
         value=base.to_dict();value['schema']='lapsim.torque-profile.v2';value['profile_id']=f'r11-sample-{seed}-{i}'

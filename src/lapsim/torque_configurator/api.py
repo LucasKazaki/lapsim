@@ -14,7 +14,9 @@ def action(name,body):
         require(type(body) is dict and set(body)<={'profile','reference_architecture','duration_ms','course','course_bundle'},'Unsupported comparison fields')
         from .comparison import compare,save_comparison
         profile=VehicleProfile.from_dict(body.get('profile'))
-        reference=example_profile(body.get('reference_architecture'))
+        architecture=body.get('reference_architecture')
+        if not isinstance(architecture,str):raise ValueError('Reference architecture is required')
+        reference=example_profile(architecture)
         if profile.to_dict()['schema']=='lapsim.torque-profile.v2':
             from .policy import experimental_profile
             reference=experimental_profile(body.get('reference_architecture'))

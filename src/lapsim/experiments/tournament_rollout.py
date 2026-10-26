@@ -85,6 +85,7 @@ class Case:
         if self.course not in ("stadium", "reverse_stadium", "autocross", "bundle"):
             raise ValueError("unknown coherent course")
         if self.course == "bundle":
+            if self.course_bundle is None:raise ValueError('Bundle course requires its geometry')
             bundle = CourseBundle.from_dict(self.course_bundle)
             if bundle.schema_version != 1:
                 raise ValueError("tournament requires a v1 bundle with an explicitly assumed corridor; source-cell walls are not yet supported")
@@ -104,6 +105,7 @@ class Case:
 
 def course_for(case: Case):
     if case.course == "bundle":
+        if case.course_bundle is None:raise ValueError('Bundle course requires its geometry')
         track = CourseBundle.from_dict(case.course_bundle).solver_track(.5)
     elif case.course == "autocross":
         # Two rotationally symmetric halves close exactly. Alternating turns,
@@ -187,7 +189,7 @@ def allocate(controller, state, evaluation, steering, drive_each, brake_each,
     if controller.philosophy==CONFIGURED_REFERENCE:raise ValueError('Configured strategy requires the shared ControlSession adapter')
     p = state.plant
     driven = (0, 1, 2, 3) if pack.topology_id == AWD_TOPOLOGY_ID else (2, 3)
-    available = tuple(i in driven for i in range(4))
+    available = (0 in driven,1 in driven,2 in driven,3 in driven)
     requested = tuple(2 * drive_each / len(driven) if i in driven else 0.0 for i in range(4))
     if len(driven)==4 and hasattr(controller,'allocation_front_bias'):
         bias=controller.allocation_front_bias
@@ -312,7 +314,7 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
         pack = replace(pack, topology_id=SINGLE_MOTOR_RWD_TOPOLOGY_ID)
     elif profile == 'synthetic_spool_rwd':
         pack = replace(pack, topology_id=SPOOL_RWD_TOPOLOGY_ID)
-    available = (True,) * 4 if profile == "synthetic_awd" else AVAILABLE
+    available = (True,True,True,True) if profile == "synthetic_awd" else AVAILABLE
     pack = replace(pack, pack_voltage_v=case.pack_voltage_v)
     track = course_for(case)
     road = PlanarRoad(patches=(RectangularGripPatch(4, 14, -2, 2, .65, "synthetic_patch"),) if case.patch else ())
@@ -323,15 +325,16 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
     heading = _reference_start_heading(track, driver)
     initial_p = PlanarState(x_m=track.x_m[0] - sin(heading) * case.initial_offset_m,
                            y_m=track.y_m[0] + cos(heading) * case.initial_offset_m,
-                           heading_rad=heading, u_mps=5.0, wheel_speeds_rad_s=(25.0,) * 4)
+                           heading_rad=heading, u_mps=5.0, wheel_speeds_rad_s=(25.0,25.0,25.0,25.0))
     mismatch=overrides.get('rear_radius_mismatch_fraction',0.)
     radii=(car.wheel_radius_m,car.wheel_radius_m,car.wheel_radius_m*(1-mismatch),car.wheel_radius_m*(1+mismatch))
     initial_omega=[5./radius for radius in radii]
     if profile=='synthetic_spool_rwd':initial_omega[2:]=[5./((radii[2]+radii[3])/2)]*2
-    initial_p=replace(initial_p,wheel_speeds_rad_s=tuple(initial_omega))
+    initial_p=replace(initial_p,wheel_speeds_rad_s=(initial_omega[0],initial_omega[1],initial_omega[2],initial_omega[3]))
     if configured_profile is not None:
         speed=configured_profile.policy['initial_speed_mps']
-        initial_p=replace(initial_p,u_mps=speed,wheel_speeds_rad_s=(speed/car.wheel_radius_m,)*4)
+        omega=speed/car.wheel_radius_m
+        initial_p=replace(initial_p,u_mps=speed,wheel_speeds_rad_s=(omega,omega,omega,omega))
     initial = PoweredState(initial_p, ZERO, case.initial_soc * pack.pack_capacity_j)
     state = initial
     integral = 0.0
@@ -348,6 +351,10 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
     last = None
     configured_frames,configured_outputs=[],[]
     audit=None
+    compute_limits={}
+    command=None
+    frame={}
+    output={}
     if configured_full_lap:
         from lapsim.torque_configurator.acceptance import BoundaryAudit,work_plan
         audit=BoundaryAudit(configured_profile)
@@ -374,6 +381,7 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
             if tick % 5 == 0:
                 command, _ = _controller(track, driver_car, PlanarEnvironment(), driver,
                                           p, projection, slack)
+            assert command is not None
             # Feedback uses the same held steering as the powered plant. Zero
             # steering changes wheel-plane slip and the estimated tire reserve.
             physical = evaluate_planar_dynamics(car, p,
@@ -389,6 +397,7 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
                     command.drive_torques_nm[2], command.brake_torques_nm[0],
                     integral, replace(car, tire_mu=driver_car.tire_mu), pack, case)
             else:
+                assert session is not None
                 accelerator=min(1.,max(0.,sum(command.drive_torques_nm)/(2*driver.maximum_rear_drive_torque_nm)))
                 # Record a common 20 ms zero-demand initialization phase. The
                 # imported fault owner still requires unsaturated recovery.
@@ -478,7 +487,10 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
         draw_kwh=(initial.pack_energy_j-ledger.boundary_energy)/3_600_000
     # Explicit engineering proxy, not official competition points. Fixed
     # reference opposition/rule edition is needed before FSAE scoring is enabled.
-    fitness = finish_time + 120.0 * draw_kwh if eligible else None
+    if eligible:
+        assert finish_time is not None
+        fitness=finish_time+120.0*draw_kwh
+    else:fitness=None
     result={"controller": asdict(controller), "case": asdict(case), "profile": profile,
         "topology": {"motor_count": 1 if profile in ("synthetic_single_motor_rwd","synthetic_spool_rwd") else 4 if profile == "synthetic_awd" else 2,
             "differential": "ideal locked/spool" if profile=='synthetic_spool_rwd' else "ideal symmetric open" if profile == "synthetic_single_motor_rwd" else "independent actuators",
@@ -525,6 +537,7 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
         result['course']['input_evidence']={'source_kind':bundle.source_kind,'bundle_sha256':bundle.bundle_sha256,
             'provenance':bundle.to_dict()['provenance'],'scope':'Imported approximation/assumptions as recorded; not surveyed boundaries or official-event validation'}
     if configured_profile is not None:
+        assert session is not None
         from .controller_backend import controller_source_identity
         result['configuration']={'schema':'lapsim.configured-rollout.v1','profile':configured_profile.to_dict(),
             'profile_sha256':configured_profile.sha256,'source':controller_source_identity(),
@@ -540,6 +553,7 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
         result['metrics']['fitness']=None
         result['eligible']=False
         if configured_full_lap:
+            assert audit is not None
             result['configuration']['mode']='ten_lap_acceptance_v1' if case.laps==10 else 'full_lap_acceptance_v1'
             result['configuration']['scope']='Synthetic configured acceptance; one lap/60 s or ten continuous laps/600 s, no calibrated hardware or official-points claim'
             result['configuration']['compute_limits']=compute_limits

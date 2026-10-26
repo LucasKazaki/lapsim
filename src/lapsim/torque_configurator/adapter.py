@@ -16,7 +16,7 @@ def simulate(profile,duration_ms=300):
     car,pack=profile.vehicle,profile.actuation
     initial_speed=profile.policy['initial_speed_mps']
     state=PoweredState(PlanarState(u_mps=initial_speed,wheel_speeds_rad_s=(initial_speed/car.wheel_radius_m,)*4),
-                       (0.,)*4,profile.policy['initial_soc']*pack.pack_capacity_j)
+                       (0.,0.,0.,0.),profile.policy['initial_soc']*pack.pack_capacity_j)
     initial=state;session=ControlSession(profile);frames=[];outputs=[];plant=[]
     available=drive_availability(profile);environment=PlanarEnvironment()
     try:
