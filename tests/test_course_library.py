@@ -113,7 +113,9 @@ def test_catalog_http_boundary_returns_validated_library_without_starting_jobs()
     handler=object.__new__(Handler);handler.path='/api/course/catalog';seen=[]
     handler.json_response=lambda value,*args:seen.append(value)
     handler.do_GET()
-    assert len(seen)==1 and len(seen[0]['courses'])==3
+    from lapsim.courses.library import COURSE_IDS
+    assert len(seen)==1 and len(seen[0]['courses'])==len(COURSE_IDS)
+    assert [row['id'] for row in seen[0]['courses']]==list(COURSE_IDS)
 
 
 def test_configurator_api_forwards_selected_bundle(monkeypatch,tmp_path):
