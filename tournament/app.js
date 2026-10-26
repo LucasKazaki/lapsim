@@ -9,9 +9,13 @@ const ReviewCore=(()=>{
     let count=0;const ids=new Set();
     for(const g of d.groups){
       if(!object(g)||!str(g.label)||!str(g.geometry_sha256)||!str(g.hardware_sha256)||!Array.isArray(g.xy)||g.xy.length<3||!Number.isFinite(g.length_m)||g.length_m<=0||!g.xy.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite))||!Array.isArray(g.runs)||!g.runs.length||(g.provenance!==undefined&&!object(g.provenance)))throw Error('Invalid course geometry or empty stratum.');
+      if(g.provenance){
+        const p=g.provenance,optionalText=v=>v===undefined||v===null||typeof v==='string';
+        if(!optionalText(p.scope)||(p.provenance!=null&&!object(p.provenance))||(p.provenance&&!['source_name','review_note'].every(k=>optionalText(p.provenance[k]))))throw Error('Invalid provenance display fields.');
+      }
       for(const r of g.runs){
         count++;
-        if(!object(r)||!str(r.id)||ids.has(r.id)||!str(r.architecture)||typeof r.accepted!=='boolean'||typeof r.selection_eligible!=='boolean'||!str(r.status)||!Number.isFinite(r.time_s)||r.time_s<=0||!Number.isFinite(r.energy_wh)||!integer(r.completed_laps)||!integer(r.target_laps)||r.target_laps===0||r.completed_laps>r.target_laps)throw Error('Invalid run identity or result.');
+        if(!object(r)||!str(r.id)||ids.has(r.id)||!str(r.architecture)||!str(r.effective_policy_sha256)||typeof r.accepted!=='boolean'||typeof r.selection_eligible!=='boolean'||!str(r.status)||!Number.isFinite(r.time_s)||r.time_s<=0||!Number.isFinite(r.energy_wh)||!integer(r.completed_laps)||!integer(r.target_laps)||r.target_laps===0||r.completed_laps>r.target_laps)throw Error('Invalid run identity or result.');
         ids.add(r.id);
         if(!object(r.metrics)||!integer(r.metrics.limited_ticks)||!Number.isFinite(r.metrics.brake_shortfall_nm_s)||!object(r.policy)||!primitiveMap(r.policy.structure)||!primitiveMap(r.policy.parameters)||!primitiveMap(r.mode_occupancy)||!Array.isArray(r.laps)||!r.laps.length||!r.laps.every(l=>object(l)&&Number.isFinite(l.finish_time_s)&&l.finish_time_s>=0))throw Error('Missing or invalid renderer fields.');
         if(!Array.isArray(r.samples)||!r.samples.length||!r.samples.every((s,i)=>Array.isArray(s)&&s.length===10&&s.every(Number.isFinite)&&s[0]>=0&&(!i||s[0]>r.samples[i-1][0])))throw Error('Invalid or non-monotone saved samples.');

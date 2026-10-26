@@ -32,8 +32,12 @@ async function load(candidate){await get('load').events.change({target:{files:[{
     d=>{d.groups[0].runs[0].policy.structure=null;},
     d=>{d.groups[0].runs[0].samples[0]='0123456789';},
     d=>{d.excluded[0].reasons='invalid';}
+    ,d=>{d.groups[0].runs[0].effective_policy_sha256={toString:null};}
+    ,d=>{d.groups[0].provenance.provenance.source_name={toString:null};}
+    ,d=>{d.groups[0].provenance.provenance.review_note={toString:null};}
+    ,d=>{d.groups[0].provenance.scope={toString:null};}
   ];
   for(const mutate of mutations){const bad=structuredClone(data);mutate(bad);await load(bad);assert.match(get('error').textContent,/^Load rejected:/);assert.equal(get('error').hidden,false);assert.equal(get('course').value,prior.course);assert.equal(get('winner').textContent,prior.winner);assert.equal(get('results').children,prior.rows);assert.equal(get('source').textContent,prior.source);}
   await load(structuredClone(data));assert.equal(get('error').hidden,true);assert.equal(get('course').value,'0');assert.equal(get('winner').textContent,'awd-p3-fsg');
-  console.log('PASS: 8 malformed file loads preserve selected course, winner, table and evidence; valid reload succeeds.');
+  console.log('PASS: 12 malformed file loads preserve selected course, winner, table and evidence; valid reload succeeds.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
