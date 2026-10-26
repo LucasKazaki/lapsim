@@ -30,7 +30,7 @@ class GPUJob:
 
 class _Lane:
     def __init__(self):
-        self.ready=Event();self.value=None;self.error=None
+        self.ready=Event();self.value=None;self.error: str | None=None
 
 
 def rollout_gpu_batch(jobs,*,device_name,wall_limit_s=150,record_callback=None):
@@ -49,6 +49,7 @@ def rollout_gpu_batch(jobs,*,device_name,wall_limit_s=150,record_callback=None):
     started=perf_counter();messages=Queue();lanes=[_Lane() for _ in jobs]
     records=[None]*len(jobs);workers=[];engine=None
     launches=0;device_s=0.;setup_s=0.;initializations=0;aborted=False
+    actual_device=device_name;kernel_identity=None
 
     def worker(index,job):
         lane=lanes[index]
@@ -84,8 +85,8 @@ def rollout_gpu_batch(jobs,*,device_name,wall_limit_s=150,record_callback=None):
             elif kind=='done':
                 records[index]=payload;active.remove(index);pending.pop(index,None)
                 payload['numerical_backend']={'backend':'Resident OpenCL GPU FP64 powered plant / original CPU driver-controller',
-                    'device':engine.runtime.device.name if engine else device_name,'cpu_physics_fallback':False,
-                    'kernel_sha256':engine.runtime.source_sha256 if engine else None,'kernel_launches_so_far':launches,
+                    'device':actual_device,'cpu_physics_fallback':False,
+                    'kernel_sha256':kernel_identity,'kernel_launches_so_far':launches,
                     'job_identity':jobs[index].identity,'state_initializations':1 if engine else 0}
                 if record_callback is not None:record_callback(jobs[index],payload)
             else:raise RuntimeError(f'Tournament lane {index} failed: {payload}')
@@ -94,6 +95,9 @@ def rollout_gpu_batch(jobs,*,device_name,wall_limit_s=150,record_callback=None):
                 identities=sorted(active);mapping={identity:i for i,identity in enumerate(identities)}
                 fixed={identity:pending[identity] for identity in identities}
                 engine=ResidentPowered([pending[i] for i in identities],device_name=device_name)
+                runtime=engine.runtime
+                assert runtime is not None
+                actual_device=runtime.device.name;kernel_identity=runtime.source_sha256
                 setup_s=engine.initialization_s;initializations=1
                 last={i:pending[i].state for i in identities}
             for identity in active:
@@ -125,10 +129,10 @@ def rollout_gpu_batch(jobs,*,device_name,wall_limit_s=150,record_callback=None):
     if any(thread.is_alive() for thread in workers):raise RuntimeError('Owned GPU lane thread did not exit')
     elapsed=perf_counter()-started
     evidence={'backend':'Resident OpenCL GPU FP64 powered plant / original CPU driver-controller',
-        'device':engine.runtime.device.name if engine else device_name,'cpu_physics_fallback':False,
+        'device':actual_device,'cpu_physics_fallback':False,
         'lanes':len(jobs),'kernel_launches':launches,'device_kernel_s':device_s,
         'setup_build_initial_upload_s':setup_s,'total_batch_wall_s':elapsed,
-        'kernel_sha256':engine.runtime.source_sha256 if engine else None,
+        'kernel_sha256':kernel_identity,
         'state_initializations_per_lane':initializations,'owned_threads_exited':True,
         'scope':'One-lap uniform-road simulator records; hardware strata and geometry remain distinct; no scoring in this adapter'}
     for job,record in zip(jobs,records,strict=True):
