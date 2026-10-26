@@ -63,6 +63,13 @@ def test_bad_units_bounds_and_nonfinite_intermediates_are_unavailable(changes):
     result=score_field([replace(run(),**changes)])
     assert not result['available'] and result['rows']['a']['total_points'] is None
 
+def test_subnormal_cap_and_per_lap_divisors_are_unavailable():
+    for value in [replace(run(),distance_m=1e-320,net_energy_kwh=5e-324),
+                  replace(run(),laps=10,net_energy_kwh=5e-324),
+                  replace(run(),time_s=5e-324)]:
+        result=score_field([value])
+        assert not result['available'] and result['rows']['a']['total_points'] is None
+
 @pytest.mark.parametrize('changes',[{'hardware':'rwd'},{'geometry_sha256':'other'},{'laps':10}])
 def test_never_mix_hardware_geometry_or_lap_count(changes):
     with pytest.raises(ValueError):score_field([run(),replace(run('b'),**changes)])
