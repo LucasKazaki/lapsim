@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from math import ceil, isfinite
 
-from .actuation import ActuationConfig, constrain_actuation, four_numbers
+from .actuation import ActuationConfig, constrain_actuation, four_numbers, SINGLE_MOTOR_RWD_TOPOLOGY_ID, SPOOL_RWD_TOPOLOGY_ID
 from .bicycle import _finite
 from .planar import (
     PlanarControls,
@@ -17,6 +17,7 @@ from .planar import (
 
 BRAKE_STOP_SPEED_RAD_S = 1e-9
 MAX_POWERED_WORK = 50_000
+MAX_ALLOCATED_POWERED_WORK = 200_000
 
 
 class _BrakeStopTrial(Exception):
@@ -112,6 +113,36 @@ def _state(values: tuple) -> PoweredState:
     )
 
 
+def _couple_locked_rear(config, state, physical, drive_nm, brakes_nm, radii_m):
+    """Ideal rigid shaft; reaction is internal and does zero total shaft work."""
+    omega = state.plant.wheel_speeds_rad_s
+    if omega[2] != omega[3]:
+        raise ValueError('locked axle requires equal rear angular velocity')
+    free = physical.derivative.wheel_accelerations_rad_s2
+    wheels = list(physical.wheels)
+    moments = [config.wheel_inertia_kgm2 * free[i] for i in (2,3)]
+    net_shaft_moment = sum(moments)
+    if omega[2] == 0:
+        # Static friction acts on the shaft, not on two independently stopped
+        # wheels. One rear brake can hold the motor's entire shared moment.
+        unbraked = [drive_nm[i]-radii_m[i]*wheels[i].local_force_x_n for i in (2,3)]
+        capacity = brakes_nm[2]+brakes_nm[3]
+        applied = -max(-capacity,min(capacity,sum(unbraked)))
+        # Solve the scalar shaft balance before redistributing it. Summing
+        # individually cancelled wheel moments can invent a tiny negative
+        # acceleration at an exactly held zero-speed shaft, defeating stops.
+        net_shaft_moment = sum(unbraked)+applied
+        for index,i in enumerate((2,3)):
+            brake = applied*brakes_nm[i]/capacity if capacity else 0.
+            moments[index] = unbraked[index]+brake
+            wheels[i] = replace(wheels[i],applied_brake_torque_nm=brake)
+    common = net_shaft_moment/(2*config.wheel_inertia_kgm2)
+    reaction = config.wheel_inertia_kgm2*common-moments[0]
+    derivative = replace(physical.derivative,wheel_accelerations_rad_s2=(*free[:2],common,common))
+    return replace(physical,derivative=derivative,wheels=tuple(wheels),
+                   axle_constraint_reactions_nm=(0.,0.,reaction,-reaction))
+
+
 def evaluate_powered(
     config: PlanarVehicleConfig,
     actuation: ActuationConfig,
@@ -123,7 +154,12 @@ def evaluate_powered(
     horizon_s: float,
     environment: PlanarEnvironment,
     driver_proxy_n: float = 0.0,
+    *, wheel_radii_m=None,
 ):
+    if actuation.topology_id in (SINGLE_MOTOR_RWD_TOPOLOGY_ID,SPOOL_RWD_TOPOLOGY_ID):
+        command = four_numbers(command_nm, "single-motor command")
+        if command[0] != 0 or command[1] != 0 or command[2] != command[3]:
+            raise ValueError("single-motor command requires zero front and equal rear torques")
     electrical = constrain_actuation(
         actuation,
         state.actuator_memory_nm,
@@ -139,16 +175,23 @@ def evaluate_powered(
             steering_angles_rad=steering,
             drive_torques_nm=electrical.wheel_torques_nm,
             brake_torques_nm=brakes,
+            wheel_radii_m=wheel_radii_m,
         ),
         environment=environment,
     )
+    if actuation.topology_id == SPOOL_RWD_TOPOLOGY_ID:
+        physical = _couple_locked_rear(config,state,physical,electrical.wheel_torques_nm,
+                                      brakes,wheel_radii_m or (config.wheel_radius_m,)*4)
     d = physical.derivative
     contact_force = sum(w.body_force_x_n for w in physical.wheels)
+    # Two equal half-axle memory channels represent one actuator. Their summed
+    # slew budget must equal the declared axle budget, not two motor budgets.
+    slew = actuation.actuator_slew_nm_per_s / (2 if actuation.topology_id in (SINGLE_MOTOR_RWD_TOPOLOGY_ID,SPOOL_RWD_TOPOLOGY_ID) else 1)
     memory_rate = tuple(
         max(
-            -actuation.actuator_slew_nm_per_s,
+            -slew,
             min(
-                actuation.actuator_slew_nm_per_s,
+                slew,
                 (command - value) / actuation.actuator_time_constant_s,
             ),
         )
@@ -190,6 +233,8 @@ def advance_powered(
     environment: PlanarEnvironment | None = None,
     *,
     driver_proxy_n: float = 0.0,
+    maximum_work: int = MAX_POWERED_WORK,
+    wheel_radii_m=None,
 ) -> PoweredState:
     """One held-command interval. No controller, sensor or random state exists here."""
     command_nm = four_numbers(command_nm, "command")
@@ -197,9 +242,16 @@ def advance_powered(
     brakes = four_numbers(brakes, "brakes")
     _finite(timestep_s, "timestep_s")
     _finite(driver_proxy_n, "driver_proxy_n")
+    if type(maximum_work) is not int or not 1 <= maximum_work <= MAX_ALLOCATED_POWERED_WORK:
+        raise ValueError("powered work allocation must be an integer in [1, 200000]")
     if timestep_s <= 0 or timestep_s > 0.01:
         raise ValueError("powered plant step must be in (0, 0.01] s")
-    limit = min(config.integration_step_limit_s, actuation.actuator_time_constant_s / 4)
+    # Radius affects the fast slip mode. A mismatch must not silently retain
+    # a less conservative step than the largest declared contact radius.
+    if wheel_radii_m is not None:
+        PlanarControls(wheel_radii_m=wheel_radii_m)
+    step_config = replace(config,wheel_radius_m=max(wheel_radii_m)) if wheel_radii_m else config
+    limit = min(step_config.integration_step_limit_s, actuation.actuator_time_constant_s / 4)
     count = ceil(timestep_s / limit)
     if count > 50_000:
         raise ValueError("powered integration exceeds the work budget")
@@ -220,6 +272,7 @@ def advance_powered(
                 remaining,
                 conditions,
                 driver_proxy_n,
+                wheel_radii_m=wheel_radii_m,
             )[0]
             stops = [
                 i
@@ -228,6 +281,8 @@ def advance_powered(
                 and brakes[i] > 0
                 and rate[6 + i] < 0
             ]
+            if actuation.topology_id == SPOOL_RWD_TOPOLOGY_ID and any(i in stops for i in (2,3)):
+                stops = sorted(set(stops) | {2,3})
             if stops:
                 wheels = list(state.plant.wheel_speeds_rad_s)
                 loss = (
@@ -244,7 +299,7 @@ def advance_powered(
                     wheel_stop_dissipation_j=state.wheel_stop_dissipation_j + loss,
                     wheel_stop_events=state.wheel_stop_events + len(stops),
                 )
-                if trials + state.wheel_stop_events > MAX_POWERED_WORK:
+                if trials + state.wheel_stop_events > maximum_work:
                     raise ValueError(
                         "powered integration exceeds the actual work budget"
                     )
@@ -259,7 +314,7 @@ def advance_powered(
             )
             while True:
                 trials += 1
-                if trials + state.wheel_stop_events > MAX_POWERED_WORK:
+                if trials + state.wheel_stop_events > maximum_work:
                     raise ValueError(
                         "powered integration exceeds the actual work budget"
                     )
@@ -275,6 +330,7 @@ def advance_powered(
                         trial_h,
                         conditions,
                         driver_proxy_n,
+                        wheel_radii_m,
                     )
                     break
                 except _BrakeStopTrial:
@@ -309,13 +365,14 @@ def _rk_trial(
     h,
     environment,
     driver_proxy_n,
+    wheel_radii_m=None,
 ):
     value = _vector(state)
 
     def check_wheels(values):
         for i, omega in enumerate(values[6:10]):
             if omega < 0:
-                if brakes[i] > 0:
+                if brakes[i] > 0 or (actuation.topology_id == SPOOL_RWD_TOPOLOGY_ID and i in (2,3) and (brakes[2]>0 or brakes[3]>0)):
                     raise _BrakeStopTrial()
                 raise ValueError("reverse wheel motion is outside the powered domain")
 
@@ -332,6 +389,7 @@ def _rk_trial(
             h,
             environment,
             driver_proxy_n,
+            wheel_radii_m=wheel_radii_m,
         )[0]
 
     def shifted(rate, scale):
