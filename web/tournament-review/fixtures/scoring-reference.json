@@ -1,0 +1,1492 @@
+{
+  "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+  "canonical_source": "src/lapsim/experiments/tournament_scoring.py",
+  "canonical_source_sha256": "c59cc7b3e51c8859cb548fbd6978c009eafe168807806833669356149f92203e",
+  "fixtures": [
+    {
+      "name": "tie",
+      "input": [
+        {
+          "candidate_id": "a",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "b",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "a": {
+            "candidate_id": "a",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 100.0,
+            "total_points": 375.0,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000,
+            "efficiency_factor": 1.0
+          },
+          "b": {
+            "candidate_id": "b",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 100.0,
+            "total_points": 375.0,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000,
+            "efficiency_factor": 1.0
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 100.0,
+          "endurance_cutoff_s": 145.0,
+          "time_reference_candidate": "a",
+          "energy_reference_candidate": "a",
+          "time_reference_per_lap_s": 100.0,
+          "co2_reference_per_lap_kg": 0.065,
+          "fmin": 0.2239140170174653,
+          "fmax": 1.0
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "ranking-change",
+      "input": [
+        {
+          "candidate_id": "fast",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 0.2,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "efficient",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 105,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "fast": {
+            "candidate_id": "fast",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 37.89959016393443,
+            "total_points": 312.8995901639344,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 200.0,
+            "co2_kg": 0.13,
+            "distance_m": 1000,
+            "efficiency_factor": 0.5
+          },
+          "efficient": {
+            "candidate_id": "efficient",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 236.64021164021165,
+            "efficiency_points": 100.0,
+            "total_points": 336.64021164021165,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 105.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000,
+            "efficiency_factor": 0.9523809523809523
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 100.0,
+          "endurance_cutoff_s": 145.0,
+          "time_reference_candidate": "fast",
+          "energy_reference_candidate": "efficient",
+          "time_reference_per_lap_s": 100.0,
+          "co2_reference_per_lap_kg": 0.065,
+          "fmin": 0.2239140170174653,
+          "fmax": 0.9523809523809523
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "energy-cap",
+      "input": [
+        {
+          "candidate_id": "fast-over-cap",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 0.4,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "eligible",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 110,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "fast-over-cap": {
+            "candidate_id": "fast-over-cap",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 0.0,
+            "total_points": 275.0,
+            "efficiency_eligible": false,
+            "reasons": [
+              "Above EV efficiency consumption cap of 0.308 kWh/km"
+            ],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 400.0,
+            "co2_kg": 0.26,
+            "distance_m": 1000
+          },
+          "eligible": {
+            "candidate_id": "eligible",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 201.76767676767676,
+            "efficiency_points": 100.0,
+            "total_points": 301.7676767676768,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 110.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000,
+            "efficiency_factor": 1.0
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 100.0,
+          "endurance_cutoff_s": 145.0,
+          "time_reference_candidate": "eligible",
+          "energy_reference_candidate": "eligible",
+          "time_reference_per_lap_s": 110.0,
+          "co2_reference_per_lap_kg": 0.065,
+          "fmin": 0.2239140170174653,
+          "fmax": 1.0
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "time-cutoff",
+      "input": [
+        {
+          "candidate_id": "fast",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "slow",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 160,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "fast": {
+            "candidate_id": "fast",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 100.0,
+            "total_points": 375.0,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000,
+            "efficiency_factor": 1.0
+          },
+          "slow": {
+            "candidate_id": "slow",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 25.0,
+            "efficiency_points": 0.0,
+            "total_points": 25.0,
+            "efficiency_eligible": false,
+            "reasons": [
+              "Beyond 1.45 fastest full-finisher time"
+            ],
+            "corrected_time_s": 160.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 100.0,
+          "endurance_cutoff_s": 145.0,
+          "time_reference_candidate": "fast",
+          "energy_reference_candidate": "fast",
+          "time_reference_per_lap_s": 100.0,
+          "co2_reference_per_lap_kg": 0.065,
+          "fmin": 0.2239140170174653,
+          "fmax": 1.0
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "zero-energy",
+      "input": [
+        {
+          "candidate_id": "valid",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "zero",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 90,
+          "net_energy_kwh": 0,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "valid": {
+            "candidate_id": "valid",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": null,
+            "efficiency_points": null,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000
+          },
+          "zero": {
+            "candidate_id": "zero",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": null,
+            "efficiency_points": null,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [
+              "Positive finite measured time, net energy, distance and valid penalties required"
+            ]
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "unavailable_reference_candidates": [
+            "zero"
+          ]
+        },
+        "available": false
+      }
+    },
+    {
+      "name": "failed-run",
+      "input": [
+        {
+          "candidate_id": "valid",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "failed",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 20,
+          "net_energy_kwh": 0.01,
+          "completed": false,
+          "valid": false,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "valid": {
+            "candidate_id": "valid",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 100.0,
+            "total_points": 375.0,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000,
+            "efficiency_factor": 1.0
+          },
+          "failed": {
+            "candidate_id": "failed",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": false,
+            "valid": false,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 0.0,
+            "efficiency_points": 0.0,
+            "total_points": 0.0,
+            "efficiency_eligible": false,
+            "reasons": [
+              "Incomplete or physically invalid; never aggregate as a successful low-energy lap"
+            ]
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 100.0,
+          "endurance_cutoff_s": 145.0,
+          "time_reference_candidate": "valid",
+          "energy_reference_candidate": "valid",
+          "time_reference_per_lap_s": 100.0,
+          "co2_reference_per_lap_kg": 0.065,
+          "fmin": 0.2239140170174653,
+          "fmax": 1.0
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "recorded-penalty",
+      "input": [
+        {
+          "candidate_id": "raw-fast",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 5,
+          "penalties_modeled": true
+        },
+        {
+          "candidate_id": "corrected-fast",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 102,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "raw-fast": {
+            "candidate_id": "raw-fast",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 5,
+            "penalties_modeled": true,
+            "endurance_points": 251.98412698412702,
+            "efficiency_points": 96.31852279284477,
+            "total_points": 348.3026497769718,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 105.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000,
+            "efficiency_factor": 0.9714285714285714
+          },
+          "corrected-fast": {
+            "candidate_id": "corrected-fast",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 100.0,
+            "total_points": 375.0,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 102.0,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000,
+            "efficiency_factor": 1.0
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 102.0,
+          "endurance_cutoff_s": 147.9,
+          "time_reference_candidate": "corrected-fast",
+          "energy_reference_candidate": "raw-fast",
+          "time_reference_per_lap_s": 102.0,
+          "co2_reference_per_lap_kg": 0.065,
+          "fmin": 0.2239140170174653,
+          "fmax": 1.0
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "saved-stratum-0",
+      "input": [
+        {
+          "candidate_id": "awd-p0-fsg",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "0863d0fe882a9e7d756e35b211ee510e829f1dde3384ec85d26d4737e748c0ee",
+          "laps": 10,
+          "distance_m": 3064.5041872992833,
+          "time_s": 484.52545624579983,
+          "net_energy_kwh": 0.08648157483209339,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "awd-p1-fsg",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "0863d0fe882a9e7d756e35b211ee510e829f1dde3384ec85d26d4737e748c0ee",
+          "laps": 10,
+          "distance_m": 3064.5041872992833,
+          "time_s": 478.9967731952402,
+          "net_energy_kwh": 0.12782168138108682,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "awd-p2-fsg",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "0863d0fe882a9e7d756e35b211ee510e829f1dde3384ec85d26d4737e748c0ee",
+          "laps": 10,
+          "distance_m": 3064.5041872992833,
+          "time_s": 500.4065434653963,
+          "net_energy_kwh": 0.08857505885018709,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "awd-p3-fsg",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "0863d0fe882a9e7d756e35b211ee510e829f1dde3384ec85d26d4737e748c0ee",
+          "laps": 10,
+          "distance_m": 3064.5041872992833,
+          "time_s": 493.5158978031157,
+          "net_energy_kwh": 0.07779518299185981,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "awd-p4-fsg",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "0863d0fe882a9e7d756e35b211ee510e829f1dde3384ec85d26d4737e748c0ee",
+          "laps": 10,
+          "distance_m": 3064.5041872992833,
+          "time_s": 477.19567185626084,
+          "net_energy_kwh": 0.12691258384980417,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "awd-p0-fsg": {
+            "candidate_id": "awd-p0-fsg",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 262.8137495978701,
+            "efficiency_points": 91.1018392861144,
+            "total_points": 353.9155888839845,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 484.52545624579983,
+            "net_energy_wh": 86.48157483209339,
+            "co2_kg": 0.056213023640860706,
+            "distance_m": 3064.5041872992833,
+            "efficiency_factor": 0.8859495950626286
+          },
+          "awd-p1-fsg": {
+            "candidate_id": "awd-p1-fsg",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 271.9709875495507,
+            "efficiency_points": 60.37785162136135,
+            "total_points": 332.3488391709121,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 478.9967731952402,
+            "net_energy_wh": 127.82168138108682,
+            "co2_kg": 0.08308409289770644,
+            "distance_m": 3064.5041872992833,
+            "efficiency_factor": 0.6063342332353852
+          },
+          "awd-p2-fsg": {
+            "candidate_id": "awd-p2-fsg",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 237.6350877737498,
+            "efficiency_points": 85.78457146323967,
+            "total_points": 323.41965923698945,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 500.4065434653963,
+            "net_energy_wh": 88.57505885018709,
+            "co2_kg": 0.057573788252621605,
+            "distance_m": 3064.5041872992833,
+            "efficiency_factor": 0.8375577722807461
+          },
+          "awd-p3-fsg": {
+            "candidate_id": "awd-p3-fsg",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 248.3608405769014,
+            "efficiency_points": 100.0,
+            "total_points": 348.3608405769014,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 493.5158978031157,
+            "net_energy_wh": 77.7951829918598,
+            "co2_kg": 0.050566868944708875,
+            "distance_m": 3064.5041872992833,
+            "efficiency_factor": 0.9669306986471878
+          },
+          "awd-p4-fsg": {
+            "candidate_id": "awd-p4-fsg",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 61.108351043497315,
+            "total_points": 336.1083510434973,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 477.19567185626084,
+            "net_energy_wh": 126.91258384980416,
+            "co2_kg": 0.08249317950237271,
+            "distance_m": 3064.5041872992833,
+            "efficiency_factor": 0.6129824216952923
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 477.19567185626084,
+          "endurance_cutoff_s": 691.9337241915782,
+          "time_reference_candidate": "awd-p4-fsg",
+          "energy_reference_candidate": "awd-p3-fsg",
+          "time_reference_per_lap_s": 47.71956718562608,
+          "co2_reference_per_lap_kg": 0.0050566868944708875,
+          "fmin": 0.05684257832151208,
+          "fmax": 0.9669306986471878
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "saved-stratum-1",
+      "input": [
+        {
+          "candidate_id": "awd-p0-tech",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f",
+          "laps": 10,
+          "distance_m": 3032.9797028264425,
+          "time_s": 420.0598067072068,
+          "net_energy_kwh": 0.0745432938315616,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "awd-p1-tech",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f",
+          "laps": 10,
+          "distance_m": 3032.9797028264425,
+          "time_s": 414.27411728669466,
+          "net_energy_kwh": 0.09112750534587281,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "awd-p2-tech",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f",
+          "laps": 10,
+          "distance_m": 3032.9797028264425,
+          "time_s": 434.7157660891506,
+          "net_energy_kwh": 0.07058393250168715,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "awd-p3-tech",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f",
+          "laps": 10,
+          "distance_m": 3032.9797028264425,
+          "time_s": 425.47407845417644,
+          "net_energy_kwh": 0.07113530672634227,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "awd-p4-tech",
+          "hardware": "199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+          "geometry_sha256": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f",
+          "laps": 10,
+          "distance_m": 3032.9797028264425,
+          "time_s": 413.20234637265816,
+          "net_energy_kwh": 0.09069523245976979,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "awd-p0-tech": {
+            "candidate_id": "awd-p0-tech",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 261.8493362580915,
+            "efficiency_points": 96.46713425082102,
+            "total_points": 358.3164705089125,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 420.0598067072068,
+            "net_energy_wh": 74.5432938315616,
+            "co2_kg": 0.04845314099051504,
+            "distance_m": 3032.9797028264425,
+            "efficiency_factor": 0.9314272139715938
+          },
+          "awd-p1-tech": {
+            "candidate_id": "awd-p1-tech",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 272.91594266197546,
+            "efficiency_points": 79.03814867078815,
+            "total_points": 351.9540913327636,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 414.27411728669466,
+            "net_energy_wh": 91.12750534587282,
+            "co2_kg": 0.059232878474817334,
+            "distance_m": 3032.9797028264425,
+            "efficiency_factor": 0.7725584514042133
+          },
+          "awd-p2-tech": {
+            "candidate_id": "awd-p2-tech",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 235.13428515020814,
+            "efficiency_points": 98.56081333932504,
+            "total_points": 333.69509848953317,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 434.7157660891506,
+            "net_energy_wh": 70.58393250168716,
+            "co2_kg": 0.04587955612609665,
+            "distance_m": 3032.9797028264425,
+            "efficiency_factor": 0.9505115263933618
+          },
+          "awd-p3-tech": {
+            "candidate_id": "awd-p3-tech",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 251.76577151192748,
+            "efficiency_points": 100.0,
+            "total_points": 351.7657715119275,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 425.47407845417644,
+            "net_energy_wh": 71.13530672634228,
+            "co2_kg": 0.04623794937212248,
+            "distance_m": 3032.9797028264425,
+            "efficiency_factor": 0.963630006687869
+          },
+          "awd-p4-tech": {
+            "candidate_id": "awd-p4-tech",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 79.66299527325123,
+            "total_points": 354.6629952732512,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 413.20234637265816,
+            "net_energy_wh": 90.6952324597698,
+            "co2_kg": 0.058951901098850366,
+            "distance_m": 3032.9797028264425,
+            "efficiency_factor": 0.7782540557795744
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 413.20234637265816,
+          "endurance_cutoff_s": 599.1434022403544,
+          "time_reference_candidate": "awd-p4-tech",
+          "energy_reference_candidate": "awd-p2-tech",
+          "time_reference_per_lap_s": 41.32023463726581,
+          "co2_reference_per_lap_kg": 0.004587955612609665,
+          "fmin": 0.05210958665042803,
+          "fmax": 0.963630006687869
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "saved-stratum-2",
+      "input": [
+        {
+          "candidate_id": "holdout-p0",
+          "hardware": "abd3348dab11125a989f2f2b25221864d8f5dd98e4b069f8611b5315479d1eb3",
+          "geometry_sha256": "e4859eeadfd13b8a176b313ae1200337be9e8ba7ae81927dc565db5545766efc",
+          "laps": 10,
+          "distance_m": 3848.8586973414313,
+          "time_s": 528.9523290932605,
+          "net_energy_kwh": 0.10193817987820807,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "holdout-p1",
+          "hardware": "abd3348dab11125a989f2f2b25221864d8f5dd98e4b069f8611b5315479d1eb3",
+          "geometry_sha256": "e4859eeadfd13b8a176b313ae1200337be9e8ba7ae81927dc565db5545766efc",
+          "laps": 10,
+          "distance_m": 3848.8586973414313,
+          "time_s": 520.4974470063229,
+          "net_energy_kwh": 0.12446244252794371,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        },
+        {
+          "candidate_id": "holdout-p2",
+          "hardware": "abd3348dab11125a989f2f2b25221864d8f5dd98e4b069f8611b5315479d1eb3",
+          "geometry_sha256": "e4859eeadfd13b8a176b313ae1200337be9e8ba7ae81927dc565db5545766efc",
+          "laps": 10,
+          "distance_m": 3848.8586973414313,
+          "time_s": 536.585392237334,
+          "net_energy_kwh": 0.09665838520473542,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "holdout-p0": {
+            "candidate_id": "holdout-p0",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 262.1238354345182,
+            "efficiency_points": 95.95437509032183,
+            "total_points": 358.07821052484,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 528.9523290932605,
+            "net_energy_wh": 101.93817987820806,
+            "co2_kg": 0.06625981692083524,
+            "distance_m": 3848.8586973414313,
+            "efficiency_factor": 0.933049598718506
+          },
+          "holdout-p1": {
+            "candidate_id": "holdout-p1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 78.83407757190818,
+            "total_points": 353.8340775719082,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 520.4974470063229,
+            "net_energy_wh": 124.46244252794371,
+            "co2_kg": 0.08090058764316341,
+            "distance_m": 3848.8586973414313,
+            "efficiency_factor": 0.7766068481504704
+          },
+          "holdout-p2": {
+            "candidate_id": "holdout-p2",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 250.847770278878,
+            "efficiency_points": 100.0,
+            "total_points": 350.847770278878,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 536.585392237334,
+            "net_energy_wh": 96.65838520473542,
+            "co2_kg": 0.06282795038307802,
+            "distance_m": 3848.8586973414313,
+            "efficiency_factor": 0.9700179217255036
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 520.4974470063229,
+          "endurance_cutoff_s": 754.7212981591682,
+          "time_reference_candidate": "holdout-p1",
+          "energy_reference_candidate": "holdout-p2",
+          "time_reference_per_lap_s": 52.04974470063229,
+          "co2_reference_per_lap_kg": 0.006282795038307802,
+          "fmin": 0.05623268873072344,
+          "fmax": 0.9700179217255036
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "saved-stratum-3",
+      "input": [
+        {
+          "candidate_id": "open-bridge-tech",
+          "hardware": "bbadc8d2fa0fa0c57e8f3dfc2786378d2c90c367179837fc3fdda2d08f3f407b",
+          "geometry_sha256": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f",
+          "laps": 10,
+          "distance_m": 3032.9797028264425,
+          "time_s": 421.2357969438848,
+          "net_energy_kwh": 0.08112496360932994,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "open-bridge-tech": {
+            "candidate_id": "open-bridge-tech",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 100.0,
+            "total_points": 375.0,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 421.2357969438848,
+            "net_energy_wh": 81.12496360932994,
+            "co2_kg": 0.05273122634606446,
+            "distance_m": 3032.9797028264425,
+            "efficiency_factor": 1.0
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 421.2357969438848,
+          "endurance_cutoff_s": 610.791905568633,
+          "time_reference_candidate": "open-bridge-tech",
+          "energy_reference_candidate": "open-bridge-tech",
+          "time_reference_per_lap_s": 42.12357969438848,
+          "co2_reference_per_lap_kg": 0.005273122634606446,
+          "fmin": 0.05989165197918313,
+          "fmax": 1.0
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "saved-stratum-4",
+      "input": [
+        {
+          "candidate_id": "spool-bridge-tech",
+          "hardware": "2401e5cf77904d051afbdbc41ad79a6e7342d2d44a84c6d484087d053cb10bf1",
+          "geometry_sha256": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f",
+          "laps": 10,
+          "distance_m": 3032.9797028264425,
+          "time_s": 424.39682867613345,
+          "net_energy_kwh": 0.08734140434753306,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "spool-bridge-tech": {
+            "candidate_id": "spool-bridge-tech",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 100.0,
+            "total_points": 375.0,
+            "efficiency_eligible": true,
+            "reasons": [],
+            "corrected_time_s": 424.39682867613345,
+            "net_energy_wh": 87.34140434753306,
+            "co2_kg": 0.05677191282589649,
+            "distance_m": 3032.9797028264425,
+            "efficiency_factor": 1.0
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 424.39682867613345,
+          "endurance_cutoff_s": 615.3754015803935,
+          "time_reference_candidate": "spool-bridge-tech",
+          "energy_reference_candidate": "spool-bridge-tech",
+          "time_reference_per_lap_s": 42.43968286761334,
+          "co2_reference_per_lap_kg": 0.005677191282589649,
+          "fmin": 0.06448102729199817,
+          "fmax": 1.0
+        },
+        "available": true
+      }
+    },
+    {
+      "name": "nonfinite-energy-conversion",
+      "input": [
+        {
+          "candidate_id": "a",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 1e+308,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "a": {
+            "candidate_id": "a",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": null,
+            "efficiency_points": null,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [
+              "Energy conversion is nonfinite or unmeasurable"
+            ]
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "unavailable_reference_candidates": [
+            "a"
+          ]
+        },
+        "available": false
+      }
+    },
+    {
+      "name": "nonfinite-endurance-cutoff",
+      "input": [
+        {
+          "candidate_id": "a",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 1.7e+308,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "a": {
+            "candidate_id": "a",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": null,
+            "efficiency_points": null,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [],
+            "corrected_time_s": 1.7e+308,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "unavailable_reason": "Nonfinite endurance cutoff"
+        },
+        "available": false
+      }
+    },
+    {
+      "name": "subnormal-energy-cap",
+      "input": [
+        {
+          "candidate_id": "a",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1e-320,
+          "time_s": 100,
+          "net_energy_kwh": 5e-324,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "a": {
+            "candidate_id": "a",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 0.0,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 4.94e-321,
+            "co2_kg": 5e-324,
+            "distance_m": 1e-320
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 100.0,
+          "endurance_cutoff_s": 145.0,
+          "unavailable_reason": "Nonfinite or underflowed per-lap energy cap"
+        },
+        "available": false
+      }
+    },
+    {
+      "name": "subnormal-per-lap-energy",
+      "input": [
+        {
+          "candidate_id": "a",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 10,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 5e-324,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "a": {
+            "candidate_id": "a",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 0.0,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 4.94e-321,
+            "co2_kg": 5e-324,
+            "distance_m": 1000
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 100.0,
+          "endurance_cutoff_s": 145.0,
+          "unavailable_reason": "Nonfinite or underflowed per-lap reference"
+        },
+        "available": false
+      }
+    },
+    {
+      "name": "subnormal-endurance-denominator",
+      "input": [
+        {
+          "candidate_id": "a",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 5e-324,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "a": {
+            "candidate_id": "a",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": null,
+            "efficiency_points": null,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [],
+            "corrected_time_s": 5e-324,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "unavailable_reason": "Nonpositive endurance normalization denominator"
+        },
+        "available": false
+      }
+    }
+  ],
+  "canonical_commit": "ccb461b91a8c791083f9b97277f7b01318cbd341"
+}

@@ -1,0 +1,21 @@
+{
+  "package": "three",
+  "version": "0.160.0",
+  "tag": "r160",
+  "commit": "d04539a76736ff500cae883d6a38b3dd8643c548",
+  "license": "MIT",
+  "reason": "Pinned classic global build to preserve existing offline file replay. This is an older compatibility pin, not a claim of latest version.",
+  "upstream": "https://github.com/mrdoob/three.js",
+  "files": [
+    {
+      "path": "three-0.160.0.min.js",
+      "source_path": "build/three.min.js",
+      "git_blob_sha": "0c2f4ba351000d47f413873d8bb9c1a2f18cb37a"
+    },
+    {
+      "path": "three-LICENSE.txt",
+      "source_path": "LICENSE",
+      "git_blob_sha": "d07e209686512b9ac93d7df5481a4a6f622093e7"
+    }
+  ]
+}

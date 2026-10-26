@@ -156,11 +156,16 @@ class PlanarControls:
     external_force_x_n: float = 0.0
     external_force_y_n: float = 0.0
     external_yaw_moment_nm: float = 0.0
+    wheel_radii_m: WheelValues | None = None
 
     def __post_init__(self) -> None:
         _four_finite(self.steering_angles_rad, "steering_angles_rad")
         _four_finite(self.drive_torques_nm, "drive_torques_nm")
         _four_finite(self.brake_torques_nm, "brake_torques_nm")
+        if self.wheel_radii_m is not None:
+            _four_finite(self.wheel_radii_m, "wheel_radii_m")
+            if any(isinstance(radius,bool) or not .05 <= radius <= 1. for radius in self.wheel_radii_m):
+                raise ValueError('effective wheel radii must be in [0.05, 1] meters')
         if any(abs(angle) >= pi / 2 for angle in self.steering_angles_rad):
             raise ValueError("steering angles must lie strictly within +/- pi/2")
         if any(torque < 0.0 for torque in self.brake_torques_nm):
@@ -260,6 +265,7 @@ class PlanarEvaluation:
     invalid_road_queries: int
     contact_dissipation_w: float
     energy_balance_residual_w: float
+    axle_constraint_reactions_nm: WheelValues = ZERO_WHEELS
 
 
 @dataclass(frozen=True, slots=True)
@@ -316,6 +322,7 @@ def evaluate_planar_dynamics(
         if controls.normal_loads_n is None
         else controls.normal_loads_n
     )
+    radii_m = controls.wheel_radii_m or (config.wheel_radius_m,) * 4
     wheels: list[PlanarWheel] = []
     wheel_accelerations: list[float] = []
     body_force_x_n = 0.0
@@ -375,7 +382,7 @@ def evaluate_planar_dynamics(
         local_velocity_x_mps = c * body_velocity_x_mps + s * body_velocity_y_mps
         local_velocity_y_mps = -s * body_velocity_x_mps + c * body_velocity_y_mps
         omega_rad_s = state.wheel_speeds_rad_s[index]
-        wheel_surface_speed_mps = config.wheel_radius_m * omega_rad_s
+        wheel_surface_speed_mps = radii_m[index] * omega_rad_s
         normal_load_n = normal_loads_n[index]
 
         if normal_load_n == 0.0:
@@ -423,7 +430,7 @@ def evaluate_planar_dynamics(
         drive_torque_nm = controls.drive_torques_nm[index]
         brake_request_nm = controls.brake_torques_nm[index]
         torque_without_brake_nm = (
-            drive_torque_nm - config.wheel_radius_m * local_force_x_n
+            drive_torque_nm - radii_m[index] * local_force_x_n
         )
         if omega_rad_s > 0.0:
             applied_brake_torque_nm = -brake_request_nm

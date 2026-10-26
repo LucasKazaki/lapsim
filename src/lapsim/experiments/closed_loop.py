@@ -167,6 +167,8 @@ class ClosedLoopScenario:
         ):
             if not isinstance(getattr(self, name), kind):
                 raise TypeError("expected typed " + name)
+        if self.actuation.topology_id != self.drivetrain_topology_id:
+            raise ValueError("actuation topology must match the rear-drive study topology")
         for value in asdict(self.vehicle).values():
             _finite(value, "vehicle parameter")
         _physical_values(asdict(self.initial_state), "initial state")

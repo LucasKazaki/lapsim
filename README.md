@@ -1,5 +1,15 @@
 # Formula SAE Event Simulator
 
+## Start here
+
+- [Web simulator](https://lapsim-team-lab.kazagpt.chatgpt.site/) — Earlier browser-compute build; run a prescribed-path lap on your own device.
+- [Interactive physics flowchart](https://lapsim-team-lab.kazagpt.chatgpt.site/map/index.html) — Expand the hosted simulator's architecture, equations, and declared source variables.
+- [Interactive tournament review](https://lucaskazaki.github.io/lapsim/tournament/) — Compare bundled prior R11 controller results and ghost replays; the new six-course campaign is not included.
+- [Tournament ghost video](https://lucaskazaki.github.io/lapsim/tournament/video.html) — Watch the 42-second saved R11 replay with the fastest accepted result highlighted and separate course chapters.
+- [Simulator source](src/) — Browse the Python simulator modules and vehicle-model implementation.
+- [Browser simulator guide](docs/web_simulator.md) — Read supported inputs, limitations, build steps, and browser verification notes.
+- [Controller source guide](docs/controller_source.md) — Reproduce the imported Python and host-C controller evidence and inspect its validation limits.
+
 Simulate endurance, acceleration, and skidpad from a distance-indexed controls
 profile and track. Every event returns estimated points, timing, energy,
 completion status, and aligned component telemetry through one result type.
@@ -19,10 +29,11 @@ main classes for concise imports.
 The team browser release combines a prescribed-path lap simulator, the full
 expandable source/physics map, and [driving-control research](docs/simulator_research.md).
 Publication destination: [LapSim Team Lab](https://lapsim-team-lab.kazagpt.chatgpt.site).
-The hosted site is a separate earlier build: its live manifest checked on
-16 October 2026 reports `651d843ad6696989a612886e867c7a4b7140dfb6`.
-The overnight changes below require a source checkout or internal build.
-Public release and site deployment are deferred by the owner.
+The hosted simulator is a separate earlier build: its manifest check on
+16 October 2026 recorded `651d843ad6696989a612886e867c7a4b7140dfb6`.
+The newer simulator changes below require a source checkout or internal build;
+they are not included in that hosted simulator. The separately linked GitHub
+Pages tournament review replays saved prior R11 results.
 
 The browser runs the existing Python physics in a module worker. It loads the
 pinned scientific runtime on first use, needs an internet connection, and keeps
