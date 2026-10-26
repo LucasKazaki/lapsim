@@ -6,7 +6,9 @@ import ctypes
 import json
 import math
 import os
+import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -196,59 +198,72 @@ frame(groups[-1], 0.72, 2).save(preview)
 if args.preview_only:
     print(json.dumps({"preview": str(preview), "commit_headroom_gib": before}))
     raise SystemExit(0)
-command = [
-    "ffmpeg",
-    "-y",
-    "-f",
-    "rawvideo",
-    "-vcodec",
-    "rawvideo",
-    "-pix_fmt",
-    "rgb24",
-    "-s",
-    f"{W}x{H}",
-    "-r",
-    str(FPS),
-    "-i",
-    "-",
-    "-an",
-    "-c:v",
-    "libx264",
-    "-threads",
-    "1",
-    "-preset",
-    "veryfast",
-    "-crf",
-    "21",
-    "-pix_fmt",
-    "yuv420p",
-    "-movflags",
-    "+faststart",
-    str(args.output),
-]
-with args.output.with_suffix(".ffmpeg.log").open("w") as log:
-    process = subprocess.Popen(
-        command,
-        stdin=subprocess.PIPE,
-        stdout=log,
-        stderr=log,
-        creationflags=subprocess.BELOW_NORMAL_PRIORITY_CLASS if os.name == "nt" else 0,
-    )
+with tempfile.TemporaryDirectory(prefix="lapsim-tournament-render-") as folder:
+    # Keep user-supplied destination paths out of the encoder command entirely.
+    encoded_path = Path(folder) / "tournament.mp4"
+    log_path = Path(folder) / "ffmpeg.log"
+    command = [
+        "ffmpeg",
+        "-y",
+        "-f",
+        "rawvideo",
+        "-vcodec",
+        "rawvideo",
+        "-pix_fmt",
+        "rgb24",
+        "-s",
+        f"{W}x{H}",
+        "-r",
+        str(FPS),
+        "-i",
+        "-",
+        "-an",
+        "-c:v",
+        "libx264",
+        "-threads",
+        "1",
+        "-preset",
+        "veryfast",
+        "-crf",
+        "21",
+        "-pix_fmt",
+        "yuv420p",
+        "-movflags",
+        "+faststart",
+        str(encoded_path),
+    ]
     try:
-        for chapter, group in enumerate(groups):
-            for i in range(12 * FPS):
-                if i % FPS == 0:
-                    reserve()
-                process.stdin.write(frame(group, i / (12 * FPS - 1), chapter).tobytes())
-            for _ in range(2 * FPS):
-                process.stdin.write(frame(group, 1, chapter).tobytes())
-        process.stdin.close()
-        if process.wait() != 0:
-            raise RuntimeError("ffmpeg failed; inspect log")
-    except BaseException:
-        process.kill()
-        process.wait()
-        raise
+        with log_path.open("w") as log:
+            process = subprocess.Popen(
+                command,
+                stdin=subprocess.PIPE,
+                stdout=log,
+                stderr=log,
+                creationflags=subprocess.BELOW_NORMAL_PRIORITY_CLASS
+                if os.name == "nt"
+                else 0,
+            )
+            try:
+                for chapter, group in enumerate(groups):
+                    for i in range(12 * FPS):
+                        if i % FPS == 0:
+                            reserve()
+                        process.stdin.write(
+                            frame(group, i / (12 * FPS - 1), chapter).tobytes()
+                        )
+                    for _ in range(2 * FPS):
+                        process.stdin.write(frame(group, 1, chapter).tobytes())
+                process.stdin.close()
+                if process.wait() != 0:
+                    raise RuntimeError("ffmpeg failed; inspect log")
+            except BaseException:
+                process.kill()
+                process.wait()
+                raise
+        shutil.copyfile(encoded_path, args.output)
+    finally:
+        if log_path.exists():
+            shutil.copyfile(log_path, args.output.with_suffix(".ffmpeg.log"))
 receipt = {
     "video": str(args.output),
     "bytes": args.output.stat().st_size,
