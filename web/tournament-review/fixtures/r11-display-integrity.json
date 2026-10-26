@@ -1,0 +1,45 @@
+{
+  "source_commit": "820f2865a1d464e8bb5a58737b14a588e687abd9",
+  "scope": "Exact saved geometry, executed policy, metrics, lap crossings and display samples are unchanged by score/formatting projection.",
+  "keys": [
+    "id",
+    "accepted",
+    "status",
+    "selection_eligible",
+    "time_s",
+    "energy_wh",
+    "completed_laps",
+    "target_laps",
+    "policy",
+    "architecture",
+    "metrics",
+    "mode_occupancy",
+    "failure_reasons",
+    "effective_policy_sha256",
+    "viewer_sha256",
+    "laps",
+    "samples"
+  ],
+  "groups": [
+    {
+      "id": "0863d0fe882a9e7d756e35b211ee510e829f1dde3384ec85d26d4737e748c0ee:199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+      "sha256": "fb8d481af29b39510f39893f5e68000622d5d446243a380e1f034f8a0125e358"
+    },
+    {
+      "id": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f:199a64ed66f6909fec1f125f8731d595c34b7ffdda669437671120914b2648c7",
+      "sha256": "24cb2bf3a6be1ed150b51c67f340a5c5c81460f646e96bcbdbd9049bccf627c9"
+    },
+    {
+      "id": "e4859eeadfd13b8a176b313ae1200337be9e8ba7ae81927dc565db5545766efc:abd3348dab11125a989f2f2b25221864d8f5dd98e4b069f8611b5315479d1eb3",
+      "sha256": "273ee8a11f63d252a871865ab7d07b1650ce90ead1cba8d5c2953d52014bbc0d"
+    },
+    {
+      "id": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f:bbadc8d2fa0fa0c57e8f3dfc2786378d2c90c367179837fc3fdda2d08f3f407b",
+      "sha256": "4ffbe3a85b7e7a64f2645c4c12c1c8b52d6d99273abba1e48855cbe0132c1cdb"
+    },
+    {
+      "id": "f1b05010b2dd978689f9c023d31e4762b82a9fb754624195a4c774d99add572f:2401e5cf77904d051afbdbc41ad79a6e7342d2d44a84c6d484087d053cb10bf1",
+      "sha256": "f9f36628f60a8a9b775a98b6996a6b997210b43803c8e5fd0f9836dc2770cb06"
+    }
+  ]
+}

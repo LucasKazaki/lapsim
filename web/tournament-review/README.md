@@ -45,6 +45,47 @@ strategy selection, synchronized replay, scrubbing, speed and reset. External
 file loading is unavailable: both the file input and its handler are absent.
 `node web/tournament-review/test-bundled.cjs` checks that absence and the bundled controls.
 
+## Simulated points and parameter display
+
+This source candidate defaults to endurance plus efficiency, up to 275 + 100
+points, separately for each geometry/hardware/equal-lap field. It is an explicitly
+FSAE-inspired simulated adaptation of SAE 2027 V1 D12.13 and D13.3-4, not official
+event points. The R11 snapshot has no real driver change, inspection or event
+penalty model. No six-course aggregate is inferred. Fastest, lowest net energy
+and the historical engineering proxy remain explicit alternative criteria.
+The unchanged MP4 still highlights fastest and is labeled accordingly.
+An always-visible three-winner comparison shows fastest, highest simulated
+points and lowest net energy with raw time/energy and component points from the
+same completed accepted selection pool. Its highlight buttons use the same
+synchronized saved ghosts, and legitimate co-winners are retained.
+
+`scoring.js` projects the canonical `tournament_scoring.py` field contract. The
+frozen fixtures record the exact canonical commit and source SHA-256 from PR #145 (canonical scorer repair).
+`node scripts/test_tournament_scoring.cjs` compares 17 canonical fixtures,
+including all five saved strata, ties, changed ranking, failed runs, invalid
+references, penalties, eligibility caps and nonfinite intermediate guards.
+The Node production-control suite verifies the actual default, reset, component
+table, missing telemetry labels and all selection/replay controls.
+
+For this earlier snapshot the required raw time, net energy, course length and
+equal lap count are available. References use the recorded selection pool;
+unpaired p5 is excluded. Net energy already credits regeneration. Recovered Wh
+is unavailable here, and penalties are labeled not modeled. If a future adapter
+supplies `run.fsae_inspired_points`, the display consumes the versioned canonical
+row including `field_available` and optional `recovered_wh_10ms`. Partial or
+unknown canonical fields make the combined field unrankable instead of silently
+recomputing it. A future adapter must preserve matched strata and coverage.
+
+Parameter cards use short values with units and percentages. Exact executed
+parameters and identities remain in details and in the downloadable JSON. Origin
+labels derive from recorded profile IDs, heldout ancestry and generation
+`parents_used`; the elite pool is not misrepresented as actual parents. Seeded
+continuous samples and mutations explain non-round executed values. Formatting
+does not change any executed value or rerun a controller.
+
+Source integration does not publish these changes. The public presentation may
+still show the earlier version until a separately reviewed Pages release.
+
 On Windows with Segoe UI installed, Pillow in the selected Python environment
 and `ffmpeg` on PATH,
 `python scripts/render_tournament_review.py` creates a 42-second H.264 MP4 from
