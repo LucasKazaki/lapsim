@@ -98,7 +98,9 @@ class Handler(SimpleHTTPRequestHandler):
     def post_locked(self):
         global JOB
         origin = self.headers.get("Origin")
-        if origin and origin != f"http://127.0.0.1:{self.server.server_port}":
+        port=getattr(self.server,'server_port',None)
+        if type(port) is not int:raise ValueError('HTTP server port is unavailable')
+        if origin and origin != f"http://127.0.0.1:{port}":
             self.json_response({"error": "Origin rejected"}, 403)
             return
         try:

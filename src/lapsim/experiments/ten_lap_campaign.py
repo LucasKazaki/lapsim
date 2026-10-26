@@ -50,8 +50,10 @@ def candidate(profile,controller,course_id,*,seed=4082025,parameters=None,condit
 
 def validate_candidate(value):
     if type(value) is not dict or value.get('schema')!=SCHEMA:raise ValueError('Unsupported candidate schema')
+    seed,phase=value.get('seed'),value.get('phase')
+    if type(seed) is not int or not isinstance(phase,str):raise ValueError('Candidate seed and phase are required')
     expected=candidate(value.get('profile'),Controller(**value.get('controller',{})),value.get('course_id'),
-        seed=value.get('seed'),parameters=value.get('parameters'),conditions=value.get('conditions'),phase=value.get('phase'))
+        seed=seed,parameters=value.get('parameters'),conditions=value.get('conditions'),phase=phase)
     if value!=expected:raise ValueError('Candidate configuration/geometry identity mismatch')
     return expected
 
@@ -62,7 +64,8 @@ def sampled_hardware(seed,count=2):
         raise ValueError('Seed/count outside the bounded sample domain')
     from scipy.stats import qmc
     keys=('mass_kg','tire_mu','gear_ratio','wheel_radius_m','wheel_inertia_kgm2','rear_radius_mismatch_fraction','pack_discharge_power_limit_w')
-    values=qmc.LatinHypercube(d=len(keys),seed=seed).random(count)
+    from lapsim.qmc_sampler import latin_hypercube
+    values=latin_hypercube(len(keys),seed).random(count)
     lower=[PHYSICAL_BOUNDS[key][0] for key in keys];upper=[PHYSICAL_BOUNDS[key][1] for key in keys]
     return [dict(zip(keys,map(float,row))) for row in qmc.scale(values,lower,upper)]
 

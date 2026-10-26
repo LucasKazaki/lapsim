@@ -79,7 +79,7 @@ class ControlSession:
             return {'controller':controller,'limited':policy['limited'],'friction_nm':list(policy['friction_nm']),
                 'brake_shortfall_nm':policy['brake_shortfall_nm'],'raw_regen_nm':policy['raw_regen_nm'],
                 'profile_sha256':self.profile.sha256,'scope':policy['scope']}
-        limited=constrain_actuation(pack,tuple(result['command_nm']),tuple(speeds),frame['pack_energy_j'],.01,tuple(available))
+        limited=constrain_actuation(pack,tuple(result['command_nm']),tuple(speeds),frame['pack_energy_j'],.01,(available[0],available[1],available[2],available[3]))
         return {'controller':result,'limited':asdict(limited),'profile_sha256':self.profile.sha256,
                 'scope':'simulation-only propulsive baseline; actuator response belongs to the plant'}
 
@@ -96,8 +96,11 @@ def replay(profile,frames,*,full_lap=False,ten_lap=False):
     mode=trace_mode(full_lap=full_lap,ten_lap=ten_lap)
     require(isinstance(frames,list) and 1<=len(frames)<=mode.maximum_frames,f'A bounded trace of 1-{mode.maximum_frames} frames is required')
     if mode.maximum_clock_ms is not None:
-        require(all(type(f) is dict and type(f.get('now_ms')) is int and 0<=f['now_ms']<=mode.maximum_clock_ms for f in frames),
-                f'Full-lap trace clock exceeds {mode.maximum_clock_ms} integer ms')
+        for frame in frames:
+            if not isinstance(frame,dict):raise ValueError('Trace frames must be objects')
+            clock=frame.get('now_ms')
+            if type(clock) is not int or not 0<=clock<=mode.maximum_clock_ms:
+                raise ValueError(f'Full-lap trace clock exceeds {mode.maximum_clock_ms} integer ms')
     session=ControlSession(profile)
     try:return [session.step(frame) for frame in frames]
     finally:session.close()

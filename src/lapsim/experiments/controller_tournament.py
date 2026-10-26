@@ -35,7 +35,7 @@ def sources():
     names = ("experiments/controller_tournament.py", "experiments/tournament_rollout.py",
              "optimization/pose_driver.py", "dynamics/planar.py", "dynamics/powered_planar.py",
              "dynamics/actuation.py", "dynamics/conditions.py", "courses/spatial_track.py")
-    names += ("courses/track.py", "courses/course_bundle.py", "experiments/closed_loop.py", "experiments/lap_ledger.py",
+    names += ("qmc_sampler.py", "courses/track.py", "courses/course_bundle.py", "experiments/closed_loop.py", "experiments/lap_ledger.py",
               "courses/library.py","experiments/ten_lap_campaign.py","experiments/record_io.py")
     return {p: sha256((root / p).read_bytes()).hexdigest() for p in names}
 
@@ -50,7 +50,10 @@ def specification(seed=4082025, population=6, generations=3, profile="synthetic_
         raise ValueError("generations must be 1–6")
     if profile not in PROFILES:
         raise ValueError("2025 unknowns prevent execution of the source-backed derived AWD baseline")
-    long_course=course=='bundle' and laps==1 and CourseBundle.from_dict(course_bundle).track.length_m>400
+    long_course=False
+    if course=='bundle':
+        if course_bundle is None:raise ValueError('Bundle course requires its geometry')
+        long_course=laps==1 and CourseBundle.from_dict(course_bundle).track.length_m>400
     base = Case("train_dry", course=course, course_bundle=course_bundle,laps=laps,long_course=long_course,
                 reverse=reverse, mirror=mirror, duration_s=600 if laps==10 else 300 if long_course else 30 if course == "stadium" else 60)
     if laps==1 and course == "stadium" and not reverse and not mirror:
@@ -198,6 +201,7 @@ def run_search(output: Path, spec: dict, *, resume=False, wall_seconds=600.0,
                                             "both_invalid": not a["eligible"] and not b["eligible"]})
     while len(state["generations"]) < spec["generations"]:
         if state["pending"] is None:
+            parents=[]
             if not state["generations"]:
                 population = [state["candidates"][c]["controller"] for c in state["baselines"]]
             else:
