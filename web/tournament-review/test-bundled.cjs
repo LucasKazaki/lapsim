@@ -31,4 +31,7 @@ frame(0);get('play').events.click();frame(1000);assert.ok(Number.parseFloat(get(
 get('scrub').value='20';get('scrub').events.input();assert.equal(get('clock').textContent,'20.00 s');
 get('restart').events.click();assert.equal(get('clock').textContent,'0.00 s');
 get('reset').events.click();assert.equal(get('course').value,'0');assert.equal(get('winner').textContent,'awd-p4-fsg');assert.equal(get('play').textContent,'Play');
+const refreshed=structuredClone(data),failed={...structuredClone(data.groups[0].runs[0]),id:'first-lap-failure',accepted:false,selection_eligible:false,status:'failed',completed_laps:0,laps:[]};refreshed.groups[0].runs.push(failed);
+vm.runInNewContext(source,{document:{getElementById:get,createElement:tag=>new Element(tag)},window:{LAPSIM_REVIEW:refreshed},requestAnimationFrame:fn=>{frame=fn;},console});
+assert.equal(get('error').textContent,'');assert.equal(get('results').children.length,6);assert.match(get('results').children.at(-1).children[1].textContent,/failed/i);assert.notEqual(get('winner').textContent,'first-lap-failure');
 console.log('PASS: no external input/handler; 16 bundled runs, 5 strata, all criteria, heldout extremes, immigrant exclusion, strategy, replay advance, scrub, restart and reset.');

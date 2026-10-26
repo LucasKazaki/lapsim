@@ -13,5 +13,10 @@ assert.equal(c.winners(tied,'time').length,2);
 assert.deepEqual(c.winners({...holdout,runs:holdout.runs.map(r=>({...r,accepted:false}))},'time'),[]);
 const r=holdout.runs[0];assert.deepEqual(c.sample(r,-100),r.samples[0]);assert.deepEqual(c.sample(r,10000),r.samples.at(-1));
 const bad=structuredClone(d);bad.groups[0].runs[0].samples[1][0]=0;assert.throws(()=>c.validate(bad));
+const earlyFailure=structuredClone(d),failed={...structuredClone(r),id:'first-lap-failure',accepted:false,selection_eligible:false,status:'failed',completed_laps:0,laps:[]};
+earlyFailure.groups[2].runs.push(failed);
+assert.doesNotThrow(()=>c.validate(earlyFailure),'An explicitly failed first-lap run must not hide completed peers');
+assert.ok(c.winners(earlyFailure.groups[2],'time').every(row=>row.id!=='first-lap-failure'));
+const falseSuccess=structuredClone(earlyFailure);falseSuccess.groups[2].runs.at(-1).status='completed';assert.throws(()=>c.validate(falseSuccess),'Successful completion still requires completed laps');
 for(const g of d.groups){assert.equal(new Set(g.runs.map(r=>r.architecture)).size,1);for(const r of g.runs)assert.equal(r.samples[0][0],0);}
 console.log('PASS: 16 saved runs, heldout criteria, excluded immigrant, ties, no finishers, interpolation endpoints, invalid saved samples, hardware strata');
