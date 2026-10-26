@@ -9,8 +9,10 @@ import os
 import shutil
 import subprocess
 import tempfile
+import textwrap
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
+from build_tournament_review import provenance_labels
 
 
 class Memory(ctypes.Structure):
@@ -54,6 +56,7 @@ parser.add_argument("--preview-only", action="store_true")
 args = parser.parse_args()
 before = reserve()
 data = json.loads(args.data.read_text(encoding="utf-8"))
+labels = provenance_labels(data)
 args.output.parent.mkdir(parents=True, exist_ok=True)
 W, H, FPS = 960, 540, 20
 colors = ["#75ddff", "#ffb968", "#bca1ff", "#ff85b5", "#69e3b4", "#e5db88"]
@@ -62,6 +65,8 @@ fonts = {
     for n in [11, 12, 13, 15, 17, 20, 26, 30]
 }
 groups = [g for g in data["groups"] if len(g["runs"]) > 1]
+if not groups:
+    raise ValueError("No matched multi-strategy group is available for a ghost video")
 times = {r["id"]: [s[0] for s in r["samples"]] for g in groups for r in g["runs"]}
 
 
@@ -84,14 +89,11 @@ def frame(group, fraction, chapter):
 
     text(24, 15, "TERPS RACING / ENME408", 12, "#adf071")
     text(24, 38, "Controller tournament / saved ghost replay", 26)
-    text(
-        24,
-        76,
-        "PRIOR STABLE R11 DATA  |  Not the new six-course campaign  |  Display interpolation only",
-        12,
-        "#ffcf83",
-    )
-    text(24, 103, f"{chapter + 1}/3  {group['label']}", 17)
+    for line_number, line in enumerate(
+        textwrap.wrap(labels["coverage"], width=112)[:2]
+    ):
+        text(24, 76 + 13 * line_number, line, 12, "#ffcf83")
+    text(24, 103, f"{chapter + 1}/{len(groups)}  {group['label']}", 17)
     runs = group["runs"]
     eligible = [r for r in runs if r["accepted"] and r["selection_eligible"]]
     winner = min(eligible, key=lambda r: r["time_s"])
@@ -187,16 +189,24 @@ def frame(group, fraction, chapter):
         12,
         "#a8bdcd",
     )
-    text(658, 485, "26 Oct 2026 | evidence 18:15 UTC", 11, "#a8bdcd")
-    text(658, 501, "Source 4e1eeaf / numerical bee54e7", 11, "#a8bdcd")
+    text(658, 485, labels["evidence"], 11, "#a8bdcd")
+    text(658, 501, labels["source"], 11, "#a8bdcd")
     text(658, 517, "No universal or official-points winner.", 11, "#a8bdcd")
     return image
 
 
 preview = args.output.with_suffix(".preview.png")
-frame(groups[-1], 0.72, 2).save(preview)
+frame(groups[-1], 0.72, len(groups) - 1).save(preview)
 if args.preview_only:
-    print(json.dumps({"preview": str(preview), "commit_headroom_gib": before}))
+    print(
+        json.dumps(
+            {
+                "preview": str(preview),
+                "commit_headroom_gib": before,
+                "provenance": labels,
+            }
+        )
+    )
     raise SystemExit(0)
 with tempfile.TemporaryDirectory(prefix="lapsim-tournament-render-") as folder:
     # Keep user-supplied destination paths out of the encoder command entirely.
@@ -267,7 +277,7 @@ with tempfile.TemporaryDirectory(prefix="lapsim-tournament-render-") as folder:
 receipt = {
     "video": str(args.output),
     "bytes": args.output.stat().st_size,
-    "seconds": 42,
+    "seconds": 14 * len(groups),
     "fps": FPS,
     "resolution": [W, H],
     "chapters": [g["label"] for g in groups],
@@ -275,7 +285,10 @@ receipt = {
     "numerical_checkpoint": data["numerical_checkpoint"],
     "commit_headroom_before_gib": before,
     "commit_headroom_after_gib": reserve(),
-    "scope": "Earlier stable R11 data, synchronized saved poses, fastest criterion, excluded unpaired immigrant cannot win; not new six-course campaign.",
+    "evidence_utc": data["evidence_utc"],
+    "provenance": labels,
+    "scope": data["scope"],
+    "display_criterion": "Fastest accepted completed round; excluded policies cannot win",
 }
 args.output.with_suffix(".receipt.json").write_text(
     json.dumps(receipt, indent=2), encoding="utf-8"

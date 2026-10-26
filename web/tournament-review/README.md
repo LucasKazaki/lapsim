@@ -14,12 +14,16 @@ with `python -m http.server 8000` and open `/web/tournament-review/`.
 ## Refresh contract
 
 From the repository root, run
-`python scripts/build_tournament_review.py --review-root PATH` against the
+`python scripts/build_tournament_review.py --review-root PATH --acceptance-commit COMMIT --numerical-checkpoint COMMIT` against the
 completed review export directory. The directory must contain `review-index.json`
 and the referenced `<case-id>.viewer.json` projections. The builder uses `cases`,
 `final_selection.development.excluded` and the source evidence time. It groups
 by both geometry SHA-256 and hardware SHA-256, keeps unmodified saved display
 samples, and writes portable `data.js` plus inspectable `data.json`.
+An indexed missing viewer stops the export before any output is written.
+Coverage counts come from the indexed records. Source identities must be supplied
+explicitly; the renderer validates and displays those identities and the recorded
+evidence timestamp instead of using fixed historical labels.
 
 The static contract is `lapsim.static-tournament-review.v1`. Each group contains
 course geometry, hardware identity, provenance, and runs. Each run contains
