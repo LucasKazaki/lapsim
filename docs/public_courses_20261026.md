@@ -42,9 +42,13 @@ long-course configured exports are not implemented by this change.
 
 The numerical backend is CPU Python. Presence of an RTX 5080 or WebGL rendering
 does not establish GPU physics. No CUDA array/JIT backend is installed in the
-project environment; the six-course strategy campaign awaits approval to use
-CPU for the demonstration. No all-strategy winner is established by geometry or
-fixed-baseline validation. No official FSAE points or real-car optimality claim.
+project environment. CPU execution was explicitly approved at 20:50 UTC and
+is running sequentially with unchanged resource guards. Snapshot 2026-10-26T21:45:07.804325+00:00:
+62/180 valid completed rows, 118 unrun. Live local coverage is in
+`work/online-campaign-20261026/coverage.json`. GPU work is deferred. No final
+all-strategy winner or official FSAE/real-car optimality claim is established.
+The staged scoring adaptation uses separate 275/100 endurance/efficiency
+components; see `ev_content_manifest_20261026.md` for content/release boundaries.
 
 Open `http://127.0.0.1:8767/web/tournament.html` after starting
 `python -m lapsim.torque_configurator serve --port 8767` from the selected checkout.
