@@ -51,6 +51,10 @@ and `ffmpeg` on PATH,
 three same-course chapters. It uses one encoder thread and enforces at least
 8 GiB available commit on Windows. It does not infer or manufacture trajectories.
 Source projected poses are linearly interpolated only for display.
+The renderer marks failed and excluded outcomes explicitly. A chapter with no
+eligible completed run stays visible and unranked while other chapters render.
+`python -m unittest discover -s tests -p test_tournament_render_frames.py -v`
+exercises the production frame functions for these cases without an encoder.
 
 For an independently reviewed Pages update, copy this directory to a new
 `tournament/` directory in a branch based on current `gh-pages`; its map link

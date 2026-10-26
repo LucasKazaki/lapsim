@@ -95,9 +95,16 @@ def frame(group, fraction, chapter):
         text(24, 76 + 13 * line_number, line, 12, "#ffcf83")
     text(24, 103, f"{chapter + 1}/{len(groups)}  {group['label']}", 17)
     runs = group["runs"]
-    eligible = [r for r in runs if r["accepted"] and r["selection_eligible"]]
-    winner = min(eligible, key=lambda r: r["time_s"])
-    efficient = min(eligible, key=lambda r: r["energy_wh"])
+    eligible = [
+        r
+        for r in runs
+        if r["accepted"]
+        and r["selection_eligible"]
+        and r["status"] == "completed"
+        and r["completed_laps"] == r["target_laps"]
+    ]
+    winner = min(eligible, key=lambda r: r["time_s"], default=None)
+    efficient = min(eligible, key=lambda r: r["energy_wh"], default=None)
     duration = max(r["samples"][-1][0] for r in runs)
     t = fraction * duration
     xs, ys = [p[0] for p in group["xy"]], [p[1] for p in group["xy"]]
@@ -118,7 +125,8 @@ def frame(group, fraction, chapter):
         row = sample(run, t)
         x, y = pt(row[1], row[2])
         color = colors[i % len(colors)]
-        if run["id"] == winner["id"]:
+        highlighted = winner is not None and run["id"] == winner["id"]
+        if highlighted:
             draw.ellipse((x - 16, y - 16, x + 16, y + 16), outline="#d5ff6b", width=3)
         angle = -row[3]
         body = [(12, -3), (12, 3), (-9, 5), (-9, -5)]
@@ -143,19 +151,28 @@ def frame(group, fraction, chapter):
         text(
             658,
             cy,
-            run["id"] + ("  * FASTEST" if run["id"] == winner["id"] else ""),
+            run["id"] + ("  * FASTEST" if highlighted else ""),
             15,
-            "#d5ff6b" if run["id"] == winner["id"] else color,
+            "#d5ff6b" if highlighted else color,
         )
         energy = (run["samples"][0][6] - row[6]) / 3600
         lap = min(
             run["target_laps"],
             sum(crossing["finish_time_s"] <= t for crossing in run["laps"]) + 1,
         )
+        ended = t >= run["time_s"]
+        completed = (
+            run["status"] == "completed" and run["completed_laps"] == run["target_laps"]
+        )
+        if ended and not completed:
+            lap = run["completed_laps"]
+        outcome = ("FINISHED" if completed else "FAILED") if ended else f"{t:.1f} s"
+        if not run["selection_eligible"]:
+            outcome += " / EXCLUDED"
         text(
             658,
             cy + 18,
-            f"lap {lap}/10 | {energy:.2f} Wh | {'FINISHED' if t >= run['time_s'] else f'{t:.1f} s'}",
+            f"lap {lap}/{run['target_laps']} | {energy:.2f} Wh | {outcome}",
             11,
             "#a8bdcd",
         )
@@ -174,18 +191,22 @@ def frame(group, fraction, chapter):
         13,
         "#e2eff5",
     )
-    text(658, 462, "* criterion: fastest accepted round", 12, "#d5ff6b")
+    text(658, 462, "* criterion: fastest eligible completed round", 12, "#d5ff6b")
     text(
         24,
         493,
-        f"Fastest {winner['id']}: {winner['time_s']:.3f} s / {winner['energy_wh']:.3f} Wh",
+        f"Fastest {winner['id']}: {winner['time_s']:.3f} s / {winner['energy_wh']:.3f} Wh"
+        if winner
+        else "No eligible completed run; no winner selected",
         13,
         "#d5ff6b",
     )
     text(
         24,
         514,
-        f"Lowest energy {efficient['id']}: {efficient['time_s']:.3f} s / {efficient['energy_wh']:.3f} Wh",
+        f"Lowest energy {efficient['id']}: {efficient['time_s']:.3f} s / {efficient['energy_wh']:.3f} Wh"
+        if efficient
+        else "Failed/excluded traces remain visible; chapter is unranked.",
         12,
         "#a8bdcd",
     )
