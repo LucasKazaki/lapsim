@@ -1,7 +1,7 @@
 {
-  "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+  "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
   "canonical_source": "src/lapsim/experiments/tournament_scoring.py",
-  "canonical_source_sha256": "29f761ea1115896a5e61449c44e53a625d5fb773bab89661bb6ace29860fce1d",
+  "canonical_source_sha256": "c59cc7b3e51c8859cb548fbd6978c009eafe168807806833669356149f92203e",
   "fixtures": [
     {
       "name": "tie",
@@ -37,7 +37,7 @@
         "rows": {
           "a": {
             "candidate_id": "a",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -56,7 +56,7 @@
           },
           "b": {
             "candidate_id": "b",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -76,7 +76,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -126,7 +127,7 @@
         "rows": {
           "fast": {
             "candidate_id": "fast",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -145,7 +146,7 @@
           },
           "efficient": {
             "candidate_id": "efficient",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -165,7 +166,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -215,7 +217,7 @@
         "rows": {
           "fast-over-cap": {
             "candidate_id": "fast-over-cap",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -235,7 +237,7 @@
           },
           "eligible": {
             "candidate_id": "eligible",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -255,7 +257,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -305,7 +308,7 @@
         "rows": {
           "fast": {
             "candidate_id": "fast",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -324,7 +327,7 @@
           },
           "slow": {
             "candidate_id": "slow",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -345,7 +348,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -395,7 +399,7 @@
         "rows": {
           "valid": {
             "candidate_id": "valid",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -413,7 +417,7 @@
           },
           "zero": {
             "candidate_id": "zero",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -430,7 +434,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -475,7 +480,7 @@
         "rows": {
           "valid": {
             "candidate_id": "valid",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -494,7 +499,7 @@
           },
           "failed": {
             "candidate_id": "failed",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": false,
             "valid": false,
@@ -511,7 +516,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -561,7 +567,7 @@
         "rows": {
           "raw-fast": {
             "candidate_id": "raw-fast",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -580,7 +586,7 @@
           },
           "corrected-fast": {
             "candidate_id": "corrected-fast",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -600,7 +606,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -689,7 +696,7 @@
         "rows": {
           "awd-p0-fsg": {
             "candidate_id": "awd-p0-fsg",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -708,7 +715,7 @@
           },
           "awd-p1-fsg": {
             "candidate_id": "awd-p1-fsg",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -727,7 +734,7 @@
           },
           "awd-p2-fsg": {
             "candidate_id": "awd-p2-fsg",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -746,7 +753,7 @@
           },
           "awd-p3-fsg": {
             "candidate_id": "awd-p3-fsg",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -765,7 +772,7 @@
           },
           "awd-p4-fsg": {
             "candidate_id": "awd-p4-fsg",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -785,7 +792,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -874,7 +882,7 @@
         "rows": {
           "awd-p0-tech": {
             "candidate_id": "awd-p0-tech",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -893,7 +901,7 @@
           },
           "awd-p1-tech": {
             "candidate_id": "awd-p1-tech",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -912,7 +920,7 @@
           },
           "awd-p2-tech": {
             "candidate_id": "awd-p2-tech",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -931,7 +939,7 @@
           },
           "awd-p3-tech": {
             "candidate_id": "awd-p3-tech",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -950,7 +958,7 @@
           },
           "awd-p4-tech": {
             "candidate_id": "awd-p4-tech",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -970,7 +978,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -1033,7 +1042,7 @@
         "rows": {
           "holdout-p0": {
             "candidate_id": "holdout-p0",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -1052,7 +1061,7 @@
           },
           "holdout-p1": {
             "candidate_id": "holdout-p1",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -1071,7 +1080,7 @@
           },
           "holdout-p2": {
             "candidate_id": "holdout-p2",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -1091,7 +1100,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -1128,7 +1138,7 @@
         "rows": {
           "open-bridge-tech": {
             "candidate_id": "open-bridge-tech",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -1148,7 +1158,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -1185,7 +1196,7 @@
         "rows": {
           "spool-bridge-tech": {
             "candidate_id": "spool-bridge-tech",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -1205,7 +1216,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -1242,7 +1254,7 @@
         "rows": {
           "a": {
             "candidate_id": "a",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -1259,7 +1271,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -1291,7 +1304,7 @@
         "rows": {
           "a": {
             "candidate_id": "a",
-            "scoring_version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
             "official_points": false,
             "completed": true,
             "valid": true,
@@ -1310,7 +1323,8 @@
         },
         "references": {
           "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
-          "version": "lapsim.fsae-inspired-equal-lap-2027v1.1",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
           "official_points": false,
           "fmax_interpretation": "Best eligible observed factor in the matched field",
           "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
@@ -1318,7 +1332,161 @@
         },
         "available": false
       }
+    },
+    {
+      "name": "subnormal-energy-cap",
+      "input": [
+        {
+          "candidate_id": "a",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1e-320,
+          "time_s": 100,
+          "net_energy_kwh": 5e-324,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "a": {
+            "candidate_id": "a",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 0.0,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 4.94e-321,
+            "co2_kg": 5e-324,
+            "distance_m": 1e-320
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 100.0,
+          "endurance_cutoff_s": 145.0,
+          "unavailable_reason": "Nonfinite or underflowed per-lap energy cap"
+        },
+        "available": false
+      }
+    },
+    {
+      "name": "subnormal-per-lap-energy",
+      "input": [
+        {
+          "candidate_id": "a",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 10,
+          "distance_m": 1000,
+          "time_s": 100,
+          "net_energy_kwh": 5e-324,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "a": {
+            "candidate_id": "a",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": 275.0,
+            "efficiency_points": 0.0,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [],
+            "corrected_time_s": 100.0,
+            "net_energy_wh": 4.94e-321,
+            "co2_kg": 5e-324,
+            "distance_m": 1000
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "best_full_finisher_time_s": 100.0,
+          "endurance_cutoff_s": 145.0,
+          "unavailable_reason": "Nonfinite or underflowed per-lap reference"
+        },
+        "available": false
+      }
+    },
+    {
+      "name": "subnormal-endurance-denominator",
+      "input": [
+        {
+          "candidate_id": "a",
+          "hardware": "fixture-hardware",
+          "geometry_sha256": "fixture-geometry",
+          "laps": 1,
+          "distance_m": 1000,
+          "time_s": 5e-324,
+          "net_energy_kwh": 0.1,
+          "completed": true,
+          "valid": true,
+          "penalty_s": 0,
+          "penalties_modeled": false
+        }
+      ],
+      "expected": {
+        "rows": {
+          "a": {
+            "candidate_id": "a",
+            "scoring_version": "lapsim.fsae-inspired-equal-lap.v1.2",
+            "official_points": false,
+            "completed": true,
+            "valid": true,
+            "penalty_s": 0,
+            "penalties_modeled": false,
+            "endurance_points": null,
+            "efficiency_points": null,
+            "total_points": null,
+            "efficiency_eligible": false,
+            "reasons": [],
+            "corrected_time_s": 5e-324,
+            "net_energy_wh": 100.0,
+            "co2_kg": 0.065,
+            "distance_m": 1000
+          }
+        },
+        "references": {
+          "source_url": "https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38",
+          "version": "lapsim.fsae-inspired-equal-lap.v1.2",
+          "rule_edition": "SAE 2027 V1 D12.13 and D13.3-4",
+          "official_points": false,
+          "fmax_interpretation": "Best eligible observed factor in the matched field",
+          "scope": "Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.",
+          "unavailable_reason": "Nonpositive endurance normalization denominator"
+        },
+        "available": false
+      }
     }
   ],
-  "canonical_commit": "c7aa2ec7269221474026626139b207f7db327c16"
+  "canonical_commit": "ccb461b91a8c791083f9b97277f7b01318cbd341"
 }

@@ -54,10 +54,14 @@ event points. The R11 snapshot has no real driver change, inspection or event
 penalty model. No six-course aggregate is inferred. Fastest, lowest net energy
 and the historical engineering proxy remain explicit alternative criteria.
 The unchanged MP4 still highlights fastest and is labeled accordingly.
+An always-visible three-winner comparison shows fastest, highest simulated
+points and lowest net energy with raw time/energy and component points from the
+same completed accepted selection pool. Its highlight buttons use the same
+synchronized saved ghosts, and legitimate co-winners are retained.
 
 `scoring.js` projects the canonical `tournament_scoring.py` field contract. The
-frozen fixtures record the exact canonical commit and source SHA-256 from PR #142.
-`node scripts/test_tournament_scoring.cjs` compares 14 canonical fixtures,
+frozen fixtures record the exact canonical commit and source SHA-256 from PR #145 (canonical scorer repair).
+`node scripts/test_tournament_scoring.cjs` compares 17 canonical fixtures,
 including all five saved strata, ties, changed ranking, failed runs, invalid
 references, penalties, eligibility caps and nonfinite intermediate guards.
 The Node production-control suite verifies the actual default, reset, component
@@ -80,8 +84,7 @@ continuous samples and mutations explain non-round executed values. Formatting
 does not change any executed value or rerun a controller.
 
 Source integration does not publish these changes. The public presentation may
-still show the earlier version until a separately reviewed Pages release after
-the active presentation freeze is explicitly released.
+still show the earlier version until a separately reviewed Pages release.
 
 On Windows with Segoe UI installed, Pillow in the selected Python environment
 and `ffmpeg` on PATH,

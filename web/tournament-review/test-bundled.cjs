@@ -25,8 +25,9 @@ const get=id=>{assert.ok(htmlIds.has(id),'Production handler requested missing H
 vm.runInNewContext(source,{document:{getElementById:get,createElement:tag=>new Element(tag)},window:{LAPSIM_REVIEW:data,TournamentScoring:require('./scoring.js'),ParameterDisplay:require('./parameter_display.js')},requestAnimationFrame:fn=>{frame=fn;},console});
 assert.equal(get('error').textContent,'');assert.equal(get('winner').textContent,'awd-p0-fsg');
 assert.match(get('reason').textContent,/endurance.*efficiency.*375.*not official/i);
-assert.match(get('score-note').textContent,/lapsim.fsae-inspired-equal-lap-2027v1.1/);
+assert.match(get('score-note').textContent,/lapsim.fsae-inspired-equal-lap.v1.2/);
 assert.match(get('score-note').textContent,/awd-p4-fsg.*awd-p3-fsg/);
+assert.equal(get('three-winners').children.length,3);assert.equal(get('three-winners').children[0].children[1].textContent,'awd-p4-fsg');assert.equal(get('three-winners').children[1].children[1].textContent,'awd-p0-fsg');assert.equal(get('three-winners').children[2].children[1].textContent,'awd-p3-fsg');get('three-winners').children[0].children.at(-1).events.click();assert.equal(get('criterion').value,'time');get('three-winners').children[1].children.at(-1).events.click();assert.equal(get('criterion').value,'points');
 const policy=get('policies').children[0],parameterList=policy.children.find(n=>n.tag==='dl'),exact=policy.children.find(n=>n.tag==='details');
 assert.ok(parameterList.children.some(n=>/^\d+\.\d%$/.test(n.textContent)),'Percent parameters are readable');
 assert.equal(JSON.parse(exact.children.find(n=>n.tag==='pre').textContent).parameters.yaw_kp,data.groups[0].runs[0].policy.parameters.yaw_kp,'Raw executed precision is retained in details');

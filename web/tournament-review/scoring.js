@@ -1,7 +1,7 @@
 /* Display projection matching the campaign score_field contract; no physics. */
 'use strict';
 const TournamentScoring=(()=>{
-  const VERSION='lapsim.fsae-inspired-equal-lap-2027v1.1';
+  const VERSION='lapsim.fsae-inspired-equal-lap.v1.2';
   const SOURCE='https://www.fsaeonline.com/cdsweb/gen/DownloadDocument.aspx?DocumentID=da79bcb4-0935-4f7b-83d7-0dbb8ce68d38';
   const positive=v=>typeof v==='number'&&Number.isFinite(v)&&v>0;
   function efficiencyPoints(factor,fmin,fmax){
@@ -14,11 +14,11 @@ const TournamentScoring=(()=>{
     if(new Set(runs.map(r=>JSON.stringify([r.hardware,r.geometry_sha256,r.laps]))).size!==1)throw Error('Separate geometry, hardware and equal-lap fields');
     if(new Set(runs.map(r=>r.candidate_id)).size!==runs.length)throw Error('Duplicate field candidate');
     const rows=Object.create(null),finishers=[],unavailable=[];
-    const references={source_url:SOURCE,version:VERSION,official_points:false,fmax_interpretation:'Best eligible observed factor in the matched field',scope:'Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.'};
+    const references={source_url:SOURCE,version:VERSION,rule_edition:'SAE 2027 V1 D12.13 and D13.3-4',official_points:false,fmax_interpretation:'Best eligible observed factor in the matched field',scope:'Equal simulated laps replace endurance; 25 simulated completion points; no real driver change/inspection or event penalty model. Mean across six courses is a tournament choice, not a rulebook aggregation.'};
     for(const run of runs){
       const row={candidate_id:run.candidate_id,scoring_version:VERSION,official_points:false,completed:run.completed,valid:run.valid,penalty_s:run.penalty_s??0,penalties_modeled:run.penalties_modeled??false,endurance_points:null,efficiency_points:null,total_points:null,efficiency_eligible:false,reasons:[]};rows[run.candidate_id]=row;
       if(!run.completed||!run.valid){Object.assign(row,{endurance_points:0,efficiency_points:0,total_points:0});row.reasons.push('Incomplete or physically invalid; never aggregate as a successful low-energy lap');continue;}
-      if(!Number.isInteger(run.laps)||run.laps<1||!positive(run.distance_m)||!positive(run.time_s)||!positive(run.net_energy_kwh)||typeof row.penalty_s!=='number'||!Number.isFinite(row.penalty_s)||row.penalty_s<0){row.reasons.push('Positive finite measured time, net energy, distance and valid penalties required');unavailable.push(run.candidate_id);continue;}
+      if(!Number.isSafeInteger(run.laps)||run.laps<1||!positive(run.distance_m)||!positive(run.time_s)||!positive(run.net_energy_kwh)||typeof row.penalty_s!=='number'||!Number.isFinite(row.penalty_s)||row.penalty_s<0){row.reasons.push('Positive finite measured time, net energy, distance and valid penalties required');unavailable.push(run.candidate_id);continue;}
       const corrected=run.time_s+row.penalty_s;
       if(!positive(corrected)){row.reasons.push('Invalid corrected time');unavailable.push(run.candidate_id);continue;}
       const energyWh=run.net_energy_kwh*1000,co2=.65*run.net_energy_kwh;
@@ -29,18 +29,22 @@ const TournamentScoring=(()=>{
     if(!finishers.length)return {rows,references,available:false};
     const best=Math.min(...finishers.map(r=>rows[r.candidate_id].corrected_time_s)),cutoff=1.45*best;
     if(!positive(cutoff)){references.unavailable_reason='Nonfinite endurance cutoff';return {rows,references,available:false};}
+    const enduranceDenominator=(cutoff/best)-1;
+    if(!positive(enduranceDenominator)){references.unavailable_reason='Nonpositive endurance normalization denominator';return {rows,references,available:false};}
     Object.assign(references,{best_full_finisher_time_s:best,endurance_cutoff_s:cutoff});
     const eligible=[];
-    for(const run of finishers){const row=rows[run.candidate_id],time=row.corrected_time_s;row.endurance_points=time>=cutoff?25:250*((cutoff/time)-1)/((cutoff/best)-1)+25;row.efficiency_points=0;
+    for(const run of finishers){const row=rows[run.candidate_id],time=row.corrected_time_s;row.endurance_points=time>=cutoff?25:250*((cutoff/time)-1)/enduranceDenominator+25;row.efficiency_points=0;
       if(time>cutoff)row.reasons.push('Beyond 1.45 fastest full-finisher time');
-      if(run.net_energy_kwh>.308*run.distance_m/1000)row.reasons.push('Above EV efficiency consumption cap of 0.308 kWh/km');
+      if(row.net_energy_wh/1000>.308*run.distance_m/1000)row.reasons.push('Above EV efficiency consumption cap of 0.308 kWh/km');
       if(!row.reasons.length)eligible.push(run);
     }
     if(eligible.length){
       const timeRef=eligible.reduce((a,b)=>rows[a.candidate_id].corrected_time_s<=rows[b.candidate_id].corrected_time_s?a:b),energyRef=eligible.reduce((a,b)=>rows[a.candidate_id].co2_kg<=rows[b.candidate_id].co2_kg?a:b);
-      const tref=rows[timeRef.candidate_id].corrected_time_s/timeRef.laps,cref=rows[energyRef.candidate_id].co2_kg/energyRef.laps,capPerLap=.65*.308*(timeRef.distance_m/timeRef.laps)/1000;
-      if(!positive(capPerLap)){references.unavailable_reason='Invalid efficiency reference capacity';return {rows,references,available:false};}
-      const fmin=(1/1.45)*(cref/capPerLap),factors=Object.fromEntries(eligible.map(r=>[r.candidate_id,(tref/(rows[r.candidate_id].corrected_time_s/r.laps))*(cref/(rows[r.candidate_id].co2_kg/r.laps))])),fmax=Math.max(...Object.values(factors));
+      const averages=Object.fromEntries(eligible.map(r=>[r.candidate_id,[rows[r.candidate_id].corrected_time_s/r.laps,rows[r.candidate_id].co2_kg/r.laps,r.distance_m/r.laps]]));
+      if(!Object.values(averages).every(values=>values.every(positive))){references.unavailable_reason='Nonfinite or underflowed per-lap reference';return {rows,references,available:false};}
+      const tref=averages[timeRef.candidate_id][0],cref=averages[energyRef.candidate_id][1],capPerLap=.65*.308*averages[timeRef.candidate_id][2]/1000;
+      if(!positive(capPerLap)){references.unavailable_reason='Nonfinite or underflowed per-lap energy cap';return {rows,references,available:false};}
+      const fmin=(1/1.45)*(cref/capPerLap),factors=Object.fromEntries(eligible.map(r=>[r.candidate_id,(tref/averages[r.candidate_id][0])*(cref/averages[r.candidate_id][1])])),fmax=Math.max(...Object.values(factors));
       Object.assign(references,{time_reference_candidate:timeRef.candidate_id,energy_reference_candidate:energyRef.candidate_id,time_reference_per_lap_s:tref,co2_reference_per_lap_kg:cref,fmin,fmax});
       if(!positive(fmax-fmin)){for(const run of eligible)rows[run.candidate_id].reasons.push('Nonpositive efficiency normalization denominator');return {rows,references,available:false};}
       for(const run of eligible){const row=rows[run.candidate_id],points=efficiencyPoints(factors[run.candidate_id],fmin,fmax);if(points===null){row.reasons.push('Efficiency points outside mathematical bounds');return {rows,references,available:false};}Object.assign(row,{efficiency_eligible:true,efficiency_factor:factors[run.candidate_id],efficiency_points:points});}
