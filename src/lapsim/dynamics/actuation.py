@@ -1,4 +1,4 @@
-"""Pure synthetic independent-rear actuator/constant-voltage pack constraints.
+"""Pure synthetic wheel-actuation and constant-voltage pack constraints.
 
 Wheel contact forces belong to the planar plant. This module converts and
 limits applied torque/power; it never advances wheel or battery state.
@@ -6,12 +6,15 @@ limits applied torque/power; it never advances wheel or battery state.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from math import isfinite
 
 from .bicycle import _finite
 
 TOPOLOGY_ID = "synthetic_independent_rear_rwd_v1"
+AWD_TOPOLOGY_ID = "synthetic_independent_four_awd_v1"
+SINGLE_MOTOR_RWD_TOPOLOGY_ID = "synthetic_single_motor_open_diff_rwd_v1"
+SPOOL_RWD_TOPOLOGY_ID = "synthetic_single_motor_locked_axle_rwd_v1"
 
 
 def four_numbers(values: object, name: str) -> tuple[float, float, float, float]:
@@ -46,7 +49,7 @@ class ActuationConfig:
     actuator_slew_nm_per_s: float = 8_000.0
 
     def __post_init__(self) -> None:
-        if self.topology_id != TOPOLOGY_ID:
+        if self.topology_id not in (TOPOLOGY_ID, AWD_TOPOLOGY_ID, SINGLE_MOTOR_RWD_TOPOLOGY_ID, SPOOL_RWD_TOPOLOGY_ID):
             raise ValueError("unsupported actuator topology")
         for name in self.__dataclass_fields__:
             if name == "topology_id":
@@ -151,7 +154,7 @@ def constrain_actuation(
         raise TypeError("expected ActuationConfig")
     requested = four_numbers(requested_wheel_torques_nm, "wheel torque")
     speeds = four_numbers(wheel_speeds_rad_s, "wheel speed")
-    if requested[0] != 0 or requested[1] != 0:
+    if config.topology_id != AWD_TOPOLOGY_ID and (requested[0] != 0 or requested[1] != 0):
         raise ValueError("front drive torque is unavailable in the RWD topology")
     if any(value < 0 for value in speeds):
         raise ValueError("negative wheel speed is outside this actuation domain")
@@ -161,12 +164,20 @@ def constrain_actuation(
         or any(type(v) is not bool for v in available)
     ):
         raise ValueError("availability must contain four booleans")
-    if available[0] or available[1]:
+    if config.topology_id != AWD_TOPOLOGY_ID and (available[0] or available[1]):
         raise ValueError("front actuators are unavailable in the RWD topology")
     _finite(energy_j, "pack energy")
     _finite(interval_s, "interval_s")
     if interval_s <= 0 or not 0 <= energy_j <= config.pack_capacity_j:
         raise ValueError("invalid pack energy or positive integration interval")
+    if config.topology_id == SPOOL_RWD_TOPOLOGY_ID:
+        if speeds[2] != speeds[3]:
+            raise ValueError('locked axle requires equal rear angular velocity; no hidden state projection')
+        # The electrical converter is one common motor. Mechanical reaction
+        # torque and shaft-speed coupling belong to the powered plant.
+        return _single_motor_open_diff(config, requested, speeds, energy_j, interval_s, available)
+    if config.topology_id == SINGLE_MOTOR_RWD_TOPOLOGY_ID:
+        return _single_motor_open_diff(config, requested, speeds, energy_j, interval_s, available)
     reasons = []
     limited = []
     current_torque = (
@@ -267,3 +278,26 @@ def constrain_actuation(
         tuple(reasons),
         scale,
     )
+
+
+def _single_motor_open_diff(config, requested, speeds, energy_j, interval_s, available):
+    """One reflected axle actuator and a lossless symmetric open differential.
+
+    Equal output torques and carrier speed = mean wheel speed preserve power
+    for unequal wheel speeds. The existing motor/pack solver runs exactly once.
+    Motor arrays use slot RL for the sole drive unit, RR is zero; wheel arrays
+    remain FL/FR/RL/RR. No differential friction, preload or motor inertia is
+    modeled. This is a synthetic topology, not a selected team differential.
+    """
+    if requested[2] != requested[3]:
+        raise ValueError("single-motor open differential requires equal rear wheel torque commands")
+    speed = speeds[2]/2 + speeds[3]/2
+    axle = requested[2] + requested[3]
+    motor = constrain_actuation(
+        replace(config, topology_id=TOPOLOGY_ID), (0, 0, axle, 0), (0, 0, speed, 0),
+        energy_j, interval_s, (False, False, available[2] and available[3], False),
+    )
+    half = motor.wheel_torques_nm[2]/2
+    reasons = tuple("single_motor_current_speed_availability" if r.startswith("wheel_2_") else r
+                    for r in motor.constraints)
+    return replace(motor, wheel_torques_nm=(0.0, 0.0, half, half), constraints=reasons)

@@ -286,6 +286,10 @@ def _parse_state(value: Any) -> PlanarState:
 
 
 def _parse_control(value: Any) -> PlanarControls:
+    # Older v1/v2 records predate optional per-wheel contact radii. Missing
+    # means the vehicle's nominal radius, exactly as the constructor default.
+    if isinstance(value,dict) and 'wheel_radii_m' not in value:
+        value={**value,'wheel_radii_m':None}
     data = _dataclass_mapping(value, PlanarControls, "pose control")
     parsed: dict[str, Any] = {}
     for key, item in data.items():
@@ -293,7 +297,7 @@ def _parse_control(value: Any) -> PlanarControls:
             "steering_angles_rad", "drive_torques_nm", "brake_torques_nm",
         ):
             parsed[key] = _number_list(item, key, length=4)
-        elif key == "normal_loads_n":
+        elif key in ("normal_loads_n",'wheel_radii_m'):
             parsed[key] = None if item is None else _number_list(item, key, length=4)
         else:
             parsed[key] = _number(item, key)
