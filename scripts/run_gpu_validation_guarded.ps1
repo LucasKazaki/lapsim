@@ -1,6 +1,6 @@
 # One bounded GPU validation process; unchanged 10 GiB admission / 8 GiB reserve.
 param(
-    [Parameter(Mandatory=$true)][ValidateSet('tests','powered-tests','resident-tests','resident-only','resident-benchmark','tournament-tests','integration-tests','representative-laps','courses-laps','benchmark','powered-benchmark')][string]$Phase,
+    [Parameter(Mandatory=$true)][ValidateSet('tests','powered-tests','resident-tests','resident-only','resident-count-tests','resident-benchmark','tournament-tests','integration-tests','representative-laps','courses-laps','benchmark','powered-benchmark')][string]$Phase,
     [Parameter(Mandatory=$true)][ValidatePattern('^[a-z0-9-]{1,32}$')][string]$Attempt,
     [string]$Device='NVIDIA GeForce RTX 5080',
     [string]$PythonExe='',
@@ -41,6 +41,8 @@ $gpuArgs=if($Phase -eq 'tests'){
     @('-u','-m','pytest','tests/test_gpu_tournament.py','-q','--maxfail=2',"--junitxml=$gpuEvidence.junit.xml")
 }elseif($Phase -eq 'resident-benchmark'){
     @('-u','scripts/benchmark_resident_gpu.py','--device',('"'+$Device+'"'),'--output',"$gpuEvidence.benchmark.json")
+}elseif($Phase -eq 'resident-count-tests'){
+    @('-u','-m','pytest','tests/test_resident_powered.py','-k','substep_count','-q','--maxfail=2',"--junitxml=$gpuEvidence.junit.xml")
 }elseif($Phase -eq 'resident-only'){
     @('-u','-m','pytest','tests/test_resident_powered.py','-q','--maxfail=2',"--junitxml=$gpuEvidence.junit.xml")
 }elseif($Phase -eq 'resident-tests'){
