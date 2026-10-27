@@ -250,7 +250,7 @@
     ],
     "build_identity_dirty": true,
     "acceptance_level": "Final code/docs setuptools build_py copied package imported with -I and explicit bundle path; not wheel/sdist/frozen-installer acceptance",
-    "snapshot": "Dirty source snapshot before final acceptance-receipt update and commit; no application/C/firmware changes after this build"
+    "snapshot": "Dirty precommit 6cec796 source snapshot before the acceptance-receipt update; later behavior-preserving four-wheel availability typing repair is covered by 19 focused source tests, not a new package release."
   },
   "ratio_diagnostic": {
     "source_spec_sha256": "cf28b42cb5e319cd7edfcc37575548203949a9a728a59347ad6e448a9af7c407",
@@ -462,5 +462,32 @@
     "powershell_parser": "no errors",
     "controller_import_original_files_verified": 419,
     "local_full_suite_or_static_audit": "not rerun; focused scope plus normal PR CI pending"
+  },
+  "post_review_repair": {
+    "recorded_at_utc": "2026-10-27T05:14:35.953047+00:00",
+    "reviewed_head_before_repair": "6cec796b181c1a4f199d0d09e6434e3113da49dc",
+    "finding": "Pyright inferred drive_availability as a variable-length tuple, incompatible with the required four-bool actuator boundary.",
+    "repair": "Explicit four-bool return annotation and four-element tuple construction in the shared profile helper; unchanged availability values for all supported architectures. No waiver or physics/limit change.",
+    "targeted_tests": {
+      "local_report": "tuple-repair.junit.xml",
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 19
+    },
+    "source_inventory": "regenerated and checked",
+    "flowchart_data": "passed",
+    "numerical_or_virtual_repeats": "No full laps, GPU jobs, host/ARM rebuild or QEMU reruns; their unchanged C/firmware evidence remains scoped to the original receipt.",
+    "static_gate": "Awaiting normal exact-head CI; no local Pyright installation available."
+  },
+  "development_environment_repair": {
+    "recorded_at_utc": "2026-10-27T05:19:30.852935+00:00",
+    "failed_ci_run": 40453824717,
+    "failed_ci_job": 122022410037,
+    "failure": "Native shard 1: new resource allowlist test imported packaging/build_support.py, but setuptools was absent from the Python 3.13 test runtime. Build-system isolation did not make it available to dev tests.",
+    "repair": "Declare the existing setuptools>=68 build tool in the dev extra, because dev tests intentionally exercise the package builder. No assertion, job, skip policy or runtime application dependency was changed.",
+    "main_pc_installation": "None; reused existing setuptools installation.",
+    "verification": "Retained failed CI log privately; normal fresh exact-head CI must execute the unchanged resource test with the declared dev dependencies."
   }
 }

@@ -16,7 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 mf4 = ["asammdf>=8.8"]
-dev = ["pytest>=8", "defusedxml>=0.7.1"]
+dev = ["pytest>=8", "defusedxml>=0.7.1", "setuptools>=68"]
 build = ["pyinstaller==6.22.0"]
 
 [tool.setuptools]
