@@ -1,11 +1,14 @@
 # One bounded GPU validation process; unchanged 10 GiB admission / 8 GiB reserve.
 param(
-    [Parameter(Mandatory=$true)][ValidateSet('tests','powered-tests','resident-tests','resident-only','resident-count-tests','resident-benchmark','tournament-tests','integration-tests','representative-laps','courses-laps','benchmark','powered-benchmark')][string]$Phase,
+    [Parameter(Mandatory=$true)][ValidateSet('tests','powered-tests','resident-tests','resident-only','resident-count-tests','resident-benchmark','tournament-tests','integration-tests','search-tests','policy-probes','search-evaluate','representative-laps','courses-laps','benchmark','powered-benchmark')][string]$Phase,
     [Parameter(Mandatory=$true)][ValidatePattern('^[a-z0-9-]{1,32}$')][string]$Attempt,
     [string]$Device='NVIDIA GeForce RTX 5080',
     [string]$PythonExe='',
     [string]$BaselineRoot='',
-    [string]$ReferenceRoot=''
+    [string]$ReferenceRoot='',
+    [ValidatePattern('^[a-z0-9-]{1,80}$')][string]$Candidate='',
+    [ValidateSet('train','heldout-a','heldout-b')][string]$Scenario='train',
+    [string]$SearchDirectory='work/gpu-search-20261026'
 )
 $ErrorActionPreference='Stop'
 $gpuTaskRoot=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -28,6 +31,13 @@ $env:LAPSIM_TEST_GPU=$Device
 $gpuPython=if($PythonExe){(Resolve-Path -LiteralPath $PythonExe).Path}else{Join-Path $gpuTaskRoot '.venv\Scripts\python.exe'}
 $gpuArgs=if($Phase -eq 'tests'){
     @('-u','-m','pytest','tests/test_planar_opencl.py','tests/test_planar_dynamics.py','tests/test_powered_opencl.py','tests/test_powered_planar.py','-q','--maxfail=2',"--junitxml=$gpuEvidence.junit.xml")
+}elseif($Phase -eq 'search-tests'){
+    @('-u','-m','pytest','tests/test_gpu_search.py','tests/test_tournament_scoring.py','tests/test_gpu_tournament.py','-q','--maxfail=2',"--junitxml=$gpuEvidence.junit.xml")
+}elseif($Phase -eq 'policy-probes'){
+    @('-u','scripts/validate_gpu_rollouts.py','--phase','policies','--device',('"'+$Device+'"'),'--output',"$gpuEvidence.validation.json")
+}elseif($Phase -eq 'search-evaluate'){
+    if(-not $Candidate){throw 'Explicit search candidate required'}
+    @('-u','scripts/run_gpu_search.py','--directory',('"'+$SearchDirectory+'"'),'--run',$Candidate,'--scenario',$Scenario)
 }elseif($Phase -eq 'integration-tests'){
     @('-u','-m','pytest','tests/test_controller_tournament.py','tests/test_tournament_courses.py','tests/test_gpu_tournament.py','tests/test_resident_powered.py','-q','--maxfail=2',"--junitxml=$gpuEvidence.junit.xml")
 }elseif($Phase -eq 'representative-laps'){
@@ -77,7 +87,7 @@ while(-not $gpuProcess.HasExited){
     $gpuProcess.Refresh()
 }
 $gpuProcess.WaitForExit();$gpuProcess.Refresh()
-$gpuRecord=[pscustomobject]@{utc=(Get-Date -AsUTC -Format o);outcome=$(if($gpuAbort){$gpuAbort}else{'process_completed'});processLaunched=$true;phase=$Phase;device=$Device;launcherPid=$gpuProcess.Id;launcherStartedUtc=$gpuStarted.ToString('o');exitCode=$gpuProcess.ExitCode;reserveGiB=8;jobAllowanceGiB=2;headroomBeforeGiB=$gpuHeadroom;wallSeconds=$gpuClock.Elapsed.TotalSeconds;samples=$gpuSamples;scope='One optional OpenCL FP64 validation process, at most 8192 physics rows; bounded buffers; CPU screening remains paused; 180 s cap; no installation, hardware actuation, browser or unrelated process changes'}
+$gpuRecord=[pscustomobject]@{utc=(Get-Date -AsUTC -Format o);outcome=$(if($gpuAbort){$gpuAbort}else{'process_completed'});processLaunched=$true;phase=$Phase;candidate=$Candidate;scenario=$Scenario;device=$Device;launcherPid=$gpuProcess.Id;launcherStartedUtc=$gpuStarted.ToString('o');exitCode=$gpuProcess.ExitCode;reserveGiB=8;jobAllowanceGiB=2;headroomBeforeGiB=$gpuHeadroom;wallSeconds=$gpuClock.Elapsed.TotalSeconds;samples=$gpuSamples;scope='One bounded optional OpenCL FP64 validation/search process; CPU screening preserved; 180 s outer cap; no installation, hardware actuation, browser or unrelated process changes'}
 $gpuRecord | ConvertTo-Json -Depth 5 | Set-Content "$gpuEvidence.guard.json" -Encoding utf8
 $gpuRecord | Select-Object utc,outcome,exitCode,headroomBeforeGiB,wallSeconds | ConvertTo-Json
 if($gpuAbort){exit 1}

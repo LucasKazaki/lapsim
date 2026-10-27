@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, replace
 from hashlib import sha256
 import json
+from struct import pack as pack_binary
 from math import atan2, cos, hypot, isfinite, pi, remainder, sin, sqrt, tan
 
 from lapsim.courses.spatial_track import SpatialTrack
@@ -183,7 +184,7 @@ def friction_blend(total_brake,raw_regen,achieved_regen,residual_drive,*,fallbac
 
 
 def allocate(controller, state, evaluation, steering, drive_each, brake_each,
-             integral, car, pack, case, dt=.01):
+             integral, car, pack, case, dt=.01,*,audit=None):
     """Controller sees ideal current kinematics; tire reserve is a nominal estimate.
 
     Wheel speed is compared with velocity projected into the steered wheel
@@ -199,6 +200,10 @@ def allocate(controller, state, evaluation, steering, drive_each, brake_each,
         bias=controller.allocation_front_bias
         requested=(drive_each*bias,drive_each*bias,drive_each*(1-bias),drive_each*(1-bias))
     proposed = list(requested)
+    if audit is not None:
+        audit.update(slip_binding=False,yaw_changed=False,reserve_binding=False,
+            drive_scale_changed=drive_each>0 and controller.drive_scale!=1.,
+            front_bias_used=drive_each>0 and abs(getattr(controller,'allocation_front_bias',.5)-.5)>1e-12)
     slips = []
     for i, (x, y) in enumerate(car.wheel_positions_m):
         angle = steering if i < 2 else 0.0
@@ -209,10 +214,13 @@ def allocate(controller, state, evaluation, steering, drive_each, brake_each,
     for i in driven:
         proposed[i] *= controller.drive_scale
         if getattr(controller,'slip_control',controller.philosophy!='fixed'):
+            before=proposed[i]
             proposed[i] *= min(1.0, controller.slip_target / max(controller.slip_target, slips[i]))
+            if audit is not None:audit['slip_binding']|=abs(before-proposed[i])>1e-8
     yaw_error = p.u_mps * tan(steering) / 1.6 - p.yaw_rate_rad_s
     integral = max(-1.0, min(1.0, integral + dt * yaw_error))
     if getattr(controller,'yaw_control',controller.philosophy=='yaw_pi') and drive_each > 0 and pack.topology_id not in (SINGLE_MOTOR_RWD_TOPOLOGY_ID,SPOOL_RWD_TOPOLOGY_ID):
+        before_yaw=tuple(proposed)
         differential = max(-25.0, min(25.0, controller.yaw_kp * yaw_error
                                      + controller.yaw_ki * integral))
         # Right-positive torque produces left-positive yaw. Do not create
@@ -221,15 +229,21 @@ def allocate(controller, state, evaluation, steering, drive_each, brake_each,
             total = proposed[left] + proposed[right]
             proposed[right] = max(0, min(total, proposed[right] + differential * 2 / len(driven)))
             proposed[left] = total - proposed[right]
+        if audit is not None:audit['yaw_changed']=any(abs(a-b)>1e-8 for a,b in zip(before_yaw,proposed))
     nominal_lateral = abs(p.u_mps * p.yaw_rate_rad_s) * car.mass_kg / 4
     reserve = [sqrt(max(0.0, (.85 * car.tire_mu * load) ** 2 - nominal_lateral ** 2))
                * car.wheel_radius_m for load in car.static_normal_loads_n]
     if getattr(controller,'reserve_control',controller.philosophy=='tire_reserve'):
         for i in driven:
+            before=proposed[i]
             proposed[i] = min(proposed[i], reserve[i])
+            if audit is not None:audit['reserve_binding']|=abs(before-proposed[i])>1e-8
     total_brake, raw_regen = brake_request(min(1.0, brake_each / 80.0), controller)
     regen_ok = (case.regen_available and case.pack_voltage_v < 600.0
                 and case.motor_temperature_c < 90 and p.u_mps > 2.0)
+    if audit is not None:
+        audit['regen_requested']=total_brake>0 and regen_ok
+        audit['pedal_above_regen_region']=regen_ok and brake_each/80.>controller.regen_region
     if total_brake > 0:
         proposed = [0.0, 0.0, 0.0, 0.0]
         if regen_ok:
@@ -353,6 +367,8 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
     max_slip = max_yaw = max_beta = max_util = max_cross = shortfall_impulse = rejected_regen = 0.0
     limited_ticks = 0
     gross_pack_draw_j=recovered_pack_j=0.0
+    policy_modes={};policy_changed_ticks=generating_ticks=0
+    policy_interventions={};policy_command_digest=sha256()
     previous_progress = 0.0
     finish_time = None
     last = None
@@ -399,10 +415,23 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
             max_util = max(max_util, *(w.force_utilization for w in physical.wheels))
             max_cross = max(max_cross, abs(projection.cross_track_m))
             if configured_profile is None:
+                effective=controller
+                policy_audit=None
+                if hasattr(controller,'effective_policy'):
+                    effective,mode=controller.effective_policy(state,command.steering_angles_rad[0],car,pack)
+                    policy_modes[mode]=policy_modes.get(mode,0)+1
+                    policy_audit={}
                 requested, proposed, limited, brakes, integral, shortfall, raw_regen = allocate(
-                    controller, state, physical, command.steering_angles_rad[0],
+                    effective, state, physical, command.steering_angles_rad[0],
                     command.drive_torques_nm[2], command.brake_torques_nm[0],
-                    integral, replace(car, tire_mu=driver_car.tire_mu), pack, case)
+                    integral, replace(car, tire_mu=driver_car.tire_mu), pack, case,audit=policy_audit)
+                if policy_audit is not None:
+                    for key,active in policy_audit.items():policy_interventions[key]=policy_interventions.get(key,0)+int(active)
+                    policy_interventions['economy_scale_changed']=policy_interventions.get('economy_scale_changed',0)+int(effective.drive_scale!=controller.drive_scale)
+                    # Diagnostic rounding only; executed commands are untouched.
+                    policy_command_digest.update(pack_binary('12d',
+                        *(round(v,10) for v in command.steering_angles_rad),
+                        *(round(v,8) for v in (*limited.wheel_torques_nm,*brakes))))
             else:
                 assert session is not None
                 accelerator=min(1.,max(0.,sum(command.drive_torques_nm)/(2*driver.maximum_rear_drive_torque_nm)))
@@ -431,6 +460,8 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
                     brakes=tuple(output['friction_nm']);shortfall=output['brake_shortfall_nm'];raw_regen=output['raw_regen_nm']
             rate, achieved_physical, actual = evaluate_powered(car, pack, state, limited.wheel_torques_nm,
                 command.steering_angles_rad, brakes, available, .01, env,wheel_radii_m=radii)
+            policy_changed_ticks+=sum(requested)>0 and any(abs(a-b)>1e-8 for a,b in zip(requested,proposed))
+            generating_ticks+=actual.pack_power_w<0
             if audit is not None:
                 violations.extend('configured_constraint:'+name for name in audit.observe(frame,output,actual,rate,brakes,shortfall))
             for reason, bad in (("corridor", slack < 0), ("sideslip", max_beta > .5),
@@ -534,6 +565,12 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
     if profile=='synthetic_spool_rwd' or mismatch:
         result['contact_radii_m']=radii
         result['radius_model']='Declared plant contact radii; controller keeps nominal radius. Locked axle starts at one shared angular velocity, not four no-slip speeds.'
+    if hasattr(controller,'effective_policy'):
+        result['search_policy']={'structure':controller.structure,'regen_mode':controller.regen_mode,
+            'mode_occupancy':policy_modes,'drive_policy_changed_ticks':policy_changed_ticks,
+            'intervention_ticks':policy_interventions,'command_digest':policy_command_digest.hexdigest(),
+            'command_digest_scope':'All evaluated 100 Hz boundaries; steering rounded only for diagnostic digest to 1e-10 rad, limited torque/friction to 1e-8 Nm; executed values unrounded',
+            'generating_boundary_ticks':generating_ticks,'scope':'Evaluated 10 ms controller boundaries, including terminal boundary; actual mode/intervention observations, not proof every gene activated'}
     if case.laps==10:
         result['round']={**ledger.summary(ledger.previous[0],ledger.previous[1],state.pack_energy_j),
             'initial_state_sha256':_state_digest(initial_round_state),'final_state_sha256':_state_digest(_round_state(state,integral,session)),
