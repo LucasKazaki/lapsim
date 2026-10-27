@@ -1,0 +1,10 @@
+fieldset{border:0;padding:0;margin:0} .config-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(250px,1fr);gap:16px;align-items:start}
+.architecture-field{display:grid;gap:8px;margin:16px 0 12px}.architecture-field select{width:100%;min-width:0;min-height:44px}
+.config-layout>*{min-width:0}.config-layout aside p{line-height:1.65;color:var(--muted,#a5b4c9)}
+#profile-json{width:100%;max-width:100%;box-sizing:border-box;background:#0d1724;color:#dce6f5;border:1px solid #35435a;border-radius:6px;padding:12px;font:12px/1.6 ui-monospace,monospace}
+.config-actions{margin-top:18px;gap:8px;flex-wrap:wrap}.config-actions button{min-height:44px}#config-error{color:#ffbec4;overflow-wrap:anywhere}
+.config-metrics{display:flex;gap:32px;flex-wrap:wrap}.config-metrics div{display:grid;gap:8px}.config-metrics strong{font-size:24px;color:#5bdfd5}
+#profile-identity,#export-location,#export-identity{overflow-wrap:anywhere}#config-speed{display:block;width:100%;height:230px}
+@media(max-width:850px){.config-layout{grid-template-columns:1fr}}@media(max-width:480px){.config-actions button{flex:1 1 100%}.config-metrics{gap:20px}.config-metrics strong{font-size:21px}}
+
+#course-library-status{overflow-wrap:anywhere}

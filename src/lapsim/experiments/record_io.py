@@ -18,11 +18,13 @@ def read_json_bounded(path: Path, *, maximum_bytes: int) -> Any:
         )
 
 
-def write_text_atomic(path: Path, text: str) -> None:
+def write_text_atomic(path: Path, text: str, *, newline: str | None = None) -> None:
     """Leave prior evidence intact when writing or replacement fails."""
     temporary = path.with_name(path.name + "." + uuid4().hex + ".tmp")
     try:
-        temporary.write_text(text, encoding="utf-8")
+        # Preserve legacy native-text behavior by default. CSV serializers opt
+        # out of translation explicitly to prevent CRLF becoming CRCRLF.
+        temporary.write_text(text, encoding="utf-8", newline=newline)
         os.replace(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
