@@ -111,9 +111,15 @@ def next_generation(candidates,ranking,seed):
 
 def freeze_finalists(candidates,ranking):
     by_id={c['id']:c for c in candidates};chosen=[]
+    # Reserve a deterministic representative from EVERY requested category
+    # before consuming the remaining budget with point ties/Pareto alternatives.
+    for category in ('highest_points','fastest','least_net_energy'):
+        if ranking[category]:
+            identity=min(ranking[category])
+            if identity not in chosen:chosen.append(identity)
     for identity in [*ranking['highest_points'],*ranking['fastest'],*ranking['least_net_energy'],*ranking['pareto']]:
-        if identity not in chosen:chosen.append(identity)
         if len(chosen)>=4:break
+        if identity not in chosen:chosen.append(identity)
     if 'anchor-gpu-fixed-off' not in chosen:chosen.append('anchor-gpu-fixed-off')
     return [by_id[i] for i in chosen]
 
