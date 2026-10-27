@@ -480,5 +480,14 @@
     "flowchart_data": "passed",
     "numerical_or_virtual_repeats": "No full laps, GPU jobs, host/ARM rebuild or QEMU reruns; their unchanged C/firmware evidence remains scoped to the original receipt.",
     "static_gate": "Awaiting normal exact-head CI; no local Pyright installation available."
+  },
+  "development_environment_repair": {
+    "recorded_at_utc": "2026-10-27T05:19:30.852935+00:00",
+    "failed_ci_run": 40453824717,
+    "failed_ci_job": 122022410037,
+    "failure": "Native shard 1: new resource allowlist test imported packaging/build_support.py, but setuptools was absent from the Python 3.13 test runtime. Build-system isolation did not make it available to dev tests.",
+    "repair": "Declare the existing setuptools>=68 build tool in the dev extra, because dev tests intentionally exercise the package builder. No assertion, job, skip policy or runtime application dependency was changed.",
+    "main_pc_installation": "None; reused existing setuptools installation.",
+    "verification": "Retained failed CI log privately; normal fresh exact-head CI must execute the unchanged resource test with the declared dev dependencies."
   }
 }
