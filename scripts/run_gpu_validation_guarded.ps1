@@ -6,7 +6,7 @@ param(
     [string]$PythonExe='',
     [string]$BaselineRoot='',
     [string]$ReferenceRoot='',
-    [ValidatePattern('^[a-z0-9-]{1,80}$')][string]$Candidate='',
+    [ValidatePattern('^[a-z0-9_-]{1,80}$')][string]$Candidate='',
     [ValidateSet('train','heldout-a','heldout-b')][string]$Scenario='train',
     [string]$SearchDirectory='work/gpu-search-20261026'
 )
