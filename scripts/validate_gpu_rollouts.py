@@ -10,6 +10,7 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'src'))
 import numpy as np
 from lapsim.experiments.gpu_tournament import GPUJob,rollout_gpu_batch
 from lapsim.experiments.tournament_rollout import Controller,Case,rollout
+from lapsim.experiments.search_policy import SearchPolicy
 
 
 def save(path,value):
@@ -26,6 +27,9 @@ def parity(actual,expected):
         if actual[key]!=expected[key]:raise AssertionError('Full-lap contract differs: '+key)
     if actual['status']!='completed' or not actual['eligible']:raise AssertionError('Full lap did not complete validly')
     if actual['work']!=expected['work']:raise AssertionError('Full-lap numerical work counters differ')
+    if 'search_policy' in expected:
+        if actual['controller']!=expected['controller'] or actual['search_policy']!=expected['search_policy']:
+            raise AssertionError('Full-lap structural policy identity/mode observations differ')
     metric_tolerance={'lap_time_s':1e-5,'net_energy_kwh':1e-8,'energy_residual_j':1e-5,
         'max_slip':1e-6,'max_yaw_rad_s':1e-6,'max_sideslip_rad':1e-6,'max_cross_track_m':1e-5}
     differences={}
@@ -53,16 +57,24 @@ def representative_jobs():
         GPUJob('spool-regen',Controller('tire_reserve',yaw_kp=0.,yaw_ki=0.,pedal_mode='proportional'),Case('gpu-full-lap',duration_s=40),profile='synthetic_spool_rwd')]
 
 
+def policy_jobs():
+    return [GPUJob('composed',SearchPolicy(structure='composed',regen_mode='two_stage',
+        drive_scale=.9,slip_target=.075,yaw_kp=24.,yaw_ki=4.,allocation_front_bias=.6),Case('gpu-policy-full-lap',duration_s=45)),
+        GPUJob('adaptive',SearchPolicy(structure='adaptive',regen_mode='proportional',pedal_mode='proportional',
+            drive_scale=.9,slip_target=.08,yaw_kp=28.,yaw_ki=4.,allocation_front_bias=.4,
+            low_soc_threshold=.8,corner_threshold_rad=.08),Case('gpu-policy-full-lap',duration_s=45))]
+
+
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--phase',choices=('representative','courses'),required=True)
+    p=argparse.ArgumentParser();p.add_argument('--phase',choices=('representative','courses','policies'),required=True)
     p.add_argument('--device',required=True);p.add_argument('--output',required=True);p.add_argument('--baseline-root')
     p.add_argument('--reuse-cpu',help='Explicit prior representative record directory; avoids repeating completed CPU laps')
     a=p.parse_args();destination=Path(a.output).resolve();directory=destination.with_suffix('')
     if destination.exists() or directory.exists():raise ValueError('Preserve earlier attempt')
     directory.mkdir(parents=True)
     references=[];provenance=[];cpu_wall=0.
-    if a.phase=='representative':
-        jobs=representative_jobs();start=perf_counter()
+    if a.phase in ('representative','policies'):
+        jobs=policy_jobs() if a.phase=='policies' else representative_jobs();start=perf_counter()
         for job in jobs:
             record=json.loads((Path(a.reuse_cpu)/(job.identity+'.cpu.json')).read_text()) if a.reuse_cpu else rollout(job.controller,job.case,profile=job.profile)
             if record['controller']!=asdict(job.controller) or record['case']!=asdict(job.case) or record['profile']!=job.profile:
@@ -99,7 +111,7 @@ def main():
     result={'schema':'lapsim.full-lap-gpu-validation.v1','utc':datetime.now(timezone.utc).isoformat(),'phase':a.phase,
         'rows':rows,'all_passed':not failed,'workflow':evidence,'cpu_reference_wall_s':cpu_wall,
         'workflow_speedup':cpu_wall/evidence['total_batch_wall_s'] if cpu_wall is not None else None,
-        'timing_scope':'Reused CPU records; current GPU workflow time only; earlier CPU timing retained separately' if a.reuse_cpu else 'Fresh CPU sequential / GPU batched including initialization and scheduler' if a.phase=='representative' else 'Historical six CPU baseline wall times / current GPU batch including initialization; different measurement times, not a simultaneous benchmark',
+        'timing_scope':'Reused CPU records; current GPU workflow time only; earlier CPU timing retained separately' if a.reuse_cpu else 'Fresh CPU sequential / GPU batched including initialization and scheduler' if a.phase in ('representative','policies') else 'Historical six CPU baseline wall times / current GPU batch including initialization; different measurement times, not a simultaneous benchmark',
         'cpu_provenance':provenance,'ga_executed':False,'official_points':False}
     save(destination,result)
     print(json.dumps(result),flush=True)
