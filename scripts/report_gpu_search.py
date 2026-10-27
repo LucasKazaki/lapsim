@@ -74,8 +74,10 @@ def main():
                     regen=False if candidate.get('anchor') else candidate['policy']['regen_mode']!='off'
                     case=Case('report-verification',course='bundle',course_bundle=entry['bundle'],duration_s=300,
                         long_course=True,regen_available=regen,**plan['scenarios'][scenario])
+                    car=dict(plan['fixed_fixture']['car'])
+                    car['tire_mu']*=case.grip  # Same declared scenario transform as the rollout.
                     verify_anchor(blob,summary['raw_record_sha256'],expected_controller=candidate['policy'],
-                        expected_case=asdict(case),expected_car=plan['fixed_fixture']['car'],
+                        expected_case=asdict(case),expected_car=car,
                         expected_pack=plan['fixed_fixture']['pack'],expected_driver=driver,
                         geometry_sha256=entry['geometry_sha256'],distance_m=entry['length_m'])
                 backend=record['numerical_backend']
@@ -108,6 +110,10 @@ def main():
             writer=csv.DictWriter(stream,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
     by_id={c['id']:c for c in pool['candidates']}
     winners={key:rank[key] for key in ('fastest','highest_points','least_net_energy')}
+    configurations={identity:by_id[identity] for ids in winners.values() for identity in ids}
+    for name,value in [('experiment-plan.json',plan),('generation-1.json',load(directory/'generation-1.json')),
+                       ('heldout-pool.json',pool),('winner-policies.json',configurations)]:
+        (output/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n',encoding='utf-8',newline='\n')
     columns=['id','structure','regen','mean_points','mean_endurance_points','mean_efficiency_points','sum_time_s','net_energy_wh','recovered_wh','valid_laps','all_efficiency_eligible']
     with (output/'heldout-results.csv').open('w',newline='',encoding='utf-8') as stream:
         writer=csv.DictWriter(stream,fieldnames=columns);writer.writeheader()
@@ -132,7 +138,7 @@ def main():
         '','Seed: '+str(plan['seed'])+'. All finalist/scenario choices froze before held-out execution.']
     (output/'report.md').write_text('\n'.join(lines)+'\n',encoding='utf-8',newline='\n')
     result={'schema':'lapsim.gpu-ga-final.v1','utc':datetime.now(timezone.utc).isoformat(),'seed':plan['seed'],
-        'winners':winners,'heldout_ranking':rank,'training_ranking':training_rank,
+        'winners':winners,'winner_configurations':configurations,'heldout_ranking':rank,'training_ranking':training_rank,
         'finalist_pool_sha256':pool['pool_sha256'],'verified_raw_records':checked,'sources':plan['sources'],
         'budget':plan['budget'],'coverage':coverage['counts'],'per_course_results':detail,
         'verified_training_receipts':len(training_records),'training_per_course_results':training_detail,
@@ -142,10 +148,13 @@ def main():
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     fig,ax=plt.subplots(figsize=(9,5))
+    midpoint=(min(row['sum_time_s'] for row in rank['qualified'])+max(row['sum_time_s'] for row in rank['qualified']))/2 if rank['qualified'] else 0
     for row in rank['qualified']:
         labels=[label for key,label in [('fastest','fastest'),('highest_points','most points'),('least_net_energy','least energy')] if row['id'] in winners[key]]
         ax.scatter(row['sum_time_s'],row['net_energy_wh'],s=85 if labels else 40,c='#137b80' if labels else '#8d9aa0')
-        ax.annotate(row['id']+(' · '+', '.join(labels) if labels else ''),(row['sum_time_s'],row['net_energy_wh']),xytext=(5,5),textcoords='offset points',fontsize=7)
+        right=row['sum_time_s']>midpoint
+        ax.annotate(row['id']+(' · '+', '.join(labels) if labels else ''),(row['sum_time_s'],row['net_energy_wh']),
+            xytext=(-5 if right else 5,5),ha='right' if right else 'left',textcoords='offset points',fontsize=7)
     ax.set(xlabel='Total time over 12 matched held-out laps (s)',ylabel='Net battery energy over those laps (Wh)',
         title='Synthetic AWD: frozen held-out speed - energy comparison')
     ax.grid(alpha=.2);fig.text(.01,.01,'Estimated courses · simulation-only · points use the 275+100 rule-inspired adaptation · no physical/official result',fontsize=8)
