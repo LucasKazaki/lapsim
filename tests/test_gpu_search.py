@@ -123,7 +123,30 @@ def test_prepare_is_self_contained_freezes_scenarios_and_rejects_overwrite(tmp_p
     plan=module.load(destination/'plan.json');coverage=module.load(destination/'coverage.json')
     assert len(plan['initial_population'])==18 and len(plan['courses'])==6
     assert set(plan['scenarios'])=={'train','heldout-a','heldout-b'}
-    assert coverage['counts']['training_saved']==6
+    assert coverage['counts']['training_saved']==0
     assert coverage['training']['provisional'] is True
-    assert plan['budget']['maximum_new_gpu_laps']==204
+    assert plan['budget']['maximum_new_gpu_laps']==210
     with pytest.raises(ValueError,match='preserved'):module.prepare(destination,'NVIDIA GeForce RTX 5080')
+
+
+def test_finalist_ties_reserve_fastest_energy_and_points_categories_first():
+    ids=['p0','p1','p2','p3','fast','energy','anchor-gpu-fixed-off']
+    candidates=[{'id':i} for i in ids]
+    rank={'highest_points':['p3','p2','p1','p0'],'fastest':['fast'],
+        'least_net_energy':['energy'],'pareto':['p0','fast','energy']}
+    selected=freeze_finalists(candidates,rank)
+    selected_ids=[c['id'] for c in selected]
+    assert {'p0','fast','energy','anchor-gpu-fixed-off'}<=set(selected_ids)
+    assert len(selected_ids)<=5 and len(selected_ids)==len(set(selected_ids))
+
+
+def test_unverified_summary_without_successful_batch_receipt_is_not_ranked(tmp_path):
+    path=Path(__file__).resolve().parents[1]/'scripts/run_gpu_search.py'
+    spec=importlib.util.spec_from_file_location('gpu_search_cli_unverified_test',path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    destination=tmp_path/'records/train/candidate'
+    destination.mkdir(parents=True)
+    module.save(destination/'course.summary.json',{'status':'completed','eligible':True,'violations':[],
+        'lap_time_s':10.,'net_energy_kwh':.01,'geometry_sha256':'g','distance_m':100.})
+    plan={'scenarios':{'train':{}},'courses':{'course':{}},'sources':{}}
+    assert module.records(tmp_path,plan,[{'id':'candidate'}])=={}

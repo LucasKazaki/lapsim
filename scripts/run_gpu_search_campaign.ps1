@@ -25,6 +25,7 @@ function Invoke-SearchCandidate([object]$Entry,[string]$Scenario){
     $searchCoverage=Get-Content -LiteralPath (Join-Path $Directory 'coverage.json') -Raw | ConvertFrom-Json
     Write-Output ($searchCoverage.counts | ConvertTo-Json -Compress)
 }
+foreach($searchEntry in $searchPlan.anchors){Invoke-SearchCandidate $searchEntry 'train'}
 foreach($searchEntry in $searchPlan.initial_population){Invoke-SearchCandidate $searchEntry 'train'}
 $searchGenerationPath=Join-Path $Directory 'generation-1.json'
 if(-not(Test-Path -LiteralPath $searchGenerationPath)){
