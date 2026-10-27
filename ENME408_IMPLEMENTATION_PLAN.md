@@ -12,6 +12,14 @@ PR/issue state before treating a candidate as merged. Public release and site
 deployment are deferred by the owner; physical PIL remains unavailable. The
 contracts below retain the acceptance work and staged future scope.
 
+**27 October E10 readiness checkpoint:** starting main
+`a37f8b82dba3b105fd85a3f4e834584345d8141f` is the current source baseline for
+the [provisional drivetrain / F405 virtual-bench pass](docs/ev_readiness_20261027.md).
+It records the tentative 2027–2028 12.48:1 ratio separately from synthetic 4:1
+history, rebuilds and executes the existing bench under QEMU, and retains the
+unknown hardware and physical-validation gates. The dated historical tranches
+below remain historical evidence, not the current source SHA.
+
 ## Active local native-backend cycle (16–18 October 2026)
 
 The owner's new continuous engineering request supersedes the completed window

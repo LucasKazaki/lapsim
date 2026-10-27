@@ -1,0 +1,493 @@
+{
+  "schema": "lapsim.ev-readiness-evidence.v1",
+  "recorded_at_utc": "2026-10-27T05:08:42.197276+00:00",
+  "baseline_commit": "a37f8b82dba3b105fd85a3f4e834584345d8141f",
+  "scope": "Windows main-PC E10 verification of existing C/firmware; provisional team spec, ratio-only synthetic diagnostic and source resource-bundle extension. No physical execution, full-lap rerun or GPU work.",
+  "source_binding": {
+    "c_and_firmware_changed_by_this_increment": false,
+    "current_files_match_build_receipt": true,
+    "files_sha256": {
+      "controller/reference/native/torque_contract.c": "a0b07fdf5b36d1c266483a704f6c1fd3a1bb03a059839f31f0d756a38ef4bbb0",
+      "controller/reference/native/torque_clock.c": "09d810044a91c3b2556088a1d538b3ca928081464802d3c216ea7a31e5a1c467",
+      "controller/reference/native/torque_pedal.c": "fbc18610b7720ce71aa21f9d818103d9605dad72702689d8d7e3747a58f266bd",
+      "controller/reference/native/torque_guard.c": "703a0aa9e159b591971ef6ccd10bb42251bbafef8883f57a3d21617486941514",
+      "controller/reference/native/torque_allocator.c": "a96199ce44f3e138ce28741421ae6eb5089dbaacddfca0bbc9fed21a6cb9b9f4",
+      "controller/reference/native/torque_allocator.h": "031ccb20021f766f94a43b96bfb0ceadc571375c439c2300fb25b7a9d93ad5ee",
+      "controller/reference/native/torque_clock.h": "a1e033078e500bc5f89d8f0e13d1273cec8982fc70cb53ec0b85657b368d1b8b",
+      "controller/reference/native/torque_contract.h": "a327855049aac7ea34fe18122d19b0fde596af7420a15460989d8613fa8126e7",
+      "controller/reference/native/torque_guard.h": "500b8b7a280e93a0a275d9235da40f7318c034c7103723d4b60d9f24cb890ae2",
+      "controller/reference/native/torque_pedal.h": "b1932613e5febf0f9117f82ff3ca889a4445eda4bd79d4e820aa74a5efc2856d",
+      "firmware/bench/startup.c": "5becce3aeb18e493e2970aecfe0230c3f1a1a6763f19f5c51a4c0480472b31f8",
+      "firmware/bench/main.c": "6c0fd0609889dbff620a602d832ffbb2551b6b511afc7f6f603c03c0bda89e8e",
+      "firmware/bench/f405-qemu.ld": "a00a485deae5df19e9561d20b88540f33aef814c19c3cfa681dfbf29370a5066"
+    }
+  },
+  "host_build": {
+    "schema": "lapsim.native-controller-build.v1",
+    "compiler_version": "gcc.exe (Rev2, Built by MSYS2 project) 12.1.0",
+    "binary_sha256": "8a1a7b276ec3e7b48566e6aff3c4624f26d88bef570e1a0de5de1cfea3d6ecc4",
+    "numeric_contract": "binary64, ordinary nearest rounding, retained subnormals; frozen host flags"
+  },
+  "arm_build": {
+    "schema": "lapsim.stm32-bench-build.v1",
+    "status": "linked_only",
+    "build_id": "beca284777e3dcdaf9f64a1def6f11534a136ae141f429f39cfc6f983f6fc827",
+    "compiler_version": "arm-none-eabi-gcc.exe (Arm GNU Toolchain 12.3.Rel1 (Build arm-12.35)) 12.3.1 20230626",
+    "compiler_executable_sha256": "0be11fd26bbaeaa9b1f0f486f853c504cd54c4365c4604799a9c5ed718cafbf8",
+    "flags": [
+      "-mcpu=cortex-m4",
+      "-mthumb",
+      "-mfloat-abi=soft",
+      "-std=c11",
+      "-Os",
+      "-g3",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-fno-fast-math",
+      "-fno-finite-math-only",
+      "-ffp-contract=off",
+      "-fexcess-precision=standard",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "-nostartfiles",
+      "--specs=nosys.specs"
+    ],
+    "elf_sha256": "2d35a4e09802b7e0249cfb06eb1946f2f5ad3effa1c50bfaf8a0dd98fa80f433",
+    "map_sha256": "3af9e6cc6412bed127a6f169e5ae35ff90aac099a631aa2782eb74387464c29c",
+    "numeric_contract": "binary64 software helpers; no float32 substitution",
+    "controller_policy": {
+      "period_ms": 10,
+      "maximum_age_ms": 50,
+      "rise_nm_per_s": 8000,
+      "trip": 0.25,
+      "clear": 0.05,
+      "recover_samples": 2
+    }
+  },
+  "arm_section_bytes": {
+    "text": 14064,
+    "data": 296,
+    "bss": 1464,
+    "total": 15824
+  },
+  "emulator": {
+    "emulator_version": "QEMU emulator version 11.1.0 (v11.1.0-12130-ge470268ff4)",
+    "emulator_executable_sha256": "f5280fbf925ed36be443cf48b66516f0ffa28b6b9b164956ad4bd6ac9c9619db",
+    "emulator_accelerator": "tcg,tb-size=16",
+    "firmware_build_id": "beca284777e3dcdaf9f64a1def6f11534a136ae141f429f39cfc6f983f6fc827",
+    "firmware_elf_sha256": "2d35a4e09802b7e0249cfb06eb1946f2f5ad3effa1c50bfaf8a0dd98fa80f433",
+    "boot": "LAPSIM_F405_BENCH_v1",
+    "transport": "QEMU USART1 stdio, bounded lowercase hexadecimal frame bytes with verified character credit; no physical port",
+    "limits": "Generic F405 instruction/interface model; no PCB, peripheral-complete or real-time timing validation"
+  },
+  "actual_virtual_checks": {
+    "status": "passed",
+    "known_vectors": 30,
+    "known_vectors_exact_python_agreement": true,
+    "actual_pc_plant_pairs": [
+      {
+        "scenario": "launch",
+        "controller_calls": 10,
+        "plant_ticks": 100,
+        "python_result_exact_agreement": true,
+        "energy_residual_j": 2.8261398221651746e-09
+      },
+      {
+        "scenario": "overlap",
+        "controller_calls": 10,
+        "plant_ticks": 100,
+        "python_result_exact_agreement": true,
+        "energy_residual_j": 0.0
+      }
+    ],
+    "protocol_faults_checked": [
+      "duplicate_sequence",
+      "invalidated_session",
+      "bad_crc",
+      "oversized_length",
+      "old_session_replay",
+      "invalid_bitmask",
+      "truncation_timeout_and_cleanup",
+      "target_process_loss_no_fallback",
+      "explicit_relaunch_starts_recovery"
+    ],
+    "retained_transcript_sha256": "4458519669a7f911c5918ed5c4932bf23f5b327bb6a74a348ffefecf227749a2"
+  },
+  "regression_reports": [
+    {
+      "local_report": "tests-baseline.junit.xml",
+      "tests": 50,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 49,
+      "skip_reasons": [
+        "POSIX multicall-symlink regression runs in Linux CI; Windows actual native build is tested above"
+      ]
+    },
+    {
+      "local_report": "team-spec-and-resources.junit.xml",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 14,
+      "skip_reasons": []
+    },
+    {
+      "local_report": "tests-final-spec-resources.junit.xml",
+      "tests": 53,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 52,
+      "skip_reasons": [
+        "POSIX multicall-symlink regression runs in Linux CI; Windows actual native build is tested above"
+      ]
+    }
+  ],
+  "test_history": "A newly written test initially referenced an undefined fixture variable; corrected before passing runs. No existing physics expectation or limit was loosened. Counts from overlapping reports must not be added as unique coverage.",
+  "guarded_phases": [
+    {
+      "attempt": "arm-build-baseline",
+      "utc": "2026-10-27T04:42:48.0402628Z",
+      "outcome": "process_completed",
+      "exit_code": 0,
+      "wall_seconds": 1.5871369,
+      "reserve_gib": 8,
+      "job_allowance_gib": 0.75,
+      "minimum_observed_commit_headroom_gib": 9.159488677978516
+    },
+    {
+      "attempt": "host-build-baseline",
+      "utc": "2026-10-27T04:39:40.3233233Z",
+      "outcome": "process_completed",
+      "exit_code": 0,
+      "wall_seconds": 3.1441253,
+      "reserve_gib": 8,
+      "job_allowance_gib": 0.75,
+      "minimum_observed_commit_headroom_gib": 9.463764190673828
+    },
+    {
+      "attempt": "package-check-final-bundle",
+      "utc": "2026-10-27T05:08:07.4412594Z",
+      "outcome": "process_completed",
+      "exit_code": 0,
+      "wall_seconds": 2.3778639,
+      "reserve_gib": 8,
+      "job_allowance_gib": 0.75,
+      "minimum_observed_commit_headroom_gib": 10.363658905029297
+    },
+    {
+      "attempt": "package-check-resource-bundle",
+      "utc": "2026-10-27T04:58:08.9597027Z",
+      "outcome": "process_completed",
+      "exit_code": 0,
+      "wall_seconds": 7.8568893,
+      "reserve_gib": 8,
+      "job_allowance_gib": 0.75,
+      "minimum_observed_commit_headroom_gib": 10.18582534790039
+    },
+    {
+      "attempt": "tests-baseline",
+      "utc": "2026-10-27T04:43:11.3879397Z",
+      "outcome": "process_completed",
+      "exit_code": 0,
+      "wall_seconds": 5.4966911,
+      "reserve_gib": 8,
+      "job_allowance_gib": 0.75,
+      "minimum_observed_commit_headroom_gib": 9.07729721069336
+    },
+    {
+      "attempt": "tests-final-spec-resources",
+      "utc": "2026-10-27T05:06:36.1648167Z",
+      "outcome": "process_completed",
+      "exit_code": 0,
+      "wall_seconds": 6.3039569,
+      "reserve_gib": 8,
+      "job_allowance_gib": 0.75,
+      "minimum_observed_commit_headroom_gib": 10.333850860595703
+    },
+    {
+      "attempt": "virtual-check-baseline",
+      "utc": "2026-10-27T04:43:05.5971663Z",
+      "outcome": "process_completed",
+      "exit_code": 0,
+      "wall_seconds": 17.260369,
+      "reserve_gib": 8,
+      "job_allowance_gib": 0.75,
+      "minimum_observed_commit_headroom_gib": 9.07760238647461
+    }
+  ],
+  "package_consumer": {
+    "schema": "lapsim.readiness-built-consumer.v1",
+    "module_is_built_copy": true,
+    "source_checkout_excluded": true,
+    "team_spec_sha256": "cf28b42cb5e319cd7edfcc37575548203949a9a728a59347ad6e448a9af7c407",
+    "profiles": [
+      {
+        "architecture": "synthetic_independent_rear_rwd_v1",
+        "base_sha256": "a3d0dbed73480abf04b2854c96b10bea79f41fe311305be9c724008439d776df",
+        "probe_sha256": "e1173708341953be2214819f3ac14bb3578cf7c3524db87e1145bac654404500"
+      },
+      {
+        "architecture": "synthetic_single_motor_open_diff_rwd_v1",
+        "base_sha256": "4f789a3423cf74f4b3ea86c46389b58f95d373da167ae7c21938310013304c3c",
+        "probe_sha256": "2f37086f2578ab490775b6b8aa7202e30c46d15a51684f1ce5c6c416649839aa"
+      },
+      {
+        "architecture": "synthetic_independent_four_awd_v1",
+        "base_sha256": "acd351f79927eb4eba6b4ae37a761890e4824eb4bb091de2881bda9cdabe3893",
+        "probe_sha256": "d03e94a7ded20d74c915db77efa27b0e608c47b873725ac48b898132655c517a"
+      },
+      {
+        "architecture": "synthetic_single_motor_locked_axle_rwd_v1",
+        "base_sha256": "c97e037b7f169a5deae32899c36df0f90fac3b2e1b0f30dbcb9f56bb87fe0e5d",
+        "probe_sha256": "3d78f828c522926e7756bfe909c784ee53817f8216bec7ad6040e47c2b520d30"
+      }
+    ],
+    "build_identity_dirty": true,
+    "acceptance_level": "Final code/docs setuptools build_py copied package imported with -I and explicit bundle path; not wheel/sdist/frozen-installer acceptance",
+    "snapshot": "Dirty precommit 6cec796 source snapshot before the acceptance-receipt update; later behavior-preserving four-wheel availability typing repair is covered by 19 focused source tests, not a new package release."
+  },
+  "ratio_diagnostic": {
+    "source_spec_sha256": "cf28b42cb5e319cd7edfcc37575548203949a9a728a59347ad6e448a9af7c407",
+    "base_profile_sha256": "acd351f79927eb4eba6b4ae37a761890e4824eb4bb091de2881bda9cdabe3893",
+    "derived_profile_sha256": "d03e94a7ded20d74c915db77efa27b0e608c47b873725ac48b898132655c517a",
+    "rows": [
+      {
+        "case": "propulsion_inactive_limits",
+        "wheel_speed_rad_s": 10.0,
+        "baseline": {
+          "wheel_torques_nm": [
+            50.0,
+            50.0,
+            50.0,
+            50.0
+          ],
+          "motor_speeds_rad_s": [
+            40.0,
+            40.0,
+            40.0,
+            40.0
+          ],
+          "motor_currents_a": [
+            16.276041666666668,
+            16.276041666666668,
+            16.276041666666668,
+            16.276041666666668
+          ],
+          "pack_power_w": 2282.654864667172
+        },
+        "ratio_probe": {
+          "wheel_torques_nm": [
+            50.0,
+            50.0,
+            50.0,
+            50.0
+          ],
+          "motor_speeds_rad_s": [
+            124.80000000000001,
+            124.80000000000001,
+            124.80000000000001,
+            124.80000000000001
+          ],
+          "motor_currents_a": [
+            5.216680021367521,
+            5.216680021367521,
+            5.216680021367521,
+            5.216680021367521
+          ],
+          "pack_power_w": 2263.051088841214
+        }
+      },
+      {
+        "case": "regeneration_inactive_limits",
+        "wheel_speed_rad_s": 10.0,
+        "baseline": {
+          "wheel_torques_nm": [
+            -50.0,
+            -50.0,
+            -50.0,
+            -50.0
+          ],
+          "motor_speeds_rad_s": [
+            40.0,
+            40.0,
+            40.0,
+            40.0
+          ],
+          "motor_currents_a": [
+            -15.0,
+            -15.0,
+            -15.0,
+            -15.0
+          ],
+          "pack_power_w": -1751.82
+        },
+        "ratio_probe": {
+          "wheel_torques_nm": [
+            -50.0,
+            -50.0,
+            -50.0,
+            -50.0
+          ],
+          "motor_speeds_rad_s": [
+            124.80000000000001,
+            124.80000000000001,
+            124.80000000000001,
+            124.80000000000001
+          ],
+          "motor_currents_a": [
+            -4.807692307692307,
+            -4.807692307692307,
+            -4.807692307692307,
+            -4.807692307692307
+          ],
+          "pack_power_w": -1767.4863609467457
+        }
+      },
+      {
+        "case": "low_speed_current_cap",
+        "wheel_speed_rad_s": 0.0,
+        "baseline": {
+          "wheel_torques_nm": [
+            276.48,
+            276.48,
+            276.48,
+            276.48
+          ],
+          "motor_speeds_rad_s": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motor_currents_a": [
+            90.00000000000001,
+            90.00000000000001,
+            90.00000000000001,
+            90.00000000000001
+          ],
+          "pack_power_w": 668.0412371134023
+        },
+        "ratio_probe": {
+          "wheel_torques_nm": [
+            862.6176,
+            862.6176,
+            862.6176,
+            862.6176
+          ],
+          "motor_speeds_rad_s": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motor_currents_a": [
+            90.0,
+            90.0,
+            90.0,
+            90.0
+          ],
+          "pack_power_w": 668.0412371134021
+        }
+      },
+      {
+        "case": "synthetic_motor_speed_cutoff",
+        "wheel_speed_rad_s": 60.0,
+        "baseline": {
+          "wheel_torques_nm": [
+            50.0,
+            50.0,
+            50.0,
+            50.0
+          ],
+          "motor_speeds_rad_s": [
+            240.0,
+            240.0,
+            240.0,
+            240.0
+          ],
+          "motor_currents_a": [
+            16.276041666666668,
+            16.276041666666668,
+            16.276041666666668,
+            16.276041666666668
+          ],
+          "pack_power_w": 13586.688143741145
+        },
+        "ratio_probe": {
+          "wheel_torques_nm": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motor_speeds_rad_s": [
+            748.8000000000001,
+            748.8000000000001,
+            748.8000000000001,
+            748.8000000000001
+          ],
+          "motor_currents_a": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "pack_power_w": 0.0
+        }
+      }
+    ],
+    "simulation_only": true,
+    "historical_profiles_modified": false,
+    "real_motor_speed_efficiency_topology_unknown": true,
+    "search_optimality_for_12_48_established": false
+  },
+  "unrun_or_unavailable": [
+    "Physical STM32 board execution and timing",
+    "Team custom-board clock, pinout, CAN, DMA and inverter interface",
+    "C/firmware implementation of tournament regen and searched policies",
+    "Motor maps/speed, gear efficiency and confirmed total ratio/topology",
+    "New full laps or optimizer search for provisional 12.48 hardware",
+    "New wheel/sdist/frozen Windows release and public website deployment"
+  ],
+  "resource_ownership": "No owned GPU or numerical campaign; heavy slot released to chess. Only short serial CPU checks in this increment.",
+  "local_source_checks": {
+    "source_inventory": "generated and checked",
+    "flowchart_data": "passed",
+    "powershell_parser": "no errors",
+    "controller_import_original_files_verified": 419,
+    "local_full_suite_or_static_audit": "not rerun; focused scope plus normal PR CI pending"
+  },
+  "post_review_repair": {
+    "recorded_at_utc": "2026-10-27T05:14:35.953047+00:00",
+    "reviewed_head_before_repair": "6cec796b181c1a4f199d0d09e6434e3113da49dc",
+    "finding": "Pyright inferred drive_availability as a variable-length tuple, incompatible with the required four-bool actuator boundary.",
+    "repair": "Explicit four-bool return annotation and four-element tuple construction in the shared profile helper; unchanged availability values for all supported architectures. No waiver or physics/limit change.",
+    "targeted_tests": {
+      "local_report": "tuple-repair.junit.xml",
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 19
+    },
+    "source_inventory": "regenerated and checked",
+    "flowchart_data": "passed",
+    "numerical_or_virtual_repeats": "No full laps, GPU jobs, host/ARM rebuild or QEMU reruns; their unchanged C/firmware evidence remains scoped to the original receipt.",
+    "static_gate": "Awaiting normal exact-head CI; no local Pyright installation available."
+  },
+  "development_environment_repair": {
+    "recorded_at_utc": "2026-10-27T05:19:30.852935+00:00",
+    "failed_ci_run": 40453824717,
+    "failed_ci_job": 122022410037,
+    "failure": "Native shard 1: new resource allowlist test imported packaging/build_support.py, but setuptools was absent from the Python 3.13 test runtime. Build-system isolation did not make it available to dev tests.",
+    "repair": "Declare the existing setuptools>=68 build tool in the dev extra, because dev tests intentionally exercise the package builder. No assertion, job, skip policy or runtime application dependency was changed.",
+    "main_pc_installation": "None; reused existing setuptools installation.",
+    "verification": "Retained failed CI log privately; normal fresh exact-head CI must execute the unchanged resource test with the declared dev dependencies."
+  }
+}

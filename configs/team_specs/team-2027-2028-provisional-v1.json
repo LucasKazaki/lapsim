@@ -1,0 +1,28 @@
+{
+  "schema": "lapsim.team-vehicle-spec.v1",
+  "vehicle_id": "team-2027-2028-provisional",
+  "season": "2027-2028",
+  "evidence_status": "user_report_provisional",
+  "source": {
+    "kind": "user_team_update",
+    "reported_by": "Lucas",
+    "reported_at_utc": "2026-10-27T04:19:00Z",
+    "statement": "Tentative gear ratio for the 2027-2028 car is 12.48. Motor speed/top speed and gear efficiency are not yet known."
+  },
+  "drivetrain": {
+    "gear_ratio": 12.48,
+    "gear_ratio_unit": "motor_revolutions_per_driven_wheel_revolution",
+    "ratio_convention_status": "model_interpretation_requires_team_confirmation",
+    "gear_efficiency": null,
+    "motor_base_speed_rad_s": null,
+    "motor_maximum_speed_rad_s": null,
+    "vehicle_top_speed_mps": null,
+    "topology_id": null
+  },
+  "limitations": [
+    "12.48:1 is a provisional user-reported value, not a verified hardware specification.",
+    "The simulator interprets gear_ratio as motor angular speed divided by driven-wheel angular speed. The team must confirm that 12.48 is the total reduction across all stages.",
+    "Unknown efficiency, motor speed, top speed and topology must not be filled from synthetic defaults as team facts.",
+    "Historical runs and searched controllers retain their original 4:1 synthetic gearing and are not established as optimal for this provisional ratio."
+  ]
+}
