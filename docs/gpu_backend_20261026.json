@@ -1,0 +1,508 @@
+{
+  "schema": "lapsim.gpu-checkpoint.v1",
+  "utc": "2026-10-26T23:09:16.843642+00:00",
+  "source_sha256": {
+    "src/lapsim/backends/opencl_runtime.py": "0b7c35a9782b759fec9568f3383c0b2009f8fc661b541380fd81da460bf4d715",
+    "src/lapsim/dynamics/planar_opencl.py": "bd7a63053c7fdd9e5c2702fdfba7c80ab967877fb724ba056fb1a1e78e108058",
+    "src/lapsim/dynamics/powered_opencl.py": "8bb732032f54566e8016d410eeba8e138da40ca1250013d54c2e1be7afeca5a5",
+    "scripts/benchmark_planar_gpu.py": "6f5ae174620dba8d7712940afc27e2d30b5ece2fb9dfb9029070053a2c23ad0d",
+    "scripts/benchmark_powered_gpu.py": "0387eaba12f37fd5a25586f0e5e1705541586dfaf54bce014368013fd133a26e",
+    "scripts/run_gpu_validation_guarded.ps1": "36e645557551ebfe97ced61ca38906e84690e914dafa716d8de414cd63ef238d",
+    "tests/test_planar_opencl.py": "2ae336be7fcbcf9dcbdf8e0cd5e6bb6aa3669b33c3a4015e31e2fab58ae4864c",
+    "tests/test_powered_opencl.py": "a30f6d11dd9bcc9b55fefa45f316a0219c53870bbaae8533e8f47b066af35140"
+  },
+  "test_command": "scripts/run_gpu_validation_guarded.ps1 -Phase tests -Attempt typed-output-final",
+  "tests_passed": 42,
+  "tests_skipped": 0,
+  "force_benchmark": {
+    "schema": "lapsim.gpu-planar-benchmark.v1",
+    "utc": "2026-10-26T23:07:39.442855+00:00",
+    "seed": 20261026,
+    "device": {
+      "name": "NVIDIA GeForce RTX 5080",
+      "vendor": "NVIDIA Corporation",
+      "driver": "621.01",
+      "version": "OpenCL 3.0 CUDA",
+      "fp64": true
+    },
+    "backend": "OpenCL GPU FP64",
+    "kernel_sha256": "08392af91d80944260de9d052f5c56f8f4467f466b264a86a82351b6b3485d52",
+    "context_compile_initialization_s": 0.10183810000307858,
+    "driver_compilation_cache": "Existing driver cache is retained; new context/program build timing is not an uncached compiler benchmark.",
+    "generated_batches": [
+      {
+        "rows": 1,
+        "cpu_reference_median_s": 4.7800131142139435e-05,
+        "cpu_reference_trials_s": [
+          0.00016449997201561928,
+          4.7800131142139435e-05,
+          3.7999823689460754e-05
+        ],
+        "gpu_total_batch_median_s": 0.0005036001093685627,
+        "gpu_total_batch_trials_s": [
+          0.000618400052189827,
+          0.00047859991900622845,
+          0.0005036001093685627
+        ],
+        "gpu_device_kernel_trials_s": [
+          1.6800000000000002e-05,
+          1.5808000000000002e-05,
+          1.4656000000000002e-05
+        ],
+        "warm_end_to_end_speedup": 0.09491684027248022,
+        "new_context_one_batch_speedup": 0.00046654073793614333,
+        "parity": {
+          "all_fields_passed": true,
+          "absolute_tolerance": 1e-08,
+          "relative_tolerance": 1e-10,
+          "max_absolute_error": 1.8189894035458565e-12,
+          "max_tolerance_fraction": 9.0949470177292e-05,
+          "rationale": "FP64 independent host/device transcendental functions and reordered reductions permit roundoff; all 89 SI derivative/force/power/contact fields checked. Not a long-trajectory tolerance."
+        },
+        "evidence": {
+          "allocation_transfer_kernel_read_release_s": 0.0004771000239998102,
+          "device_kernel_s": 1.4656000000000002e-05,
+          "backend": "OpenCL GPU FP64",
+          "device": "NVIDIA GeForce RTX 5080",
+          "driver": "621.01",
+          "kernel_sha256": "08392af91d80944260de9d052f5c56f8f4467f466b264a86a82351b6b3485d52",
+          "cpu_fallback": false,
+          "rows": 1,
+          "host_packing_road_lookup_s": 2.1600164473056793e-05,
+          "total_batch_s": 0.0005036001093685627,
+          "scope": "Instantaneous planar forces/derivatives only; not a powered rollout"
+        }
+      },
+      {
+        "rows": 32,
+        "cpu_reference_median_s": 0.0009316999930888414,
+        "cpu_reference_trials_s": [
+          0.0010112000163644552,
+          0.0008982999715954065,
+          0.0009316999930888414
+        ],
+        "gpu_total_batch_median_s": 0.0006769001483917236,
+        "gpu_total_batch_trials_s": [
+          0.0007197000086307526,
+          0.0006769001483917236,
+          0.0006719999946653843
+        ],
+        "gpu_device_kernel_trials_s": [
+          2.0064e-05,
+          2.0928e-05,
+          1.9200000000000003e-05
+        ],
+        "warm_end_to_end_speedup": 1.3764216115220358,
+        "new_context_one_batch_speedup": 0.0090846331822881,
+        "parity": {
+          "all_fields_passed": true,
+          "absolute_tolerance": 1e-08,
+          "relative_tolerance": 1e-10,
+          "max_absolute_error": 2.9103830456733704e-11,
+          "max_tolerance_fraction": 0.0016370904631909729,
+          "rationale": "FP64 independent host/device transcendental functions and reordered reductions permit roundoff; all 89 SI derivative/force/power/contact fields checked. Not a long-trajectory tolerance."
+        },
+        "evidence": {
+          "allocation_transfer_kernel_read_release_s": 0.0004021998029202223,
+          "device_kernel_s": 1.9200000000000003e-05,
+          "backend": "OpenCL GPU FP64",
+          "device": "NVIDIA GeForce RTX 5080",
+          "driver": "621.01",
+          "kernel_sha256": "08392af91d80944260de9d052f5c56f8f4467f466b264a86a82351b6b3485d52",
+          "cpu_fallback": false,
+          "rows": 32,
+          "host_packing_road_lookup_s": 0.00026480015367269516,
+          "total_batch_s": 0.0006719999946653843,
+          "scope": "Instantaneous planar forces/derivatives only; not a powered rollout"
+        }
+      },
+      {
+        "rows": 512,
+        "cpu_reference_median_s": 0.013968199957162142,
+        "cpu_reference_trials_s": [
+          0.014288899954408407,
+          0.013968199957162142,
+          0.013780900044366717
+        ],
+        "gpu_total_batch_median_s": 0.0044618998654186726,
+        "gpu_total_batch_trials_s": [
+          0.004564099945127964,
+          0.0044618998654186726,
+          0.0043691000901162624
+        ],
+        "gpu_device_kernel_trials_s": [
+          6.112e-05,
+          6.24e-05,
+          5.9648e-05
+        ],
+        "warm_end_to_end_speedup": 3.130549850618727,
+        "new_context_one_batch_speedup": 0.13127736046774832,
+        "parity": {
+          "all_fields_passed": true,
+          "absolute_tolerance": 1e-08,
+          "relative_tolerance": 1e-10,
+          "max_absolute_error": 5.820766091346741e-11,
+          "max_tolerance_fraction": 0.002910383045673291,
+          "rationale": "FP64 independent host/device transcendental functions and reordered reductions permit roundoff; all 89 SI derivative/force/power/contact fields checked. Not a long-trajectory tolerance."
+        },
+        "evidence": {
+          "allocation_transfer_kernel_read_release_s": 0.0005995000246912241,
+          "device_kernel_s": 5.9648e-05,
+          "backend": "OpenCL GPU FP64",
+          "device": "NVIDIA GeForce RTX 5080",
+          "driver": "621.01",
+          "kernel_sha256": "08392af91d80944260de9d052f5c56f8f4467f466b264a86a82351b6b3485d52",
+          "cpu_fallback": false,
+          "rows": 512,
+          "host_packing_road_lookup_s": 0.0037614000029861927,
+          "total_batch_s": 0.0043691000901162624,
+          "scope": "Instantaneous planar forces/derivatives only; not a powered rollout"
+        }
+      },
+      {
+        "rows": 8192,
+        "cpu_reference_median_s": 0.22498330008238554,
+        "cpu_reference_trials_s": [
+          0.22498330008238554,
+          0.2246903998311609,
+          0.2261167000979185
+        ],
+        "gpu_total_batch_median_s": 0.0652560000307858,
+        "gpu_total_batch_trials_s": [
+          0.06584229995496571,
+          0.06515679997391999,
+          0.0652560000307858
+        ],
+        "gpu_device_kernel_trials_s": [
+          5.7472e-05,
+          6.2624e-05,
+          6.307200000000001e-05
+        ],
+        "warm_end_to_end_speedup": 3.447702892856523,
+        "new_context_one_batch_speedup": 1.3417388087020257,
+        "parity": {
+          "all_fields_passed": true,
+          "absolute_tolerance": 1e-08,
+          "relative_tolerance": 1e-10,
+          "max_absolute_error": 5.820766091346741e-11,
+          "max_tolerance_fraction": 0.005456968210636775,
+          "rationale": "FP64 independent host/device transcendental functions and reordered reductions permit roundoff; all 89 SI derivative/force/power/contact fields checked. Not a long-trajectory tolerance."
+        },
+        "evidence": {
+          "allocation_transfer_kernel_read_release_s": 0.002929799957200885,
+          "device_kernel_s": 6.307200000000001e-05,
+          "backend": "OpenCL GPU FP64",
+          "device": "NVIDIA GeForce RTX 5080",
+          "driver": "621.01",
+          "kernel_sha256": "08392af91d80944260de9d052f5c56f8f4467f466b264a86a82351b6b3485d52",
+          "cpu_fallback": false,
+          "rows": 8192,
+          "host_packing_road_lookup_s": 0.06222860002890229,
+          "total_batch_s": 0.0652560000307858,
+          "scope": "Instantaneous planar forces/derivatives only; not a powered rollout"
+        }
+      }
+    ],
+    "six_course_saved_samples": {
+      "status": "passed",
+      "rows": 3072,
+      "provenance": [
+        {
+          "course_id": "fsae_michigan_2019_image",
+          "record_sha256": "1e367eaa8a47c3119e8917c30434a80c0a651ed57d337cb20b81a24b2fe249dd",
+          "samples": 512,
+          "scope": "Re-evaluation of saved instantaneous states/achieved controls; not replay or a new lap"
+        },
+        {
+          "course_id": "fsae_michigan_2022_image",
+          "record_sha256": "5731105c05948949d0e3769674b9c09c9dad01c91fa2808c149f6adb79788718",
+          "samples": 512,
+          "scope": "Re-evaluation of saved instantaneous states/achieved controls; not replay or a new lap"
+        },
+        {
+          "course_id": "fsae_michigan_2023_image",
+          "record_sha256": "52a9db0b91e2ae896c5b23f2d5c3be03d60f2e24fe7c03749d5c91dfdf2682b2",
+          "samples": 512,
+          "scope": "Re-evaluation of saved instantaneous states/achieved controls; not replay or a new lap"
+        },
+        {
+          "course_id": "fsae_electric_2024_image",
+          "record_sha256": "37c10505a0857b29b09b94f49b548f0397c626aef81a63e4af975e19e823e0a0",
+          "samples": 512,
+          "scope": "Re-evaluation of saved instantaneous states/achieved controls; not replay or a new lap"
+        },
+        {
+          "course_id": "fs_east_2017_image",
+          "record_sha256": "89d2fae9d07347f1d461977e969c47222d62ba77f9ea71b8ed92b91310e10847",
+          "samples": 512,
+          "scope": "Re-evaluation of saved instantaneous states/achieved controls; not replay or a new lap"
+        },
+        {
+          "course_id": "fused_gnss_imu_trajectory_approx",
+          "record_sha256": "b43cb40b6468232db48b615533f0b9ddcea93d6a9fdfa23508c3acac55819b44",
+          "samples": 512,
+          "scope": "Re-evaluation of saved instantaneous states/achieved controls; not replay or a new lap"
+        }
+      ],
+      "cpu_reference_s": 0.08197949989698827,
+      "gpu_evidence": {
+        "allocation_transfer_kernel_read_release_s": 0.0016858999151736498,
+        "device_kernel_s": 5.619200000000001e-05,
+        "backend": "OpenCL GPU FP64",
+        "device": "NVIDIA GeForce RTX 5080",
+        "driver": "621.01",
+        "kernel_sha256": "08392af91d80944260de9d052f5c56f8f4467f466b264a86a82351b6b3485d52",
+        "cpu_fallback": false,
+        "rows": 3072,
+        "host_packing_road_lookup_s": 0.0105876000598073,
+        "total_batch_s": 0.012302600080147386,
+        "scope": "Instantaneous planar forces/derivatives only; not a powered rollout"
+      },
+      "parity": {
+        "all_fields_passed": true,
+        "absolute_tolerance": 1e-08,
+        "relative_tolerance": 1e-10,
+        "max_absolute_error": 3.637978807091713e-12,
+        "max_tolerance_fraction": 0.00017337242752546203,
+        "rationale": "FP64 independent host/device transcendental functions and reordered reductions permit roundoff; all 89 SI derivative/force/power/contact fields checked. Not a long-trajectory tolerance."
+      },
+      "deterministic_repeat": true
+    },
+    "cpu_screening_preserved": true,
+    "full_laps_executed": 0,
+    "ga_executed": false,
+    "scope": "Instantaneous four-wheel planar force/derivative batch only. Includes host road lookup/packing, allocation, transfers, kernel, readback and release; new-context build separately and amortized once; driver cache may be warm.",
+    "not_implemented": [
+      "Powered RK event loop",
+      "Actuator/pack constraints on GPU",
+      "Locked-axle reaction on GPU",
+      "Course driver/controller clocks on GPU",
+      "GPU full-lap or GA evaluation"
+    ],
+    "official_points": false
+  },
+  "powered_benchmark": {
+    "schema": "lapsim.powered-gpu-benchmark.v1",
+    "utc": "2026-10-26T23:08:01.907609+00:00",
+    "device": "NVIDIA GeForce RTX 5080",
+    "driver": "621.01",
+    "backend": "Hybrid OpenCL GPU FP64 forces / CPU events and limits",
+    "seed": 20261026,
+    "kernel_sha256": "08392af91d80944260de9d052f5c56f8f4467f466b264a86a82351b6b3485d52",
+    "new_context_build_s": 0.11302800010889769,
+    "driver_cache": "Retained; program build may use installed driver cache",
+    "sources": {
+      "src/lapsim/dynamics/powered_planar.py": "7766cdb6efe1798503f2a1d34ee75884a87453ba49b3beeed3df23a7ca196386",
+      "src/lapsim/dynamics/actuation.py": "3e68c0e21e7be17c9f7767a4eb522281a7af5606df7062630066e7a700bcf3df",
+      "src/lapsim/dynamics/powered_opencl.py": "8bb732032f54566e8016d410eeba8e138da40ca1250013d54c2e1be7afeca5a5",
+      "src/lapsim/dynamics/planar_opencl.py": "bd7a63053c7fdd9e5c2702fdfba7c80ab967877fb724ba056fb1a1e78e108058"
+    },
+    "rounds": [
+      {
+        "lanes": 1,
+        "cpu_median_s": 0.0015285999979823828,
+        "cpu_trials_s": [
+          0.0018481998704373837,
+          0.0015285999979823828,
+          0.0014996000099927187
+        ],
+        "gpu_hybrid_trials_s": [
+          0.01290940004400909,
+          0.013148600002750754,
+          0.012455799849703908
+        ],
+        "end_to_end_speedup": 0.11840984033117523,
+        "new_context_one_batch_speedup": 0.012137776356558374,
+        "evidence": {
+          "backend": "Hybrid OpenCL GPU FP64 forces / CPU events and limits",
+          "device": "NVIDIA GeForce RTX 5080",
+          "cpu_force_fallback": false,
+          "kernel_launches": 25,
+          "force_rows": 25,
+          "device_kernel_s": 0.0004637120000000001,
+          "total_interval_batch_s": 0.012455799849703908,
+          "lanes": 1,
+          "scope": "Powered held-command plant intervals; controller/course scheduling not included"
+        },
+        "parity": {
+          "passed": true,
+          "rtol": 1e-10,
+          "atol": 1e-08,
+          "max_absolute_state_ledger_error": 0.0,
+          "event_work_counters_equal": true,
+          "scope": "Ten-millisecond held-command intervals only; not long-lap tolerance"
+        }
+      },
+      {
+        "lanes": 32,
+        "cpu_median_s": 0.08480329997837543,
+        "cpu_trials_s": [
+          0.08480329997837543,
+          0.08440960012376308,
+          0.08494049985893071
+        ],
+        "gpu_hybrid_trials_s": [
+          0.09879299998283386,
+          0.09533750009723008,
+          0.09720880002714694
+        ],
+        "end_to_end_speedup": 0.8723829525176003,
+        "new_context_one_batch_speedup": 0.40035360017019267,
+        "evidence": {
+          "backend": "Hybrid OpenCL GPU FP64 forces / CPU events and limits",
+          "device": "NVIDIA GeForce RTX 5080",
+          "cpu_force_fallback": false,
+          "kernel_launches": 25,
+          "force_rows": 800,
+          "device_kernel_s": 0.0007016,
+          "total_interval_batch_s": 0.09720880002714694,
+          "lanes": 32,
+          "scope": "Powered held-command plant intervals; controller/course scheduling not included"
+        },
+        "parity": {
+          "passed": true,
+          "rtol": 1e-10,
+          "atol": 1e-08,
+          "max_absolute_state_ledger_error": 8.881784197001252e-16,
+          "event_work_counters_equal": true,
+          "scope": "Ten-millisecond held-command intervals only; not long-lap tolerance"
+        }
+      },
+      {
+        "lanes": 128,
+        "cpu_median_s": 0.3586137001402676,
+        "cpu_trials_s": [
+          0.36106559983454645,
+          0.3580083998385817,
+          0.3586137001402676
+        ],
+        "gpu_hybrid_trials_s": [
+          0.3637163999956101,
+          0.3709408000577241,
+          0.3899822998791933
+        ],
+        "end_to_end_speedup": 0.9667680128054443,
+        "new_context_one_batch_speedup": 0.75221376498949,
+        "evidence": {
+          "backend": "Hybrid OpenCL GPU FP64 forces / CPU events and limits",
+          "device": "NVIDIA GeForce RTX 5080",
+          "cpu_force_fallback": false,
+          "kernel_launches": 25,
+          "force_rows": 3200,
+          "device_kernel_s": 0.0008329600000000001,
+          "total_interval_batch_s": 0.3899822998791933,
+          "lanes": 128,
+          "scope": "Powered held-command plant intervals; controller/course scheduling not included"
+        },
+        "parity": {
+          "passed": true,
+          "rtol": 1e-10,
+          "atol": 1e-08,
+          "max_absolute_state_ledger_error": 8.881784197001252e-16,
+          "event_work_counters_equal": true,
+          "scope": "Ten-millisecond held-command intervals only; not long-lap tolerance"
+        }
+      }
+    ],
+    "full_laps_executed": 0,
+    "ga_executed": false,
+    "scope": "Complete .01 s powered plant intervals, including CPU event/limit work, packing, allocation, GPU forces, transfer, readback and typed reconstruction. No controller/course loop and no lap speedup claim."
+  },
+  "guards": [
+    {
+      "utc": "2026-10-26T23:06:58.6086610Z",
+      "outcome": "process_completed",
+      "processLaunched": true,
+      "phase": "tests",
+      "device": "NVIDIA GeForce RTX 5080",
+      "launcherPid": 54120,
+      "launcherStartedUtc": "2026-10-26T23:06:51.7326679Z",
+      "exitCode": 0,
+      "reserveGiB": 8,
+      "jobAllowanceGiB": 2,
+      "headroomBeforeGiB": 13.074024200439453,
+      "wallSeconds": 6.8669344,
+      "samples": [
+        {
+          "utc": "2026-10-26T23:06:52.0315438Z",
+          "headroomGiB": 13.032520294189453,
+          "elapsedWallS": 0.2888812
+        },
+        {
+          "utc": "2026-10-26T23:06:54.3180391Z",
+          "headroomGiB": 12.649368286132812,
+          "elapsedWallS": 2.5747714
+        },
+        {
+          "utc": "2026-10-26T23:06:56.5995135Z",
+          "headroomGiB": 12.705135345458984,
+          "elapsedWallS": 4.8562337
+        }
+      ],
+      "scope": "One optional OpenCL FP64 validation process, at most 8192 physics rows; bounded buffers; CPU screening remains paused; 180 s cap; no installation, hardware actuation, browser or unrelated process changes"
+    },
+    {
+      "utc": "2026-10-26T23:07:41.4537254Z",
+      "outcome": "process_completed",
+      "processLaunched": true,
+      "phase": "benchmark",
+      "device": "NVIDIA GeForce RTX 5080",
+      "launcherPid": 39852,
+      "launcherStartedUtc": "2026-10-26T23:07:36.8569759Z",
+      "exitCode": 0,
+      "reserveGiB": 8,
+      "jobAllowanceGiB": 2,
+      "headroomBeforeGiB": 13.067008972167969,
+      "wallSeconds": 4.5876616,
+      "samples": [
+        {
+          "utc": "2026-10-26T23:07:37.1573366Z",
+          "headroomGiB": 13.041767120361328,
+          "elapsedWallS": 0.2903949
+        },
+        {
+          "utc": "2026-10-26T23:07:39.4429246Z",
+          "headroomGiB": 12.553165435791016,
+          "elapsedWallS": 2.5753546
+        }
+      ],
+      "scope": "One optional OpenCL FP64 validation process, at most 8192 physics rows; bounded buffers; CPU screening remains paused; 180 s cap; no installation, hardware actuation, browser or unrelated process changes"
+    },
+    {
+      "utc": "2026-10-26T23:08:02.6771579Z",
+      "outcome": "process_completed",
+      "processLaunched": true,
+      "phase": "powered-benchmark",
+      "device": "NVIDIA GeForce RTX 5080",
+      "launcherPid": 25884,
+      "launcherStartedUtc": "2026-10-26T23:07:58.0879310Z",
+      "exitCode": 0,
+      "reserveGiB": 8,
+      "jobAllowanceGiB": 2,
+      "headroomBeforeGiB": 13.11172103881836,
+      "wallSeconds": 4.5806887,
+      "samples": [
+        {
+          "utc": "2026-10-26T23:07:58.3900234Z",
+          "headroomGiB": 13.0736083984375,
+          "elapsedWallS": 0.2926926
+        },
+        {
+          "utc": "2026-10-26T23:08:00.6701183Z",
+          "headroomGiB": 12.67935562133789,
+          "elapsedWallS": 2.5721225
+        }
+      ],
+      "scope": "One optional OpenCL FP64 validation process, at most 8192 physics rows; bounded buffers; CPU screening remains paused; 180 s cap; no installation, hardware actuation, browser or unrelated process changes"
+    }
+  ],
+  "cpu_screening": {
+    "completed_valid": 118,
+    "required": 180,
+    "paused": true
+  },
+  "gpu_full_laps": 0,
+  "gpu_ga_generations": 0,
+  "final_winners_selected": false,
+  "flowchart_inventory_check": "Unavailable: commands absent from this implementation checkout; public integration worktree owns generated inventory"
+}
