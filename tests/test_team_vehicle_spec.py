@@ -3,7 +3,7 @@ import math
 import json
 import pytest
 from lapsim.dynamics.actuation import AWD_TOPOLOGY_ID, constrain_actuation
-from lapsim.torque_configurator.profile import example_profile, VehicleProfile
+from lapsim.torque_configurator.profile import example_profile, VehicleProfile, PROFILE_FILES
 from lapsim.torque_configurator.team_spec import load_team_spec, ratio_probe, actuation_diagnostics
 
 def test_team_update_retains_unknowns_and_motor_to_wheel_convention():
@@ -99,3 +99,14 @@ def test_synthetic_limit_probes_show_ratio_sensitivity_not_real_top_speed():
     diagnostics = actuation_diagnostics(base, probe)
     assert len(diagnostics['rows']) == 4 and diagnostics['simulation_only'] is True
     assert diagnostics['rows'][0]['ratio_probe']['motor_speeds_rad_s'] == (124.80000000000001,) * 4
+
+
+@pytest.mark.parametrize('architecture', list(PROFILE_FILES))
+def test_ratio_diagnostic_preserves_supported_topology_front_drive(architecture):
+    base = example_profile(architecture)
+    probe, _ = ratio_probe(load_team_spec(), base, accept_synthetic_assumptions=True)
+    diagnostics = actuation_diagnostics(base, probe)
+    expected_front = (50.0, 50.0) if architecture == AWD_TOPOLOGY_ID else (0.0, 0.0)
+    for profile in ('baseline', 'ratio_probe'):
+        actual = diagnostics['rows'][0][profile]['wheel_torques_nm']
+        assert len(actual) == 4 and actual[:2] == expected_front

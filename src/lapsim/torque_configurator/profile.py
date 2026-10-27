@@ -20,8 +20,10 @@ PROFILE_FILES={TOPOLOGY_ID:'synthetic-two-rear-v1.json',
                AWD_TOPOLOGY_ID:'synthetic-four-awd-v1.json',SPOOL_RWD_TOPOLOGY_ID:'synthetic-spool-v1.json'}
 
 
-def drive_availability(profile):
-    return (True,)*4 if profile.actuation.topology_id==AWD_TOPOLOGY_ID else (False,False,True,True)
+def drive_availability(profile: "VehicleProfile") -> tuple[bool, bool, bool, bool]:
+    if profile.actuation.topology_id == AWD_TOPOLOGY_ID:
+        return (True, True, True, True)
+    return (False, False, True, True)
 
 
 def canonical(value):return json.dumps(value,sort_keys=True,separators=(',',':'),allow_nan=False)
