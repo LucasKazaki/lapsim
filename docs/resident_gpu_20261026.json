@@ -1,0 +1,995 @@
+{
+  "schema": "lapsim.resident-gpu-acceptance.v1",
+  "utc": "2026-10-26T23:36:19.342007+00:00",
+  "resident_benchmark": {
+    "schema": "lapsim.resident-powered-benchmark.v1",
+    "utc": "2026-10-26T23:23:54.383334+00:00",
+    "backend": "Resident OpenCL GPU FP64 powered RK/events/limits",
+    "device": "NVIDIA GeForce RTX 5080",
+    "kernel_sha256": "5589a49a1ed8f23eadf00af32877632aa10d551c86a7e29af69ab02c52403a9f",
+    "seed": 20261026,
+    "rounds": [
+      {
+        "lanes": 1,
+        "continuous_intervals": 10,
+        "interval_s": 0.01,
+        "cpu_trials_s": [
+          0.015153800137341022,
+          0.01459939987398684,
+          0.014522099867463112
+        ],
+        "gpu_trials_s": [
+          0.01189549989067018,
+          0.011861600214615464,
+          0.012062499998137355
+        ],
+        "setup_build_upload_trials_s": [
+          0.10268940008245409,
+          0.06523199984803796,
+          0.05531159997917712
+        ],
+        "device_kernel_trials_s": [
+          0.009868864,
+          0.009981279999999999,
+          0.010047872000000003
+        ],
+        "warm_workflow_speedup": 1.227304443543173,
+        "setup_inclusive_speedup": 0.18937239747685944,
+        "parity": {
+          "passed": true,
+          "rtol": 1e-10,
+          "atol": 1e-08,
+          "max_absolute_state_ledger_error": 2.842170943040401e-14,
+          "event_work_counters_equal": true,
+          "scope": "Ten-millisecond held-command intervals only; not long-lap tolerance"
+        },
+        "evidence": {
+          "backend": "Resident OpenCL GPU FP64 powered RK/events/limits",
+          "device": "NVIDIA GeForce RTX 5080",
+          "cpu_fallback": false,
+          "lanes": 1,
+          "kernel_launches": 1,
+          "device_kernel_s": 0.0006386240000000001,
+          "total_step_s": 0.0008769000414758921,
+          "state_initializations": 1,
+          "state_uploaded_this_step": false,
+          "kernel_sha256": "5589a49a1ed8f23eadf00af32877632aa10d551c86a7e29af69ab02c52403a9f",
+          "scope": "Held-command powered intervals; driver/controller scheduling on host; uniform road only"
+        }
+      },
+      {
+        "lanes": 32,
+        "continuous_intervals": 10,
+        "interval_s": 0.01,
+        "cpu_trials_s": [
+          0.8675152999348938,
+          0.8542579000350088,
+          0.8523973000701517
+        ],
+        "gpu_trials_s": [
+          0.09087239997461438,
+          0.09084119996987283,
+          0.09139870014041662
+        ],
+        "setup_build_upload_trials_s": [
+          0.0651354999281466,
+          0.056965299881994724,
+          0.059562900103628635
+        ],
+        "device_kernel_trials_s": [
+          0.07907731200000001,
+          0.07911699200000001,
+          0.0796664
+        ],
+        "warm_workflow_speedup": 9.40063099768081,
+        "setup_inclusive_speedup": 5.658776130181525,
+        "parity": {
+          "passed": true,
+          "rtol": 1e-10,
+          "atol": 1e-08,
+          "max_absolute_state_ledger_error": 5.684341886080802e-14,
+          "event_work_counters_equal": true,
+          "scope": "Ten-millisecond held-command intervals only; not long-lap tolerance"
+        },
+        "evidence": {
+          "backend": "Resident OpenCL GPU FP64 powered RK/events/limits",
+          "device": "NVIDIA GeForce RTX 5080",
+          "cpu_fallback": false,
+          "lanes": 32,
+          "kernel_launches": 1,
+          "device_kernel_s": 0.007553856,
+          "total_step_s": 0.008531499886885285,
+          "state_initializations": 1,
+          "state_uploaded_this_step": false,
+          "kernel_sha256": "5589a49a1ed8f23eadf00af32877632aa10d551c86a7e29af69ab02c52403a9f",
+          "scope": "Held-command powered intervals; driver/controller scheduling on host; uniform road only"
+        }
+      },
+      {
+        "lanes": 128,
+        "continuous_intervals": 10,
+        "interval_s": 0.01,
+        "cpu_trials_s": [
+          3.616809699917212,
+          3.652059799991548,
+          3.5272729999851435
+        ],
+        "gpu_trials_s": [
+          0.1438404000364244,
+          0.14169499999843538,
+          0.14064150000922382
+        ],
+        "setup_build_upload_trials_s": [
+          0.060494499979540706,
+          0.07206230005249381,
+          0.05953259998932481
+        ],
+        "device_kernel_trials_s": [
+          0.10095046400000002,
+          0.100008704,
+          0.09980016
+        ],
+        "warm_workflow_speedup": 25.525316348192593,
+        "setup_inclusive_speedup": 17.700401153374305,
+        "parity": {
+          "passed": true,
+          "rtol": 1e-10,
+          "atol": 1e-08,
+          "max_absolute_state_ledger_error": 4.547473508864641e-13,
+          "event_work_counters_equal": true,
+          "scope": "Ten-millisecond held-command intervals only; not long-lap tolerance"
+        },
+        "evidence": {
+          "backend": "Resident OpenCL GPU FP64 powered RK/events/limits",
+          "device": "NVIDIA GeForce RTX 5080",
+          "cpu_fallback": false,
+          "lanes": 128,
+          "kernel_launches": 1,
+          "device_kernel_s": 0.009629344,
+          "total_step_s": 0.013229999924078584,
+          "state_initializations": 1,
+          "state_uploaded_this_step": false,
+          "kernel_sha256": "5589a49a1ed8f23eadf00af32877632aa10d551c86a7e29af69ab02c52403a9f",
+          "scope": "Held-command powered intervals; driver/controller scheduling on host; uniform road only"
+        }
+      }
+    ],
+    "full_laps_executed": 0,
+    "ga_executed": false,
+    "scope": "Ten continuous 10 ms powered intervals; host limits/events are now on device. Includes controls upload, state readback, reconstruction and parity comparison. Driver/controller/course loop not included. Driver cache retained."
+  },
+  "representative_laps": {
+    "schema": "lapsim.full-lap-gpu-validation.v1",
+    "utc": "2026-10-26T23:28:58.853794+00:00",
+    "phase": "representative",
+    "rows": [
+      {
+        "job": "awd-fixed-off",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 15.834290445863187,
+        "net_energy_wh": 3.1274730343309542,
+        "gross_draw_wh": 3.1274730343309542,
+        "recovered_wh": 0.0,
+        "generating_log_samples": 0,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 0.0,
+            "energy_residual_j": 0.0,
+            "max_slip": 0.0,
+            "max_yaw_rad_s": 1.1102230246251565e-16,
+            "max_sideslip_rad": 6.938893903907228e-18,
+            "max_cross_track_m": 0.0
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 0.0,
+            "y_m": 5.551115123125783e-17,
+            "heading_rad": 1.3552527156068805e-20,
+            "u_mps": 8.881784197001252e-16,
+            "v_mps": 1.1102230246251565e-16,
+            "yaw_rad_s": 1.1102230246251565e-16,
+            "wheel_omega_rad_s": 7.105427357601002e-15,
+            "pack_energy_j": 0.0,
+            "requested_nm": 1.7763568394002505e-14,
+            "proposed_nm": 1.7763568394002505e-14,
+            "limited_nm": 1.7763568394002505e-14,
+            "achieved_nm": 1.7763568394002505e-14,
+            "friction_nm": 0.0
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/representative-laps-recovered-timing-repeat.validation/awd-fixed-off.gpu.json",
+        "raw_record_sha256": "e7ac8aab79ed16267acc8e65858069f26e4fc17a1be7405635a1939169f3cdbd"
+      },
+      {
+        "job": "awd-yaw-regen",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 15.836188929527685,
+        "net_energy_wh": 2.5210016487280114,
+        "gross_draw_wh": 3.1340985181053274,
+        "recovered_wh": 0.6130968693773159,
+        "generating_log_samples": 53,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 0.0,
+            "energy_residual_j": 2.7284841053187847e-12,
+            "max_slip": 0.0,
+            "max_yaw_rad_s": 1.3322676295501878e-15,
+            "max_sideslip_rad": 9.71445146547012e-17,
+            "max_cross_track_m": 3.552713678800501e-15
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 3.552713678800501e-15,
+            "y_m": 7.105427357601002e-15,
+            "heading_rad": 8.881784197001252e-16,
+            "u_mps": 2.6645352591003757e-15,
+            "v_mps": 2.0816681711721685e-15,
+            "yaw_rad_s": 4.773959005888173e-15,
+            "wheel_omega_rad_s": 1.7763568394002505e-14,
+            "pack_energy_j": 0.0,
+            "requested_nm": 5.3290705182007514e-14,
+            "proposed_nm": 6.927791673660977e-14,
+            "limited_nm": 6.927791673660977e-14,
+            "achieved_nm": 5.5067062021407764e-14,
+            "friction_nm": 0.0
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/representative-laps-recovered-timing-repeat.validation/awd-yaw-regen.gpu.json",
+        "raw_record_sha256": "f82a333bc44d30de4f0279c99d3e5940f5c3958d1e5dd7164f34ee49c3882358"
+      },
+      {
+        "job": "open-rwd-traction",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 15.89,
+        "net_energy_wh": 2.5978512546161396,
+        "gross_draw_wh": 3.1003543371107014,
+        "recovered_wh": 0.5025030824945619,
+        "generating_log_samples": 50,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 0.0,
+            "energy_residual_j": 6.139089236967266e-12,
+            "max_slip": 3.0531133177191805e-16,
+            "max_yaw_rad_s": 0.0,
+            "max_sideslip_rad": 0.0,
+            "max_cross_track_m": 3.552713678800501e-15
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 5.495603971894525e-15,
+            "y_m": 3.552713678800501e-15,
+            "heading_rad": 1.7763568394002505e-15,
+            "u_mps": 1.7763568394002505e-15,
+            "v_mps": 2.1788126858268697e-15,
+            "yaw_rad_s": 5.176414852314792e-15,
+            "wheel_omega_rad_s": 2.1316282072803006e-14,
+            "pack_energy_j": 0.0,
+            "requested_nm": 1.0658141036401503e-13,
+            "proposed_nm": 1.9184653865522705e-13,
+            "limited_nm": 1.9184653865522705e-13,
+            "achieved_nm": 1.0302869668521453e-13,
+            "friction_nm": 0.0
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/representative-laps-recovered-timing-repeat.validation/open-rwd-traction.gpu.json",
+        "raw_record_sha256": "cad203e15a4cce958c6ad03380aba9bccc1a5641c22b5a3f0dbf52d72fd96c84"
+      },
+      {
+        "job": "spool-regen",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 16.00873026646025,
+        "net_energy_wh": 3.044492623836009,
+        "gross_draw_wh": 3.367174673289992,
+        "recovered_wh": 0.3226820494539829,
+        "generating_log_samples": 50,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 0.0,
+            "energy_residual_j": 0.0,
+            "max_slip": 0.0,
+            "max_yaw_rad_s": 0.0,
+            "max_sideslip_rad": 0.0,
+            "max_cross_track_m": 0.0
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 1.3010426069826053e-16,
+            "y_m": 4.440892098500626e-16,
+            "heading_rad": 0.0,
+            "u_mps": 1.7763568394002505e-15,
+            "v_mps": 6.661338147750939e-16,
+            "yaw_rad_s": 1.2212453270876722e-15,
+            "wheel_omega_rad_s": 1.0658141036401503e-14,
+            "pack_energy_j": 0.0,
+            "requested_nm": 7.105427357601002e-14,
+            "proposed_nm": 7.105427357601002e-14,
+            "limited_nm": 7.105427357601002e-14,
+            "achieved_nm": 6.394884621840902e-14,
+            "friction_nm": 0.0
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/representative-laps-recovered-timing-repeat.validation/spool-regen.gpu.json",
+        "raw_record_sha256": "9ee555425a9a2f72e388f65e960365fb390d6e9fcd097cf11d73085e8e9642e1"
+      }
+    ],
+    "all_passed": true,
+    "workflow": {
+      "backend": "Resident OpenCL GPU FP64 powered plant / original CPU driver-controller",
+      "device": "NVIDIA GeForce RTX 5080",
+      "cpu_physics_fallback": false,
+      "lanes": 4,
+      "kernel_launches": 1601,
+      "device_kernel_s": 1.3495588160000003,
+      "setup_build_initial_upload_s": 0.10734490002505481,
+      "total_batch_wall_s": 6.032958999974653,
+      "kernel_sha256": "5589a49a1ed8f23eadf00af32877632aa10d551c86a7e29af69ab02c52403a9f",
+      "state_initializations_per_lane": 1,
+      "owned_threads_exited": true,
+      "scope": "One-lap uniform-road simulator records; hardware strata and geometry remain distinct; no scoring in this adapter"
+    },
+    "cpu_reference_wall_s": null,
+    "workflow_speedup": null,
+    "timing_scope": "Reused CPU records; current GPU workflow time only; earlier CPU timing retained separately",
+    "cpu_provenance": [
+      {
+        "job": "awd-fixed-off",
+        "cpu_reference": "Explicit preserved representative CPU record"
+      },
+      {
+        "job": "awd-yaw-regen",
+        "cpu_reference": "Explicit preserved representative CPU record"
+      },
+      {
+        "job": "open-rwd-traction",
+        "cpu_reference": "Explicit preserved representative CPU record"
+      },
+      {
+        "job": "spool-regen",
+        "cpu_reference": "Explicit preserved representative CPU record"
+      }
+    ],
+    "ga_executed": false,
+    "official_points": false
+  },
+  "representative_cpu_wall_s_preserved_from_first_stdout": 15.746349000139162,
+  "representative_full_lap_repeats_identical": {
+    "awd-fixed-off": true,
+    "awd-yaw-regen": true,
+    "open-rwd-traction": true,
+    "spool-regen": true
+  },
+  "six_course_laps": {
+    "schema": "lapsim.full-lap-gpu-validation.v1",
+    "utc": "2026-10-26T23:32:01.861211+00:00",
+    "phase": "courses",
+    "rows": [
+      {
+        "job": "fsae_michigan_2019_image",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 277.8970793697997,
+        "net_energy_wh": 68.63487479061561,
+        "gross_draw_wh": 68.63487479061561,
+        "recovered_wh": 0.0,
+        "generating_log_samples": 0,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 0.0,
+            "energy_residual_j": 0.0,
+            "max_slip": 0.0,
+            "max_yaw_rad_s": 0.0,
+            "max_sideslip_rad": 1.942890293094024e-16,
+            "max_cross_track_m": 0.0
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 5.684341886080802e-14,
+            "y_m": 5.684341886080802e-14,
+            "heading_rad": 1.4210854715202004e-14,
+            "u_mps": 2.4424906541753444e-14,
+            "v_mps": 3.785860513971784e-14,
+            "yaw_rad_s": 5.484501741648273e-14,
+            "wheel_omega_rad_s": 2.2382096176443156e-13,
+            "pack_energy_j": 0.0,
+            "requested_nm": 1.4832579608992091e-12,
+            "proposed_nm": 1.4832579608992091e-12,
+            "limited_nm": 1.4832579608992091e-12,
+            "achieved_nm": 1.2824741268957496e-12,
+            "friction_nm": 4.867217739956686e-12
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/courses-laps-six-course-parity.validation/fsae_michigan_2019_image.gpu.json",
+        "raw_record_sha256": "55ceea30466aa09d211dfbbf9e8dc715eb3eff9664e1c9b38c0f49a21314bc28"
+      },
+      {
+        "job": "fsae_michigan_2022_image",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 272.36783445411913,
+        "net_energy_wh": 68.2599191284816,
+        "gross_draw_wh": 68.2599191284816,
+        "recovered_wh": 0.0,
+        "generating_log_samples": 0,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 5.273559366969494e-16,
+            "energy_residual_j": 1.8480932340025902e-09,
+            "max_slip": 0.0,
+            "max_yaw_rad_s": 0.0,
+            "max_sideslip_rad": 0.0,
+            "max_cross_track_m": 0.0
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 4.475586568020162e-15,
+            "y_m": 1.4210854715202004e-14,
+            "heading_rad": 3.552713678800501e-15,
+            "u_mps": 1.7763568394002505e-15,
+            "v_mps": 7.258083023486961e-15,
+            "yaw_rad_s": 1.3107570584480754e-14,
+            "wheel_omega_rad_s": 4.263256414560601e-14,
+            "pack_energy_j": 1.862645149230957e-09,
+            "requested_nm": 7.105427357601002e-14,
+            "proposed_nm": 7.105427357601002e-14,
+            "limited_nm": 7.105427357601002e-14,
+            "achieved_nm": 7.105427357601002e-14,
+            "friction_nm": 3.730349362740526e-14
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/courses-laps-six-course-parity.validation/fsae_michigan_2022_image.gpu.json",
+        "raw_record_sha256": "69bdabcaf6e0cabe6e07c66b5016c208f20bb21ecfe515c6d3294a2f5d0a3c08"
+      },
+      {
+        "job": "fsae_michigan_2023_image",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 252.92336090941527,
+        "net_energy_wh": 55.76235241725213,
+        "gross_draw_wh": 55.76235241725213,
+        "recovered_wh": 0.0,
+        "generating_log_samples": 0,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 0.0,
+            "energy_residual_j": 1.4551915228366852e-11,
+            "max_slip": 0.0,
+            "max_yaw_rad_s": 0.0,
+            "max_sideslip_rad": 0.0,
+            "max_cross_track_m": 0.0
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 1.4210854715202004e-14,
+            "y_m": 6.217248937900877e-15,
+            "heading_rad": 2.6645352591003757e-15,
+            "u_mps": 3.552713678800501e-15,
+            "v_mps": 3.0253577421035516e-15,
+            "yaw_rad_s": 9.83935155574045e-15,
+            "wheel_omega_rad_s": 3.552713678800501e-14,
+            "pack_energy_j": 0.0,
+            "requested_nm": 7.105427357601002e-14,
+            "proposed_nm": 7.105427357601002e-14,
+            "limited_nm": 7.105427357601002e-14,
+            "achieved_nm": 7.105427357601002e-14,
+            "friction_nm": 1.1368683772161603e-13
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/courses-laps-six-course-parity.validation/fsae_michigan_2023_image.gpu.json",
+        "raw_record_sha256": "0f8115f1510428112e96c1bc4f4b0e2dda7e61d365618210ff0bf311d6d182a6"
+      },
+      {
+        "job": "fsae_electric_2024_image",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 140.39907447276443,
+        "net_energy_wh": 29.602713481473426,
+        "gross_draw_wh": 29.602713481473426,
+        "recovered_wh": 0.0,
+        "generating_log_samples": 0,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 5.169475958410885e-16,
+            "energy_residual_j": 1.8844730220735073e-09,
+            "max_slip": 0.0,
+            "max_yaw_rad_s": 1.1102230246251565e-16,
+            "max_sideslip_rad": 5.551115123125783e-17,
+            "max_cross_track_m": 0.0
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 3.552713678800501e-15,
+            "y_m": 1.7763568394002505e-15,
+            "heading_rad": 8.881784197001252e-16,
+            "u_mps": 2.6645352591003757e-15,
+            "v_mps": 4.135580766728708e-15,
+            "yaw_rad_s": 7.382983113757291e-15,
+            "wheel_omega_rad_s": 2.1316282072803006e-14,
+            "pack_energy_j": 1.862645149230957e-09,
+            "requested_nm": 7.105427357601002e-14,
+            "proposed_nm": 7.105427357601002e-14,
+            "limited_nm": 7.105427357601002e-14,
+            "achieved_nm": 6.616929226765933e-14,
+            "friction_nm": 1.1013412404281553e-13
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/courses-laps-six-course-parity.validation/fsae_electric_2024_image.gpu.json",
+        "raw_record_sha256": "0a8aa845349da43557449b7526129a15dd40cf72bbe5d9e5e36ec3431e7ecf99"
+      },
+      {
+        "job": "fs_east_2017_image",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 102.70419093240456,
+        "net_energy_wh": 39.00669649190787,
+        "gross_draw_wh": 39.00669649190787,
+        "recovered_wh": 0.0,
+        "generating_log_samples": 0,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 0.0,
+            "energy_residual_j": 1.9208528101444244e-09,
+            "max_slip": 0.0,
+            "max_yaw_rad_s": 3.885780586188048e-15,
+            "max_sideslip_rad": 1.6653345369377348e-16,
+            "max_cross_track_m": 0.0
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 8.526512829121202e-14,
+            "y_m": 5.684341886080802e-14,
+            "heading_rad": 1.0658141036401503e-14,
+            "u_mps": 1.4210854715202004e-14,
+            "v_mps": 2.5261043257174265e-14,
+            "yaw_rad_s": 3.640837631380123e-14,
+            "wheel_omega_rad_s": 1.3500311979441904e-13,
+            "pack_energy_j": 0.0,
+            "requested_nm": 5.115907697472721e-13,
+            "proposed_nm": 5.115907697472721e-13,
+            "limited_nm": 5.115907697472721e-13,
+            "achieved_nm": 4.760636329592671e-13,
+            "friction_nm": 1.751487843648647e-12
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/courses-laps-six-course-parity.validation/fs_east_2017_image.gpu.json",
+        "raw_record_sha256": "8369969562afe5422b2b2b5de2cb74c2c17c50eeeec73ff460a873c568ba6a0b"
+      },
+      {
+        "job": "fused_gnss_imu_trajectory_approx",
+        "status": "completed",
+        "eligible": true,
+        "violations": [],
+        "lap_time_s": 131.7171853748848,
+        "net_energy_wh": 36.485684153583,
+        "gross_draw_wh": 36.485684153583,
+        "recovered_wh": 0.0,
+        "generating_log_samples": 0,
+        "parity": {
+          "passed": true,
+          "metric_absolute_errors": {
+            "lap_time_s": 0.0,
+            "net_energy_kwh": 0.0,
+            "energy_residual_j": 1.0913936421275139e-11,
+            "max_slip": 0.0,
+            "max_yaw_rad_s": 0.0,
+            "max_sideslip_rad": 0.0,
+            "max_cross_track_m": 0.0
+          },
+          "channel_max_absolute_errors": {
+            "x_m": 2.842170943040401e-14,
+            "y_m": 2.842170943040401e-14,
+            "heading_rad": 6.328271240363392e-15,
+            "u_mps": 3.552713678800501e-15,
+            "v_mps": 6.152196807551746e-15,
+            "yaw_rad_s": 1.429412144204889e-14,
+            "wheel_omega_rad_s": 4.973799150320701e-14,
+            "pack_energy_j": 0.0,
+            "requested_nm": 7.105427357601002e-14,
+            "proposed_nm": 7.105427357601002e-14,
+            "limited_nm": 7.105427357601002e-14,
+            "achieved_nm": 7.105427357601002e-14,
+            "friction_nm": 1.865174681370263e-13
+          },
+          "metric_tolerances": {
+            "lap_time_s": 1e-05,
+            "net_energy_kwh": 1e-08,
+            "energy_residual_j": 1e-05,
+            "max_slip": 1e-06,
+            "max_yaw_rad_s": 1e-06,
+            "max_sideslip_rad": 1e-06,
+            "max_cross_track_m": 1e-05
+          },
+          "channel_tolerances": {
+            "x_m": 1e-05,
+            "y_m": 1e-05,
+            "heading_rad": 1e-06,
+            "u_mps": 1e-06,
+            "v_mps": 1e-06,
+            "yaw_rad_s": 1e-06,
+            "wheel_omega_rad_s": 1e-05,
+            "pack_energy_j": 0.036,
+            "requested_nm": 0.0001,
+            "proposed_nm": 0.0001,
+            "limited_nm": 0.0001,
+            "achieved_nm": 0.0001,
+            "friction_nm": 0.0001
+          },
+          "work_counters_equal": true,
+          "logging_ticks_equal": true,
+          "scope": "Complete closed-loop synthetic lap; physical/road calibration remains unverified"
+        },
+        "raw_record": "work/gpu-readiness-20261026/courses-laps-six-course-parity.validation/fused_gnss_imu_trajectory_approx.gpu.json",
+        "raw_record_sha256": "65685f73091324d751f6ed5aca038db9d111b74cee4bc8a8a95c96033308ac9b"
+      }
+    ],
+    "all_passed": true,
+    "workflow": {
+      "backend": "Resident OpenCL GPU FP64 powered plant / original CPU driver-controller",
+      "device": "NVIDIA GeForce RTX 5080",
+      "cpu_physics_fallback": false,
+      "lanes": 6,
+      "kernel_launches": 27790,
+      "device_kernel_s": 17.500444,
+      "setup_build_initial_upload_s": 0.110356800025329,
+      "total_batch_wall_s": 109.17512440006249,
+      "kernel_sha256": "5589a49a1ed8f23eadf00af32877632aa10d551c86a7e29af69ab02c52403a9f",
+      "state_initializations_per_lane": 1,
+      "owned_threads_exited": true,
+      "scope": "One-lap uniform-road simulator records; hardware strata and geometry remain distinct; no scoring in this adapter"
+    },
+    "cpu_reference_wall_s": 262.5243016,
+    "workflow_speedup": 2.404616464076589,
+    "timing_scope": "Historical six CPU baseline wall times / current GPU batch including initialization; different measurement times, not a simultaneous benchmark",
+    "cpu_provenance": [
+      {
+        "job": "fsae_michigan_2019_image",
+        "cpu_record_sha256": "1e367eaa8a47c3119e8917c30434a80c0a651ed57d337cb20b81a24b2fe249dd",
+        "cpu_reference": "Preserved completed CPU baseline; not rerun",
+        "historical_wall_s": 61.6383621
+      },
+      {
+        "job": "fsae_michigan_2022_image",
+        "cpu_record_sha256": "5731105c05948949d0e3769674b9c09c9dad01c91fa2808c149f6adb79788718",
+        "cpu_reference": "Preserved completed CPU baseline; not rerun",
+        "historical_wall_s": 59.3198206
+      },
+      {
+        "job": "fsae_michigan_2023_image",
+        "cpu_record_sha256": "52a9db0b91e2ae896c5b23f2d5c3be03d60f2e24fe7c03749d5c91dfdf2682b2",
+        "cpu_reference": "Preserved completed CPU baseline; not rerun",
+        "historical_wall_s": 54.7841497
+      },
+      {
+        "job": "fsae_electric_2024_image",
+        "cpu_record_sha256": "37c10505a0857b29b09b94f49b548f0397c626aef81a63e4af975e19e823e0a0",
+        "cpu_reference": "Preserved completed CPU baseline; not rerun",
+        "historical_wall_s": 31.9946156
+      },
+      {
+        "job": "fs_east_2017_image",
+        "cpu_record_sha256": "89d2fae9d07347f1d461977e969c47222d62ba77f9ea71b8ed92b91310e10847",
+        "cpu_reference": "Preserved completed CPU baseline; not rerun",
+        "historical_wall_s": 25.0826071
+      },
+      {
+        "job": "fused_gnss_imu_trajectory_approx",
+        "cpu_record_sha256": "b43cb40b6468232db48b615533f0b9ddcea93d6a9fdfa23508c3acac55819b44",
+        "cpu_reference": "Preserved completed CPU baseline; not rerun",
+        "historical_wall_s": 29.7047465
+      }
+    ],
+    "ga_executed": false,
+    "official_points": false
+  },
+  "gpu_ga_executed": false,
+  "final_winner_selected": false,
+  "official_points": false,
+  "cpu_screening_preserved": {
+    "completed_valid": 118,
+    "required": 180,
+    "paused": true
+  },
+  "guard_policy": {
+    "admission_gib": 10,
+    "reserve_gib": 8,
+    "job_allowance_gib": 2,
+    "wall_cap_s": 180,
+    "numerical_threads": 1
+  },
+  "failed_attempts_retained": [
+    "First resident build: scalar OpenCL conditional; no resident physics executed.",
+    "First representative report: path serialization failed after all CPU/GPU records saved; parity recovered, GPU-only repeat for timing; CPU laps not repeated."
+  ],
+  "source_integration": {
+    "main_curated_source_merge": "48178100732f17090d65e024a2741d3514c182e2",
+    "scorer_integration_child_pr": 151,
+    "no_gh_pages_deployment": true
+  },
+  "executed_source_sha256": {
+    "src/lapsim/backends/opencl_runtime.py": "f970030d1f1de31881878fee8d70925b56050610bc8c0f0cb290ee8aff8802ba",
+    "src/lapsim/dynamics/planar_opencl.py": "2bee19d06b7548dae67ff62b5fef28a6ed9e83dc702a7a93e70e2bda534edc2a",
+    "src/lapsim/dynamics/powered_opencl.py": "8bb732032f54566e8016d410eeba8e138da40ca1250013d54c2e1be7afeca5a5",
+    "src/lapsim/dynamics/resident_powered.py": "85fdf7a03913dfdf73ef2c6c05a3640a3900bbe1c6697a1e77e6451109922051",
+    "src/lapsim/dynamics/resident_powered_kernel.py": "5af3c69d7cda8247ca6b0accd3a1b2992f91a2c14fb1c9806fb8c546019daa05",
+    "src/lapsim/experiments/gpu_tournament.py": "ae506947866c31bddce0143fee244793fb39c643aa088aef058b1604e87ce7ce",
+    "src/lapsim/experiments/tournament_rollout.py": "6ec7426f10d4498aee5d2fa056a553ce05db6bb449deaf583299ddf4273a7c62",
+    "scripts/validate_gpu_rollouts.py": "f95a63970a261fc2dd6fcabaa4d05fc12f8236f4681c7df24f8083bfdacac5cf",
+    "scripts/benchmark_resident_gpu.py": "e06164345f32f4269abf667125cd39402871b76753f1699165f461aae3586924"
+  },
+  "published_source_sha256": {
+    "src/lapsim/backends/opencl_runtime.py": "f970030d1f1de31881878fee8d70925b56050610bc8c0f0cb290ee8aff8802ba",
+    "src/lapsim/dynamics/planar_opencl.py": "2bee19d06b7548dae67ff62b5fef28a6ed9e83dc702a7a93e70e2bda534edc2a",
+    "src/lapsim/dynamics/powered_opencl.py": "8bb732032f54566e8016d410eeba8e138da40ca1250013d54c2e1be7afeca5a5",
+    "src/lapsim/dynamics/resident_powered.py": "85fdf7a03913dfdf73ef2c6c05a3640a3900bbe1c6697a1e77e6451109922051",
+    "src/lapsim/dynamics/resident_powered_kernel.py": "5af3c69d7cda8247ca6b0accd3a1b2992f91a2c14fb1c9806fb8c546019daa05",
+    "src/lapsim/experiments/gpu_tournament.py": "ae506947866c31bddce0143fee244793fb39c643aa088aef058b1604e87ce7ce",
+    "src/lapsim/experiments/tournament_rollout.py": "f503d40d0556d0fac08d549a0a5d99ea3b4f8f0b2a8a26cad23c05f6ff9fc658",
+    "scripts/validate_gpu_rollouts.py": "f95a63970a261fc2dd6fcabaa4d05fc12f8236f4681c7df24f8083bfdacac5cf",
+    "scripts/benchmark_resident_gpu.py": "e06164345f32f4269abf667125cd39402871b76753f1699165f461aae3586924"
+  },
+  "source_normalization": "Only tournament_rollout.py line endings normalized from Windows checkout CRLF to repository LF after execution; numerical code unchanged."
+}
