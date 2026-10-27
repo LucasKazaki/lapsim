@@ -52,10 +52,13 @@ class Controller:
     yaw_ki: float = 3.0
     regen_fraction: float = 0.65
     regen_region: float = 0.25
+    pedal_mode: str = 'two_stage'
 
     def __post_init__(self):
         if self.philosophy not in (*PHILOSOPHIES,CONFIGURED_REFERENCE):
             raise ValueError("unsupported controller philosophy")
+        if self.pedal_mode not in ('two_stage','proportional'):
+            raise ValueError('unsupported regen pedal policy')
         for key, (lo, hi) in BOUNDS.items():
             number(getattr(self, key), key, lo, hi)
 
@@ -164,6 +167,7 @@ def brake_request(pedal, controller, total_capacity_nm=320.0):
     region = controller.regen_region
     regen = (pedal if pedal <= region else region + (pedal - region) * controller.regen_fraction) * total_capacity_nm
     if getattr(controller,'pedal_mode','two_stage')=='proportional':regen=total*controller.regen_fraction
+    if getattr(controller,'pedal_mode','two_stage')=='proportional':regen=total*controller.regen_fraction
     return total, regen*getattr(controller,'regen_scale',1.)
 
 
@@ -250,13 +254,15 @@ def allocate(controller, state, evaluation, steering, drive_each, brake_each,
     return requested, tuple(proposed), limited, brakes, integral, shortfall, raw_regen
 
 
-def rollout(controller: Controller, case: Case, *, profile="synthetic_rwd", parameter_overrides=None, configured_profile=None, configured_full_lap=False,progress_callback=None):
+def rollout(controller: Controller, case: Case, *, profile="synthetic_rwd", parameter_overrides=None, configured_profile=None, configured_full_lap=False,progress_callback=None,plant_step=None):
     if progress_callback is not None and not callable(progress_callback):raise ValueError('Progress callback must be callable')
     if type(configured_full_lap) is not bool:raise ValueError('Configured full-lap mode must be Boolean')
+    if plant_step is not None and not callable(plant_step):raise ValueError('Plant step must be callable')
+    if plant_step is not None and configured_profile is not None:raise ValueError('Custom plant backend is not accepted for configured export equivalence')
     if configured_profile is None:
         if configured_full_lap:raise ValueError('Full-lap configured acceptance requires its profile')
         if controller.philosophy==CONFIGURED_REFERENCE:raise ValueError('Configured strategy requires its exact vehicle profile')
-        return _rollout(controller,case,profile=profile,parameter_overrides=parameter_overrides,progress_callback=progress_callback)
+        return _rollout(controller,case,profile=profile,parameter_overrides=parameter_overrides,progress_callback=progress_callback,plant_step=plant_step)
     from lapsim.torque_configurator import ControlSession,VehicleProfile
     from lapsim.torque_configurator.profile import require
     require(type(configured_profile) is VehicleProfile,'A validated configured profile is required')
@@ -290,7 +296,7 @@ def _state_digest(value):
     return sha256(json.dumps(value,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
 
 
-def _rollout(controller, case, *, profile, parameter_overrides=None, configured_profile=None, session=None, configured_full_lap=False,progress_callback=None):
+def _rollout(controller, case, *, profile, parameter_overrides=None, configured_profile=None, session=None, configured_full_lap=False,progress_callback=None,plant_step=None):
     if profile not in PROFILES:
         raise ValueError("2025-derived AWD baseline is blocked by unknown reviewed 2025 parameters and selected drivetrain specifications")
     car, pack, driver = fixture()
@@ -346,6 +352,7 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
     records, violations = [], []
     max_slip = max_yaw = max_beta = max_util = max_cross = shortfall_impulse = rejected_regen = 0.0
     limited_ticks = 0
+    gross_pack_draw_j=recovered_pack_j=0.0
     previous_progress = 0.0
     finish_time = None
     last = None
@@ -470,8 +477,13 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
             last = (time_s, projection.station_m)
             previous_progress = projection.station_m
             options={'maximum_work':200000} if case.laps==10 or case.long_course else {'maximum_work':compute_limits['maximum_cumulative_trials_and_stop_events']} if configured_full_lap else {}
-            state = advance_powered(car, pack, state, limited.wheel_torques_nm,
+            before_pack_j=state.pack_energy_j
+            stepper=advance_powered if plant_step is None else plant_step
+            state = stepper(car, pack, state, limited.wheel_torques_nm,
                 command.steering_angles_rad, brakes, available, .01, env,wheel_radii_m=radii,**options)
+            delta_pack_j=before_pack_j-state.pack_energy_j
+            gross_pack_draw_j+=max(0.,delta_pack_j)
+            recovered_pack_j+=max(0.,-delta_pack_j)
         except (ValueError, ArithmeticError) as error:
             status = "model_error"
             violations.append(str(error))
@@ -502,6 +514,9 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
             "net_energy_kwh": draw_kwh, "max_slip": max_slip, "max_yaw_rad_s": max_yaw,
             "max_sideslip_rad": max_beta, "max_tire_utilization": max_util,
             "max_cross_track_m": max_cross, "energy_residual_j": residual,
+            "gross_pack_draw_kwh_10ms":gross_pack_draw_j/3_600_000,
+            "recovered_pack_kwh_10ms":recovered_pack_j/3_600_000,
+            "pack_delta_net_kwh_10ms":(gross_pack_draw_j-recovered_pack_j)/3_600_000,
             "limited_ticks": limited_ticks, "brake_shortfall_nm_s": shortfall_impulse,
             "rejected_regen_nm_s": rejected_regen, "fitness": fitness},
         "telemetry": records, "car": asdict(car), "actuation": asdict(pack),
