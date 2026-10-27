@@ -82,6 +82,12 @@ def resource_files() -> list[Path]:
         "output/pdf/LapSim_Engineering_Handoff.pdf",
         "docs/evidence/e15-calculix-refinement.json",
         "docs/evidence/e15-calculix-process-outcomes.json",
+        "docs/evidence/ev-readiness-20261027.json",
+        "configs/torque_profiles/synthetic-two-rear-v1.json",
+        "configs/torque_profiles/synthetic-single-rear-v1.json",
+        "configs/torque_profiles/synthetic-four-awd-v1.json",
+        "configs/torque_profiles/synthetic-spool-v1.json",
+        "configs/team_specs/team-2027-2028-provisional-v1.json",
     ):
         paths.add(ROOT / name)
     paths.update(ROOT.glob("LICENSE*"))
