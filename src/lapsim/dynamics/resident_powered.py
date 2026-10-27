@@ -136,18 +136,26 @@ class ResidentPowered:
         self.parameters=candidate
         api=self.runtime.api;event=ct.c_void_p();size=ct.c_size_t(count)
         try:
-            _check(api.clEnqueueWriteBuffer(self.runtime.queue,self.parameter_buffer,1,0,self.parameters.nbytes,
-                self.parameters.ctypes.data_as(ct.c_void_p),0,None,None),'update resident held controls')
-            _check(api.clEnqueueNDRangeKernel(self.runtime.queue,self.runtime.kernel,1,None,ct.byref(size),None,
-                0,None,ct.byref(event)),'launch resident powered intervals')
-            _check(api.clEnqueueReadBuffer(self.runtime.queue,self.state_buffer,1,0,self.host.nbytes,
-                self.host.ctypes.data_as(ct.c_void_p),0,None,None),'read resident interval boundaries')
-            beginning,ending=ct.c_ulonglong(),ct.c_ulonglong()
-            _check(api.clGetEventProfilingInfo(event,0x1282,8,ct.byref(beginning),None),'profile resident start')
-            _check(api.clGetEventProfilingInfo(event,0x1283,8,ct.byref(ending),None),'profile resident end')
-        finally:
-            api.clFinish(self.runtime.queue)
-            if event.value:api.clReleaseEvent(event)
+            try:
+                _check(api.clEnqueueWriteBuffer(self.runtime.queue,self.parameter_buffer,1,0,self.parameters.nbytes,
+                    self.parameters.ctypes.data_as(ct.c_void_p),0,None,None),'update resident held controls')
+                _check(api.clEnqueueNDRangeKernel(self.runtime.queue,self.runtime.kernel,1,None,ct.byref(size),None,
+                    0,None,ct.byref(event)),'launch resident powered intervals')
+                _check(api.clEnqueueReadBuffer(self.runtime.queue,self.state_buffer,1,0,self.host.nbytes,
+                    self.host.ctypes.data_as(ct.c_void_p),0,None,None),'read resident interval boundaries')
+                beginning,ending=ct.c_ulonglong(),ct.c_ulonglong()
+                _check(api.clGetEventProfilingInfo(event,0x1282,8,ct.byref(beginning),None),'profile resident start')
+                _check(api.clGetEventProfilingInfo(event,0x1283,8,ct.byref(ending),None),'profile resident end')
+            finally:
+                try:
+                    _check(api.clFinish(self.runtime.queue),'finish resident interval queue')
+                finally:
+                    if event.value:_check(api.clReleaseEvent(event),'release resident interval event')
+        except BaseException:
+            # A launch may already have advanced device state even when the
+            # readback/profiling failed. Never retry an uncertain boundary.
+            self.faulted=True
+            raise
         failures={i:ERRORS.get(int(row[27]),'unknown GPU error') for i,row in enumerate(self.host) if row[27]!=0}
         if failures or not np.isfinite(self.host).all():
             self.faulted=True

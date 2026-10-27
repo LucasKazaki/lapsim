@@ -103,6 +103,17 @@ def test_resident_gpu_work_failure_is_latched_and_state_not_published(device):
         with pytest.raises(OpenCLError,match='latched'):backend.step()
 
 
+@pytest.mark.parametrize('operation',['clEnqueueReadBuffer','clGetEventProfilingInfo'])
+def test_actual_gpu_transport_error_after_launch_latches_session(device,monkeypatch,operation):
+    with ResidentPowered([sample()],device_name=device) as backend:
+        with monkeypatch.context() as patch:
+            # The real kernel is queued; inject only its failed result channel.
+            patch.setattr(backend.runtime.api,operation,lambda *args:-5)
+            with pytest.raises(OpenCLError):backend.step()
+            assert backend.faulted
+        with pytest.raises(OpenCLError,match='latched'):backend.step()
+
+
 def test_resident_gpu_rejects_unsupported_patch_and_invalid_command(device):
     r=sample(SINGLE_MOTOR_RWD_TOPOLOGY_ID)
     with pytest.raises(ValueError,match='uniform road'):
