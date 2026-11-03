@@ -1,0 +1,197 @@
+{
+  "courses": [
+    {
+      "bundle_sha256": "46ce29a898f4491d3dc6456f42325769474fa7790ce4227a86a8ab537dcc373e",
+      "classification": "map_derived_approximation",
+      "geometry_sha256": "4d0404480da3f1035a4a22f6d94ae6870278d010ca8b215f0160b8263156210d",
+      "id": "amz_fssim_fsi_approx",
+      "length_m": 216.14860023596088,
+      "source_url": "https://github.com/AMZ-Racing/fssim/blob/cf652d8d3f1e13031dad3fb75eb3d4e6fbaaeff4/fssim_gazebo/models/track/tracks_yaml/FSI.yaml"
+    }
+  ],
+  "hardware": {
+    "campaign_eligible": false,
+    "drive_availability": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "native_qualification": "UNRUN",
+    "regen": "excluded pending separate low-speed/brake qualification",
+    "source_supported": true,
+    "steering": "parallel front only",
+    "topology": "synthetic_independent_four_awd_v1"
+  },
+  "policies": [
+    {
+      "calibration": "synthetic provisional;not verified actual-car maps",
+      "campaign_eligible": false,
+      "controller": {
+        "architecture": "equal_off",
+        "parameters": {
+          "allocator_period_s": 0.01,
+          "feedforward_nm_per_rad": 40.0,
+          "feedforward_speed_reference_mps": 9.0,
+          "integral_limit": 1.0,
+          "maximum_bias_nm": 25.0,
+          "slip_target": 0.1,
+          "yaw_ki": 3.0,
+          "yaw_kp": 20.0
+        }
+      },
+      "id": "awd7-equal-off-v4",
+      "native_qualification": "UNRUN",
+      "regen": "off",
+      "regen_enabled": false,
+      "source_supported": true,
+      "supported_topology": "synthetic_independent_four_awd_v1",
+      "torque": "equal_off"
+    },
+    {
+      "calibration": "synthetic provisional;not verified actual-car maps",
+      "campaign_eligible": false,
+      "controller": {
+        "architecture": "load_off",
+        "parameters": {
+          "allocator_period_s": 0.01,
+          "feedforward_nm_per_rad": 40.0,
+          "feedforward_speed_reference_mps": 9.0,
+          "integral_limit": 1.0,
+          "maximum_bias_nm": 25.0,
+          "slip_target": 0.1,
+          "yaw_ki": 3.0,
+          "yaw_kp": 20.0
+        }
+      },
+      "id": "awd7-load-off-v4",
+      "native_qualification": "UNRUN",
+      "regen": "off",
+      "regen_enabled": false,
+      "source_supported": true,
+      "supported_topology": "synthetic_independent_four_awd_v1",
+      "torque": "load_off"
+    },
+    {
+      "calibration": "synthetic provisional;not verified actual-car maps",
+      "campaign_eligible": false,
+      "controller": {
+        "architecture": "slip_off",
+        "parameters": {
+          "allocator_period_s": 0.01,
+          "feedforward_nm_per_rad": 40.0,
+          "feedforward_speed_reference_mps": 9.0,
+          "integral_limit": 1.0,
+          "maximum_bias_nm": 25.0,
+          "slip_target": 0.1,
+          "yaw_ki": 3.0,
+          "yaw_kp": 20.0
+        }
+      },
+      "id": "awd7-slip-off-v4",
+      "native_qualification": "UNRUN",
+      "regen": "off",
+      "regen_enabled": false,
+      "source_supported": true,
+      "supported_topology": "synthetic_independent_four_awd_v1",
+      "torque": "slip_off"
+    },
+    {
+      "calibration": "synthetic provisional;not verified actual-car maps",
+      "campaign_eligible": false,
+      "controller": {
+        "architecture": "feedforward_off",
+        "parameters": {
+          "allocator_period_s": 0.01,
+          "feedforward_nm_per_rad": 40.0,
+          "feedforward_speed_reference_mps": 9.0,
+          "integral_limit": 1.0,
+          "maximum_bias_nm": 25.0,
+          "slip_target": 0.1,
+          "yaw_ki": 3.0,
+          "yaw_kp": 20.0
+        }
+      },
+      "id": "awd7-feedforward-off-v4",
+      "native_qualification": "UNRUN",
+      "regen": "off",
+      "regen_enabled": false,
+      "source_supported": true,
+      "supported_topology": "synthetic_independent_four_awd_v1",
+      "torque": "feedforward_off"
+    },
+    {
+      "calibration": "synthetic provisional;not verified actual-car maps",
+      "campaign_eligible": false,
+      "controller": {
+        "architecture": "yaw_pi_off",
+        "parameters": {
+          "allocator_period_s": 0.01,
+          "feedforward_nm_per_rad": 40.0,
+          "feedforward_speed_reference_mps": 9.0,
+          "integral_limit": 1.0,
+          "maximum_bias_nm": 25.0,
+          "slip_target": 0.1,
+          "yaw_ki": 3.0,
+          "yaw_kp": 20.0
+        }
+      },
+      "id": "awd7-yaw-pi-off-v4",
+      "native_qualification": "UNRUN",
+      "regen": "off",
+      "regen_enabled": false,
+      "source_supported": true,
+      "supported_topology": "synthetic_independent_four_awd_v1",
+      "torque": "yaw_pi_off"
+    },
+    {
+      "calibration": "synthetic provisional;not verified actual-car maps",
+      "campaign_eligible": false,
+      "controller": {
+        "architecture": "yaw_slip_off",
+        "parameters": {
+          "allocator_period_s": 0.01,
+          "feedforward_nm_per_rad": 40.0,
+          "feedforward_speed_reference_mps": 9.0,
+          "integral_limit": 1.0,
+          "maximum_bias_nm": 25.0,
+          "slip_target": 0.1,
+          "yaw_ki": 3.0,
+          "yaw_kp": 20.0
+        }
+      },
+      "id": "awd7-yaw-slip-off-v4",
+      "native_qualification": "UNRUN",
+      "regen": "off",
+      "regen_enabled": false,
+      "source_supported": true,
+      "supported_topology": "synthetic_independent_four_awd_v1",
+      "torque": "yaw_slip_off"
+    },
+    {
+      "calibration": "synthetic provisional;not verified actual-car maps",
+      "campaign_eligible": false,
+      "controller": {
+        "architecture": "eco_neutral_off",
+        "parameters": {
+          "allocator_period_s": 0.01,
+          "feedforward_nm_per_rad": 40.0,
+          "feedforward_speed_reference_mps": 9.0,
+          "integral_limit": 1.0,
+          "maximum_bias_nm": 25.0,
+          "slip_target": 0.1,
+          "yaw_ki": 3.0,
+          "yaw_kp": 20.0
+        }
+      },
+      "id": "awd7-eco-neutral-off-v4",
+      "native_qualification": "UNRUN",
+      "regen": "off",
+      "regen_enabled": false,
+      "source_supported": true,
+      "supported_topology": "synthetic_independent_four_awd_v1",
+      "torque": "eco_neutral_off"
+    }
+  ],
+  "schema": "lapsim.torque-light-awd-racingline-seven-registry.v4"
+}
