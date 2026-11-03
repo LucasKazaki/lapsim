@@ -1,0 +1,34 @@
+{
+  "schema": "lapsim.public-light-source-status.v1",
+  "as_of_utc_date": "2026-11-03",
+  "publication_role": "source_and_research_archive_not_runnable_release",
+  "topology": "synthetic_four_independent_motors_AWD_front_steering",
+  "start": "standing",
+  "regen": "off_only",
+  "course": "approximate_FSI_development",
+  "line": "provisional_geometry_screened_not_optimal_not_competition_validated",
+  "accepted_development_segment": {
+    "simulated_time_s": 9.0,
+    "source_track_progress_m": 43.91701544028435,
+    "net_battery_depletion_wh": 3.1677134492745003,
+    "completed_laps": 0,
+    "policy": "equal_OFF",
+    "competition_valid": false,
+    "audit_source_sha256": "56e6c9c8629ebd5297ed4a552c85ac9a5635a2712ea6d35d25345e048ac555df"
+  },
+  "official_points": null,
+  "winner": null,
+  "publication_tests_run": false,
+  "latest_isolated_qualification_cases_unrun": 75,
+  "additional_reader_regression_definitions_unrun": 5,
+  "latest_process_observation": "denied_before_process_creation",
+  "current_global_process_and_lease_state": "unknown",
+  "historical_lineage_gaps": [
+    "exact_initial_guard_sample_of_older_producer_not_retained",
+    "original_checkpoint_startup_environment_equivalence_not_proven"
+  ],
+  "raw_precision_preserved": true,
+  "display_decimals": 3,
+  "heldout_used_for_this_publication": false,
+  "qualification_or_simulation_authority_granted_by_this_file": false
+}

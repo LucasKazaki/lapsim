@@ -1,0 +1,173 @@
+{
+  "baseline_configuration_sha256": "782eaf45732856e77c77affa25d79b0aefbd7d62ebee8ce37e7835c7a52dfb9f",
+  "body": {
+    "availability": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "equal_weights": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+    ],
+    "initial": {
+      "actuator_memory_nm": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "load_lateral_mps2": 0.0,
+      "load_longitudinal_mps2": 0.0,
+      "pack_energy_j": 9000000.0,
+      "position_heading": "Exact selectedFSI firstpoint/coherentarctangent",
+      "temperature_c": 70.0,
+      "u_mps": 5.0,
+      "wheel_omega_rad_s": [
+        25.0,
+        25.0,
+        25.0,
+        25.0
+      ]
+    },
+    "profile_id": "synthetic_four_independent_awd_light_v1",
+    "steering": "parallel_front_v1",
+    "topology_id": "synthetic_independent_four_awd_v1",
+    "total_drive_cap_nm": 190.0,
+    "values": {
+      "actuation": {
+        "actuator_slew_nm_per_s": 8000.0,
+        "actuator_time_constant_s": 0.025,
+        "equivalent_copper_resistance_ohm": 0.02,
+        "gear_efficiency": 0.96,
+        "gear_ratio": 4.0,
+        "inverter_current_limit_a": 90.0,
+        "inverter_efficiency": 0.97,
+        "motor_base_speed_rad_s": 250.0,
+        "motor_conversion_efficiency": 0.95,
+        "motor_current_limit_a": 100.0,
+        "motor_maximum_speed_rad_s": 700.0,
+        "motor_peak_torque_nm": 80.0,
+        "pack_capacity_j": 18000000.0,
+        "pack_charge_current_limit_a": 40.0,
+        "pack_charge_power_limit_w": 8000.0,
+        "pack_discharge_current_limit_a": 100.0,
+        "pack_discharge_power_limit_w": 25000.0,
+        "pack_voltage_v": 300.0,
+        "topology_id": "synthetic_independent_four_awd_v1",
+        "torque_constant_nm_per_a": 0.8
+      },
+      "driver": {
+        "assumed_half_width_m": 3.0,
+        "brake_gain_nm_per_mps": 35.0,
+        "cruise_speed_mps": 9.0,
+        "drive_gain_nm_per_mps": 40.0,
+        "edge_outward_prediction_s": 0.5,
+        "edge_rejoin_speed_mps": 2.0,
+        "edge_slowdown_slack_m": 0.8,
+        "initial_lateral_offset_m": 0.0,
+        "initial_speed_mps": 5.0,
+        "local_projection_window_m": 12.0,
+        "lookahead_base_m": 2.0,
+        "lookahead_seconds": 0.35,
+        "maximum_control_steps": 10300,
+        "maximum_internal_substeps": 50000,
+        "maximum_rear_drive_torque_nm": 95.0,
+        "maximum_simulated_time_s": 103.0,
+        "maximum_steering_rad": 0.4,
+        "maximum_wheel_brake_torque_nm": 80.0,
+        "output_step_s": 0.01,
+        "reference_geometry": "coherent_arcs",
+        "safety_margin_m": 0.2,
+        "target_progress_m": 216.14860023596088,
+        "vehicle_width_m": 1.4
+      },
+      "drs_policy": {
+        "max_hold_abs_lateral_mps2": 2.0,
+        "max_hold_abs_slip": 0.1,
+        "max_hold_abs_steer_rad": 0.05,
+        "max_hold_abs_yaw_rad_s": 0.2,
+        "max_open_abs_lateral_mps2": 1.0,
+        "max_open_abs_slip": 0.05,
+        "max_open_abs_steer_rad": 0.02,
+        "max_open_abs_yaw_rad_s": 0.1,
+        "min_hold_speed_mps": 10.0,
+        "min_open_speed_mps": 12.0,
+        "opening_delay_s": 0.002,
+        "provenance": "Synthetic four-independent-motor AWD;unmeasured tire/aero/thermal/motor/pack defaults;no physical-car calibration"
+      },
+      "environment": {
+        "air_density_kgpm3": 1.225,
+        "drag_area_m2": 0.0,
+        "road": {
+          "base_friction_multiplier": 1.0,
+          "base_material_id": "synthetic_reference_pavement",
+          "patches": [],
+          "valid_domain": null
+        },
+        "wind_world_x_mps": 0.0,
+        "wind_world_y_mps": 0.0
+      },
+      "settings": {
+        "feedback_period_s": 0.001,
+        "forces": {
+          "cg_height_m": 0.25,
+          "closed": {
+            "downforce_area_m2": 2.0,
+            "drag_area_m2": 0.8,
+            "front_downforce_fraction": 0.5
+          },
+          "front_roll_moment_fraction": 0.5,
+          "open": {
+            "downforce_area_m2": 1.0,
+            "drag_area_m2": 0.5,
+            "front_downforce_fraction": 0.4
+          },
+          "plant": {
+            "cg_to_front_axle_m": 0.8,
+            "cg_to_rear_axle_m": 0.8,
+            "cornering_stiffness_n_per_rad": 8000.0,
+            "front_track_m": 1.2,
+            "gravity_mps2": 9.80665,
+            "longitudinal_stiffness_n_per_slip": 7000.0,
+            "low_speed_regularization_mps": 0.5,
+            "mass_kg": 300.0,
+            "maximum_integration_step_s": 0.001,
+            "rear_track_m": 1.2,
+            "tire_mu": 1.2,
+            "wheel_inertia_kgm2": 0.3,
+            "wheel_radius_m": 0.2,
+            "yaw_inertia_kgm2": 160.0
+          },
+          "provenance": "Synthetic four-independent-motor AWD;unmeasured tire/aero/thermal/motor/pack defaults;no physical-car calibration"
+        },
+        "load_feedback_time_constant_s": 0.05,
+        "provenance": "Synthetic four-independent-motor AWD;unmeasured tire/aero/thermal/motor/pack defaults;no physical-car calibration"
+      },
+      "thermal": {
+        "ambient_temperature_c": 25.0,
+        "cold_grip_fraction": 0.8,
+        "cold_temperature_c": 20.0,
+        "cooling_w_per_k": 80.0,
+        "grip_sensitivity_enabled": true,
+        "heat_capacity_j_per_k": 20000.0,
+        "hot_grip_fraction": 0.7,
+        "hot_temperature_c": 120.0,
+        "maximum_temperature_c": 160.0,
+        "minimum_temperature_c": -20.0,
+        "peak_temperature_c": 70.0,
+        "provenance": "Synthetic four-independent-motor AWD;unmeasured tire/aero/thermal/motor/pack defaults;no physical-car calibration",
+        "slip_heat_fraction": 0.6
+      }
+    }
+  },
+  "provenance": {
+    "qualified_origin_file_sha256": "2923b31c504abb0d3bc578db669783f2971ba9d34ae3e917b918be21886dd1e5",
+    "scope": "Parameters only; no new result/coverage/permission credit",
+    "source_checkpoint_sha256": "3f20635004e186e6e49b0bc9e06945d990eee9df65e2837c5b94284d3cc424eb"
+  },
+  "schema": "ev.qualified-awd-configuration-parameter-copy.v1"
+}

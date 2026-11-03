@@ -1,0 +1,132 @@
+{
+  "schema": "lapsim.ev-publication-manifest.v1",
+  "repository": "LucasKazaki/lapsim",
+  "base_commit": "feed2e37f8114ec2a3ed836a8ab780d22078da91",
+  "publication_scope": "reviewed_archival_source_and_technical_research_not_executable_release",
+  "new_files": 22,
+  "runtime_tests_for_publication": "UNRUN",
+  "full_comparison_cases": "PROPOSED_UNRUN",
+  "light_source_files_byte_identical": 16,
+  "files": [
+    {
+      "path": "docs/EV_SIMULATOR_MASTER.md",
+      "bytes": 18095,
+      "sha256": "1bcbe80bdf62b464fd3e68ee7f6e23789b33e0344e14ac3ede5aff470012612f"
+    },
+    {
+      "path": "docs/full-simulator/comparison-spec.md",
+      "bytes": 13196,
+      "sha256": "4b0f81e5595981c61b1129ad062c4d5eae67f8a61ea51b960e3902a1c129e8f1"
+    },
+    {
+      "path": "docs/full-simulator/integration-plan.md",
+      "bytes": 12473,
+      "sha256": "3fe0a9ee15066d6e6687967c03f865fe79c81985280f98c6f2beb31042083cc1"
+    },
+    {
+      "path": "research/light/README.md",
+      "bytes": 5544,
+      "sha256": "9eb82e45679d243f5a116524a3bbad5eb99649fd03d9a96e80b4719f22c3ec24"
+    },
+    {
+      "path": "research/light/SOURCE_MANIFEST.json",
+      "bytes": 5821,
+      "sha256": "4b1b3c712b0e5a31a0670046e13440fde08e903db7df3138c0cf18ee6def6e88"
+    },
+    {
+      "path": "research/light/STATUS.json",
+      "bytes": 1406,
+      "sha256": "944784c17e076748906731c038d3505da558a3ec51eb15aa77a52e251adf0179"
+    },
+    {
+      "path": "research/light/awd-standing-v15/awd_fixture.py",
+      "bytes": 10043,
+      "sha256": "c0fbb9f75e04987e6731e2135ec3b5d5deed44311237fdfddd04aa54e8909092"
+    },
+    {
+      "path": "research/light/awd-standing-v15/baseline-configuration.json",
+      "bytes": 6021,
+      "sha256": "cef3c04c808f3ab8dc0f767ec4a0f24865dcd67371ac45f52689c67a0e145d22"
+    },
+    {
+      "path": "research/light/awd-standing-v15/core_adapter.py",
+      "bytes": 8424,
+      "sha256": "9026558623bef3fbad8b78d169c57aae540f143f766fde4f64298edc326b073f"
+    },
+    {
+      "path": "research/light/awd-standing-v15/core_registry.py",
+      "bytes": 1646,
+      "sha256": "2d66b68b37f760d1808b01b9874e80fa0187afac01712dc3b5781389d83d66e2"
+    },
+    {
+      "path": "research/light/awd-standing-v15/gate_ledger.py",
+      "bytes": 4856,
+      "sha256": "438f021c06b28ae44dd1edd0f26baa0fda0487c26bd03f3a2c47500e9852063e"
+    },
+    {
+      "path": "research/light/awd-standing-v15/light_core_bridge.py",
+      "bytes": 59559,
+      "sha256": "561621d6fd5d2290cbe524eb7b051e5aaf4a3ba743603c6dc275288e5823f8f3"
+    },
+    {
+      "path": "research/light/awd-standing-v15/line_binding.py",
+      "bytes": 8947,
+      "sha256": "90629a948024c6e6db15026475d8accac5c740a4060fa07c0c489db95fac3aea"
+    },
+    {
+      "path": "research/light/awd-standing-v15/line_generator.py",
+      "bytes": 19379,
+      "sha256": "fed1f2076dff88c58fda689a46aa443cebdce8ce00fda0cf61157ffcd98f4b86"
+    },
+    {
+      "path": "research/light/awd-standing-v15/policy_layers.py",
+      "bytes": 9931,
+      "sha256": "9ba6de7f02fd06ef12dc353c6f92976ace579cf3f2bc23fb5a6779b4d088293b"
+    },
+    {
+      "path": "research/light/awd-standing-v15/racing_geometry.py",
+      "bytes": 17830,
+      "sha256": "5db3492dfdf4418a980179f1f7d548e8c2e90cb4d7c3b4ce1c1f2cf4606fa253"
+    },
+    {
+      "path": "research/light/awd-standing-v15/registry-core.json",
+      "bytes": 6446,
+      "sha256": "6ab5071c2ef01a883addcb2c6d9888c471586b849c3440fe1236f5f41b2b6123"
+    },
+    {
+      "path": "research/light/kernels/torque_light_combined.py",
+      "bytes": 7122,
+      "sha256": "5ac11c94d6bd69494ab8bff1f045ae0f73e9659eaf35108e45ee671410fa6970"
+    },
+    {
+      "path": "research/light/kernels/torque_light_drs.py",
+      "bytes": 12516,
+      "sha256": "2172e8ab4ee5932cf463be3312f9f9228dd0efb72bb2c7d339030a904bf8280e"
+    },
+    {
+      "path": "research/light/kernels/torque_light_forces.py",
+      "bytes": 7979,
+      "sha256": "ac10816a6367e382c6e0b5c5d632d4690a623471f75adb6625d21c8414530ea9"
+    },
+    {
+      "path": "research/light/kernels/torque_light_powered.py",
+      "bytes": 9001,
+      "sha256": "97f0e09c38391d0cef24101d0dc2012518f20ea0f7b1eca4d91d7ac6ec065b22"
+    },
+    {
+      "path": "research/light/kernels/torque_light_thermal.py",
+      "bytes": 14446,
+      "sha256": "86f7b735b29137cc337331b82be7433dbb12cae85837d077d05add26b16e358f"
+    }
+  ],
+  "excluded": [
+    "credentials_and_machine_specific_operational_receipts",
+    "private_images_photo_observations_and_team_telemetry",
+    "TTC_and_unverified_redistribution_tire_coefficients",
+    "local_line_artifact_and_authenticated_promotion_bundle",
+    "unreviewed_dependency_closure_and_fixture_dependent_tests"
+  ],
+  "full_integration_plan_source_sha256": "9259a2f935f5b64acd6027d3c57b6260c0656c9ba1dec20f748e553159bd2afa",
+  "full_integration_plan_public_delta": "Private photo observations replaced by general model-year identity and team-data requirements; original handoff untouched",
+  "no_runtime_authority_or_budget_reuse": true
+}
