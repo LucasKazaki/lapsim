@@ -20,6 +20,20 @@ history, rebuilds and executes the existing bench under QEMU, and retains the
 unknown hardware and physical-validation gates. The dated historical tranches
 below remain historical evidence, not the current source SHA.
 
+**4 November E01 Windows reproducibility checkpoint:** inspected public `main`
+`07ccb4b84138aedcc5b9cb85c2e81d283d6c132e` and the still-open source-only PR #166
+at `eda45185a4debeae7239dce906b72cfdf3909da9`. The
+[Windows clone/readiness guide](docs/windows_lite_overnight.md) separates ordinary
+desktop startup from the non-runnable seven-policy lite archive and records the
+finite-run, output, stop and resume acceptance contract. A Windows checkout
+converted 15/16 archived source files to CRLF; the new archive attributes retain
+the original Git bytes and all 16 manifest identities. Eight standard-library
+source-audit regressions pass; the actual archive audit reports exit 2 / blocked
+with 16/16 hashes matched. No lite import, native/UI/physics qualification,
+pilot, tournament or overnight run was executed. The original runtime-review
+restriction, authenticated line admission and complete guarded launch path
+remain open. This source/docs tranche does not complete E01 or qualify lite.
+
 ## Active local native-backend cycle (16–18 October 2026)
 
 The owner's new continuous engineering request supersedes the completed window
