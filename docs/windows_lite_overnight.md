@@ -73,8 +73,10 @@ Get-Content -LiteralPath $auditReport -Raw
 
 Expected: exit **2**, `status` **blocked**, `archive_integrity` **passed** and
 `files_matched` / `files_checked` **16 / 16**. A mismatch is a stop condition;
-do not edit the manifest to bless different bytes. Exit **1** means the audit or
-report write failed, including an existing destination file. The report lists
+do not edit the manifest to bless different bytes. Failed hash/size integrity
+returns **1** after retaining the failed JSON report, so the command block stops.
+Exit **1** also means a source-audit or report-write error, including an existing
+destination file. The report lists
 the declared policy eligibility, exact hashes and missing gates. It cannot
 promote qualification, resolve a review denial or authenticate a line producer.
 Even changing all local eligibility flags cannot produce a ready result.
