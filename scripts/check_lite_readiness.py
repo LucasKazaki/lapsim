@@ -2,7 +2,7 @@
 
 This source-only report cannot authorize execution or establish runtime readiness.
 Exit 2 means the archive was inspected but the lite launch remains blocked.
-Exit 1 means the source audit or optional report write failed.
+Exit 1 means archive integrity, the source audit or optional report write failed.
 """
 from __future__ import annotations
 
@@ -135,7 +135,7 @@ def main(argv=None) -> int:
                 stream.flush()
                 os.fsync(stream.fileno())
         print(text, end="")
-        return 2
+        return 2 if report["archive_integrity"] == "passed" else 1
     except (OSError, ValueError, KeyError, TypeError) as error:
         print("Lite source audit failed: " + str(error), file=sys.stderr)
         return 1

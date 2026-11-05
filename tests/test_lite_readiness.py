@@ -53,6 +53,19 @@ class LiteSourceReadinessTests(unittest.TestCase):
         self.assertEqual(report["archive_integrity"], "failed")
         self.assertFalse(report["files"][0]["matches"])
 
+    def test_failed_integrity_stops_cli_and_preserves_failed_evidence(self):
+        self.source.write_bytes(b"# changed archive\n")
+        failed = AUDIT.audit(self.root)
+        report = self.root / "work/failed-report.json"
+        stdout = io.StringIO()
+        with patch.object(AUDIT, "audit", return_value=failed), redirect_stdout(stdout):
+            result = AUDIT.main(["--output", str(report)])
+        self.assertEqual(result, 1)
+        self.assertEqual(json.loads(report.read_text(encoding="utf-8")), failed)
+        self.assertEqual(json.loads(stdout.getvalue()), failed)
+        self.assertEqual(failed["archive_integrity"], "failed")
+        self.assertEqual(failed["status"], "blocked")
+
     def test_escaping_manifest_path_is_rejected(self):
         self.manifest["source_entries"][0]["path"] = "research/light/../../outside.py"
         self.save_manifest()
