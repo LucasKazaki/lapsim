@@ -1,0 +1,41 @@
+{
+  "schema": "lapsim.portable-course-input-provenance.v1",
+  "status": "UNVALIDATED_INPUT_NOT_ADMITTED_RACING_LINE",
+  "upstream_repository": "AMZ-Racing/fssim",
+  "upstream_commit": "cf652d8d3f1e13031dad3fb75eb3d4e6fbaaeff4",
+  "upstream_map_path": "fssim_gazebo/models/track/tracks_yaml/FSI.yaml",
+  "upstream_map_git_blob_sha1": "8ae29a671564b439346541ccbf5521ab73701f3a",
+  "upstream_license_path": "LICENSE.md",
+  "upstream_license_git_blob_sha1": "cf656359c19412b4ec066dabd72231fe962ddab1",
+  "license": "MIT",
+  "map": {
+    "path": "FSI.yaml",
+    "raw_bytes": 7708,
+    "raw_sha256": "a70ef6bc168801e1b985964e13c2ffbf4a540007ffc9bf84b23434b1a682c4a2",
+    "lf_normalized_bytes": 7377,
+    "lf_normalized_sha256": "7e0cfd65403406e3d6cf0e12aeeb605efb0163b35f3b6312250f871f0ee85134",
+    "raw_byte_identical_to_upstream": false,
+    "lf_normalized_byte_identical_to_upstream": true
+  },
+  "license_notice": {
+    "path": "LICENSE.md",
+    "raw_bytes": 1115,
+    "raw_sha256": "23834ec2d6b15f227690efa596f3bc7e728f50080bee5adbdd4f33014b4b245c",
+    "lf_normalized_bytes": 1094,
+    "lf_normalized_sha256": "d22aef0ea37cb5db86a0c7ee0661563a679b52bbe4c4408633c92c5525ca6979"
+  },
+  "processed_bundle": {
+    "path": "amz_fssim_fsi_approx.json",
+    "raw_bytes": 60423,
+    "raw_sha256": "46ce29a898f4491d3dc6456f42325769474fa7790ce4227a86a8ab537dcc373e",
+    "preserved_geometry_sha256_field": "4d0404480da3f1035a4a22f6d94ae6870278d010ca8b215f0160b8263156210d",
+    "boundary_status": "absent",
+    "corridor_width_source": "assumed_uniform",
+    "assumed_half_width_m": 3.0,
+    "survey_or_official_event_claim": false,
+    "geometry_recomputed_for_publication": false
+  },
+  "private_runtime_or_line_receipts_included": false,
+  "tests_or_optimizer_run_for_publication": false,
+  "qualification_authority": false
+}

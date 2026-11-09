@@ -1,0 +1,2 @@
+# Preserve the reviewed raw source/notice and processed-input bytes on checkout.
+* -text

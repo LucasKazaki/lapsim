@@ -1,0 +1,185 @@
+{
+  "schema": "lapsim.portable-core-source-manifest.v1",
+  "candidate_id": "lapsim-light-core-portability-p01",
+  "status": "SOURCE_ONLY_UNBUILT_UNQUALIFIED",
+  "package_namespace": "lapsim_light_core",
+  "source_snapshot": "light-scientific-aero-snapshot-20261028",
+  "scientific_modules": 9,
+  "original_bytes_preserved_modules": 7,
+  "scientific_import_lines_changed": 2,
+  "scalar_helper_body_sha256": "77e2f3e257fab282e806e3f49aa3beaf95678c5ab8c006317829bebd0a6eb94d",
+  "scalar_helper_body_identical_to_original": true,
+  "module_entries": [
+    {
+      "path": "src/lapsim_light_core/__init__.py",
+      "bytes": 351,
+      "sha256": "1bbbfd1bc24291bb26442117b8a606fabc4ef2d540ca90b7f53a428bca64032a",
+      "original_scientific_source_sha256": null,
+      "change": "new_inert_initializer",
+      "static_imports": []
+    },
+    {
+      "path": "src/lapsim_light_core/_validation.py",
+      "bytes": 440,
+      "sha256": "7a1e41ea3ee35c35196f5c218305e87030f7be2df5e1f38c59bdeb1e35e993d0",
+      "original_scientific_source_sha256": null,
+      "change": "original_bicycle_scalar_helper_extracted",
+      "static_imports": [
+        "math",
+        "numbers"
+      ]
+    },
+    {
+      "path": "src/lapsim_light_core/actuation.py",
+      "bytes": 13086,
+      "sha256": "b091949f8e13634fdae8abd13d1abb8193d56121dae150f92529e223bf505ad6",
+      "original_scientific_source_sha256": "4e26e44830ff768323c307787e29fe13fc43043c56094873e21d29134ea244ba",
+      "change": "one_validation_import_line_only",
+      "static_imports": [
+        "__future__",
+        "._validation",
+        "dataclasses",
+        "math"
+      ]
+    },
+    {
+      "path": "src/lapsim_light_core/conditions.py",
+      "bytes": 6333,
+      "sha256": "f61de89c34e6115918160da74f8e49274712eac1bc97b00c7634e9ec6aee55f9",
+      "original_scientific_source_sha256": "f61de89c34e6115918160da74f8e49274712eac1bc97b00c7634e9ec6aee55f9",
+      "change": "byte_identical",
+      "static_imports": [
+        "__future__",
+        "dataclasses",
+        "math"
+      ]
+    },
+    {
+      "path": "src/lapsim_light_core/planar.py",
+      "bytes": 31885,
+      "sha256": "900938e377b329036f63a0df14dba8bef2e7ffe1170008bbf4aee1590a52d04e",
+      "original_scientific_source_sha256": "900938e377b329036f63a0df14dba8bef2e7ffe1170008bbf4aee1590a52d04e",
+      "change": "byte_identical",
+      "static_imports": [
+        "__future__",
+        ".conditions",
+        "dataclasses",
+        "math",
+        "typing"
+      ]
+    },
+    {
+      "path": "src/lapsim_light_core/powered_planar.py",
+      "bytes": 17551,
+      "sha256": "648399960235fe267f18d3b45e5d33ce9c9b23411b77f321b85ac1c979ace96d",
+      "original_scientific_source_sha256": "975480e8900bb7e7e3fc2c81c8b7b5299542c769c919a84185765d446ec95d1d",
+      "change": "one_validation_import_line_only",
+      "static_imports": [
+        "__future__",
+        "._validation",
+        ".actuation",
+        ".planar",
+        "dataclasses",
+        "math",
+        "typing"
+      ]
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_combined.py",
+      "bytes": 7122,
+      "sha256": "5ac11c94d6bd69494ab8bff1f045ae0f73e9659eaf35108e45ee671410fa6970",
+      "original_scientific_source_sha256": "5ac11c94d6bd69494ab8bff1f045ae0f73e9659eaf35108e45ee671410fa6970",
+      "change": "byte_identical",
+      "static_imports": [
+        "__future__",
+        ".actuation",
+        ".torque_light_drs",
+        ".torque_light_thermal",
+        "dataclasses",
+        "hashlib",
+        "json"
+      ]
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_drs.py",
+      "bytes": 12516,
+      "sha256": "2172e8ab4ee5932cf463be3312f9f9228dd0efb72bb2c7d339030a904bf8280e",
+      "original_scientific_source_sha256": "2172e8ab4ee5932cf463be3312f9f9228dd0efb72bb2c7d339030a904bf8280e",
+      "change": "byte_identical",
+      "static_imports": [
+        "__future__",
+        ".actuation",
+        ".torque_light_powered",
+        "dataclasses",
+        "hashlib",
+        "json",
+        "math"
+      ]
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_forces.py",
+      "bytes": 7979,
+      "sha256": "ac10816a6367e382c6e0b5c5d632d4690a623471f75adb6625d21c8414530ea9",
+      "original_scientific_source_sha256": "ac10816a6367e382c6e0b5c5d632d4690a623471f75adb6625d21c8414530ea9",
+      "change": "byte_identical",
+      "static_imports": [
+        "__future__",
+        ".conditions",
+        ".planar",
+        "dataclasses",
+        "hashlib",
+        "json",
+        "math",
+        "typing"
+      ]
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_powered.py",
+      "bytes": 9001,
+      "sha256": "97f0e09c38391d0cef24101d0dc2012518f20ea0f7b1eca4d91d7ac6ec065b22",
+      "original_scientific_source_sha256": "97f0e09c38391d0cef24101d0dc2012518f20ea0f7b1eca4d91d7ac6ec065b22",
+      "change": "byte_identical",
+      "static_imports": [
+        "__future__",
+        ".actuation",
+        ".conditions",
+        ".powered_planar",
+        ".torque_light_forces",
+        "dataclasses",
+        "hashlib",
+        "json",
+        "math"
+      ]
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_thermal.py",
+      "bytes": 14446,
+      "sha256": "86f7b735b29137cc337331b82be7433dbb12cae85837d077d05add26b16e358f",
+      "original_scientific_source_sha256": "86f7b735b29137cc337331b82be7433dbb12cae85837d077d05add26b16e358f",
+      "change": "byte_identical",
+      "static_imports": [
+        "__future__",
+        ".actuation",
+        ".powered_planar",
+        ".torque_light_forces",
+        ".torque_light_powered",
+        "dataclasses",
+        "hashlib",
+        "json",
+        "math"
+      ]
+    }
+  ],
+  "import_inventory_method": "static_source_regex_and_independent_read_review_not_executed_import_proof",
+  "external_runtime_dependencies_declared": [],
+  "provisional_build_dependency": "setuptools>=68",
+  "environment_lock_qualified": false,
+  "build_import_tests_or_simulation_performed": false,
+  "legacy_checkpoint_or_certificate_compatibility_claimed": false,
+  "generic_actuation_includes_non_AWD_topologies": true,
+  "target_campaign_requires_explicit_four_independent_AWD": true,
+  "original_guard_or_lease_changes": false,
+  "qualification_authority": false,
+  "scalar_helper_origin_relative_path": "src/lapsim/dynamics/bicycle.py#_finite",
+  "scalar_helper_origin_source_sha256": "a1570cfcd23799b5afe23fd6bba0886d6247069b1726aaa3fdd6d6ff95295bdf"
+}
