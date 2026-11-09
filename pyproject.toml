@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-lapsim"
-version = "0.1.0+light20261109.10"
+version = "0.1.0+light20261109.12"
 description = "Controls-profile Formula SAE event simulation with points and telemetry"
 requires-python = ">=3.11"
 dependencies = [

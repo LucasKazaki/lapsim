@@ -17,6 +17,7 @@ from lapsim.tournament.session import (
     ContinuationExecution, ContinuationOperation, FreshExecution, FreshOperation,
     HostUpdate, SessionController,
     NativeSessionHost, SessionOutput,
+    prepare_session_execution,
 )
 from lapsim_light_campaign import raw_journal as journal
 from lapsim_light_campaign.campaign import CampaignLimits
@@ -113,8 +114,9 @@ class SessionTests(unittest.TestCase):
             self.provider.implementation_sha256, str(self.root / suffix), 30., 750, 4*1024*1024, False, **kwargs)
 
     def terminal(self, output, *, outcome="returned", sequence=1, ticks=1):
+        eligible = type(output) is SessionOutput and outcome == "returned" and output.inspect(self.controller.operation)["terminal"]["terminal"]["status"] == "paused_budget"
         return HostUpdate(self.controller.operation.operation_sha256, sequence, "terminal", ticks, outcome,
-            output, b"UNTRUSTED terminal/cleanup double")
+            output, b"UNTRUSTED terminal/cleanup double", paused_continuation_eligible=eligible)
 
     def adopt(self, output, operation=None):
         self.controller.start(self.operation if operation is None else operation)
@@ -161,6 +163,125 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(len(provider.calls), 1)
         with self.assertRaises(ValueError):
             execution.run()
+
+    def test_missing_continuation_provider_refused_before_output_creation(self):
+        _, output = self.fresh_output()
+        child, admission = self.child(output), b"UNTRUSTED admission fixture"
+        with self.assertRaisesRegex(ValueError, "provider unavailable"):
+            ContinuationExecution(child, provider=None, owned_admission_raw=admission,
+                owned_admission_sha256=sha256(admission).hexdigest(), cancel_event=Event())
+        self.assertFalse(Path(child.output_root).exists())
+
+    def test_wrong_continuation_provider_pin_refused_before_output_creation(self):
+        _, output = self.fresh_output()
+        child, admission = self.child(output), b"UNTRUSTED admission fixture"
+        provider = UntrustedContinuationDouble(statuses=("running",))
+        provider.implementation_sha256 = pin("different continuation implementation")
+        with self.assertRaisesRegex(ValueError, "provider pin"):
+            ContinuationExecution(child, provider=provider, owned_admission_raw=admission,
+                owned_admission_sha256=sha256(admission).hexdigest(), cancel_event=Event())
+        self.assertFalse(provider.calls)
+        self.assertFalse(Path(child.output_root).exists())
+
+    def test_inherited_continuation_verifier_refused_before_output_creation(self):
+        from lapsim_light_campaign.continuation import OriginalContinuationProvider
+
+        class Incomplete(OriginalContinuationProvider):
+            implementation_sha256 = self.provider.implementation_sha256
+
+            def execute_owned_continuation(self, *args, **kwargs):
+                raise AssertionError("Must reject inherited verifier before any execution")
+
+        Incomplete.__abstractmethods__ = frozenset()
+        _, output = self.fresh_output()
+        child, admission = self.child(output), b"UNTRUSTED admission fixture"
+        with self.assertRaisesRegex(ValueError, "integration unavailable"):
+            ContinuationExecution(child, provider=Incomplete(), owned_admission_raw=admission,
+                owned_admission_sha256=sha256(admission).hexdigest(), cancel_event=Event())
+        self.assertFalse(Path(child.output_root).exists())
+
+    def test_fixed_factory_constructs_real_fresh_runner_without_running(self):
+        event = Event()
+        execution = prepare_session_execution(self.operation, provider=self.provider, cancel_event=event)
+        self.assertIs(type(execution), FreshExecution)
+        self.assertFalse(self.provider.calls)
+        self.assertFalse(Path(self.operation.output_root).exists())
+        event.set()
+        self.assertIsNone(execution.run())
+        self.assertEqual(execution.snapshot()["status"], "cancelled_between_chunks")
+        self.assertFalse(self.provider.calls)
+
+    def test_fixed_factory_requires_original_continuation_admission(self):
+        _, output = self.fresh_output()
+        child = self.child(output)
+        provider = UntrustedContinuationDouble(statuses=("running",))
+        with self.assertRaisesRegex(ValueError, "outer admission"):
+            prepare_session_execution(child, provider=provider, cancel_event=Event())
+        self.assertFalse(provider.calls)
+        self.assertFalse(Path(child.output_root).exists())
+
+    def test_fixed_factory_constructs_and_runs_real_continuation(self):
+        _, output = self.fresh_output()
+        child, admission = self.child(output), b"UNTRUSTED original admission fixture"
+        provider, event = UntrustedContinuationDouble(statuses=("running",)), Event()
+        execution = prepare_session_execution(child, provider=provider, cancel_event=event,
+            owned_admission_raw=admission, owned_admission_sha256=sha256(admission).hexdigest())
+        self.assertIs(type(execution), ContinuationExecution)
+        self.assertIs(execution.cancel, event)
+        self.assertIs(execution.provider, provider)
+        self.assertFalse(Path(child.output_root).exists())
+        result = execution.run()
+        self.assertEqual(result.inspect(child)["records"], 2)
+        self.assertEqual(len(provider.calls), 1)
+
+    def test_fixed_factory_refuses_fresh_admission_arguments(self):
+        with self.assertRaisesRegex(ValueError, "cannot be applied"):
+            prepare_session_execution(self.operation, provider=self.provider, cancel_event=Event(),
+                owned_admission_raw=b"UNTRUSTED misplaced continuation admission")
+        self.assertFalse(Path(self.operation.output_root).exists())
+        self.assertFalse(self.provider.calls)
+
+    def test_fixed_factory_refuses_unknown_operation_and_implicit_event(self):
+        with self.assertRaisesRegex(ValueError, "Exact supported"):
+            prepare_session_execution(object(), provider=self.provider, cancel_event=Event())
+        with self.assertRaisesRegex(ValueError, "cancellation Event"):
+            prepare_session_execution(self.operation, provider=self.provider, cancel_event=None)
+        self.assertFalse(Path(self.operation.output_root).exists())
+
+    def test_continuation_provider_mutated_after_construction_refused_before_writes(self):
+        _, output = self.fresh_output()
+        child, admission = self.child(output), b"UNTRUSTED admission fixture"
+        provider = UntrustedContinuationDouble(statuses=("running",))
+        execution = prepare_session_execution(child, provider=provider, cancel_event=Event(),
+            owned_admission_raw=admission, owned_admission_sha256=sha256(admission).hexdigest())
+        provider.implementation_sha256 = pin("mutated after prepare")
+        with self.assertRaisesRegex(ValueError, "provider pin"):
+            execution.run()
+        self.assertFalse(Path(child.output_root).exists())
+        self.assertFalse(provider.calls)
+        with self.assertRaisesRegex(ValueError, "consumed"):
+            execution.run()
+
+    def test_dispatch_provider_recheck_retained_after_prefix_copy(self):
+        from lapsim.tournament import session
+        _, output = self.fresh_output()
+        child, admission = self.child(output), b"UNTRUSTED admission fixture"
+        provider = UntrustedContinuationDouble(statuses=("running",))
+        execution = prepare_session_execution(child, provider=provider, cancel_event=Event(),
+            owned_admission_raw=admission, owned_admission_sha256=sha256(admission).hexdigest())
+        original = session.snapshot_raw_continuation_child
+
+        def after_prefix(*args, **kwargs):
+            result = original(*args, **kwargs)
+            provider.implementation_sha256 = pin("changed after prefix copied")
+            return result
+
+        with patch.object(session, "snapshot_raw_continuation_child", side_effect=after_prefix):
+            with self.assertRaisesRegex(ValueError, "provider pin"):
+                execution.run()
+        self.assertFalse(provider.calls)
+        self.assertTrue((Path(child.output_root)/"child"/"ancestry.json").is_file())
+        self.assertFalse((Path(child.output_root)/"export.json").exists())
 
     def test_append_failure_retains_returned_packet_and_no_export_or_retry(self):
         _, output = self.fresh_output()
@@ -265,6 +386,69 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(self.controller.state, "blocked")
         self.assertTrue(self.controller.active)
         self.assertFalse(self.controller.can_close)
+        self.assertFalse(self.controller.can_continue)
+
+    def test_paused_output_without_native_eligibility_keeps_continue_disabled(self):
+        _, output = self.fresh_output()
+        self.controller.start(self.operation)
+        event = replace(self.terminal(output), paused_continuation_eligible=False)
+        self.controller.handle.updates.append(event)
+        self.controller.poll()
+        self.assertEqual(self.controller.state, "paused")
+        self.assertTrue(self.controller.can_close)
+        self.assertFalse(self.controller.can_continue)
+        self.assertIs(self.host.verified[-1][1], event)
+        with self.assertRaisesRegex(ValueError, "authenticated paused session"):
+            self.controller.start(self.child(output))
+
+    def test_native_eligibility_committed_only_after_exact_terminal_authentication(self):
+        _, output = self.fresh_output()
+        self.controller.start(self.operation)
+        event = self.terminal(output)
+        self.assertIs(event.paused_continuation_eligible, True)
+        self.controller.handle.updates.append(event)
+        self.controller.poll()
+        self.assertIs(self.host.verified[-1][1], event)
+        self.assertTrue(self.controller.can_continue)
+
+    def test_nonterminal_cannot_claim_continuation_eligibility(self):
+        self.controller.start(self.operation)
+        self.controller.handle.updates.append(HostUpdate(self.operation.operation_sha256, 0, "running", 0,
+            paused_continuation_eligible=True))
+        with self.assertRaisesRegex(ValueError, "Nonterminal"):
+            self.controller.poll()
+        self.assertFalse(self.controller.can_continue)
+        self.assertFalse(self.controller.cleanup_verified)
+        self.assertFalse(self.host.verified)
+
+    def test_completed_or_failed_terminal_cannot_claim_paused_eligibility(self):
+        for status in ("completed", "invalid"):
+            with self.subTest(status=status):
+                operation = replace(self.operation, output_root=str(self.root/status))
+                _, output = self.fresh_output(operation, fixtures.FakeProvider(statuses=(status,)))
+                controller = SessionController(self.host, expected_host_sha256=self.host.implementation_sha256)
+                controller.start(operation)
+                self.host.handles[-1].updates.append(HostUpdate(operation.operation_sha256, 0, "terminal", 0,
+                    "returned", output, b"UNTRUSTED terminal", paused_continuation_eligible=True))
+                with self.assertRaisesRegex(ValueError, "explicit paused result"):
+                    controller.poll()
+                self.assertFalse(controller.can_continue)
+                self.assertFalse(controller.cleanup_verified)
+        self.assertFalse(self.host.verified)
+
+    def test_continuation_eligibility_requires_exact_bool_and_ignores_stale_event(self):
+        _, output = self.fresh_output()
+        self.controller.start(self.operation)
+        event = self.terminal(output)
+        self.controller.handle.updates.append(replace(event, operation_sha256=pin("stale eligible operation")))
+        self.controller.poll()
+        self.assertFalse(self.controller.can_continue)
+        self.assertFalse(self.host.verified)
+        self.controller.handle.updates.append(replace(event, paused_continuation_eligible=1))
+        with self.assertRaisesRegex(ValueError, "Malformed"):
+            self.controller.poll()
+        self.assertFalse(self.controller.can_continue)
+        self.assertFalse(self.controller.cleanup_verified)
 
     def test_failed_terminal_cannot_resume_paused_bytes(self):
         _, output = self.fresh_output()
