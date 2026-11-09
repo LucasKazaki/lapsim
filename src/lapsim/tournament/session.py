@@ -19,13 +19,14 @@ from typing import Protocol
 from lapsim_light_campaign import raw_journal as journal
 from lapsim_light_campaign.campaign import CampaignLimits, CampaignProgram, RECORD_GROWTH, _write_raw
 from lapsim_light_campaign.continuation import (
-    copy_raw_prefix_in_owned_worker, dispatch_continuation, validate_continuation_request,
+    OriginalContinuationProvider, copy_raw_prefix_in_owned_worker,
+    dispatch_continuation, validate_continuation_request,
 )
 from lapsim_light_campaign.continuation_archive import snapshot_raw_continuation_child, validate_raw_child_archive
 from lapsim_light_campaign.dispatch_request import MAX_REQUEST_BYTES
 from lapsim_light_campaign.field_archive import MAX_METADATA_BYTES, read_field_archive
 from lapsim_light_campaign.field_dispatch import MAX_RESULT_PAYLOAD_BYTES
-from lapsim_light_campaign.guarded_dispatch import MAX_OWNED_RECEIPT_BYTES, _require_chunk_checkpoint_binding, validate_staged_request
+from lapsim_light_campaign.guarded_dispatch import MAX_OWNED_RECEIPT_BYTES, _require_chunk_checkpoint_binding, require_provider, validate_staged_request
 from lapsim_light_campaign.input_contracts import decode, digest, encode, is_sha256, require
 from lapsim_light_campaign.raw_evidence import MAX_EXPORT_BYTES, MAX_SOURCE_BYTES, read_raw_export, replay_raw_bundle, write_raw_export
 from lapsim_light_campaign.tournament_plan import MAX_PLAN_BYTES, validate_tournament_plan
@@ -289,6 +290,13 @@ class FreshExecution:
         return self.program.snapshot()
 
 
+def _require_continuation_provider(provider, expected_provider_sha256):
+    require_provider(provider, expected_provider_sha256, (
+        ("execute_owned_continuation", OriginalContinuationProvider.execute_owned_continuation),
+        ("require_authenticated_continuation_and_cleanup", OriginalContinuationProvider.require_authenticated_continuation_and_cleanup),
+    ))
+
+
 class ContinuationExecution:
     """Actual append/export composition, only INSIDE renewed native writer admission.
 
@@ -300,7 +308,9 @@ class ContinuationExecution:
     def __init__(self, operation, *, provider, owned_admission_raw, owned_admission_sha256, cancel_event):
         require(type(operation) is ContinuationOperation and type(cancel_event) is Event, "Exact continuation/Event required")
         operation.validate()
+        _require_continuation_provider(provider, operation.provider_sha256)
         require(type(owned_admission_raw) is bytes and 0 < len(owned_admission_raw) <= MAX_OWNED_RECEIPT_BYTES and
+                is_sha256(owned_admission_sha256) and
                 sha256(owned_admission_raw).hexdigest() == owned_admission_sha256, "Complete original outer admission bytes required")
         self.operation, self.provider, self.cancel = operation, provider, cancel_event
         self.admission, self.admission_pin = owned_admission_raw, owned_admission_sha256
@@ -311,6 +321,7 @@ class ContinuationExecution:
         self._used = True
         op = self.operation
         op.validate()
+        _require_continuation_provider(self.provider, op.provider_sha256)
         require(not self.cancel.is_set(), "Cancelled before continuation; no dispatch")
         root = Path(op.output_root)
         self.phase = "create_outer_namespace"
@@ -370,16 +381,43 @@ class ContinuationExecution:
         return output
 
 
+def prepare_session_execution(operation, *, provider, cancel_event,
+                              owned_admission_raw=None, owned_admission_sha256=None):
+    """Fixed native-host factory: construct a real runner, never admit or run it.
+
+    The native owner passes its actual reviewed provider and the host-local
+    cancellation Event targeted by the handle's original Stop relay. A thread
+    Event is not a cross-process cancellation transport. For continuation the
+    owner must first authenticate the
+    original renewed outer admission, and keep the original writer/lease/deadline
+    through run(), storage verification and cleanup. These bytes/pins cannot
+    establish that context. No context manager, lock, worker or provider is
+    discovered/created, and no fallback or control-exception handler is supplied.
+    Retain the returned execution before run(): FreshExecution.snapshot() is
+    available after failure; ContinuationExecution.phase identifies its stage.
+    Neither observation grants retry, recovery or terminal cleanup authority.
+    """
+    require(type(cancel_event) is Event, "Explicit original-host cancellation Event required")
+    if type(operation) is FreshOperation:
+        require(owned_admission_raw is None and owned_admission_sha256 is None,
+                "Continuation admission arguments cannot be applied to a fresh operation")
+        return FreshExecution(operation, provider=provider, cancel_event=cancel_event)
+    require(type(operation) is ContinuationOperation, "Exact supported session operation required")
+    return ContinuationExecution(operation, provider=provider, cancel_event=cancel_event,
+        owned_admission_raw=owned_admission_raw, owned_admission_sha256=owned_admission_sha256)
+
+
 @dataclass(frozen=True, slots=True)
 class HostUpdate:
     operation_sha256: str
     sequence: int
     phase: str
     progress_ticks: int
-    outcome: str | None = None  # returned / cancelled / failed; requires native authentication.
+    outcome: str | None = None  # returned / cancelled / timed_out / failed; native authentication required.
     output: SessionOutput | None = None
     terminal_evidence_raw: bytes = b""
     detail: str = ""
+    paused_continuation_eligible: bool = False
 
 
 class NativeSessionHost(Protocol):
@@ -392,6 +430,9 @@ class NativeSessionHost(Protocol):
     cleanup responsibility at the host. Terminal verification binds operation,
     source/input/environment, exact outputs, accounting, cancellation, stable
     process exit + empty Job + joined observers/readers before handle closure.
+    It also authenticates paused_continuation_eligible: original historical
+    lineage is eligible for proposing continuation, NOT a fresh execution grant.
+    False is required if unavailable, unverified or not explicitly paused.
     Failure terminals need authentication too. Native FatalCreatorExit remains
     inside the lease; a Tk callback cannot implement it. No default host exists.
     """
@@ -425,6 +466,7 @@ class SessionController:
         self._operation_pin, self._maximum_progress_tick = None, 0
         self._used, self._roots, self._nonces, self._lineages = set(), set(), set(), set()
         self._stop_reason, self.close_requested, self.cleanup_verified = None, False, True
+        self._continuation_eligible = False
 
     def _thread(self):
         require(get_ident() == self._owner, "Session control belongs to its UI thread")
@@ -435,7 +477,11 @@ class SessionController:
 
     @property
     def can_continue(self):
-        return self.state == "paused" and self.cleanup_verified and not self.close_requested and self._stop_reason is None
+        return self.state == "paused" and self.cleanup_verified and self._continuation_eligible and not self.close_requested and self._stop_reason is None
+
+    @property
+    def paused_continuation_eligible(self):
+        return self.state == "paused" and self.cleanup_verified and self._continuation_eligible
 
     @property
     def stop_requested(self):
@@ -469,6 +515,7 @@ class SessionController:
         if lineage is not None:
             self._lineages.add(lineage)
         self.operation, self.output = operation, None
+        self._continuation_eligible = False
         self.handle = None
         self.state, self.phase, self.detail = "starting", "native_admission", ""
         self.cleanup_verified, self._stop_reason = False, None
@@ -527,9 +574,11 @@ class SessionController:
                 return
             require(type(update.progress_ticks) is int and self.progress_ticks <= update.progress_ticks <= self._maximum_progress_tick and
                     update.phase in ("admitting", "running", "finalizing", "cleanup", "terminal") and
-                    type(update.detail) is str and len(update.detail) <= 2048, "Malformed/regressing current status")
+                    type(update.detail) is str and len(update.detail) <= 2048 and
+                    type(update.paused_continuation_eligible) is bool, "Malformed/regressing current status")
             if update.outcome is None:
-                require(update.phase != "terminal" and update.output is None and not update.terminal_evidence_raw,
+                require(update.phase != "terminal" and update.output is None and not update.terminal_evidence_raw and
+                        not update.paused_continuation_eligible,
                         "Nonterminal update carried terminal data")
                 self._sequence, self.progress_ticks = update.sequence, update.progress_ticks
                 self.phase, self.detail = update.phase, update.detail
@@ -542,6 +591,9 @@ class SessionController:
             require(update.output is None or type(update.output) is SessionOutput, "Exact immutable RAW session output required")
             tail = None if update.output is None else update.output.inspect(self.operation)
             require(update.outcome != "returned" or tail is not None, "Returned terminal missing finalized RAW output")
+            require(not update.paused_continuation_eligible or
+                    (update.outcome == "returned" and tail is not None and tail["terminal"]["terminal"]["status"] == "paused_budget"),
+                    "Only an authenticated explicit paused result can propose continuation")
             require(self.host.require_authenticated_terminal(self.operation, update) is None,
                     "Native terminal verifier must raise on failure")
             self._sequence, self.progress_ticks = update.sequence, update.progress_ticks
@@ -549,6 +601,7 @@ class SessionController:
             # This point alone releases UI work/close controls. Preserve the
             # actual authenticated result, with a separate sticky Stop request.
             self.cleanup_verified, self.output = True, update.output
+            self._continuation_eligible = update.paused_continuation_eligible
             if update.outcome != "returned":
                 self.state = update.outcome
             else:

@@ -41,6 +41,7 @@ class Controller:
     progress_ticks = 0
     active = False
     can_continue = False
+    paused_continuation_eligible = False
     close_requested = False
     cleanup_verified = True
     can_close = True
@@ -141,6 +142,14 @@ class UiTests(unittest.TestCase):
         p.continue_paused()
         self.assertEqual(p.controller.state, "paused")
         self.assertIn("inputs unavailable", p.detail.value)
+
+    def test_paused_history_without_native_eligibility_explains_disabled_continue(self):
+        p = self.panel
+        p.controller.state = "paused"
+        p.source = lambda previous, output: None
+        p.refresh()
+        self.assertIn("paused continuation: not verified", p.status.value)
+        self.assertEqual(p.continue_button.options["state"], "disabled")
 
     def test_primary_native_error_survives_presentation_error(self):
         p = self.panel

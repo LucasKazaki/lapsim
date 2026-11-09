@@ -97,7 +97,8 @@ class SessionPanel:
     def refresh(self):
         c = self.controller
         cleanup = "not launched" if c.operation is None else "verified" if c.cleanup_verified else "pending"
-        self.status.set(f"State: {c.state}; phase: {c.phase}; cleanup: {cleanup}; Stop request: {c.stop_requested or 'none'}")
+        eligibility = "not applicable" if c.state != "paused" else "verified for proposal" if c.paused_continuation_eligible else "not verified"
+        self.status.set(f"State: {c.state}; phase: {c.phase}; cleanup: {cleanup}; Stop request: {c.stop_requested or 'none'}; paused continuation: {eligibility}")
         self.progress.set(f"Observed accepted/progress ticks: {c.progress_ticks}")
         self.detail.set(c.detail)
         self.start_button.configure(state="normal" if not self._initial_used and not c.active and not c.close_requested else "disabled")

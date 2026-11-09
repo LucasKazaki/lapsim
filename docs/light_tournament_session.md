@@ -22,6 +22,33 @@ The native owner retains this execution object for `snapshot()` after failure;
 failure never performs automatic recovery/finalization. Cancellation can return
 no advanced output while preserving staged files.
 
+The fixed native-host constructor is now:
+
+```python
+prepare_session_execution(
+    operation, *, provider, cancel_event,
+    owned_admission_raw=None, owned_admission_sha256=None,
+)
+```
+
+Import it from `lapsim.tournament.session`. It returns the actual `FreshExecution`
+or `ContinuationExecution`, preserves the supplied provider/Event, and never runs,
+acquires a lock, enters a native context or authenticates admission. Fresh calls
+reject continuation admission arguments. Continuation calls require the original
+owner's already authenticated complete admission bytes and exact pin. Both
+original continuation methods and the reviewed implementation pin are checked
+before output creation, again at run entry, and at the original dispatch boundary.
+An incomplete provider therefore cannot create a new prefix before being refused.
+The host retains the returned object before calling `run()` inside its existing
+original writer/lease/deadline allocation. `FreshExecution.snapshot()` is readable
+after return/failure; `ContinuationExecution.phase` identifies its last stage.
+Neither is a recovery or cleanup receipt. No native control exception is caught
+by this factory.
+The Event is local to the host executing the campaign. If UI and host are separate
+processes, the native handle's existing owned Stop relay must set that Event and
+also enforce active-leaf cancellation through the original supervisor. A Python
+thread Event is not a cross-process transport or an active-leaf watchdog.
+
 `SessionOutput` contains the exact finalized RAW bundle, manifest and bundle pins,
 recomputed seven-cell report, operation pin and output root. Its consistency check
 preserves source/environment/car/course/policy/state identity, requested tick/work
@@ -61,7 +88,8 @@ request_stop(reason: str) -> None  # user_stop / window_close / timeout
 ```
 
 `HostUpdate(operation_sha256, sequence, phase, progress_ticks, outcome=None,
-output=None, terminal_evidence_raw=b'', detail='')` uses phases `admitting`,
+output=None, terminal_evidence_raw=b'', detail='',
+paused_continuation_eligible=False)` uses phases `admitting`,
 `running`, `finalizing`, `cleanup`, `terminal`. Progress is an actual observed
 absolute numerical tick, bounded by the staged request. Terminal outcomes are
 `returned`, `cancelled`, `timed_out`, `failed`. `returned` needs a real finalized
@@ -70,6 +98,25 @@ Terminal evidence must authenticate operation/source/environment/inputs, exact
 output or quarantine, accounting, cancellation and owned cleanup. Hashes or local
 flags are insufficient. The verifier raises on refusal; inherited placeholders
 are rejected before launch.
+
+The additive `paused_continuation_eligible` field is an exact boolean, defaulting
+to **False**. It can be True only on a `returned` terminal with an advanced
+paused-budget/running output. The real native verifier must bind this exact
+claim to the exact paused predecessor and genuinely admitted historical lineage;
+cleanup alone, local hashes or RAW consistency do not establish it. The controller
+commits eligibility only after that verifier accepts the exact update. Older
+bindings that omit the field can show the paused result and close after cleanup,
+but cannot enable Continue. Each new Start resets eligibility. A True claim is
+eligibility to **propose** a continuation: it never replaces the original provider's
+fresh challenge/current-input/lineage/lease/resource/deadline admission for it.
+The native adapter's reviewed implementation pin must cover this updated verifier
+contract. An older generic verifier is not assumed to authenticate the new True
+claim just because its method signature still accepts `HostUpdate`. The status
+panel explains when paused continuation eligibility is not verified.
+The separate ordinary package/commit and its actual loaded session/UI/host source
+must also be pinned and observed in the native outer integration. The unchanged
+portable dev38 source manifest covers that numerical subtree; it is not a source
+identity for these new lifecycle modules or an environment observation.
 
 The precise native process topology is still required: designate the process
 holding the **existing** nonblocking FileLock and host writer context, the process
@@ -83,6 +130,17 @@ signaled stable-process exit, joined watchdogs/observers/readers and proper hand
 closure. Unproved cleanup invokes the native creator-fatal path inside the lease.
 No Tk exception callback substitutes for creator exit.
 
+For immediate native implementation, the only required source-side factory is
+`prepare_session_execution` above. The Windows owner must identify the existing
+FileLock holder and its lifetime, the CampaignProgram host and leaf process/Job
+identities, and the path from handle Stop to the genuine owner/watchdog. Its
+terminal evidence must cover stable-process exit, the actual empty-Job check,
+joined readers/observers/watchdogs, handle closure and final output verification
+before releasing UI cleanup state. An admission/GO failure is a failure terminal
+only after its actual cleanup is authenticated; an exception with uncertain
+creation stays blocked. A prior ordinary GUI containment failure neither supplies
+these tournament receipts nor identifies its own cause.
+
 `timeout_s` is a finite proposal, not an allocation. The native deadline starts
 before launch and covers admission, request supply, execution, all output work,
 verification and cleanup. Stop/Close/UI timeout only request cancellation and
@@ -94,7 +152,7 @@ Native original 10 GiB admission / 8 GiB running floors are unchanged.
 
 ## Package and verification boundary
 
-The ordinary distribution revision is `0.1.0+light20261109.10`, separate from the
+The ordinary distribution revision is `0.1.0+light20261109.11`, separate from the
 unchanged portable `0.0.0.dev38`. Python >=3.11; the new controller adds no third-party runtime dependency. Tk must
 be present for the panel. The ordinary `python-lapsim` distribution has a new
 `light-tournament` extra pinned to the separate existing
