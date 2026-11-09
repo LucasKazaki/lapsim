@@ -318,7 +318,12 @@ def _polyline_preview_curvature(
 
 
 def _path_point(track: SpatialTrack, station_m: float) -> tuple[float, float]:
-    station_m %= track.length_m
+    if track.closed:
+        station_m %= track.length_m
+    else:
+        if not isfinite(station_m):
+            raise ValueError("open path station must be finite")
+        station_m = min(track.length_m, max(0.0, station_m))
     # The course grid is at most 0.5 m in the supplied synthetic case.
     # Linear chords are a reference geometry approximation, not road edges.
     i = min(bisect_right(track.distance_m, station_m) - 1, track.cell_count - 1)
@@ -334,13 +339,28 @@ def _project_local(
     track: SpatialTrack, x_m: float, y_m: float, previous_station_m: float,
     window_m: float,
 ) -> _Projection:
+    if not track.closed and (
+        not all(isfinite(value) for value in (x_m, y_m, previous_station_m, window_m))
+        or window_m < 0.0
+    ):
+        raise ValueError("open projection requires finite inputs and a nonnegative window")
     best_distance_sq = float("inf")
     best: _Projection | None = None
     length_m = track.length_m
     lower_m = previous_station_m - window_m
     upper_m = previous_station_m + window_m
     candidate_entries: set[tuple[int, int]] = set()
-    if window_m >= length_m / 2.0:
+    if not track.closed:
+        # Intersect the caller's original window with this one open route.
+        # Recentring previous progress would hide a disconnected checkpoint.
+        lower_m = max(0.0, lower_m)
+        upper_m = min(length_m, upper_m)
+        if lower_m <= upper_m:
+            first = min(track.cell_count - 1,
+                        max(0, bisect_right(track.distance_m, lower_m) - 1))
+            last = min(track.cell_count, bisect_right(track.distance_m, upper_m))
+            candidate_entries.update((i, 0) for i in range(first, last))
+    elif window_m >= length_m / 2.0:
         for i in range(track.cell_count):
             center_station = 0.5 * (track.distance_m[i] + track.distance_m[i + 1])
             nearest_lap = round((previous_station_m - center_station) / length_m)
@@ -366,6 +386,8 @@ def _project_local(
     def candidate_order(entry: tuple[int, int]) -> tuple[int, int, float, int]:
         i, lap = entry
         center_station = 0.5 * (track.distance_m[i] + track.distance_m[i + 1])
+        if not track.closed:
+            return (i, 0, abs(center_station - previous_station_m), 0)
         nearest_lap = round((previous_station_m - center_station) / length_m)
         return (i, lap != nearest_lap,
                 abs(center_station + lap * length_m - previous_station_m), lap)
@@ -419,18 +441,34 @@ def _preview_speed_target(
     tangent; the actual four-wheel state may follow a different trajectory.
     """
 
-    # A half-lap limit avoids looking through a full circuit to the same bend.
+    # A half-lap limit avoids looking through a closed circuit to the same bend.
+    # An open route previews only its remaining length, never another copy.
     # The fixed 60 m / 120-interval ceiling bounds work even for extreme but
     # finite user speed and lookahead settings. Narrower patches can be missed
     # by the 0.5 m-or-finer sampling, so this is no road-clearance certificate.
-    horizon_m = min(_MAX_SPEED_PREVIEW_M, track.length_m / 2.0)
-    count = max(2, min(_MAX_SPEED_PREVIEW_SAMPLES, ceil(horizon_m / 0.5)))
+    if track.closed:
+        horizon_m = min(_MAX_SPEED_PREVIEW_M, track.length_m / 2.0)
+    else:
+        if (
+            not all(isfinite(value) for value in (station_m, speed_mps, current_grip))
+            or speed_mps < 0.0 or current_grip < 0.0
+        ):
+            raise ValueError("open speed preview requires finite station and nonnegative speed/grip")
+        station_m = min(track.length_m, max(0.0, station_m))
+        horizon_m = min(_MAX_SPEED_PREVIEW_M, track.length_m - station_m)
+    count = (
+        0 if not track.closed and horizon_m == 0.0
+        else max(2, min(_MAX_SPEED_PREVIEW_SAMPLES, ceil(horizon_m / 0.5)))
+    )
     wheel_positions = config.wheel_positions_m
     samples: list[tuple[float, float, float]] = []
     minimum_grip = current_grip
     for index in range(count + 1):
-        distance_ahead_m = horizon_m * index / count
-        sample_station_m = (station_m + distance_ahead_m) % track.length_m
+        distance_ahead_m = 0.0 if count == 0 else horizon_m * index / count
+        sample_station_m = (
+            (station_m + distance_ahead_m) % track.length_m if track.closed
+            else min(track.length_m, station_m + distance_ahead_m)
+        )
         cell = min(bisect_right(track.distance_m, sample_station_m) - 1,
                    track.cell_count - 1)
         fraction = ((sample_station_m - track.distance_m[cell]) /
@@ -456,11 +494,19 @@ def _preview_speed_target(
             for road_sample in (environment.road.query(x, y) for x, y in road_points)
         )
         minimum_grip = min(minimum_grip, grip)
-        curvature_per_m = (
-            _polyline_preview_curvature(track, sample_station_m, cell)
-            if settings.reference_geometry == "sampled_polyline"
-            else abs(track.curvature_per_m[cell])
-        )
+        if settings.reference_geometry == "sampled_polyline":
+            curvature_station_m = sample_station_m
+            if not track.closed:
+                # Shift the fixed-span stencil inward at open endpoints. Merely
+                # clamping its neighbors would invent a degenerate-chord bend
+                # on a straight tail. Road queries and base cell curvature stay
+                # at the actual sample, including the endpoint.
+                span_m = min(_POLYLINE_PREVIEW_SPAN_M, track.length_m / 8.0)
+                curvature_station_m = min(track.length_m - span_m,
+                                          max(span_m, sample_station_m))
+            curvature_per_m = _polyline_preview_curvature(track, curvature_station_m, cell)
+        else:
+            curvature_per_m = abs(track.curvature_per_m[cell])
         samples.append((distance_ahead_m, curvature_per_m, grip))
 
     # Reserve a fraction of the friction estimate for simultaneous steering

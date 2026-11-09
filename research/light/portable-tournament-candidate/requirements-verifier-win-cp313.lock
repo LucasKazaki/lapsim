@@ -1,0 +1,15 @@
+# UNTESTED optional verifier wheels only: CPython 3.13 with GIL, Windows x86-64.
+# Official PyPI release metadata read 2026-11-06; no artifact downloaded here.
+# This is not the light producer/runtime/installer lock or execution authority.
+# No source builds, other platforms, floating versions or automatic installation.
+# cryptography-50.0.2-cp311-abi3-win_amd64.whl
+# https://pypi.org/project/cryptography/50.0.2/#files
+# cffi-2.1.1-cp313-cp313-win_amd64.whl
+# https://pypi.org/project/cffi/2.1.1/#files
+# pycparser-3.12-py3-none-any.whl
+# https://pypi.org/project/pycparser/3.12/#files
+--require-hashes
+--only-binary=:all:
+cryptography==50.0.2 --hash=sha256:7afa5a6602a9f29af1f3a2965f831bae7c9d5d597b7cbb716d41ab3b7d89879c
+cffi==2.1.1 --hash=sha256:1aa5645c30469b09530c4ebca77ebf8f17618293c58f8549cb1a543a50236e7d
+pycparser==3.12 --hash=sha256:a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e

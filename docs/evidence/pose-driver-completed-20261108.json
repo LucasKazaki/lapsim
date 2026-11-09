@@ -1,0 +1,314 @@
+{
+  "schema": "lapsim.pose-driver-final-four-sharded-acceptance.v1",
+  "runtime_source_commit": "fc8a6d48121bdd707e20f05213fbc6dbc2a365b3",
+  "checkout_head_at_start": "905c5b4f27cb183e3fc6c38a7088aba2163280d3",
+  "source_files_match_prior_frozen_runtime_before_each_process_and_after": true,
+  "source_files": [
+    {
+      "path": "src/lapsim/optimization/pose_driver.py",
+      "bytes": 52321,
+      "sha256": "6dc712ce703ce92f20b6349298a6a0784f1e8d1d67717b9f51520e5fe46fbb33",
+      "matches_frozen_source": true
+    },
+    {
+      "path": "tests/test_pose_driver.py",
+      "bytes": 30322,
+      "sha256": "782a47f1cf9b08fb68a3c056a1849f4459cae647ff64e0efc314fc74284a4516",
+      "matches_frozen_source": true
+    },
+    {
+      "path": "src/lapsim/dynamics/planar.py",
+      "bytes": 31056,
+      "sha256": "1d4a3cd28fbe1e4b94089eddc0e6109c1a9e46bc6f5b5bb69910a5735e93ec84",
+      "matches_frozen_source": true
+    },
+    {
+      "path": "src/lapsim/dynamics/conditions.py",
+      "bytes": 6165,
+      "sha256": "bafb9d90d1c258395ec9652047fe0c3cbc67de417bfcfb911fbbc7e3fb91bf8b",
+      "matches_frozen_source": true
+    },
+    {
+      "path": "src/lapsim/dynamics/bicycle.py",
+      "bytes": 11338,
+      "sha256": "d0b8940cbd381c13a12eec31a906ff4a42d1f949f4d4d02482e3124e51995c5d",
+      "matches_frozen_source": true
+    },
+    {
+      "path": "src/lapsim/optimization/racing_line.py",
+      "bytes": 81007,
+      "sha256": "2e1ba593768fb306e0b2ae2fe1a5972741b160e45bc85f9b860bd40e33b6a1c6",
+      "matches_frozen_source": true
+    },
+    {
+      "path": "src/lapsim/courses/spatial_track.py",
+      "bytes": 28019,
+      "sha256": "908db8c51dea52c6cc7924cdf35f93ddfd5d7e3bd3b7a6ffcee359b9ef1d4eb3",
+      "matches_frozen_source": true
+    },
+    {
+      "path": "src/lapsim/courses/track.py",
+      "bytes": 5228,
+      "sha256": "36a783285d1185b192489e01f5158b791734de36774ec26c272b9e6cfd066751",
+      "matches_frozen_source": true
+    },
+    {
+      "path": "src/lapsim/ui/course_catalog.py",
+      "bytes": 14600,
+      "sha256": "19c7038fdf9c979093e01ff3838c0f5cfb8ff05498fb266a7044f5a7f22ce915",
+      "matches_frozen_source": true
+    },
+    {
+      "path": "src/lapsim/ui/pose_driver_playback.py",
+      "bytes": 9736,
+      "sha256": "ad79e06bc8dd4e02f3dc2e2d8d97183f17d9ac69e06efb0f84bd51a9f8d1c686",
+      "matches_frozen_source": true
+    }
+  ],
+  "prior_evidence": {
+    "path": "/workspace/scratch/pose-driver-diagnosis-20261108/combined_coverage-r2.json",
+    "bytes": 25412,
+    "sha256": "bfe02678bb3d5733a5fa881dd092a4fa9eee13513ce46fd621b48acecd38106a",
+    "unique_passes": 44,
+    "earlier_interrupted_attempts_retained": true
+  },
+  "final_four_cases": [
+    {
+      "case_id": "01",
+      "nodeid": "tests/test_pose_driver.py::test_near_edge_pose_run_recovers_on_declared_synthetic_road[False--1.8]",
+      "outcome": "passed",
+      "exit_code": 0,
+      "outer_deadline_s": 45.0,
+      "full_subprocess_wall_s": 17.132295230003365,
+      "test_call_wall_s": 14.806641285998921,
+      "junit": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "1",
+        "time": "16.281",
+        "timestamp": "2026-11-08T09:08:44.853743+00:00",
+        "hostname": "8cae720f0593"
+      },
+      "nonfatal_25s_faulthandler_dump_observed": false,
+      "one_attempt_in_this_allocation": true
+    },
+    {
+      "case_id": "02",
+      "nodeid": "tests/test_pose_driver.py::test_near_edge_pose_run_recovers_on_declared_synthetic_road[True-1.8]",
+      "outcome": "passed",
+      "exit_code": 0,
+      "outer_deadline_s": 45.0,
+      "full_subprocess_wall_s": 19.782507138006622,
+      "test_call_wall_s": 17.159303429994907,
+      "junit": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "1",
+        "time": "18.836",
+        "timestamp": "2026-11-08T09:09:02.052956+00:00",
+        "hostname": "8cae720f0593"
+      },
+      "nonfatal_25s_faulthandler_dump_observed": false,
+      "one_attempt_in_this_allocation": true
+    },
+    {
+      "case_id": "03",
+      "nodeid": "tests/test_pose_driver.py::test_near_edge_pose_run_recovers_on_declared_synthetic_road[True--1.8]",
+      "outcome": "passed",
+      "exit_code": 0,
+      "outer_deadline_s": 45.0,
+      "full_subprocess_wall_s": 19.674324910003634,
+      "test_call_wall_s": 17.157661819997884,
+      "junit": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "1",
+        "time": "18.784",
+        "timestamp": "2026-11-08T09:09:21.805604+00:00",
+        "hostname": "8cae720f0593"
+      },
+      "nonfatal_25s_faulthandler_dump_observed": false,
+      "one_attempt_in_this_allocation": true
+    },
+    {
+      "case_id": "04",
+      "nodeid": "tests/test_pose_driver.py::test_edge_cap_retains_corridor_in_one_long_lookahead_experiment",
+      "outcome": "passed",
+      "exit_code": 0,
+      "outer_deadline_s": 75.0,
+      "full_subprocess_wall_s": 28.01877634700213,
+      "test_call_wall_s": 26.00046983199718,
+      "junit": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "1",
+        "time": "27.223",
+        "timestamp": "2026-11-08T09:09:41.405042+00:00",
+        "hostname": "8cae720f0593"
+      },
+      "nonfatal_25s_faulthandler_dump_observed": true,
+      "one_attempt_in_this_allocation": true
+    }
+  ],
+  "combined_driver_file_coverage": {
+    "original_collected_unique": 48,
+    "previous_unique_passes": 44,
+    "new_unique_passes": 4,
+    "passed_unique": 48,
+    "completed_assertion_failures": 0,
+    "unfinished_unique": 0,
+    "all_unmodified_collected_cases_passed_across_bounded_processes": true,
+    "single_full_file_invocation_completed": false,
+    "other_repository_test_files_established_by_this_report": false
+  },
+  "test_process_accounting": {
+    "this_allocation_full_subprocess_wall_s": 84.60790362501575,
+    "this_allocation_limit_s": 210.0,
+    "parent_whole_turn_cap_s": 420.0,
+    "other_parent_process_costs_independently_measured_here": false,
+    "individual_outer_deadlines_s": [
+      45.0,
+      45.0,
+      45.0,
+      75.0
+    ],
+    "deadline_scope": "Startup and execution measured from before Popen to process exit; final second reserved for bounded kill/reap if needed",
+    "all_completed_normally_without_timeout_or_kill": true,
+    "additional_test_process_started_or_planned": false,
+    "native_resource_admission_accounting": false
+  },
+  "limits": "This is the unchanged ordinary pose-driver test file on Linux, covered across separate bounded subprocesses. It is not one uninterrupted full-file invocation, Windows validation, portable AWD7 qualification, whole-repository acceptance or actual-car calibration.",
+  "source_edits_installs_network_native_leases_probes_or_transfers": false,
+  "physics_or_test_assertions_modified": false,
+  "qualification_or_execution_authority": false,
+  "independent_read_only_review": {
+    "status": "COMPLETE",
+    "reviewer": "/root/skidpad_source_integration/review_open_helpers",
+    "four_completed_call_passes_and_successful_session_finishes_verified": true,
+    "four_finalized_junit_one_test_zero_failures_errors_skips_verified": true,
+    "four_owned_subprocess_completions_and_caps_verified": true,
+    "new_four_equal_prior_unfinished_set_without_prior_pass_overlap": true,
+    "twenty_artifact_hashes_and_prior_evidence_hash_verified": true,
+    "ten_listed_runtime_file_pins_verified": true,
+    "reviewer_executed_tests_or_edited_source": false,
+    "qualification_or_execution_authority": false
+  },
+  "artifacts": [
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/01/progress.jsonl",
+      "bytes": 1784,
+      "sha256": "df74c148f7f31c6934f9d635c35e9830162a73349b405d3c9f9132ea58cab1f4"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/01/pytest.log",
+      "bytes": 1759,
+      "sha256": "735f9a2a6ec240ff1702e42695413c03659fce007b82c49cb4f0d7110819d32f"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/01/results.xml",
+      "bytes": 389,
+      "sha256": "856945b2fc3c825e6c89ac4a3f35568933eab0cee503d53c6e835bd75d083c77"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/01/supervisor_result.json",
+      "bytes": 896,
+      "sha256": "7afd469c06d1bfd33e9ea03ea0f1127aae9425ef90d3b14dec6b6fe49437f2d7"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/02/progress.jsonl",
+      "bytes": 1770,
+      "sha256": "f09afae101d415ab670d47567cadfcefffb91cfc48b0437b48fa5ba137f30c06"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/02/pytest.log",
+      "bytes": 1751,
+      "sha256": "1c66fdd6e79169a1c9018f3d6f6c6d7fb5cffa7af1c54fd3bc3c8b1052bf055e"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/02/results.xml",
+      "bytes": 387,
+      "sha256": "5a4d4a52c3c81e24dc66ac0a238e08c92656329bb6d8945f8ae64ce5c586f7e4"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/02/supervisor_result.json",
+      "bytes": 890,
+      "sha256": "0074534fddaf1f8cbaf78f3525f11612b5ee9b83d1781c481d6d2b8f291920a7"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/03/progress.jsonl",
+      "bytes": 1780,
+      "sha256": "4653cbc58ac08239c5f3fd6ea735801a84c26fa9b8444d70d28789c4e48a7299"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/03/pytest.log",
+      "bytes": 1755,
+      "sha256": "9fb062d5bb2444595db0af3d4d279e7ed368aea336704104518795b5d2690fc2"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/03/results.xml",
+      "bytes": 388,
+      "sha256": "998d16ca3d64e91caf9d440c2cb8e745bae88dba6cd4b3b9b6f2edcf7d8c96f5"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/03/supervisor_result.json",
+      "bytes": 893,
+      "sha256": "e0d9a8c9a479f2eda1c3c1398dfa8027f9a0fe3f583ce4b94d9ddd10cab3a4d2"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/04/progress.jsonl",
+      "bytes": 1736,
+      "sha256": "d029595f80c1f4e31ace0135dbf4497a10afff23a5fcbca29f58084b8e617151"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/04/pytest.log",
+      "bytes": 6424,
+      "sha256": "f5010643f31de9091b851881c7dc8e247f856ece337ee40fb520ce5d4c86b41c"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/04/results.xml",
+      "bytes": 381,
+      "sha256": "5bdf89c27d616f5b7c36f3229aa5f533a4a89418d90650976b2bc1deececacb4"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/04/supervisor_result.json",
+      "bytes": 878,
+      "sha256": "de0eee1167fa1716cf146c9b1f0d2af6d2da52aa6ac36ffb23d5662d61f3eec1"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/node_plan.json",
+      "bytes": 692,
+      "sha256": "f306ea99ab16b956937db716b079f87276a7bb7c28f2734f706e569fb1d70b61"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/run_one.py",
+      "bytes": 1571,
+      "sha256": "b552f766127a2fd65d0a8550d00e20db58967ff5a72500449a839f939962a07a"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/supervise_four.py",
+      "bytes": 3232,
+      "sha256": "553e6abbfce83f636fd55c813607dbe7322cd06eaef3715f22b977d2f6b2d5bd"
+    },
+    {
+      "path": "/workspace/scratch/pose-driver-final-four-20261108/supervisor_results.json",
+      "bytes": 4006,
+      "sha256": "a8076614cbc629a0a264ee0c056979a1feb28d296ca52b7db44f7d362ee7555f"
+    }
+  ],
+  "source_identity_scope": "Only the ten listed pose/dynamics/course/playback/test source files are compared byte-for-byte with fc8. This report does not claim every ordinary Python file is unchanged or supply complete imported/native closure. Later parent-owned powered-event field/publisher edits are outside this driver-file evidence.",
+  "previous_unreviewed_report": {
+    "path": "/workspace/scratch/pose-driver-final-four-20261108/final_coverage.json",
+    "bytes": 11144,
+    "sha256": "35b4b842d86383bf05238a6dd8c158313b97913b1a9c58c3023a1eb25add57cd",
+    "preserved_unchanged": true
+  },
+  "no_more_driver_processes_started_or_planned": true
+}

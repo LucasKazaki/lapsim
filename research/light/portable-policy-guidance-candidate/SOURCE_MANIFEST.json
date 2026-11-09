@@ -1,0 +1,287 @@
+{
+  "schema": "lapsim.portable-policy-guidance-raw-storage-source.v1",
+  "status": "UNTESTED_UNBUILT_UNQUALIFIED",
+  "source_main": "07ccb4b84138aedcc5b9cb85c2e81d283d6c132e",
+  "branch_at_preparation": "cloud/lite-policy-guidance-20261105",
+  "entries_count": 26,
+  "coverage": "Candidate files only, excluding SOURCE_MANIFEST.json itself; outer plan/master links are not hashed here.",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 78,
+      "sha256": "69c175108ec36de821718e27e1fe5ae061f89bcc5ce26063213df04eb5ccd160",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "CORE_NOTICE.md",
+      "bytes": 930,
+      "sha256": "621ebe2679d610b18ee285cf5734a42d27dcab8f513718259d9394211a8e8ea4",
+      "origin": "byte_identical_PR166_notice",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/NOTICE.md",
+      "origin_git_blob_sha1": "42152352a9e79bcbb199808fbee8443155bee3b6"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5499,
+      "sha256": "6561042fb40e7045ef8ac1e378ea204a9d6628cdd4aa1aba716eaa9f5d621a55",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "STATIC_REVIEW.md",
+      "bytes": 3513,
+      "sha256": "0280977a34931bb0aa589293b30cbf6229cbe321ea84503e676aaaa036e793af",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 565,
+      "sha256": "f11d9ff8caf5b97a48840dc313cdfbe0feb7347e3cee0db45877d02725be4aba",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_campaign/__init__.py",
+      "bytes": 80,
+      "sha256": "9af977eecc4218e3151e3669f4720a80d321ec838af22aa52ac769be42277a12",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_campaign/raw_journal.py",
+      "bytes": 26168,
+      "sha256": "91e3089f7df86f81d678fc1e12e2d8dc1bdcd8c2bf6f5e824ed4b2fd8ffbd1c2",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_core/__init__.py",
+      "bytes": 351,
+      "sha256": "1bbbfd1bc24291bb26442117b8a606fabc4ef2d540ca90b7f53a428bca64032a",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/__init__.py",
+      "origin_git_blob_sha1": "258fff24cc69cc25ec630201662180a14d01c2a4"
+    },
+    {
+      "path": "src/lapsim_light_core/_validation.py",
+      "bytes": 440,
+      "sha256": "7a1e41ea3ee35c35196f5c218305e87030f7be2df5e1f38c59bdeb1e35e993d0",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/_validation.py",
+      "origin_git_blob_sha1": "7903fd19b7388244072d3497ff685cd9f684bd8d"
+    },
+    {
+      "path": "src/lapsim_light_core/actuation.py",
+      "bytes": 13086,
+      "sha256": "b091949f8e13634fdae8abd13d1abb8193d56121dae150f92529e223bf505ad6",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/actuation.py",
+      "origin_git_blob_sha1": "4ee6d543eb7f53957266b53721a96570bd8b32fa"
+    },
+    {
+      "path": "src/lapsim_light_core/conditions.py",
+      "bytes": 6333,
+      "sha256": "f61de89c34e6115918160da74f8e49274712eac1bc97b00c7634e9ec6aee55f9",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/conditions.py",
+      "origin_git_blob_sha1": "4e6760ab5f702922eaa1869b65e6654fd3a414a7"
+    },
+    {
+      "path": "src/lapsim_light_core/planar.py",
+      "bytes": 31885,
+      "sha256": "900938e377b329036f63a0df14dba8bef2e7ffe1170008bbf4aee1590a52d04e",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/planar.py",
+      "origin_git_blob_sha1": "69f257b3e04130b24777c980aace275a154a01c3"
+    },
+    {
+      "path": "src/lapsim_light_core/powered_planar.py",
+      "bytes": 17551,
+      "sha256": "648399960235fe267f18d3b45e5d33ce9c9b23411b77f321b85ac1c979ace96d",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/powered_planar.py",
+      "origin_git_blob_sha1": "5c58b20ce7ce7159f131c69dc1146e81a74ccdd6"
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_combined.py",
+      "bytes": 7122,
+      "sha256": "5ac11c94d6bd69494ab8bff1f045ae0f73e9659eaf35108e45ee671410fa6970",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/torque_light_combined.py",
+      "origin_git_blob_sha1": "0a9ae1ed590418c8cb365d47c72aebed71e2e7c2"
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_drs.py",
+      "bytes": 12516,
+      "sha256": "2172e8ab4ee5932cf463be3312f9f9228dd0efb72bb2c7d339030a904bf8280e",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/torque_light_drs.py",
+      "origin_git_blob_sha1": "a283d0047b8f1cb2022121285b8831894732579b"
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_forces.py",
+      "bytes": 7979,
+      "sha256": "ac10816a6367e382c6e0b5c5d632d4690a623471f75adb6625d21c8414530ea9",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/torque_light_forces.py",
+      "origin_git_blob_sha1": "2e89da6a6babbe612d535ae3dff353cd2ef0d864"
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_powered.py",
+      "bytes": 9001,
+      "sha256": "97f0e09c38391d0cef24101d0dc2012518f20ea0f7b1eca4d91d7ac6ec065b22",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/torque_light_powered.py",
+      "origin_git_blob_sha1": "a497da131893936ba331a63da27ce3a1ca432407"
+    },
+    {
+      "path": "src/lapsim_light_core/torque_light_thermal.py",
+      "bytes": 14446,
+      "sha256": "86f7b735b29137cc337331b82be7433dbb12cae85837d077d05add26b16e358f",
+      "origin": "byte_identical_PR166_source",
+      "executed": false,
+      "origin_commit": "eda45185a4debeae7239dce906b72cfdf3909da9",
+      "origin_path": "research/light/portable-core-candidate/src/lapsim_light_core/torque_light_thermal.py",
+      "origin_git_blob_sha1": "751bc0f904b75b8fde48148f3318be080ccdfff8"
+    },
+    {
+      "path": "src/lapsim_light_guidance/__init__.py",
+      "bytes": 81,
+      "sha256": "df8b514d405cbccdb8e3de3f1d967e3bcc56c6cee4160cb322f759591cc73e29",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_guidance/driver.py",
+      "bytes": 26515,
+      "sha256": "73abb7a8c4a822e47dfa7d8d11b067fae36f41da0ddf8e7faf347992f28e3495",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_policies/__init__.py",
+      "bytes": 152,
+      "sha256": "f74c1ab9fff3cd39c5c3051218f19dd7c1d71f504c14de41c75230a90050470e",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_policies/_case.py",
+      "bytes": 1655,
+      "sha256": "d7355aaef459b0bb95e4bf55f463dbae000cb28007f6e886ee0fa8495fc366fe",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_policies/awd_contracts.py",
+      "bytes": 2456,
+      "sha256": "f3b8be4366ff080adff83b87333d1791b88f53157dcb30dbf07ffa872af9af68",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_policies/core_adapter.py",
+      "bytes": 8414,
+      "sha256": "411d7cead13b71f6187b31ccef21711dad315095fb9d8ae5a5d093554f932e6c",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_policies/core_registry.py",
+      "bytes": 1653,
+      "sha256": "7b869fce5775fa6875246bd22f4ce81eaf1936c545bd52fae99b64035020bc3a",
+      "origin": "new_source_candidate",
+      "executed": false
+    },
+    {
+      "path": "src/lapsim_light_policies/policy_layers.py",
+      "bytes": 9931,
+      "sha256": "9ba6de7f02fd06ef12dc353c6f92976ace579cf3f2bc23fb5a6779b4d088293b",
+      "origin": "new_source_candidate",
+      "executed": false
+    }
+  ],
+  "source_transformations": [
+    {
+      "output": "src/lapsim_light_policies/policy_layers.py",
+      "source": "research/light/awd-standing-v15/policy_layers.py",
+      "source_git_blob_sha1": "944858099b90282713b2b971c3298d75c118e3f9",
+      "change": "byte_identical"
+    },
+    {
+      "output": "src/lapsim_light_policies/core_registry.py",
+      "source": "research/light/awd-standing-v15/core_registry.py",
+      "source_git_blob_sha1": "6361342ed5e80262eb3ca2dd0dbe21a9dc72f7c2",
+      "change": "relative_policy_import_only"
+    },
+    {
+      "output": "src/lapsim_light_policies/core_adapter.py",
+      "source": "research/light/awd-standing-v15/core_adapter.py",
+      "source_git_blob_sha1": "49db4ead89abd9bdefde352172fce0d02dab69fb",
+      "change": "portable_core_relative_contract_and_OffActuationCase_dependency_bindings"
+    },
+    {
+      "output": "src/lapsim_light_policies/awd_contracts.py",
+      "source": "research/light/awd-standing-v15/awd_fixture.py",
+      "source_git_blob_sha1": "dacd2b44da41e5817ccb469e092fd60027b354d4",
+      "change": "exact_require_through_normalize_function_slice_with_portable_PlanarControls_and_explicit_constants"
+    },
+    {
+      "output": "src/lapsim_light_policies/_case.py",
+      "source": "src/lapsim/experiments/tournament_rollout.py",
+      "source_git_blob_sha1": "cb97760385f1dc62a97e26c1e14fb516f8172275",
+      "change": "new_narrow_DTO_preserves_used_scalar_ranges_fixes_name_10ms_and_OFF_friction_flags"
+    },
+    {
+      "output": "src/lapsim_light_guidance/driver.py",
+      "source": "src/lapsim/optimization/pose_driver.py",
+      "source_git_blob_sha1": "016f4e117a940c41df811f3c2822505f11638dcf",
+      "additional_source": "research/light/awd-standing-v15/awd_fixture.py",
+      "additional_source_git_blob_sha1": "dacd2b44da41e5817ccb469e092fd60027b354d4",
+      "change": "exact_settings_and_helper_bodies_with_ReferenceTrack_annotations_portable_imports_archived_standing_settings_and_new_normalize_once_wrapper"
+    },
+    {
+      "output": "src/lapsim_light_campaign/raw_journal.py",
+      "source": "new_implementation",
+      "contract_reference": "research/light/awd-standing-v15/light_core_bridge.py",
+      "change": "raw_only_storage_consistency_no_execution_admission_or_resume_authority",
+      "contract_git_blob_sha1": "fe2bb77d48263999ad21560107770c5c84d1f4d0"
+    }
+  ],
+  "runtime_dependencies_declared": [],
+  "build_requirement": "setuptools>=68; provisional, not exact lock",
+  "console_entry_point": null,
+  "execution_backend_implemented": false,
+  "continuation_implemented": false,
+  "qualification_or_execution_authority": false,
+  "numerical_equivalence_proven": false,
+  "tests_run": false,
+  "candidate_imports_run": false,
+  "syntax_checks_run": false,
+  "private_runtime_receipts_included": false,
+  "review": "STATIC_REVIEW.md"
+}

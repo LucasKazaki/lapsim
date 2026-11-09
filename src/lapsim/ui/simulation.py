@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from copy import deepcopy
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, fields, is_dataclass, replace
+import json
 from math import isfinite
 from numbers import Real
 from pathlib import Path
@@ -19,6 +20,10 @@ from lapsim.events.endurance import (
     LapProgressSnapshot,
 )
 from lapsim.optimization.torque_profile import PeriodicPiecewiseLinearTorqueProfile
+from lapsim.profiles import (
+    ConfigurationSnapshotUnavailable,
+    snapshot_vehicle_config,
+)
 from lapsim.solvers.path_constraints import (
     PathConstraintProgressSnapshot,
     PathConstraintSolver,
@@ -90,11 +95,18 @@ class SpeedPeriodicPhaseSnapshot:
 
 @dataclass(frozen=True, slots=True, eq=False)
 class PreparedOneLapConstraints:
-    """Path limits bound to the vehicle used to calculate them."""
+    """Path limits bound to their vehicle and frozen constructor configuration.
+
+    An unavailable configuration snapshot permits an ordinary uncached lap, but
+    these limits cannot then be explicitly reused with a mutable vehicle.
+    """
 
     _vehicle: Vehicle
     _limits: PathSpeedConstraints
     _road_grip_multiplier: float
+    _vehicle_configuration_key: tuple[str, tuple[type, ...]] | None = field(
+        default=None, repr=False,
+    )
 
     @property
     def track(self) -> SpatialTrack:
@@ -103,6 +115,35 @@ class PreparedOneLapConstraints:
     @property
     def braking_speed_ceiling_mps(self) -> tuple[float, ...]:
         return self._limits.braking_speed_ceiling_mps
+
+
+def _configured_model_types(value: object) -> tuple[type, ...]:
+    """Bind actual model classes without changing the saved profile schema."""
+
+    if is_dataclass(value) and not isinstance(value, type):
+        children = (getattr(value, item.name) for item in fields(value) if item.init)
+        return (type(value),) + tuple(
+            model for child in children for model in _configured_model_types(child)
+        )
+    if isinstance(value, (tuple, list)):
+        return tuple(model for child in value for model in _configured_model_types(child))
+    if isinstance(value, dict):
+        return tuple(
+            model for key in sorted(value, key=str)
+            for model in _configured_model_types(value[key])
+        )
+    return ()
+
+
+def _cache_vehicle_configuration(vehicle: Vehicle) -> tuple[str, tuple[type, ...]] | None:
+    try:
+        configuration = snapshot_vehicle_config(vehicle)
+    except ConfigurationSnapshotUnavailable:
+        return None
+    return (
+        json.dumps(configuration, sort_keys=True, allow_nan=False),
+        _configured_model_types(vehicle),
+    )
 
 
 def load_team_endurance_track() -> SpatialTrack:
@@ -138,9 +179,14 @@ def prepare_one_lap_constraints(
     *, cell_road_grip_multiplier: tuple[float, ...] | None = None,
     constraint_progress_callback: Callable[[PathConstraintProgressSnapshot], None] | None = None,
 ) -> PreparedOneLapConstraints:
-    """Prepare the same path limits used by an ordinary desktop lap."""
+    """Prepare path limits and bind reusable ones to the effective configuration.
+
+    Runtime state is excluded. Unsupported custom configuration representations
+    still allow an ordinary lap, but supplied-cache reuse will refuse explicitly.
+    """
 
     vehicle.reset_state()
+    configuration_key = _cache_vehicle_configuration(vehicle)
     solver = PathConstraintSolver(**path_solver_settings(vehicle))
     solve_kwargs: dict[str, object] = {}
     if cell_road_grip_multiplier is not None:
@@ -148,10 +194,16 @@ def prepare_one_lap_constraints(
     if constraint_progress_callback is not None:
         solve_kwargs["progress_callback"] = constraint_progress_callback
     limits = solver.solve(track, vehicle, **solve_kwargs)
+    if (
+        configuration_key is not None
+        and configuration_key != _cache_vehicle_configuration(vehicle)
+    ):
+        raise ValueError("vehicle configuration changed while preparing path constraints")
     return PreparedOneLapConstraints(
         vehicle,
         limits,
         vehicle.tire.road_grip_multiplier,
+        configuration_key,
     )
 
 
@@ -168,7 +220,8 @@ def run_one_lap(
 ) -> EnduranceRunResult:
     """Simulate one lap, optionally reusing path limits and an explicit start.
 
-    Supplied limits must have been prepared for this vehicle and track.
+    Supplied limits must match this vehicle, its effective configuration and track.
+    Changed configuration requires explicit preparation; no hidden re-solve occurs.
     """
 
     knot_distance_m = (0.0, track.length_m * 0.5)
@@ -202,6 +255,13 @@ def run_one_lap(
             and cell_road_grip_multiplier != constraints._limits.cell_road_grip_multiplier
         ):
             raise ValueError("supplied path constraints use a different cell road grip")
+        if constraints._vehicle_configuration_key is None:
+            raise ValueError(
+                "supplied path constraints cannot verify this vehicle configuration; "
+                "run without supplied constraints"
+            )
+        if constraints._vehicle_configuration_key != _cache_vehicle_configuration(vehicle):
+            raise ValueError("supplied path constraints use a different vehicle configuration")
         vehicle.reset_state()
         selected_constraints = constraints._limits
     return EnduranceSimulator().run(

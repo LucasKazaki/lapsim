@@ -1,0 +1,61 @@
+{
+  "schema": "lapsim.light-event-suite-smoke-evidence.v1",
+  "runtime_commit": "117399020e5143170c07bce5763b3198ce8b0b36",
+  "ordinary_distribution": "python-lapsim==0.1.0+light20261108.5",
+  "wheel_sha256": "15a7eb40a93bc69a72a6f35b61ec4c27302f1f89668a972aec2e299a80e933d5",
+  "platform": "Linux",
+  "python": "3.12.14",
+  "process_wall_s": 5.210533279001538,
+  "suite_wall_s": 2.0811718170007225,
+  "wall_budget_s": 30.0,
+  "process_exit": 3,
+  "expected_partial_exit": true,
+  "status": "partial_development_suite",
+  "staged_event_groups": 10,
+  "staged_catalog_cells": 36,
+  "reserved_catalog_rollouts": 1,
+  "returned_catalog_rollouts": 1,
+  "actual_closed_model_status": "time_limit",
+  "actual_closed_model_elapsed_s": 0.1,
+  "unrun_catalog_cells": 35,
+  "actual_skidpad_attempts": 2,
+  "skidpad_status": "paused_aggregate_budget",
+  "heldout_used": false,
+  "search_or_tuning_performed": false,
+  "winner": null,
+  "official_points": null,
+  "portable_policies_source_implemented": 7,
+  "portable_policies_admitted_here": 0,
+  "suite_index": {
+    "bytes": 19762,
+    "sha256": "0de3951c7673a0b4540a8c67a3692306624fe17524bc6f6005c945bc76643af7"
+  },
+  "suite_binding": {
+    "bytes": 112667,
+    "sha256": "4aadb2cc347f2bae01d15cca2c40154e9d3adfd632e8f2c4c095262e526fb9f6"
+  },
+  "raw_catalog_results": [
+    {
+      "path": "catalog/raw/amz_fssim_fsg_approx--fixed.json",
+      "bytes": 91551,
+      "sha256": "3190dada4f14090594d46d641da67da091bed3d88277d40625081e688c880030"
+    }
+  ],
+  "skidpad_index": {
+    "bytes": 2098,
+    "sha256": "ad3d233e225211d3c2793cd2b412043658d875ae43cbf66254bb2a3451c3ba16"
+  },
+  "source_tests": {
+    "passed": 55,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 1,
+    "seconds": 16.62,
+    "junit_sha256": "a363d8552b34edea65e2b5ef90dfd30ab50a84bed7a70173b87d992781b20a19"
+  },
+  "independent_source_data_review": "passed; source/runtime and child-binding continuity repairs verified",
+  "full_40_cell_numerical_suite_completed": false,
+  "native_Windows_or_GUI_qualification": false,
+  "qualification_or_execution_authority": false,
+  "native_or_hardware_invoked": false
+}

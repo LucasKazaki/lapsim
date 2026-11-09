@@ -12,6 +12,14 @@ result is labeled **implemented**, **qualified**, **executed**, **provisional**
 or **planned** according to its evidence. A source review alone is not a test,
 and synthetic results are not a vehicle or safety validation.
 
+**5 November source preparation:** the isolated
+[portable policy/guidance/raw-storage candidate](../research/light/portable-policy-guidance-candidate/README.md)
+contains source for the seven-policy portable adapter, common AWD demand
+normalization, extracted guidance and raw checkpoint/chunk storage. It is
+**untested, unbuilt and unqualified**, with no tournament runner or registered
+execution provider. Its new source identities do not inherit the archive's
+historical evidence or resolve its execution restriction.
+
 ## 1. Current state and target configuration
 
 The tournament target is a simulated AWD car with four independently

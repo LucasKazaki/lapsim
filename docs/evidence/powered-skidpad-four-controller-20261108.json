@@ -1,0 +1,88 @@
+{
+  "schema": "lapsim.powered-skidpad-four-controller-evidence.v1",
+  "runtime_source_commit": "ca75c1ea0617a21c7cad5d7e4c5096c6ebe2819a",
+  "runtime_distribution": "python-lapsim==0.1.0+light20261108.4",
+  "runtime_wheel_sha256": "c502f65512f32e067652757a64c23ce11c5541e1244661fc5cbf19e5de1b5dc4",
+  "platform": "Linux",
+  "python": "3.12.14",
+  "process_wall_s": 105.30732943100156,
+  "field_elapsed_s": 102.58436222500313,
+  "field_wall_budget_s": 120.0,
+  "outer_process_deadline_s": 130,
+  "maximum_total_steps": 40000,
+  "reserved_steps": 16800,
+  "attempted_steps": 16601,
+  "controller_order": [
+    "fixed",
+    "traction",
+    "yaw_pi",
+    "tire_reserve"
+  ],
+  "cells": [
+    {
+      "controller": "fixed",
+      "status": "completed",
+      "tick": 4149,
+      "attempted_steps": 4149,
+      "reserved_steps": 4200,
+      "timed_average_s": 9.960716410167961,
+      "checkpoint_sha256": "e542ce1f2645319ec60f92455ae22fd36bdd3c3b30c8b95d55b8614ab8a95aff",
+      "checkpoint_numerical_body_matches_frozen_individual_run": true
+    },
+    {
+      "controller": "traction",
+      "status": "completed",
+      "tick": 4151,
+      "attempted_steps": 4151,
+      "reserved_steps": 4200,
+      "timed_average_s": 9.960716410167961,
+      "checkpoint_sha256": "5f182f704190fdfe50f612ab1944b21cd80dbb63bf3ea3ff344882f52482418d",
+      "checkpoint_numerical_body_matches_frozen_individual_run": true
+    },
+    {
+      "controller": "yaw_pi",
+      "status": "completed",
+      "tick": 4150,
+      "attempted_steps": 4150,
+      "reserved_steps": 4200,
+      "timed_average_s": 9.957966242863094,
+      "checkpoint_sha256": "e2c206662d6101c18ae5750f05a1c6e0037ee354631ccb9a06d95480a0d46754",
+      "checkpoint_numerical_body_matches_frozen_individual_run": true
+    },
+    {
+      "controller": "tire_reserve",
+      "status": "completed",
+      "tick": 4151,
+      "attempted_steps": 4151,
+      "reserved_steps": 4200,
+      "timed_average_s": 9.960716410167961,
+      "checkpoint_sha256": "fd84b2d6880a0c6d3d53b7f2dd0a99de3d8d20384976ead45f8fdfd05fff94bc",
+      "checkpoint_numerical_body_matches_frozen_individual_run": true
+    }
+  ],
+  "initial_state_sha256": "a6a3439928e9700c54938b223e8105afda786727ea73fe0f8224a3c55f99b771",
+  "common_binding_sha256": "21ba05cbf9344845f7b9ebf93547d5d90d6e040ef03b3132f3eefadcef7e31cb",
+  "field_index": {
+    "bytes": 2572,
+    "sha256": "fabdb1bce72efbd0227917a3697ff7f0291205540bdbea518a65ab683dd96103"
+  },
+  "common_binding": {
+    "bytes": 109167,
+    "sha256": "21ba05cbf9344845f7b9ebf93547d5d90d6e040ef03b3132f3eefadcef7e31cb"
+  },
+  "individual_baseline_runtime": "fc8a6d48121bdd707e20f05213fbc6dbc2a365b3",
+  "numerical_session_non_main_AST_unchanged_classes_functions": 26,
+  "driver_file_collected_unique": 48,
+  "driver_file_passed_unique_across_bounded_processes": 48,
+  "driver_file_completed_failures": 0,
+  "driver_file_unfinished": 0,
+  "one_uninterrupted_driver_file_invocation_completed": false,
+  "traction_and_reserve_numerical_outputs_identical_in_this_fixture": true,
+  "additional_reserve_performance_regime_qualified": false,
+  "regen_or_friction_regimes_exercised": false,
+  "native_or_hardware_invoked": false,
+  "qualified_tournament_result": false,
+  "winner": null,
+  "official_points": null,
+  "scope": "Four synthetic RWD ordinary controllers completed one matched nominal skidpad field; not AWD7, calibrated team-car or native/Windows/GUI qualification"
+}

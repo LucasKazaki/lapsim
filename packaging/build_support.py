@@ -83,16 +83,46 @@ def resource_files() -> list[Path]:
         "docs/evidence/e15-calculix-refinement.json",
         "docs/evidence/e15-calculix-process-outcomes.json",
         "docs/evidence/ev-readiness-20261027.json",
+        "docs/evidence/powered-skidpad-numerical-20261108.json",
+        "docs/evidence/pose-driver-budget-20261108.json",
         "configs/torque_profiles/synthetic-two-rear-v1.json",
         "configs/torque_profiles/synthetic-single-rear-v1.json",
         "configs/torque_profiles/synthetic-four-awd-v1.json",
         "configs/torque_profiles/synthetic-spool-v1.json",
         "configs/team_specs/team-2027-2028-provisional-v1.json",
+        "configs/courses/catalog.json",
+        "configs/courses/amz_fssim_fsg_approx.json",
+        "configs/courses/amz_fssim_fsi_approx.json",
+        "configs/courses/technical_slalom_v1.json",
+        "configs/courses/fsae_michigan_2019_image.json",
+        "configs/courses/fsae_michigan_2022_image.json",
+        "configs/courses/fsae_michigan_2023_image.json",
+        "configs/courses/fsae_electric_2024_image.json",
+        "configs/courses/fs_east_2017_image.json",
+        "configs/courses/fused_gnss_imu_trajectory_approx.json",
+        "configs/courses/README.md",
+        "configs/courses/upstream/amz-fssim/FSG.yaml",
+        "configs/courses/upstream/amz-fssim/FSI.yaml",
+        "configs/courses/upstream/amz-fssim/LICENSE.md",
+        "configs/courses/online_image_traces.json",
+        "configs/courses/gnss_imu_trajectory_trace.json",
+        "configs/courses/acceptance_20261026.json",
     ):
         paths.add(ROOT / name)
     paths.update(ROOT.glob("LICENSE*"))
     web = local_module("lapsim_wheel_web_inventory", "scripts/build_windows.py")
     for name in web.WEB_SOURCE_FILES:
+        paths.add(ROOT / "web" / name)
+    # The installed Controller Lab and configurator share these fixed assets.
+    # User-generated reviews, checkpoints and telemetry under work/ stay external.
+    for name in (
+        "tournament.html", "tournament.css", "tournament.js",
+        "torque-configurator.html", "torque-configurator.css",
+        "torque-configurator.js", "course_library.js", "replay_loader.js",
+        "replay_webgl.js", "telemetry.js", "fixture_comparison.js", "round_view.js",
+        "vendor/three-0.160.0.min.js", "vendor/three-LICENSE.txt",
+        "vendor/three-provenance.json", "vendor/README.md",
+    ):
         paths.add(ROOT / "web" / name)
     for name, digest in web.REVIEWED_WEB_REPLAYS.items():
         path = ROOT / "web/examples" / name

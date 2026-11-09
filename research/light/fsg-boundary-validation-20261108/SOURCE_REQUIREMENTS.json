@@ -1,0 +1,91 @@
+{
+  "schema": "lapsim.fsg-original-dependency-continuation-review.v1",
+  "reviewed_runtime_source_commit": "907f094047120bbe75c5906f4c9ff16d15fa43db",
+  "reviewed_runtime_source_manifest_sha256": "a7f83912c1f0f39d33e97628113040da77949d6ae8b25887faf2b847789a223f",
+  "reviewed_runtime_module": "lapsim_light_campaign.fsg_event",
+  "reviewed_runtime_module_sha256": "0fd2802806b0885c6ab8afc51c941af340a46f1def6bed6e111c5226a9fcaac8",
+  "runtime_distribution": "lapsim-light-tournament-source-candidate==0.0.0.dev33",
+  "frozen_runtime_or_source_release_changed": false,
+  "original_predicate": {
+    "status": "BLOCKED_MISSING_ORIGINAL_SOURCE_BYTES_AND_AUTHENTICATED_LOADED_IMPLEMENTATION",
+    "evidence_level": "OWNER_REPORTED_PATHS_HASHES_AND_API_ONLY_NOT_FRESH_RUNTIME_AUTHENTICATION",
+    "existing_report": "../portable-tournament-candidate/ORIGINAL_OWNER_REPORT_HANDOFF.md",
+    "existing_inventory": "../portable-tournament-candidate/ORIGINAL_OWNER_SOURCE_INVENTORY.json",
+    "reported_original_owner_thread": "<PRIVATE_CONVERSATION_ID>",
+    "reported_adapter_source": {
+      "path": "<ORIGINAL_SOURCE_ROOT>/work/original-source-bindings-20261105-r02/src/lapsim_original_bindings/residual_regen.py",
+      "sha256": "570438d155f28edd1eefdcc165cfd4b9ca4e516d5cd18a942dc12d7a5e1a987c",
+      "bytes_received_or_hash_verified_here": false,
+      "size_bytes": null,
+      "api": "RecoveredResidualRegenRule(implementation_sha256); rule.residual_low_speed_regen(u_mps, electrical)",
+      "required_additional_source": "Its actual import closure and import-effect review; closure cannot be inferred from the API report."
+    },
+    "reported_original_demo_provenance": {
+      "path": "<ORIGINAL_SOURCE_ROOT>/lapsim-aero-fidelity-20261028/src/lapsim/experiments/torque_light_demo.py",
+      "sha256": "b7ee2a2c822c646203af4b471d8c851685c575fa2477a982d4f0519fc409b171",
+      "reported_function_line": 175,
+      "bytes_received_or_hash_verified_here": false,
+      "is_adapter_implementation_pin": false
+    },
+    "reported_selected_loaded_binding_helper_sha256": "ca23a15bedf12a13bc67725866ff0d3eee79c64ff556e413fac1d9180c68d85e",
+    "selected_loaded_helper_supplies_complete_source_environment_observation": false,
+    "source_verification_is_current_execution_admission": false,
+    "fresh_authentication_still_required": [
+      "Actual reviewed loaded adapter/function/global/source binding with its new implementation-file pin, not a claimed object attribute.",
+      "Complete supported numerical environment/source observation and independently authenticated original admission and terminal/cleanup evidence.",
+      "Current original ownership/activity/resource lease and finite enclosing deadline; historical manifests or allocations are not fresh authority."
+    ],
+    "reported_formula_reconstructed_or_test_double_replaced": false,
+    "independent_availability_checks": {
+      "exact_named_files_found_in_current_checkout_and_existing_scratch_files": 0,
+      "existing_top_level_EV_source_archives_metadata_checked": 25,
+      "exact_target_entries_found": 0,
+      "archive_targets": ["residual_regen.py", "torque_light_demo.py", "loaded_sources.py"],
+      "coverage": "Bounded read-only exact basename checks of existing local files and top-level EV archives; no extraction, nested archive traversal, remote fetch or transfer retry."
+    }
+  },
+  "current_fsg_continuation": {
+    "status": "NOT_IMPLEMENTED_OR_ADMITTED",
+    "current_family": "lapsim.fsg-development-numerical-consumer.v1",
+    "snapshot_schema": "lapsim.fsg-development-numerical-snapshot.raw.v1",
+    "interval_schema": "lapsim.fsg-development-numerical-interval.raw.v1",
+    "snapshot_restore_or_authenticated_checkpoint_API_supplied": false,
+    "current_legacy_family": "lapsim.portable-awd-standing-numerical-bridge.v1",
+    "incompatibilities": [
+      "worker_inputs.construct_worker_bridge hard-constructs the FSI source/reference and NumericalBridge.",
+      "chunk_worker requires the exact NumericalBridge type and fixed resume/advance_chunk/accept_chunk/checkpoint behavior; there is no FSG registry fallback.",
+      "raw_journal uses distinct FSI checkpoint/chunk envelopes, source/environment context, segments and parent hashes.",
+      "FSG intervals carry start/end snapshot hashes rather than literal immutable checkpoint bytes; later cancellation metadata can change a newly requested snapshot without changing its physical state.",
+      "FSG accounts attempted work, including rejected trials; unknown work makes the total a lower bound. Accepted physical counters alone cannot refund or reset it.",
+      "Original continuation requires a finalized outer paused_budget predecessor and advanced inner running checkpoint. FSG wall_limit/work_limit/cancelled/invalid/completed results are terminal, not pauses."
+    ],
+    "required_new_source_not_existing_interfaces": [
+      "A closed versioned FSG worker/checkpoint profile with exact encoding, validation, restore and returned literal checkpoint bytes.",
+      "Full physical/electrical/actuator/load/thermal/DRS state and original initial energy/state; controller holds, integral, diagnostics, counters and global clock phases.",
+      "Absolute reference/source metre stations, both immutable projected offsets, reference/phase/metric/source identities, synthetic initialization and effective guidance/fixture/policy/model settings.",
+      "Validated departure/arming/winding/finish transition history; stored booleans alone are not proof.",
+      "Complete attempted-work accounting, no refunds or reset, remaining global caps, and explicit rejection of unknown-work/cancelled/rejected/quarantined/terminal predecessors.",
+      "Validated segment/parent linkage, raw-result acceptance, exact owned output retention and finalization/export semantics.",
+      "Actual source manifest/environment/external binding observation and original authenticated admission, fixed worker registration and continuation/cleanup provider composition."
+    ],
+    "existing_original_continuation_provider_methods": [
+      "execute_owned_continuation(request_raw, bundle_raw, historical_owned_receipts_raw, *, numerical_backend_family)",
+      "require_authenticated_continuation_and_cleanup(request_raw, bundle_raw, historical_owned_receipts_raw, result)"
+    ],
+    "existing_provider_methods_accept_current_fsg_snapshots": false,
+    "future_eligibility_requirement": "Only a clean running FSG checkpoint with complete accounting, no pending cancellation/rejection/quarantine, verified exact context/history and genuinely finalized predecessor admission/cleanup may be proposed to a new reviewed continuation path.",
+    "authority_serialized_into_flags_or_guessed_provider_created": false
+  },
+  "separate_validation": {
+    "test_path": "tests/test_fsg_boundary_contracts.py",
+    "identity_check_scope": "Installed distribution version and selected fsg_event.py bytes, frozen source-manifest hash and negative fixture hash; earlier whole-wheel verification is separate and no fresh loaded-runtime authentication is asserted.",
+    "original_or_native_provider_executed": false,
+    "positive_dependency": "Explicitly UNTRUSTED predicate interface double, not the reported original formula.",
+    "real_physics_scope": "Short plant probes and same-process 65 ms split-call parity crossing driver/allocator clock boundaries; no checkpoint restore or full lap.",
+    "legacy_metadata_fixture": "Exact frozen UNTRUSTED tests/test_campaign.py; used only to prove wrong bridge-type rejection before numerical work.",
+    "qualification_or_execution_authority": false
+  },
+  "native_execution_or_transfer_retry_performed": false,
+  "heldout_results_used": false,
+  "qualification_or_execution_authority": false
+}

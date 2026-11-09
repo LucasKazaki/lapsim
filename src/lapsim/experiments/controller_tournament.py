@@ -13,7 +13,8 @@ import time
 
 from lapsim.experiments.record_io import read_json_bounded, write_text_atomic
 from lapsim.courses.course_bundle import CourseBundle
-from .tournament_rollout import BOUNDS, PHILOSOPHIES, PROFILES, Case, Controller, rollout
+from lapsim.courses.library import COURSE_IDS, course_library
+from .tournament_rollout import BOUNDS, PHILOSOPHIES, PROFILES, Case, Controller, number, rollout
 
 SCHEMA = "lapsim.controller-tournament.v1"
 UPSTREAM = "b25774c7c9a6ca749a0e2fa8cc11cf53392be83c"
@@ -74,6 +75,152 @@ def specification(seed=4082025, population=6, generations=3, profile="synthetic_
             "reason": "Official rule edition and fixed opposition/reference data are not verified; 275:100 is not a seconds/kWh conversion"},
         "resources": {"workers": 1, "gpu_physics": False, "maximum_runs": 2 * (4 + population * generations) + 8,
                       "maximum_simulated_run_s": base.duration_s, "maximum_checkpoint_mb": 120}}
+
+
+def _catalog_selection(course_ids):
+    """Load only exact shipped IDs through the existing catalog/bundle checks."""
+    ids = tuple(course_ids)
+    if (not ids or any(type(cid) is not str or cid not in COURSE_IDS for cid in ids)
+            or len(set(ids)) != len(ids)):
+        raise ValueError("Choose distinct supported course catalog IDs")
+    entries = {entry["id"]: entry for entry in course_library()["courses"]}
+    return [entries[cid] for cid in ids]
+
+
+def catalog_specification(course_id, seed=4082025, population=6, generations=3,
+                          profile="synthetic_awd", *, reverse=False, mirror=False, laps=10):
+    """Select one shipped bundle; preserve the existing specification format."""
+    entry = _catalog_selection((course_id,))[0]
+    return specification(seed, population, generations, profile, course="bundle",
+        course_bundle=entry["bundle"], reverse=reverse, mirror=mirror, laps=laps)
+
+
+class _CatalogBudgetBoundary(Exception):
+    """Internal cooperative stop before starting another rollout."""
+
+
+def run_catalog_batch(output: Path, *, maximum_new_runs, wall_seconds,
+                      seed=4082025, population=6, generations=3, profile="synthetic_awd",
+                      reverse=False, mirror=False, laps=1, course_ids=COURSE_IDS,
+                      rollout_fn=rollout):
+    """Fresh sequential per-course searches under ONE cooperative outer budget.
+
+    This is the ordinary synthetic four-philosophy backend, not the portable
+    seven-policy/native-admission runner. Each child retains its own unmodified
+    search specification/checkpoint and held-out separation. The batch never
+    retries or resumes a child and has no cross-course winner. Slots are reserved
+    before calls, including failed or uncertain calls, without refunds.
+
+    Wall time is checked at rollout boundaries; an in-flight rollout and file
+    finalization may exceed it. This is not an OS deadline or resource lease.
+    """
+    started = time.perf_counter()
+    number(wall_seconds, "batch wall_seconds", 1, 900)
+    if type(maximum_new_runs) is not int or maximum_new_runs < 0:
+        raise ValueError("maximum_new_runs must be an explicit nonnegative integer")
+    if type(laps) is not int or laps != 1:
+        raise ValueError("Catalog batches support explicit one-lap searches only")
+    entries = _catalog_selection(course_ids)
+    specs = [specification(seed, population, generations, profile, course="bundle",
+                course_bundle=entry["bundle"], reverse=reverse, mirror=mirror, laps=1)
+             for entry in entries]
+    declared_runs = sum(spec["resources"]["maximum_runs"] for spec in specs)
+    if maximum_new_runs > declared_runs:
+        raise ValueError("Batch run budget exceeds the selected searches' declared bounds")
+    source = sources()
+    deadline = started + wall_seconds
+    result = {
+        "schema": "lapsim.catalog-search-batch.v1", "status": "running",
+        "sources": source, "course_order": [entry["id"] for entry in entries],
+        "configuration": {"seed": seed, "population": population, "generations": generations,
+            "profile": profile, "reverse": reverse, "mirror": mirror, "laps": 1},
+        "budget": {"maximum_new_runs": maximum_new_runs, "maximum_wall_seconds": wall_seconds,
+            "reserved_rollout_slots": 0, "elapsed_wall_seconds": 0.,
+            "wall_enforcement": "COOPERATIVE_ROLLOUT_BOUNDARIES_NOT_OS_DEADLINE",
+            "failed_or_uncertain_slots_refunded": False},
+        "supported_controller_philosophies": list(PHILOSOPHIES),
+        "portable_seven_policy_comparison": "UNSUPPORTED_BY_THIS_BACKEND",
+        "events": {"closed_course_one_lap": "SYNTHETIC_DEVELOPMENT_SEARCH",
+                   "skidpad_sequence": "UNSUPPORTED_BY_THIS_RUNNER"},
+        "official_points": None, "cross_course_winner": None,
+        "qualification_or_execution_authority": False, "batch_resume_supported": False,
+        "checkpoint_runs_scope": "UNRUN_ZERO_RETURNED_STATE_COUNT_OR_NULL_IF_STARTED_BUT_NOT_RETURNED",
+        "child_output_scope": "RETAINED_FILES_MAY_INCLUDE_STALE_REPLAY_AFTER_FAILURE_NOT_REVALIDATED_BY_BATCH",
+        "courses": [
+            {"course_id": entry["id"], "catalog": {k:v for k,v in entry.items() if k != "bundle"},
+             "bundle_payload_sha256": sha256(canonical(entry["bundle"]).encode()).hexdigest(),
+             "specification_sha256": sha256(canonical(spec).encode()).hexdigest(),
+             "output_directory": entry["id"], "checkpoint": entry["id"] + "/checkpoint.json",
+             "status": "unrun", "reserved_rollout_slots": 0, "checkpoint_runs": 0,
+             "checkpoint_present": False, "failure": None}
+            for entry,spec in zip(entries,specs,strict=True)]}
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=False)  # Never overwrite an earlier batch or child artifact.
+
+    def save():
+        result["budget"]["elapsed_wall_seconds"] = time.perf_counter() - started
+        write_text_atomic(output / "catalog-search.json", canonical(result))
+
+    save()
+    for row,spec in zip(result["courses"],specs,strict=True):
+        remaining_runs = maximum_new_runs - result["budget"]["reserved_rollout_slots"]
+        remaining_wall = deadline - time.perf_counter()
+        if remaining_runs <= 0 or remaining_wall < 1:
+            result["status"] = "paused_budget"
+            save()
+            return result
+        child = output / row["output_directory"]
+        row["status"] = "running"
+        row["checkpoint_runs"] = None
+        save()
+
+        def counted_rollout(*args, **kwargs):
+            if (result["budget"]["reserved_rollout_slots"] >= maximum_new_runs
+                    or time.perf_counter() >= deadline):
+                raise _CatalogBudgetBoundary()
+            result["budget"]["reserved_rollout_slots"] += 1
+            row["reserved_rollout_slots"] += 1
+            save()  # Reserve first: failure or process death must not imply a free retry.
+            if time.perf_counter() >= deadline:
+                raise _CatalogBudgetBoundary()
+            return rollout_fn(*args, **kwargs)
+
+        try:
+            if sources() != source:
+                raise ValueError("Source changed during catalog batch; do not update an active study")
+            state = run_search(child, spec, resume=False, wall_seconds=remaining_wall,
+                maximum_new_runs=remaining_runs, rollout_fn=counted_rollout)
+            row["checkpoint_runs"] = len(state["runs"])
+            row["checkpoint_present"] = (child / "checkpoint.json").is_file()
+            row["status"] = state["status"]
+        except _CatalogBudgetBoundary:
+            row["status"] = "paused_budget"
+            row["checkpoint_runs"] = None
+            row["checkpoint_present"] = (child / "checkpoint.json").is_file()
+            result["status"] = "paused_budget"
+            save()
+            return result
+        except BaseException as error:
+            row["status"] = "failed"
+            row["checkpoint_runs"] = None
+            row["checkpoint_present"] = (child / "checkpoint.json").is_file()
+            row["failure"] = {"type": type(error).__name__, "message": str(error)[:1024]}
+            result["status"] = "failed"
+            try:
+                save()
+            except BaseException as save_error:
+                if hasattr(error, "add_note"):
+                    error.add_note("Catalog failure-index write also failed: " + repr(save_error))
+            raise
+        save()
+        if row["status"] == "paused_budget":
+            result["status"] = "paused_budget"
+            save()
+            return result
+    result["status"] = ("completed" if all(row["status"] == "completed" for row in result["courses"])
+                        else "completed_with_failures")
+    save()
+    return result
 
 
 def nested_tuple(value):
@@ -279,17 +426,41 @@ def main(argv=None):
     parser.add_argument("--generations", type=int, default=3)
     parser.add_argument("--wall-seconds", type=float, default=600)
     parser.add_argument("--profile", default="synthetic_awd")
-    parser.add_argument("--course", choices=("stadium", "autocross", "bundle"), default="stadium")
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--course", choices=("stadium", "autocross", "bundle"), default=None)
+    selection.add_argument("--course-id", choices=COURSE_IDS)
+    selection.add_argument("--all-courses", action="store_true",
+        help="Fresh sequential one-lap searches for all nine shipped courses")
     parser.add_argument("--course-bundle", type=Path)
+    parser.add_argument("--maximum-new-runs", type=int, default=None,
+        help="Maximum new rollout calls; required as a shared budget with --all-courses")
     parser.add_argument("--reverse", action="store_true")
     parser.add_argument("--mirror", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--laps", type=int, choices=(1,10), default=10)
     args = parser.parse_args(argv)
+    if args.maximum_new_runs is not None and args.maximum_new_runs < 0:
+        parser.error("--maximum-new-runs must be nonnegative")
+    if (args.course_id or args.all_courses) and args.course_bundle is not None:
+        parser.error("Catalog selection cannot also specify --course-bundle")
+    if args.all_courses:
+        if args.resume:
+            parser.error("Catalog batches are fresh-only; --resume is supported for individual course checkpoints")
+        if args.laps != 1 or args.maximum_new_runs is None:
+            parser.error("--all-courses requires --laps 1 and explicit --maximum-new-runs")
+        result = run_catalog_batch(args.output, maximum_new_runs=args.maximum_new_runs,
+            wall_seconds=args.wall_seconds, seed=args.seed, population=args.population,
+            generations=args.generations, profile=args.profile, reverse=args.reverse, mirror=args.mirror)
+        print(canonical({"status": result["status"], "reserved_rollout_slots": result["budget"]["reserved_rollout_slots"],
+                         "courses": [{"id":row["course_id"],"status":row["status"]} for row in result["courses"]]}))
+        return 0 if result["status"] == "completed" else 2
     bundle = read_json_bounded(args.course_bundle, maximum_bytes=4_194_304) if args.course_bundle else None
-    state = run_search(args.output, specification(args.seed, args.population, args.generations, args.profile,
-                       course=args.course, course_bundle=bundle, reverse=args.reverse, mirror=args.mirror,laps=args.laps),
-                       resume=args.resume, wall_seconds=args.wall_seconds)
+    spec = (catalog_specification(args.course_id, args.seed, args.population, args.generations, args.profile,
+                reverse=args.reverse, mirror=args.mirror, laps=args.laps) if args.course_id else
+            specification(args.seed, args.population, args.generations, args.profile,
+                course=args.course or "stadium", course_bundle=bundle, reverse=args.reverse, mirror=args.mirror,laps=args.laps))
+    state = run_search(args.output, spec, resume=args.resume, wall_seconds=args.wall_seconds,
+                       maximum_new_runs=args.maximum_new_runs)
     print(canonical({"status": state["status"], "runs": len(state["runs"]),
                      "generations": len(state["generations"]), "best": state["best_so_far"]}))
     return 0 if state["status"] == "completed" else 2

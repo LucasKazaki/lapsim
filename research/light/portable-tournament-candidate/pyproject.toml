@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lapsim-light-tournament-source-candidate"
+version = "0.0.0.dev38"
+description = "Development light tournament campaign execution with guarded dispatch and raw results"
+requires-python = ">=3.11"
+dependencies = []
+readme = "README.md"
+license-files = ["CORE_NOTICE.md", "src/lapsim_light_course/data/LICENSE.md"]
+
+[project.optional-dependencies]
+admission-verifier = ["cryptography==50.0.2"]
+
+[project.scripts]
+lapsim-light-evidence = "lapsim_light_campaign.tournament_cli:main"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = [
+    "lapsim_light_core",
+    "lapsim_light_policies",
+    "lapsim_light_guidance",
+    "lapsim_light_campaign",
+    "lapsim_light_course",
+]
+namespaces = false
+
+[tool.setuptools.package-data]
+lapsim_light_campaign = ["baseline-configuration.json"]
+lapsim_light_course = ["data/amz_fssim_fsi_approx.json", "data/FSI.yaml", "data/amz_fssim_fsg_approx.json", "data/FSG.yaml", "data/LICENSE.md"]

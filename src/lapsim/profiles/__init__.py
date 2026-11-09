@@ -1,6 +1,7 @@
 """Named vehicle profiles and source-aware engineering evidence access."""
 
 from .adapter import (
+    ConfigurationSnapshotUnavailable,
     ProfileInfo,
     ResolvedField,
     ResolvedManifest,
@@ -13,6 +14,7 @@ from .adapter import (
 from .registry import EngineeringRegistry, default_bundle_dir, import_intake, load_intake
 
 __all__ = [
+    "ConfigurationSnapshotUnavailable",
     "EngineeringRegistry", "ProfileInfo", "ResolvedField", "ResolvedManifest",
     "browse_records", "build_vehicle", "default_bundle_dir", "import_intake",
     "list_profiles", "load_intake", "preview_profile", "snapshot_vehicle_config",

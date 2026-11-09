@@ -1,0 +1,70 @@
+{
+  "schema": "lapsim.light-event-suite-smoke-evidence.v1",
+  "runtime_commit": "c8c237674aad924152cdd4d6bfbef03be9785cd8",
+  "ordinary_distribution": "python-lapsim==0.1.0+light20261108.6",
+  "wheel_sha256": "dd738857d756443fb765665c231a61eb2dd7d6db0a287205cb5fd789d8b675f4",
+  "platform": "Linux",
+  "python": "3.12.14",
+  "process_wall_s": 4.142497000000731,
+  "suite_wall_s": 1.7094722479960183,
+  "wall_budget_s": 30.0,
+  "process_exit": 3,
+  "expected_partial_exit": true,
+  "status": "partial_development_suite",
+  "staged_event_groups": 10,
+  "staged_catalog_cells": 36,
+  "reserved_catalog_rollouts": 1,
+  "returned_catalog_rollouts": 1,
+  "actual_closed_model_status": "time_limit",
+  "actual_closed_model_elapsed_s": 0.1,
+  "unrun_catalog_cells": 35,
+  "actual_skidpad_attempts": 2,
+  "skidpad_status": "paused_aggregate_budget",
+  "heldout_used": false,
+  "search_or_tuning_performed": false,
+  "winner": null,
+  "official_points": null,
+  "portable_policies_source_implemented": 7,
+  "portable_policies_admitted_here": 0,
+  "suite_index": {
+    "bytes": 19762,
+    "sha256": "41997ee6a128a708c14bb735803e3598795f7ec8bbcfa78683a5e419cf9c4d45"
+  },
+  "suite_binding": {
+    "bytes": 112667,
+    "sha256": "e991b8b803b1b0dac56ba0299d9fb8db8774468e133dd83c1bc5f2db7dcfa7ec"
+  },
+  "raw_catalog_results": [
+    {
+      "path": "catalog/raw/amz_fssim_fsg_approx--fixed.json",
+      "bytes": 91551,
+      "sha256": "3190dada4f14090594d46d641da67da091bed3d88277d40625081e688c880030"
+    }
+  ],
+  "skidpad_index": {
+    "bytes": 2099,
+    "sha256": "2be8856fa6ab895622e5e383b00823e5bae5345329e994b5293260cc8cf3ecf2"
+  },
+  "source_tests": {
+    "passed": 56,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 1,
+    "seconds": 20.19,
+    "junit_suite_seconds": 20.147,
+    "junit_sha256": "8fbad8f0fa024d124a7c681748519e5afbba59446be1de2e81ab238f3a0530b1"
+  },
+  "independent_source_data_review": "passed; post-request-read wall fence, all 36 request pins, retained raw result, five outer checkpoints and exact child source/runtime/course binding independently reviewed",
+  "full_40_cell_numerical_suite_completed": false,
+  "native_Windows_or_GUI_qualification": false,
+  "qualification_or_execution_authority": false,
+  "native_or_hardware_invoked": false,
+  "supersedes_runtime_commit": "117399020e5143170c07bce5763b3198ce8b0b36",
+  "repair": "Check the cooperative wall fence after request read/hash verification and before numerical dispatch; charged reservation remains consumed on expiry",
+  "static_checks": {
+    "source_inventory": "passed",
+    "flowchart_graph": "passed",
+    "flowchart_site": "passed",
+    "isolated_dependency_check": "No broken requirements found"
+  }
+}

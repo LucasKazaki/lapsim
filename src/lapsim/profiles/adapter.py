@@ -145,6 +145,10 @@ def _get_value(vehicle: Vehicle, path: str) -> float:
     return float(part)
 
 
+class ConfigurationSnapshotUnavailable(TypeError):
+    """A component's constructor inputs have no supported snapshot representation."""
+
+
 def _snapshot_config(value: Any) -> Any:
     """Capture constructor fields, excluding changing simulation state."""
 
@@ -167,11 +171,18 @@ def _snapshot_config(value: Any) -> Any:
         if not isfinite(value):
             raise ValueError("nonfinite configured model input")
         return value
-    raise TypeError(f"cannot snapshot model configuration type {type(value).__name__}")
+    raise ConfigurationSnapshotUnavailable(
+        f"cannot snapshot model configuration type {type(value).__name__}"
+    )
 
 
 def snapshot_vehicle_config(vehicle: Vehicle) -> dict[str, Any]:
-    """Return an independent snapshot of the effective vehicle constructor inputs."""
+    """Snapshot constructor inputs or raise ConfigurationSnapshotUnavailable.
+
+    Structural components without a supported configuration representation remain
+    usable by Vehicle, but cannot supply a configuration identity through this API.
+    Validation failures propagate independently of snapshot availability.
+    """
 
     vehicle.validate()
     return _snapshot_config(vehicle)
@@ -458,4 +469,5 @@ def browse_records(
 __all__ = [
     "ProfileInfo", "ResolvedField", "ResolvedManifest", "browse_records",
     "build_vehicle", "list_profiles", "preview_profile", "snapshot_vehicle_config",
+    "ConfigurationSnapshotUnavailable",
 ]

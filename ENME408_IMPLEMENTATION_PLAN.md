@@ -22,6 +22,19 @@ below remain historical evidence, not the current source SHA.
 
 ## Active local native-backend cycle (16–18 October 2026)
 
+**5 November E01 source-preparation checkpoint:** current main remains
+`07ccb4b84138aedcc5b9cb85c2e81d283d6c132e`. The isolated
+`cloud/lite-policy-guidance-20261105` branch adds the
+[portable source candidate](research/light/portable-policy-guidance-candidate/README.md).
+It prepares actual policy/guidance/raw-storage files and preserves the archival
+blobs. PR #166 remains the pinned portable-core source origin; #167–169 are
+separate Windows documentation/source-audit work, not an executable backend.
+All new source remains **untested/unbuilt/unqualified** under the owner's
+no-testing instruction. No candidate import, syntax check, simulator, native
+qualification, lease or native resource probe was performed. Full E01 and
+tournament acceptance remain open; the candidate guide records exact
+integration and admission limits.
+
 The owner's new continuous engineering request supersedes the completed window
 below. The old coordinator released its lease and its scheduler remains paused;
 no new scheduler is required for the active chat. Current main was refreshed at

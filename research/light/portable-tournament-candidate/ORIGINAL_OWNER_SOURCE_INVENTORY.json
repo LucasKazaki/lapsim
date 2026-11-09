@@ -1,0 +1,573 @@
+{
+  "schema": "lapsim.original-owner-source-report.inventory.v2",
+  "evidence_level": "REPORTED_OWNER_PROVENANCE_WITH_EXPLICIT_BOUNDED_LOCAL_SOURCE_AVAILABILITY_NOT_RUNTIME_AUTHENTICATION",
+  "report_reference": {
+    "thread_id": "<PRIVATE_CONVERSATION_ID>",
+    "turn_id": "<PRIVATE_CONVERSATION_ID>",
+    "full_report_received_via_parent": true,
+    "direct_cross_thread_read_performed": false
+  },
+  "roots": {
+    "R": "<ORIGINAL_SOURCE_ROOT>",
+    "V15": {
+      "relative_to": "R",
+      "path": "work\\torque-light-awd-racingline-standing-20261102-v15"
+    },
+    "P09": {
+      "relative_to": "R",
+      "path": "work\\torque-light-awd-line-producer-20261102-p09"
+    },
+    "EXTERNAL_HELPERS": "<ORIGINAL_EXTERNAL_HELPERS_ROOT>",
+    "B": {
+      "relative_to": "R",
+      "path": "work\\original-source-bindings-20261105-r02"
+    }
+  },
+  "paths_are_provenance_only_not_runtime_defaults": true,
+  "files": [
+    {
+      "id": "original_residual_module",
+      "role": "SOURCE",
+      "root": "R",
+      "relative_path": "lapsim-aero-fidelity-20261028\\src\\lapsim\\experiments\\torque_light_demo.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\lapsim-aero-fidelity-20261028\\src\\lapsim\\experiments\\torque_light_demo.py",
+      "reported_sha256": "b7ee2a2c822c646203af4b471d8c851685c575fa2477a982d4f0519fc409b171",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "producer_receipts",
+      "role": "SOURCE",
+      "root": "V15",
+      "relative_path": "producer_receipts.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-racingline-standing-20261102-v15\\producer_receipts.py",
+      "reported_sha256": "d622288d48d01a71ddbf13e8fbaa4abb771d78b74627e82d9898116fe23b7e50",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "numeric_evidence",
+      "role": "SOURCE",
+      "root": "V15",
+      "relative_path": "numeric_evidence.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-racingline-standing-20261102-v15\\numeric_evidence.py",
+      "reported_sha256": "2e440ca9fb615968893b84893b6d28fa3662775a5ef168d49e84cfd4dc547e57",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "original_chunk_observer",
+      "role": "SOURCE",
+      "root": "R",
+      "relative_path": "lapsim-public-courses\\work\\tournament-audit-20261028\\run_owned_chunk13.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\lapsim-public-courses\\work\\tournament-audit-20261028\\run_owned_chunk13.py",
+      "reported_sha256": "835e4c0286fabd85c374c404a094d9888f99a8660201f1ae15ff3e9ff5b41a9f",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "public_courses_readiness",
+      "role": "SOURCE",
+      "root": "R",
+      "relative_path": "lapsim-public-courses\\src\\lapsim\\experiments\\background_readiness.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\lapsim-public-courses\\src\\lapsim\\experiments\\background_readiness.py",
+      "reported_sha256": "83beb340bd792f0e02fe7284cd942e1a1da809cfc3eabb91bc1492b2e9cb8c87",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "owned_batch_safety",
+      "role": "SOURCE",
+      "root": "R",
+      "relative_path": "lapsim-guard-safety-20261028\\scripts\\owned_batch_safety.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\lapsim-guard-safety-20261028\\scripts\\owned_batch_safety.py",
+      "reported_sha256": "d84167ec269a88f58647b6a5db501a43c3b2b0a59fb5dc9b27c4d6658588a91c",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "stop_inner",
+      "role": "SOURCE",
+      "root": "R",
+      "relative_path": "work\\torque-light-stop-qualification-20261031-p01\\stop_inner.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-stop-qualification-20261031-p01\\stop_inner.py",
+      "reported_sha256": "ad500198223dcce920671542f384acb08962d080e1e5c913b7a6575fa25d3350",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "original_chunk_bridge",
+      "role": "SOURCE",
+      "root": "R",
+      "relative_path": "lapsim-public-courses\\work\\tournament-audit-20261028\\chunk_bridge.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\lapsim-public-courses\\work\\tournament-audit-20261028\\chunk_bridge.py",
+      "reported_sha256": "816b46ae9c5a621729c35c0a9094221c8c3e263461009c4816b0a96387d3f3e3",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "p09_contract",
+      "role": "P09_SOURCE",
+      "root": "P09",
+      "relative_path": "contract.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-line-producer-20261102-p09\\contract.py",
+      "reported_sha256": "10a78b6adbfcc2fee4d354db1b33c1dbd0ae17162656ff1bcb150b1caa8cafeb",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "p09_admission_evidence",
+      "role": "P09_SOURCE",
+      "root": "P09",
+      "relative_path": "admission_evidence.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-line-producer-20261102-p09\\admission_evidence.py",
+      "reported_sha256": "b4f81ee8f651eb9085a1b267788452c80d3717d7a52d7003fdd0f8e76ef98460",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "p09_production_owned",
+      "role": "P09_SOURCE",
+      "root": "P09",
+      "relative_path": "production_owned.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-line-producer-20261102-p09\\production_owned.py",
+      "reported_sha256": "ea05971c2cef95d2609eb7cf4389410eaf52e61962b9811588bf1980cb0aa04f",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "p09_inner",
+      "role": "P09_SOURCE",
+      "root": "P09",
+      "relative_path": "inner.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-line-producer-20261102-p09\\inner.py",
+      "reported_sha256": "dd164533731e7c76e3cdd90ef9b51edabacce4a10f7e6a2314c551b11abeb007",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "p09_run_producer_command",
+      "role": "P09_SOURCE",
+      "root": "P09",
+      "relative_path": "run_producer_command.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-line-producer-20261102-p09\\run_producer_command.py",
+      "reported_sha256": "b2f2e7db44c2254946485c4f3573365fcc4e034a6dd99ae7a64be3c05f1fc981",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "p09_bounded_caller",
+      "role": "P09_SOURCE",
+      "root": "P09",
+      "relative_path": "bounded_caller.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-line-producer-20261102-p09\\bounded_caller.py",
+      "reported_sha256": "66d07b3d56267bdb537a6db33a1f7f80fc6ff302235481cdbdcffb2fb5bba447",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "p09_producer_fixed_body",
+      "role": "P09_SOURCE",
+      "root": "P09",
+      "relative_path": "producer_fixed_body.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-line-producer-20261102-p09\\producer_fixed_body.py",
+      "reported_sha256": "d70d4a6e13ce61616b85bf53578079f4257b4db932938c2103c8a1a364edb736",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "external_gpu_worker",
+      "role": "EXTERNAL_SOURCE",
+      "root": "EXTERNAL_HELPERS",
+      "relative_path": "experiments\\chess-queen-v1\\gpu_worker.py",
+      "reported_absolute_path": "<ORIGINAL_EXTERNAL_HELPERS_ROOT>\\experiments\\chess-queen-v1\\gpu_worker.py",
+      "reported_sha256": "1164d8fd1dbc59221a7d51ce410bb5e9a3109998fd3b6f9d00db071d237948c0",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "external_owned_worker_v2",
+      "role": "EXTERNAL_SOURCE",
+      "root": "EXTERNAL_HELPERS",
+      "relative_path": "experiments\\chess-queen-coach-daytime-v1\\owned_worker_v2.py",
+      "reported_absolute_path": "<ORIGINAL_EXTERNAL_HELPERS_ROOT>\\experiments\\chess-queen-coach-daytime-v1\\owned_worker_v2.py",
+      "reported_sha256": "fe4ce0abb0f6be934f2b78681115ec0aa0c9c85e2ef54a6955dc2e6778103ae8",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "historical_promotion",
+      "role": "HISTORICAL_EVIDENCE",
+      "root": "V15",
+      "relative_path": "producer-promotion-manifest.json",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-racingline-standing-20261102-v15\\producer-promotion-manifest.json",
+      "reported_sha256": "0bf61c3119a5cb3b9f1e5fe32b776ebff11a44cd67fd58c53365943e842b0112",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "historical_line",
+      "role": "HISTORICAL_EVIDENCE",
+      "root": "V15",
+      "relative_path": "line-artifact.json",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-racingline-standing-20261102-v15\\line-artifact.json",
+      "reported_sha256": "1779ff9b9254f16e09a49f24d45603f3e7de88edb7650055e6aa5159e4e6a00b",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    },
+    {
+      "id": "historical_admission",
+      "role": "HISTORICAL_EVIDENCE",
+      "root": "V15",
+      "relative_path": "line-artifact-admission.json",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-racingline-standing-20261102-v15\\line-artifact-admission.json",
+      "reported_sha256": "1b71ddca7d0fca99d2cb7db679eef6d274eacecd2a23402e83cb1103d108b5a6",
+      "reported_size_bytes": null,
+      "reported_exists_on_main_pc": true,
+      "bytes_received_here": false,
+      "sha256_verified_here": false
+    }
+  ],
+  "reported_residual": {
+    "file_id": "original_residual_module",
+    "reported_line": 175,
+    "definition": "def residual_low_speed_regen(speed,electrical):\n    return speed<=2 and (electrical.pack_power_w<0 or any(v<0 for v in electrical.wheel_torques_nm))",
+    "historical_regen_failure_qualified_by_recovery": false
+  },
+  "reported_entry_points": {
+    "producer_receipts": [
+      "verify_bundle"
+    ],
+    "numeric_evidence": [
+      "verify_file_inventory",
+      "validate_phase",
+      "validate"
+    ],
+    "owned_batch_safety": [
+      "validate_observation",
+      "AttemptJournal",
+      "require_reconciled",
+      "require_admission",
+      "ObservationPump",
+      "OwnedDeadline",
+      "supervise_owned"
+    ],
+    "original_chunk_observer": [
+      "foreground",
+      "running_games"
+    ],
+    "stop_inner": [
+      "context_snapshot"
+    ]
+  },
+  "reported_operational_siblings": [
+    {
+      "root": "P09",
+      "basename": "contract.py",
+      "reported_exists": true,
+      "reported_sha256": "10a78b6adbfcc2fee4d354db1b33c1dbd0ae17162656ff1bcb150b1caa8cafeb"
+    },
+    {
+      "root": "P09",
+      "basename": "bootstrap.py",
+      "reported_exists": true,
+      "reported_sha256": null
+    },
+    {
+      "root": "P09",
+      "basename": "stable_reader.py",
+      "reported_exists": true,
+      "reported_sha256": null
+    },
+    {
+      "root": "P09",
+      "basename": "stable_writer.py",
+      "reported_exists": true,
+      "reported_sha256": null
+    },
+    {
+      "root": "P09",
+      "basename": "numeric_runtime.py",
+      "reported_exists": true,
+      "reported_sha256": null
+    },
+    {
+      "root": "P09",
+      "basename": "runtime_assurance.py",
+      "reported_exists": true,
+      "reported_sha256": null
+    },
+    {
+      "root": "P09",
+      "basename": "admission_evidence.py",
+      "reported_exists": true,
+      "reported_sha256": "b4f81ee8f651eb9085a1b267788452c80d3717d7a52d7003fdd0f8e76ef98460"
+    },
+    {
+      "root": "P09",
+      "basename": "run_producer_command.py",
+      "reported_exists": true,
+      "reported_sha256": "b2f2e7db44c2254946485c4f3573365fcc4e034a6dd99ae7a64be3c05f1fc981"
+    },
+    {
+      "root": "P09",
+      "basename": "inner.py",
+      "reported_exists": true,
+      "reported_sha256": "dd164533731e7c76e3cdd90ef9b51edabacce4a10f7e6a2314c551b11abeb007"
+    },
+    {
+      "root": "P09",
+      "basename": "production_owned.py",
+      "reported_exists": true,
+      "reported_sha256": "ea05971c2cef95d2609eb7cf4389410eaf52e61962b9811588bf1980cb0aa04f"
+    },
+    {
+      "root": "P09",
+      "basename": "worker_gate.py",
+      "reported_exists": true,
+      "reported_sha256": null
+    },
+    {
+      "root": "P09",
+      "basename": "worker.py",
+      "reported_exists": true,
+      "reported_sha256": null
+    },
+    {
+      "root": "P09",
+      "basename": "bounded_caller.py",
+      "reported_exists": true,
+      "reported_sha256": "66d07b3d56267bdb537a6db33a1f7f80fc6ff302235481cdbdcffb2fb5bba447"
+    },
+    {
+      "root": "P09",
+      "basename": "producer_fixed_body.py",
+      "reported_exists": true,
+      "reported_sha256": "d70d4a6e13ce61616b85bf53578079f4257b4db932938c2103c8a1a364edb736"
+    }
+  ],
+  "reported_limits": {
+    "historical_p09_accounting_seconds": 180,
+    "current_comparison_contract_seconds": 120,
+    "current_contract_bytes_or_allocation_verified_here": false,
+    "verified_self_contained_private_archive_established": false,
+    "public_courses_readiness_interchangeable_with_guard_safety_copy": false,
+    "shared_lock_accessed_by_owner_inspection": false,
+    "v15_validator_files_byte_identical_to_v14_counterparts": true,
+    "actual_v15_directory_uses_standing_not_guessed_consumer": true
+  },
+  "historical_receipt_layout": {
+    "root": "V15",
+    "directory": "producer-receipts",
+    "reported_physical_receipt_files": 14,
+    "receipt_names_and_individual_pins_not_provided_in_report": true,
+    "remaining_logical_entries": [
+      {
+        "logical_name": "line-artifact.json",
+        "root_file": "line-artifact.json"
+      },
+      {
+        "logical_name": "independent-audit.json",
+        "root_file": "line-artifact-admission.json"
+      }
+    ],
+    "fresh_authenticated_platform_receipts_or_current_admission": false
+  },
+  "import_warning": "Owner warns observer has top-level reads and module loading. Do not import modules for inspection. Full source effect/closure review remains pending here.",
+  "original_source_transfer_or_publication_performed_here": false,
+  "any_current_execution_authority": false,
+  "original_twenty_file_report_entries_preserved": true,
+  "supplementary_report_reference": {
+    "thread_id": "<PRIVATE_CONVERSATION_ID>",
+    "turn_id": "<PRIVATE_CONVERSATION_ID>",
+    "source": "TRUSTED_PARENT_FORWARDED_FROZEN_NATIVE_HANDOFF"
+  },
+  "supplementary_reported_sources": [
+    {
+      "id": "r02_residual_regen_adapter",
+      "role": "SOURCE",
+      "root": "B",
+      "relative_path": "src\\lapsim_original_bindings\\residual_regen.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\original-source-bindings-20261105-r02\\src\\lapsim_original_bindings\\residual_regen.py",
+      "reported_sha256": "570438d155f28edd1eefdcc165cfd4b9ca4e516d5cd18a942dc12d7a5e1a987c"
+    },
+    {
+      "id": "r02_selected_loaded_sources",
+      "role": "SOURCE",
+      "root": "B",
+      "relative_path": "src\\lapsim_original_bindings\\loaded_sources.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\original-source-bindings-20261105-r02\\src\\lapsim_original_bindings\\loaded_sources.py",
+      "reported_sha256": "ca23a15bedf12a13bc67725866ff0d3eee79c64ff556e413fac1d9180c68d85e"
+    },
+    {
+      "id": "r02_producer_layout",
+      "role": "SOURCE",
+      "root": "B",
+      "relative_path": "src\\lapsim_original_bindings\\producer_layout.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\original-source-bindings-20261105-r02\\src\\lapsim_original_bindings\\producer_layout.py",
+      "reported_sha256": "64975a1f3aaaa9720c66d9f88d50adba3eb054474187749af21bded9ca5d1371"
+    },
+    {
+      "id": "r02_line_review",
+      "role": "SOURCE",
+      "root": "B",
+      "relative_path": "src\\lapsim_original_bindings\\line_review.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\original-source-bindings-20261105-r02\\src\\lapsim_original_bindings\\line_review.py",
+      "reported_sha256": "80a6bf964c91b2647edc70b8f7bc57e233948327e8c047f251203c017292273b"
+    },
+    {
+      "id": "original_line_binding",
+      "role": "SOURCE",
+      "root": "V15",
+      "relative_path": "line_binding.py",
+      "reported_absolute_path": "<ORIGINAL_SOURCE_ROOT>\\work\\torque-light-awd-racingline-standing-20261102-v15\\line_binding.py",
+      "reported_sha256": "90629a948024c6e6db15026475d8accac5c740a4060fa07c0c489db95fac3aea"
+    }
+  ],
+  "local_source_availability": {
+    "schema": "lapsim.original-source-local-availability.v1",
+    "baseline_repository_commit": "0f9015234934e47074ca59c699201fd34683e844",
+    "scope": "NAMED_DEPENDENCIES_IN_EXISTING_CLOUD_CHECKOUT_AND_SCRATCH_ONLY_NOT_MAIN_PC_OR_REMOTE_TRANSFER",
+    "filesystem_roots": [
+      "<CLOUD_INTEGRATION_ROOT>",
+      "<CLOUD_ARTIFACT_ROOT>"
+    ],
+    "filesystem_exclusions": [
+      ".git internals",
+      ".venv",
+      "node_modules",
+      "__pycache__"
+    ],
+    "ignored_staging_filenames_included": true,
+    "new_targets_since_prior_broad_search": "EXACT_R02_HELPER_PINS_AND_NAMED_GUARD_WORKER_SOURCE_PAYLOADS_IN_IGNORED_STAGING_PATCH_HEADERS_AND_LOCAL_REACHABLE_PATHS",
+    "named_patch_headers_checked_in_scratch_patch_files": 32,
+    "named_original_source_payload_headers_found": 0,
+    "named_source_archives_found_in_checked_roots": 0,
+    "local_reachable_history_scope": "EXACT_NAMED_RESIDUAL_VALIDATOR_R02_HELPER_GUARD_OBSERVER_AND_WORKER_CLOSURE_PATHS_ONLY",
+    "new_named_original_paths_found_in_reachable_history": 0,
+    "source_pin_records_checked": 22,
+    "exact_available_source_copies": 1,
+    "unrelated_basename_hits": [
+      {
+        "path": "scripts/bootstrap.py",
+        "reported_source": "P09/bootstrap.py",
+        "status": "DIFFERENT_REPOSITORY_PATH_NOT_A_RECOVERED_P09_SOURCE_NO_P09_PIN_SUPPLIED"
+      }
+    ],
+    "unpinned_p09_siblings": {
+      "root": "P09",
+      "basenames": [
+        "bootstrap.py",
+        "stable_reader.py",
+        "stable_writer.py",
+        "numeric_runtime.py",
+        "runtime_assurance.py",
+        "worker_gate.py",
+        "worker.py"
+      ],
+      "reported_sha256": null,
+      "status": "NO_EXPECTED_P09_SOURCE_FOUND_AND_NO_EXACT_PIN_SUPPLIED"
+    },
+    "historical_evidence_files": "ORIGINAL_THREE_REPORT_METADATA_RECORDS_RETAINED_NOT_RECHECKED_BY_THIS_SOURCE_ONLY_PASS",
+    "r02_selected_binding_helpers_supply_complete_portable_source_observer": false,
+    "original_guard_fixed_worker_and_start_providers_integrated": false,
+    "source_only_file_inventory_not_runtime_or_resource_observation": true,
+    "new_private_source_recovered": false,
+    "original_module_imports_performed": false,
+    "main_pc_access_or_operation_performed": false,
+    "execution_or_current_admission_established": false,
+    "exact_sources": [
+      {
+        "source_id": "original_line_binding",
+        "reported_sha256": "90629a948024c6e6db15026475d8accac5c740a4060fa07c0c489db95fac3aea",
+        "status": "EXACT_EXISTING_PUBLIC_ARCHIVE_COPY_VERIFIED",
+        "local_path": "research/light/awd-standing-v15/line_binding.py",
+        "observed_bytes": 8947,
+        "observed_sha256": "90629a948024c6e6db15026475d8accac5c740a4060fa07c0c489db95fac3aea",
+        "source_transfer_performed": false,
+        "source_imported": false,
+        "provenance_or_runtime_authentication_established": false
+      }
+    ],
+    "no_exact_source_found_in_checked_scope": [
+      "original_residual_module",
+      "producer_receipts",
+      "numeric_evidence",
+      "original_chunk_observer",
+      "public_courses_readiness",
+      "owned_batch_safety",
+      "stop_inner",
+      "original_chunk_bridge",
+      "p09_contract",
+      "p09_admission_evidence",
+      "p09_production_owned",
+      "p09_inner",
+      "p09_run_producer_command",
+      "p09_bounded_caller",
+      "p09_producer_fixed_body",
+      "external_gpu_worker",
+      "external_owned_worker_v2",
+      "r02_residual_regen_adapter",
+      "r02_selected_loaded_sources",
+      "r02_producer_layout",
+      "r02_line_review"
+    ]
+  },
+  "native_source_assessment_20261108": {
+    "evidence_source": "TRUSTED_PARENT_FORWARDED_READ_ONLY_MAIN_PC_SOURCE_ASSESSMENT",
+    "original_demo_sha256_reported_verified": "b7ee2a2c822c646203af4b471d8c851685c575fa2477a982d4f0519fc409b171",
+    "recovered_adapter_sha256_reported_verified": "570438d155f28edd1eefdcc165cfd4b9ca4e516d5cd18a942dc12d7a5e1a987c",
+    "seven_file_manifest_matching_reported": true,
+    "new_manifest_sha256_supplied": null,
+    "new_manifest_file_list_supplied": null,
+    "original_predicate_semantic_scope": "The speed at or below 2 m/s condition gates BOTH negative actual pack power and any negative actual wheel torque; not a standalone negative-torque branch.",
+    "source_bytes_received_in_cloud": false,
+    "source_imported_or_independently_hashed_in_cloud": false,
+    "actual_loaded_callable_and_complete_runtime_closure_authenticated": false,
+    "current_execution_or_native_admission_granted": false,
+    "original_formula_reimplemented_or_test_double_promoted": false,
+    "still_required": [
+      "Exact executing adapter/callable/code/global/import closure bound to reviewed implementation/source pins",
+      "Complete current source/numerical environment observation; a seven-file source manifest is not proof of loaded runtime closure",
+      "Actual authenticated input/history/admission and owned terminal/cleanup evidence under fresh original guards and finite allocation"
+    ]
+  }
+}

@@ -23,6 +23,7 @@ def main(argv=None):
             group=item.add_mutually_exclusive_group();group.add_argument('--full-lap',action='store_true',help='Explicit v2 trace, bounded to 6001 frames');group.add_argument('--ten-lap',action='store_true',help='Explicit v3 trace, bounded to 60001 frames / 600 s')
         else:item.add_argument('--duration-ms',type=int,default=300)
     serve=sub.add_parser('serve');serve.add_argument('--port',type=int,default=8768)
+    serve.add_argument('--work-dir',type=Path,help='Absolute writable study directory; required for installed packages')
     verify=sub.add_parser('verify');verify.add_argument('--package',type=Path,required=True);verify.add_argument('--output',type=Path,required=True)
     compare=sub.add_parser('compare');compare.add_argument('--profile',type=Path,required=True);compare.add_argument('--reference',type=Path,required=True)
     compare.add_argument('--duration-ms',type=int,default=1000);compare.add_argument('--course',choices=('stadium','autocross'),default='stadium');compare.add_argument('--output',type=Path,required=True)
@@ -39,7 +40,9 @@ def main(argv=None):
             require(1024<=args.port<=65535,'Choose an unprivileged loopback port')
             require((repository_root()/'web/torque-configurator.html').is_file(),
                     'UI assets are unavailable in this source-only export; use the run/validate CLI')
-            serve_simulator(['--port',str(args.port)],page='web/torque-configurator.html')
+            serve_args=['--port',str(args.port)]
+            if args.work_dir is not None:serve_args += ['--work-dir',str(args.work_dir)]
+            serve_simulator(serve_args,page='web/torque-configurator.html')
             return 0
         if args.command=='example':
             from .policy import experimental_profile

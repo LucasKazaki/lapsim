@@ -328,6 +328,24 @@ v_entry^2 + 2 a_brake(v_entry, kappa, car) delta_s <= v_next^2, with signed a_br
 
 The implemented braking acceleration is nonlinear in speed and load transfer, so the solver evaluates force balance and bisects rather than assuming one constant deceleration for the entire lap. It iterates around the closed path until its configured convergence tolerance or pass bound is reached. The tolerance must be finite and positive. A descending pass uses the prior cell-zero ceiling for the closing cell, so the solver independently rechecks that cyclic seam against the newly updated cell-zero ceiling and refuses to return if the gap exceeds 1e-6 m/s, even with a loose requested tolerance. It continues sweeping or raises at the pass bound. `PathSpeedConstraints` stores local corner limits and braking ceilings for every cell. A nonzero speed ceiling is a model output, not a safety guarantee for a real car.
 
+`prepare_one_lap_constraints` binds reusable limits to the same vehicle instance,
+track and frozen constructor configuration, including concrete model types.
+`run_one_lap` rejects supplied limits after a configuration edit before resetting
+or advancing the vehicle; callers must explicitly prepare new limits. Changing
+mass, brakes, tire fits, aero, drivetrain or environment inputs cannot silently
+reuse a prior ceiling. Live simulation state is excluded, so ordinary state resets,
+new torque fractions and explicit starting speeds still reuse unchanged limits.
+Preparation also compares configuration before and after solving, rejecting
+persistent edits made by a progress callback.
+
+Structural component implementations without a supported constructor snapshot
+remain usable through an uncached lap. Their prepared limits explicitly refuse
+reuse because the configuration cannot be verified. The profile serializer's
+`ConfigurationSnapshotUnavailable` remains a `TypeError` subtype; other validation
+errors propagate. The private cache type identity does not change saved profile
+serialization. The [source repair evidence](research/evidence/prepared-constraint-config-guard-20261107.json)
+separates the public API regression from portable tournament and desktop UI acceptance.
+
 The Python API accepts `cell_road_grip_multiplier=(q_0,...,q_{N-1})`
 in `PathConstraintSolver.solve`, `prepare_one_lap_constraints`,
 `run_one_lap`, and `run_speed_periodic_lap`, where `N` is the exact solver

@@ -2,13 +2,13 @@
 
 from math import atan, isclose, pi
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from lapsim.courses.spatial_track import SpatialTrack
 from lapsim.courses.track import Curve, Track
 from lapsim.core.controls import Controls
-from lapsim.solvers.path_constraints import PathConstraintSolver
-from lapsim.profiles import build_vehicle
+from lapsim.solvers.path_constraints import PathConstraintSolver, PathSpeedConstraints
+from lapsim.profiles import build_vehicle, snapshot_vehicle_config
 from lapsim.ui.presets import TOYOTA_2026_PRIUS_SPECS, VehicleSetup, make_prius_benchmark
 from lapsim.ui.simulation import (
     apply_uniform_road_grip, prepare_one_lap_constraints, resample_track,
@@ -20,6 +20,126 @@ from vehicle_model.mech.tire import Tire
 
 
 class DesktopSimulationMathTests(TestCase):
+    def test_prepared_constraints_reject_same_named_component_replacement(self) -> None:
+        class OtherTire(Tire):
+            def lateral_force_capacity_n(self, *args, **kwargs):
+                return 0.5 * super().lateral_force_capacity_n(*args, **kwargs)
+
+        OtherTire.__name__ = Tire.__name__
+        OtherTire.__qualname__ = Tire.__qualname__
+        track = SpatialTrack.from_track(
+            Track.from_segments([Curve(25.0, 2.0 * pi)]),
+            maximum_cell_length_m=5.0,
+        )
+        vehicle = Vehicle()
+        constraints = prepare_one_lap_constraints(vehicle, track)
+        original = snapshot_vehicle_config(vehicle)
+        vehicle.tire = OtherTire()
+        # Public records intentionally retain their historical class-name schema.
+        self.assertEqual(snapshot_vehicle_config(vehicle), original)
+        with patch("lapsim.ui.simulation.EnduranceSimulator.run") as run:
+            with self.assertRaisesRegex(ValueError, "different vehicle configuration"):
+                run_one_lap(vehicle, track, torque_request_fraction=0.3,
+                            constraints=constraints)
+            run.assert_not_called()
+
+    def test_prepared_constraints_reject_changed_effective_configuration(self) -> None:
+        track = SpatialTrack.from_track(
+            Track.from_segments([Curve(25.0, 2.0 * pi)]),
+            maximum_cell_length_m=5.0,
+        )
+        mutations = (
+            ("lighter", lambda v: setattr(v, "mass_kg", v.mass_kg * 0.8)),
+            ("heavier", lambda v: setattr(v, "mass_kg", v.mass_kg * 1.2)),
+            ("brake cap", lambda v: setattr(v.brakes, "maximum_pressure_psi", 50.0)),
+            ("constant friction", lambda v: setattr(v.tire, "constant_friction_coefficient", 0.7)),
+            ("nested tire fit", lambda v: v.tire.lateral_coefficients.__setitem__(0, v.tire.lateral_coefficients[0] * 0.9)),
+            ("nested drivetrain", lambda v: setattr(v.drivetrain, "configured_speed_limit_mps", 10.0)),
+            ("aero", lambda v: setattr(v.aero, "drag_coefficient", v.aero.drag_coefficient * 1.1)),
+            ("chassis", lambda v: setattr(v.chassis, "wheelbase_m", v.chassis.wheelbase_m * 1.1)),
+            ("gravity", lambda v: setattr(v, "gravity_mps2", 9.5)),
+            ("air density", lambda v: setattr(v, "air_density_kgpm3", 1.1)),
+        )
+        for label, mutate in mutations:
+            with self.subTest(configuration=label):
+                vehicle = Vehicle()
+                constraints = prepare_one_lap_constraints(vehicle, track)
+                mutate(vehicle)
+                vehicle.validate()
+                vehicle.speed_mps = 42.0
+                with patch("lapsim.ui.simulation.EnduranceSimulator.run") as run:
+                    with self.assertRaisesRegex(ValueError, "different vehicle configuration"):
+                        run_one_lap(vehicle, track, torque_request_fraction=0.6,
+                                    constraints=constraints, starting_speed_mps=5.0)
+                    run.assert_not_called()
+                self.assertEqual(vehicle.speed_mps, 42.0)
+
+    def test_prepared_constraints_reuse_after_live_state_changes(self) -> None:
+        track = SpatialTrack.from_track(
+            Track.from_segments([Curve(25.0, 2.0 * pi)]),
+            maximum_cell_length_m=5.0,
+        )
+        vehicle = Vehicle()
+        constraints = prepare_one_lap_constraints(vehicle, track)
+        first = run_one_lap(vehicle, track, torque_request_fraction=0.3,
+                            constraints=constraints, starting_speed_mps=5.0)
+        self.assertTrue(first.completed, first.failure_reason)
+        vehicle.speed_mps = 40.0
+        vehicle.time_s = 100.0
+        vehicle.battery.state_of_charge = 0.3
+        vehicle.battery.current_a = 12.0
+        callback = Mock()
+        with patch("lapsim.ui.simulation.PathConstraintSolver") as solver:
+            second = run_one_lap(vehicle, track, torque_request_fraction=0.3,
+                constraints=constraints, starting_speed_mps=5.0,
+                constraint_progress_callback=callback)
+            solver.assert_not_called()
+            callback.assert_not_called()
+        self.assertTrue(second.completed, second.failure_reason)
+        self.assertEqual(second.lap_times_s, first.lap_times_s)
+        self.assertEqual(second.pack_energy_kwh, first.pack_energy_kwh)
+        self.assertEqual(second.telemetry, first.telemetry)
+
+    def test_preparation_rejects_configuration_changes_from_progress_callback(self) -> None:
+        track = SpatialTrack.from_track(
+            Track.from_segments([Curve(25.0, 2.0 * pi)]),
+            maximum_cell_length_m=5.0,
+        )
+        vehicle = Vehicle()
+        changed = False
+
+        def progress(_snapshot):
+            nonlocal changed
+            if not changed:
+                vehicle.mass_kg *= 0.8
+                changed = True
+
+        with self.assertRaisesRegex(ValueError, "configuration changed while preparing"):
+            prepare_one_lap_constraints(vehicle, track,
+                                        constraint_progress_callback=progress)
+        self.assertTrue(changed)
+
+    def test_unsnapshotable_component_keeps_uncached_run_but_refuses_reuse(self) -> None:
+        from test_component_extensibility import AsymmetricSuspension
+
+        track = SpatialTrack.from_cells(
+            cell_length_m=(1.0,) * 4, curvature_per_m=(0.0,) * 4,
+        )
+        vehicle = Vehicle(suspension=AsymmetricSuspension())
+        limits = PathSpeedConstraints(track, (10.0,) * 4, (10.0,) * 4, 1)
+        marker = object()
+        with patch("lapsim.ui.simulation.PathConstraintSolver.solve", return_value=limits) as solve, \
+             patch("lapsim.ui.simulation.EnduranceSimulator.run", return_value=marker) as run:
+            self.assertIs(run_one_lap(vehicle, track, torque_request_fraction=0.3), marker)
+            self.assertEqual(solve.call_count, 1)
+            self.assertEqual(run.call_count, 1)
+            prepared = prepare_one_lap_constraints(vehicle, track)
+            run.reset_mock()
+            with self.assertRaisesRegex(ValueError, "cannot verify.*configuration"):
+                run_one_lap(vehicle, track, torque_request_fraction=0.3,
+                            constraints=prepared)
+            run.assert_not_called()
+
     def test_source_profile_uniform_grip_reduces_limits_and_lap_speed(self) -> None:
         track = SpatialTrack.from_track(
             Track.from_segments([Curve(25.0, 2.0 * pi)]),

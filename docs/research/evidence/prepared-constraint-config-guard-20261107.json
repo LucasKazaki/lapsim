@@ -1,0 +1,116 @@
+{
+  "schema": "lapsim.prepared-constraints-config-guard.evidence.v1",
+  "date_utc": "2026-11-07",
+  "scope": "E05_PUBLIC_PREPARED_LAP_CACHE_CONFIGURATION_CONSISTENCY",
+  "public_snapshot_commit": "07ccb4b84138aedcc5b9cb85c2e81d283d6c132e",
+  "retained_checkout_base_commit": "d573d456ab2ca408cf2891db52e69b2f17ab4e05",
+  "public_simulation_and_existing_test_bytes_match_snapshot_at_base": true,
+  "cloud_environment": {
+    "platform": "Linux",
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "runner": "stdlib unittest",
+    "pytest_available": false,
+    "dependency_install_or_download_attempted": false
+  },
+  "independent_before_reproduction": {
+    "real_public_solver_and_lap_execution": true,
+    "fixture": "SpatialTrack.from_track(Track.from_segments([Straight(40.0), Curve(12.0, pi/2), Straight(20.0), Curve(12.0, pi/2)] * 2), maximum_cell_length_m=5.0)",
+    "mutation": "After preparing limits, vehicle.mass_kg *= 0.8; vehicle.validate()",
+    "run": "run_one_lap(vehicle, track, torque_request_fraction=0.6, constraints=limits, starting_speed_mps=5.0)",
+    "cached": {
+      "completed": true,
+      "failure_reason": null,
+      "lap_time_s": 13.383345804845414,
+      "energy_kwh": 0.06438912006369095,
+      "samples": 40
+    },
+    "fresh": {
+      "completed": true,
+      "failure_reason": null,
+      "lap_time_s": 13.29790513098452,
+      "energy_kwh": 0.0664167139285804,
+      "samples": 40
+    },
+    "maximum_speed_ceiling_difference_mps": 3.4229845858129835,
+    "matches_forwarded_laptop_counterexample": true
+  },
+  "chosen_contract": {
+    "stale_supplied_cache": "RAISE_VALUE_ERROR_BEFORE_RESET_OR_ENDURANCE_RUN",
+    "automatic_recomputation": false,
+    "configuration_values": "Existing recursive constructor-only snapshot_vehicle_config frozen as immutable JSON",
+    "private_model_identity": "Concrete dataclass model types recursively bound without changing public profile serialization",
+    "preparation": "Compare configuration before and after solve; refuse persistent callback-time edits",
+    "runtime_state": "init=False state excluded; unchanged inputs remain reusable across normal resets and new explicit run controls",
+    "unsupported_structural_configuration": "Ordinary uncached lap remains available; explicit prepared-cache reuse refuses rather than approximating unknown settings",
+    "serializer_availability_exception": "ConfigurationSnapshotUnavailable remains a TypeError subtype; ordinary validation errors propagate"
+  },
+  "after_reproduction": {
+    "real_public_solver_and_lap_execution": true,
+    "stale_cache_rejected": true,
+    "error": "supplied path constraints use a different vehicle configuration",
+    "fresh_completed": true,
+    "lap_time_s": 13.29790513098452,
+    "energy_kwh": 0.0664167139285804,
+    "samples": 40,
+    "fresh_numerics_match_before_repair_exactly": true,
+    "exit_code": 0
+  },
+  "tests_first": {
+    "proposed_new_regression_not_preexisting_repository_failure": true,
+    "initial_config_matrix_test_cases": 1,
+    "initial_config_matrix_failing_subtests": 10,
+    "initial_config_matrix_exit_code": 1,
+    "mutations": [
+      "mass -20%", "mass +20%", "brake pressure cap 50 psi",
+      "constant tire friction 0.7", "in-place lateral fit coefficient",
+      "nested drivetrain speed limit", "aero drag coefficient",
+      "chassis wheelbase", "gravity", "air density"
+    ],
+    "independent_review_same_name_type_collision_regression_initial_failures": 1,
+    "same_name_collision_regression_initial_exit_code": 1
+  },
+  "final_focused_check": {
+    "command": "timeout 120s python3 -I -B -c 'import sys,unittest; sys.path[:0]=[\"/workspace/lapsim-tournament-integration/src\",\"/workspace/lapsim-tournament-integration/tests\"]; suite=unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromName(name) for name in (\"test_desktop_simulation\",\"test_component_extensibility\",\"test_desktop_profiles\")); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())'",
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "exit_code": 0,
+    "unittest_runtime_s": 3.868,
+    "real_numerical_checks": "Public solver/lap tests, including two unchanged-cache laps after live state changes, baseline parity and grip comparisons",
+    "double_scope": "Stale-cache rejection asserts EnduranceSimulator.run is not called; unsupported-custom compatibility test doubles solver/run orchestration",
+    "full_pytest_gui_installed_windows_or_hardware_acceptance": false
+  },
+  "independent_review": {
+    "reviewers": ["prepared_cache_contract_review", "prepared_cache_regressions"],
+    "type_identity_finding": 1,
+    "type_identity_finding_resolved": true,
+    "final_followup_complete": true,
+    "reviewers_executed_tests_or_edited_source": false
+  },
+  "affected_source_sha256": {
+    "src/lapsim/ui/simulation.py": "a4d29b2c4b5927933bc77716225ef9cd8084a307a977041f72f5fd2696d2310d",
+    "src/lapsim/profiles/adapter.py": "719d20b2b16582ba06d09e465bd200848f9a7bb62f469169b5d105559bbe4057",
+    "src/lapsim/profiles/__init__.py": "7bed1c2ee9ad110e2cfda9b8d0ed4b084f70afd7f362d5c3c345cbbbcfaa524e",
+    "tests/test_desktop_simulation.py": "5d3e1298525488cd4fc9ebde570a8734a2680bf9ec5f60b35d5533c75d31cce6"
+  },
+  "source_inventory_regenerated": true,
+  "static_source_and_site_checks": {
+    "python docs/simulator_flowchart/generate_inventory.py --check": 0,
+    "python scripts/check_flowchart_site.py": 0,
+    "node scripts/check_flowchart_data.mjs": 0,
+    "generated_source_modules": 135,
+    "graph_nodes": 20378
+  },
+  "portable_dev22": {
+    "source_changed": false,
+    "frozen_commit": "d573d456ab2ca408cf2891db52e69b2f17ab4e05",
+    "source_manifest_sha256": "9f516656fe7fc6dec3723bd5d7ca206edf13cd865f076776b1b5c08d513ab5ee",
+    "tournament_numerical_or_native_admission_claim": false
+  },
+  "frozen_input_data_source_pins_or_heldout_conditions_changed": false,
+  "desktop_ui_defect_or_acceptance_established": false,
+  "push_publish_deploy_permission_change_or_transfer_attempt": false
+}

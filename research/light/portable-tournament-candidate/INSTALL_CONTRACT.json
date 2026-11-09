@@ -1,0 +1,1402 @@
+{
+  "schema": "lapsim.light-current-source-install-contract.v1",
+  "status": "PACKAGE_DECLARED_BUILD_INSTALL_ACCEPTANCE_EXTERNAL_NATIVE_UNQUALIFIED",
+  "semantics": "INSTALLATION_DECLARATION_AND_COMPLETE_SELECTED_SOURCE_CLOSURE_NOT_EXECUTION_AUTHORITY",
+  "source_base_commit": "52c2ebbef20b184182512ba56efa009f72841bdb",
+  "source_identity": {
+    "manifest_path": "SOURCE_MANIFEST.json",
+    "manifest_pin_source": "EXTERNALLY_RETAINED_RAW_FILE_SHA256_OR_DERIVED_PACKAGE_INDEX",
+    "self_hash_or_final_commit_embedded": false,
+    "per_file_hashes_and_byte_counts": "SOURCE_MANIFEST.json lists every project file except itself",
+    "transformed_wheel_or_installed_identity_is_source_manifest": false
+  },
+  "project": {
+    "metadata_path": "pyproject.toml",
+    "name": "lapsim-light-tournament-source-candidate",
+    "version": "0.0.0.dev38",
+    "repository_root_project_is_this_distribution": false,
+    "repository_root_project_name": "python-lapsim",
+    "requires_python": ">=3.11",
+    "python_requirement_scope": "DECLARED_COMPATIBILITY_FLOOR_NOT_QUALIFIED_RUNTIME_OR_PATCH_ABI_LOCK",
+    "required_third_party_runtime_dependencies": [],
+    "bundled_packages": [
+      "lapsim_light_campaign",
+      "lapsim_light_core",
+      "lapsim_light_course",
+      "lapsim_light_guidance",
+      "lapsim_light_policies"
+    ],
+    "modules": [
+      {
+        "path": "src/lapsim_light_campaign/__init__.py",
+        "module": "lapsim_light_campaign",
+        "kind": "package_initializer"
+      },
+      {
+        "path": "src/lapsim_light_campaign/admission.py",
+        "module": "lapsim_light_campaign.admission",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/campaign.py",
+        "module": "lapsim_light_campaign.campaign",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/chunk_worker.py",
+        "module": "lapsim_light_campaign.chunk_worker",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/continuation.py",
+        "module": "lapsim_light_campaign.continuation",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/continuation_archive.py",
+        "module": "lapsim_light_campaign.continuation_archive",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/detached_verifier.py",
+        "module": "lapsim_light_campaign.detached_verifier",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/dispatch_request.py",
+        "module": "lapsim_light_campaign.dispatch_request",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/distribution_observation.py",
+        "module": "lapsim_light_campaign.distribution_observation",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/environment_contract.py",
+        "module": "lapsim_light_campaign.environment_contract",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/field_archive.py",
+        "module": "lapsim_light_campaign.field_archive",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/field_dispatch.py",
+        "module": "lapsim_light_campaign.field_dispatch",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/fixture.py",
+        "module": "lapsim_light_campaign.fixture",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/fsg_checkpoint.py",
+        "module": "lapsim_light_campaign.fsg_checkpoint",
+        "kind": "python_module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/fsg_event.py",
+        "module": "lapsim_light_campaign.fsg_event",
+        "kind": "python_module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/fsg_worker.py",
+        "module": "lapsim_light_campaign.fsg_worker",
+        "kind": "python_module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/gate_ledger.py",
+        "module": "lapsim_light_campaign.gate_ledger",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/guarded_dispatch.py",
+        "module": "lapsim_light_campaign.guarded_dispatch",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/input_contracts.py",
+        "module": "lapsim_light_campaign.input_contracts",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/numerical_bridge.py",
+        "module": "lapsim_light_campaign.numerical_bridge",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/numerical_inputs.py",
+        "module": "lapsim_light_campaign.numerical_inputs",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/numerical_replay.py",
+        "module": "lapsim_light_campaign.numerical_replay",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/plant_tick.py",
+        "module": "lapsim_light_campaign.plant_tick",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/profile_projection.py",
+        "module": "lapsim_light_campaign.profile_projection",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/raw_evidence.py",
+        "module": "lapsim_light_campaign.raw_evidence",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/raw_failures.py",
+        "module": "lapsim_light_campaign.raw_failures",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/raw_journal.py",
+        "module": "lapsim_light_campaign.raw_journal",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/release_binding.py",
+        "module": "lapsim_light_campaign.release_binding",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/runtime_observation.py",
+        "module": "lapsim_light_campaign.runtime_observation",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/stepping.py",
+        "module": "lapsim_light_campaign.stepping",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/tournament_cli.py",
+        "module": "lapsim_light_campaign.tournament_cli",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/tournament_plan.py",
+        "module": "lapsim_light_campaign.tournament_plan",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/tournament_results.py",
+        "module": "lapsim_light_campaign.tournament_results",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/ui_model.py",
+        "module": "lapsim_light_campaign.ui_model",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_campaign/worker_inputs.py",
+        "module": "lapsim_light_campaign.worker_inputs",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/__init__.py",
+        "module": "lapsim_light_core",
+        "kind": "package_initializer"
+      },
+      {
+        "path": "src/lapsim_light_core/_validation.py",
+        "module": "lapsim_light_core._validation",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/actuation.py",
+        "module": "lapsim_light_core.actuation",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/conditions.py",
+        "module": "lapsim_light_core.conditions",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/planar.py",
+        "module": "lapsim_light_core.planar",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/powered_planar.py",
+        "module": "lapsim_light_core.powered_planar",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/torque_light_combined.py",
+        "module": "lapsim_light_core.torque_light_combined",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/torque_light_drs.py",
+        "module": "lapsim_light_core.torque_light_drs",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/torque_light_forces.py",
+        "module": "lapsim_light_core.torque_light_forces",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/torque_light_powered.py",
+        "module": "lapsim_light_core.torque_light_powered",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_core/torque_light_thermal.py",
+        "module": "lapsim_light_core.torque_light_thermal",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_course/__init__.py",
+        "module": "lapsim_light_course",
+        "kind": "package_initializer"
+      },
+      {
+        "path": "src/lapsim_light_course/_fsi_geometry.py",
+        "module": "lapsim_light_course._fsi_geometry",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_course/course.py",
+        "module": "lapsim_light_course.course",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_course/fsg_clearance.py",
+        "module": "lapsim_light_course.fsg_clearance",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_course/fsg_phase.py",
+        "module": "lapsim_light_course.fsg_phase",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_course/fsg_reference.py",
+        "module": "lapsim_light_course.fsg_reference",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_course/fsg_smoothing.py",
+        "module": "lapsim_light_course.fsg_smoothing",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_course/fsg_source_arcs.py",
+        "module": "lapsim_light_course.fsg_source_arcs",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_course/racing_geometry.py",
+        "module": "lapsim_light_course.racing_geometry",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_guidance/__init__.py",
+        "module": "lapsim_light_guidance",
+        "kind": "package_initializer"
+      },
+      {
+        "path": "src/lapsim_light_guidance/driver.py",
+        "module": "lapsim_light_guidance.driver",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_policies/__init__.py",
+        "module": "lapsim_light_policies",
+        "kind": "package_initializer"
+      },
+      {
+        "path": "src/lapsim_light_policies/_case.py",
+        "module": "lapsim_light_policies._case",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_policies/awd_contracts.py",
+        "module": "lapsim_light_policies.awd_contracts",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_policies/core_adapter.py",
+        "module": "lapsim_light_policies.core_adapter",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_policies/core_registry.py",
+        "module": "lapsim_light_policies.core_registry",
+        "kind": "module"
+      },
+      {
+        "path": "src/lapsim_light_policies/policy_layers.py",
+        "module": "lapsim_light_policies.policy_layers",
+        "kind": "module"
+      }
+    ]
+  },
+  "tooling": {
+    "pep517_backend": "setuptools.build_meta",
+    "declared_build_requirements": [
+      "setuptools>=77"
+    ],
+    "exact_build_backend_version_and_artifact_hash": {
+      "name": "setuptools",
+      "version": "84.2.1",
+      "filename": "setuptools-84.2.1-py3-none-any.whl",
+      "bytes": 876263,
+      "sha256": "ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2",
+      "source": "https://files.pythonhosted.org/packages/ef/55/6dc6d6bb953bdfc52519a0059592c52b6e3b8ad51cf8256dffceb55b0610/setuptools-84.2.1-py3-none-any.whl",
+      "metadata_url": "https://pypi.org/pypi/setuptools/84.2.1/json",
+      "requires_python": ">=3.10"
+    },
+    "exact_installer_version_and_artifact_hash": {
+      "name": "pip",
+      "version": "26.2.2",
+      "filename": "pip-26.2.2-py3-none-any.whl",
+      "bytes": 1819850,
+      "sha256": "fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70",
+      "source": "https://files.pythonhosted.org/packages/3f/06/3e4420302363fbb71be3c7f35ce042f54bfca330e3e66b3a2e3c4cca579f/pip-26.2.2-py3-none-any.whl",
+      "metadata_url": "https://pypi.org/pypi/pip/26.2.2/json",
+      "requires_python": ">=3.10"
+    },
+    "exact_interpreter_version_abi_executable_stdlib_and_platform_artifacts": null,
+    "repository_requirements_build_lock_selected": false,
+    "unresolved": "Exact Windows interpreter/ABI/stdlib and native numerical runtime remain unqualified. Verified build/installer pins are not a native runtime lock.",
+    "build_tool_lock": "requirements-build.lock",
+    "official_artifact_provenance": "BUILD_TOOL_ARTIFACTS.json"
+  },
+  "static_import_review": {
+    "method": "SOURCE_TEXT_IMPORT_AND_RESOURCE_INSPECTION_NO_IMPORT_AST_SYNTAX_OR_EXECUTION",
+    "imported_roots": [
+      "__future__",
+      "abc",
+      "argparse",
+      "base64",
+      "binascii",
+      "bisect",
+      "copy",
+      "cryptography",
+      "csv",
+      "dataclasses",
+      "email",
+      "fractions",
+      "hashlib",
+      "heapq",
+      "importlib",
+      "io",
+      "itertools",
+      "json",
+      "lapsim_light_core",
+      "lapsim_light_course",
+      "lapsim_light_guidance",
+      "lapsim_light_policies",
+      "math",
+      "numbers",
+      "os",
+      "pathlib",
+      "re",
+      "stat",
+      "struct",
+      "sys",
+      "threading",
+      "tkinter",
+      "typing",
+      "zipfile",
+      "zlib"
+    ],
+    "required_external_physics_engines": [],
+    "third_party_import_roots": [
+      "cryptography"
+    ],
+    "third_party_import_scope": "LAZY_OPTIONAL_VERIFICATION_CALL_ONLY",
+    "optional_interpreter_capabilities": [
+      {
+        "module": "tkinter.ttk",
+        "purpose": "Optional passive saved-evidence Tk frame",
+        "requires": "Supporting Python distribution with working Tcl/Tk",
+        "pip_dependency": false,
+        "import_deferred_until": "create_saved_evidence_panel"
+      },
+      {
+        "module": "zlib",
+        "purpose": "Deflated wheel observation",
+        "requires": "Supporting stdlib extension; unsupported compressed observation refuses",
+        "pip_dependency": false,
+        "required_for_core_or_evidence_cli": false
+      },
+      {
+        "api": "sys.abi_info",
+        "purpose": "Optional requested raw ABI traits observation",
+        "requires": "Runtime exposing the API (documented 3.15+)",
+        "required_for_base_runtime": false,
+        "no_fallback_to_complete_environment_v2": true
+      }
+    ]
+  },
+  "package_data": [
+    {
+      "package": "lapsim_light_campaign",
+      "resource": "baseline-configuration.json",
+      "source_path": "src/lapsim_light_campaign/baseline-configuration.json",
+      "raw_sha256": "cef3c04c808f3ab8dc0f767ec4a0f24865dcd67371ac45f52689c67a0e145d22",
+      "byte_count_source": "SOURCE_MANIFEST.json",
+      "reader": "lapsim_light_campaign.fixture.fixture_resource_bytes"
+    },
+    {
+      "package": "lapsim_light_course",
+      "resource": "data/amz_fssim_fsi_approx.json",
+      "source_path": "src/lapsim_light_course/data/amz_fssim_fsi_approx.json",
+      "bytes": 58174,
+      "raw_sha256": "443abe03651008cfb2452dd36a2360f5e2695f6af5ef1d2f468f31297b36a976",
+      "copied_from": "configs/courses/amz_fssim_fsi_approx.json",
+      "scope": "PINNED_MAIN_LF_SOURCE_COURSE_NOT_ADMITTED_RACING_LINE"
+    },
+    {
+      "package": "lapsim_light_course",
+      "resource": "data/FSI.yaml",
+      "source_path": "src/lapsim_light_course/data/FSI.yaml",
+      "bytes": 7377,
+      "raw_sha256": "7e0cfd65403406e3d6cf0e12aeeb605efb0163b35f3b6312250f871f0ee85134",
+      "copied_from": "configs/courses/upstream/amz-fssim/FSI.yaml",
+      "scope": "PINNED_MAIN_LF_SIMULATOR_CONES_NOT_SURVEYED_EVENT_GEOMETRY"
+    },
+    {
+      "package": "lapsim_light_course",
+      "resource": "data/LICENSE.md",
+      "source_path": "src/lapsim_light_course/data/LICENSE.md",
+      "bytes": 1094,
+      "raw_sha256": "d22aef0ea37cb5db86a0c7ee0661563a679b52bbe4c4408633c92c5525ca6979",
+      "copied_from": "configs/courses/upstream/amz-fssim/LICENSE.md",
+      "scope": "MIT_NOTICE_FOR_AMZ_FSSIM_INPUTS_ONLY"
+    },
+    {
+      "package": "lapsim_light_course",
+      "resource": "data/amz_fssim_fsg_approx.json",
+      "source_path": "src/lapsim_light_course/data/amz_fssim_fsg_approx.json",
+      "bytes": 76673,
+      "raw_sha256": "c6e4c47a3a4e5aa6efd3c1e4b93d332dc9cd1796f8ae88d02d4a970f6e6525af",
+      "copied_from": "configs/courses/amz_fssim_fsg_approx.json",
+      "scope": "PINNED_PUBLIC_FSG_SOURCE_INPUT_ONLY_NOT_DRIVING_REFERENCE_OR_NATIVE_ADMISSION"
+    },
+    {
+      "package": "lapsim_light_course",
+      "resource": "data/FSG.yaml",
+      "source_path": "src/lapsim_light_course/data/FSG.yaml",
+      "bytes": 8710,
+      "raw_sha256": "7b3351cd9db27912131b9f5de427861061e2144ed6795498fe980adcd905c30d",
+      "copied_from": "configs/courses/upstream/amz-fssim/FSG.yaml",
+      "scope": "PINNED_PUBLIC_FSG_SOURCE_INPUT_ONLY_NOT_DRIVING_REFERENCE_OR_NATIVE_ADMISSION"
+    }
+  ],
+  "resource_binding": {
+    "course_constructor": "lapsim_light_course.course.construct_fsi_course(bundle_raw, cones_raw)",
+    "data_acquisition": "The consumer reads complete declared packaged resources and supplies exact bytes. Existing FSI signature, pins and same-platform results are preserved; FSG uses a separate unqualified source type.",
+    "bytes_normalized_or_reencoded": false,
+    "source_track_may_replace_independent_racing_reference": false,
+    "fsg_source_constructor": "lapsim_light_course.course.construct_fsg_course(bundle_raw, cones_raw)",
+    "fsg_native_execution_supported": false
+  },
+  "entry_points": {
+    "console_scripts": {
+      "lapsim-light-evidence": "lapsim_light_campaign.tournament_cli:main"
+    },
+    "source_module": "lapsim_light_campaign.tournament_cli",
+    "subcommands": [
+      "create-plan",
+      "inspect-plan",
+      "compare-results",
+      "verify-release"
+    ],
+    "behavior": "METADATA_RAW_EVIDENCE_AND_SUPPLIED_RELEASE_BYTE_BINDING_ONLY",
+    "declared_console_command_checks_whole_source_manifest": false,
+    "execution_layout_requirement": "EXTRACTED_REGULAR_FILES_NO_DIRECT_ZIP_IMPORT",
+    "output_directory": "Existing caller work/ directory outside immutable source/install tree",
+    "native_tournament_start_or_os_worker_console_command": null,
+    "libraries": {
+      "fixed_chunk_worker": "lapsim_light_campaign.chunk_worker.create_chunk_worker",
+      "sequential_field": "lapsim_light_campaign.field_dispatch.FieldDispatchCoordinator",
+      "finalized_packet_archive": "lapsim_light_campaign.field_archive.prepare_field_archive / write_field_archive / read_field_archive",
+      "finite_campaign_start": "lapsim_light_campaign.campaign.start_tournament",
+      "finite_campaign_program": "lapsim_light_campaign.campaign.CampaignProgram",
+      "fixed_worker_bridge_constructor": "lapsim_light_campaign.worker_inputs.construct_worker_bridge"
+    }
+  },
+  "optional_verifier": {
+    "extra": "admission-verifier",
+    "requirement": "cryptography==50.0.2",
+    "wheel_recipe_path": "requirements-verifier-win-cp313.lock",
+    "recipe_scope": "OPTIONAL_VERIFIER_ONLY_CPYTHON_3_13_GIL_WINDOWS_X86_64",
+    "recipe_artifact_metadata_grade": "EXISTING_OFFICIAL_PYPI_METADATA_PINS_NO_LOCAL_WHEEL_BYTES_OR_INSTALLATION",
+    "recipe_distributions": [
+      "cryptography==50.0.2",
+      "cffi==2.1.1",
+      "pycparser==3.12"
+    ],
+    "recipe_is_full_producer_or_runtime_or_build_lock": false,
+    "trust_policy_key_issuer_or_guard_registered": false
+  },
+  "source_distribution": {
+    "source_root": ".",
+    "sdist_file_selection": "MANIFEST.in",
+    "manifest_includes_exact_paths": [
+      ".gitattributes",
+      "ADMISSION_FIXTURE_REVIEW.md",
+      "BUILD_INSTALL_REVIEW.md",
+      "BUILD_TOOL_ARTIFACTS.json",
+      "CAMPAIGN_RUNNER_REVIEW.md",
+      "CANONICAL_FRAME_REVIEW.md",
+      "CONTINUATION_REPLAY_REVIEW.md",
+      "CORE_NOTICE.md",
+      "FIELD_ARCHIVE_REVIEW.md",
+      "FIELD_DISPATCH_REVIEW.md",
+      "FSG_CANCELLATION_REVIEW.md",
+      "FSG_CLEARANCE_REVIEW.md",
+      "FSG_EVENT_REVIEW.md",
+      "FSG_PHASE_REVIEW.md",
+      "FSG_REFERENCE_REVIEW.md",
+      "FSG_REPLAY_REVIEW.md",
+      "FSG_SMOOTHING_REVIEW.md",
+      "FSG_SOURCE_ARC_REVIEW.md",
+      "FSG_SOURCE_REVIEW.md",
+      "IDENTITY_CLOSURE_REVIEW.md",
+      "INPUT_OWNERSHIP_REVIEW.md",
+      "INSTALL_CONTRACT.json",
+      "INTEGRATION_HANDOFF.md",
+      "INTEGRATION_REVIEW.md",
+      "MANIFEST.in",
+      "NATIVE_INSTALL_ACCEPTANCE.md",
+      "NUMERICAL_BRIDGE_REVIEW.md",
+      "ORIGINAL_OWNER_REPORT_HANDOFF.md",
+      "ORIGINAL_OWNER_SOURCE_INVENTORY.json",
+      "PACKAGING_REVIEW.md",
+      "POLICY_DYNAMICS_REVIEW.md",
+      "PROFILE_PROJECTION_REVIEW.md",
+      "README.md",
+      "REJECTED_OUTPUT_REVIEW.md",
+      "SOURCE_MANIFEST.json",
+      "SOURCE_RECOVERY_AND_TRANSITION_REVIEW.md",
+      "STEPPING_DISPATCH_REVIEW.md",
+      "WORKER_PROGRAM_REVIEW.md",
+      "pyproject.toml",
+      "requirements-build.lock",
+      "requirements-verifier-win-cp313.lock",
+      "src/lapsim_light_campaign/__init__.py",
+      "src/lapsim_light_campaign/admission.py",
+      "src/lapsim_light_campaign/baseline-configuration.json",
+      "src/lapsim_light_campaign/campaign.py",
+      "src/lapsim_light_campaign/chunk_worker.py",
+      "src/lapsim_light_campaign/continuation.py",
+      "src/lapsim_light_campaign/continuation_archive.py",
+      "src/lapsim_light_campaign/detached_verifier.py",
+      "src/lapsim_light_campaign/dispatch_request.py",
+      "src/lapsim_light_campaign/distribution_observation.py",
+      "src/lapsim_light_campaign/environment_contract.py",
+      "src/lapsim_light_campaign/field_archive.py",
+      "src/lapsim_light_campaign/field_dispatch.py",
+      "src/lapsim_light_campaign/fixture.py",
+      "src/lapsim_light_campaign/fsg_checkpoint.py",
+      "src/lapsim_light_campaign/fsg_event.py",
+      "src/lapsim_light_campaign/fsg_worker.py",
+      "src/lapsim_light_campaign/gate_ledger.py",
+      "src/lapsim_light_campaign/guarded_dispatch.py",
+      "src/lapsim_light_campaign/input_contracts.py",
+      "src/lapsim_light_campaign/numerical_bridge.py",
+      "src/lapsim_light_campaign/numerical_inputs.py",
+      "src/lapsim_light_campaign/numerical_replay.py",
+      "src/lapsim_light_campaign/plant_tick.py",
+      "src/lapsim_light_campaign/profile_projection.py",
+      "src/lapsim_light_campaign/raw_evidence.py",
+      "src/lapsim_light_campaign/raw_failures.py",
+      "src/lapsim_light_campaign/raw_journal.py",
+      "src/lapsim_light_campaign/release_binding.py",
+      "src/lapsim_light_campaign/runtime_observation.py",
+      "src/lapsim_light_campaign/stepping.py",
+      "src/lapsim_light_campaign/tournament_cli.py",
+      "src/lapsim_light_campaign/tournament_plan.py",
+      "src/lapsim_light_campaign/tournament_results.py",
+      "src/lapsim_light_campaign/ui_model.py",
+      "src/lapsim_light_campaign/worker_inputs.py",
+      "src/lapsim_light_core/__init__.py",
+      "src/lapsim_light_core/_validation.py",
+      "src/lapsim_light_core/actuation.py",
+      "src/lapsim_light_core/conditions.py",
+      "src/lapsim_light_core/planar.py",
+      "src/lapsim_light_core/powered_planar.py",
+      "src/lapsim_light_core/torque_light_combined.py",
+      "src/lapsim_light_core/torque_light_drs.py",
+      "src/lapsim_light_core/torque_light_forces.py",
+      "src/lapsim_light_core/torque_light_powered.py",
+      "src/lapsim_light_core/torque_light_thermal.py",
+      "src/lapsim_light_course/__init__.py",
+      "src/lapsim_light_course/_fsi_geometry.py",
+      "src/lapsim_light_course/course.py",
+      "src/lapsim_light_course/data/FSG.yaml",
+      "src/lapsim_light_course/data/FSI.yaml",
+      "src/lapsim_light_course/data/LICENSE.md",
+      "src/lapsim_light_course/data/amz_fssim_fsg_approx.json",
+      "src/lapsim_light_course/data/amz_fssim_fsi_approx.json",
+      "src/lapsim_light_course/fsg_clearance.py",
+      "src/lapsim_light_course/fsg_phase.py",
+      "src/lapsim_light_course/fsg_reference.py",
+      "src/lapsim_light_course/fsg_smoothing.py",
+      "src/lapsim_light_course/fsg_source_arcs.py",
+      "src/lapsim_light_course/racing_geometry.py",
+      "src/lapsim_light_guidance/__init__.py",
+      "src/lapsim_light_guidance/driver.py",
+      "src/lapsim_light_policies/__init__.py",
+      "src/lapsim_light_policies/_case.py",
+      "src/lapsim_light_policies/awd_contracts.py",
+      "src/lapsim_light_policies/core_adapter.py",
+      "src/lapsim_light_policies/core_registry.py",
+      "src/lapsim_light_policies/policy_layers.py",
+      "tests/data/fsg_periodic_bspline64_unqualified.json",
+      "tests/data/fsg_smoothed_phase_unqualified.json",
+      "tests/test_campaign.py",
+      "tests/test_canonical_frame.py",
+      "tests/test_fsg_cancellation.py",
+      "tests/test_fsg_checkpoint.py",
+      "tests/test_fsg_clearance.py",
+      "tests/test_fsg_event.py",
+      "tests/test_fsg_phase.py",
+      "tests/test_fsg_reference.py",
+      "tests/test_fsg_smoothing.py",
+      "tests/test_fsg_source.py",
+      "tests/test_fsg_source_arcs.py",
+      "tests/test_policy_dynamics.py",
+      "tests/test_profile_projection.py",
+      "tests/test_release_binding.py",
+      "tests/test_tournament_cli.py",
+      "tests/test_windows_paths.py",
+      "tests/test_worker_inputs.py"
+    ],
+    "file_count_including_source_manifest": 129,
+    "source_bundle_profile": "SORTED_ZIP_STORED_FIXED_1980_01_01_TIMESTAMP_REGULAR_0644_FILES",
+    "source_bundle_is_built_pep517_sdist_or_wheel": false,
+    "derived_package_index": "PACKAGE_INDEX.json binds frozen commit, source-manifest raw hash, contract hash and every selected file; excludes its own bytes from the internal payload inventory",
+    "derived_index_is_in_tracked_source_manifest": false,
+    "root_notices_are_claimed_installed_package_data": false,
+    "no_git_metadata_credentials_private_receipts_or_other_owners_files": true,
+    "old_93_file_zip_is_current_complete_source": false
+  },
+  "external_required_runtime_inputs": [
+    {
+      "id": "native_fixed_worker_bootstrap_and_registration",
+      "available_in_this_payload": false,
+      "boundary": "Construct exact NumericalBridge/inputs/bindings in the original owned worker; dispatch fixed chunk_worker family"
+    },
+    {
+      "id": "original_guard_and_cleanup_provider",
+      "available_in_this_payload": false,
+      "boundary": "OriginalGuardProvider.execute_owned_request / require_authenticated_owned_execution_and_cleanup"
+    },
+    {
+      "id": "complete_observed_source_and_environment",
+      "available_in_this_payload": false,
+      "boundary": "SourceObserver.observe_source_identity and exact environment-v2 interpreter/ABI/stdlib/native/distribution/rounding closure"
+    },
+    {
+      "id": "original_residual_rule_adapter",
+      "available_in_this_payload": false,
+      "boundary": "NumericalBindings original residual rule with independently reviewed actual adapter-file pin"
+    },
+    {
+      "id": "authenticated_independent_racing_reference_and_producer_chain",
+      "available_in_this_payload": false,
+      "boundary": "Actual line artifact/admission, original producer/optimization/tool/cleanup evidence and independently reviewed promotion"
+    },
+    {
+      "id": "trusted_input_issuer_time_and_single_use_challenge",
+      "available_in_this_payload": false,
+      "boundary": "Actual AuthorityPolicy/verifier provenance, purpose-separated signed statements and trusted fresh challenge/time service"
+    },
+    {
+      "id": "native_journal_writer_and_outer_continuation",
+      "available_in_this_payload": false,
+      "boundary": "Original writer/path exclusion, compatible chunk lease ordering and finite request/storage/finalization windows; OriginalContinuationProvider with real paused export/history/current admission"
+    }
+  ],
+  "licensing": {
+    "source_rights_notice": "CORE_NOTICE.md",
+    "project_wide_spdx_or_license_grant": null,
+    "upstream_amz_notice": "src/lapsim_light_course/data/LICENSE.md",
+    "upstream_mit_notice_relicenses_all_project_source": false,
+    "publication_or_redistribution_performed": false,
+    "wheel_license_files": [
+      "CORE_NOTICE.md",
+      "src/lapsim_light_course/data/LICENSE.md"
+    ],
+    "wheel_license_file_bytes_are_original_notices": true
+  },
+  "installation_readiness": {
+    "current_selected_source_and_known_data_complete": true,
+    "package_definition_and_dependency_declarations_present": true,
+    "exact_interpreter_installer_build_toolchain_locked": false,
+    "native_start_registered": false,
+    "one_command_tournament_verified": false,
+    "qualification_or_execution_authority": false,
+    "finite_campaign_source_implemented": true,
+    "bounded_metadata_storage_test_cases_passed": 21,
+    "bounded_fixed_input_factory_cases_passed": 12,
+    "bounded_canonical_frame_consistency_cases_passed": 16,
+    "bounded_profile_projection_cases_passed": 20,
+    "actual_public_profile_export_compatibility_cases_passed": 2,
+    "exact_build_and_installer_wheel_artifacts_locked": true
+  },
+  "source_import_layout": {
+    "root_relative_to_extracted_project": "src",
+    "packages_must_come_exclusively_from_same_selected_source": true,
+    "module_paths_are_exact_regular_source_files": true,
+    "source_bundle_must_be_extracted_before_use": true,
+    "trusted_bootstrap_and_installed_runtime_identity_supplied": false,
+    "source_tree_importability_is_execution_or_admission_authority": false
+  },
+  "finite_campaign_execution": {
+    "start": "start_tournament(plan_raw, *, expected_plan_sha256, expected_provider_sha256, provider, request_source, output_root, limits, cancel_event=None)",
+    "detailed_contract": "CAMPAIGN_RUNNER_REVIEW.md",
+    "plan": "Pinned canonical seven-policy frozen plan and matched origin contexts",
+    "provider": "Actual existing two-method OriginalGuardProvider; no default or factory discovery",
+    "request_source": "(policy_id, checkpoint_raw, *, requested_ticks, remaining_requested_wall_time_ms) -> canonical v2 request bytes | None",
+    "limits": [
+      "chunk_ticks",
+      "maximum_total_requested_wall_time_ms",
+      "maximum_retained_history_payload_bytes",
+      "journal_maximum_records",
+      "journal_maximum_bytes",
+      "archive_maximum_bytes",
+      "campaign_maximum_file_bytes",
+      "sync_files"
+    ],
+    "output": "New create-only caller-owned namespace with exact returned packets, RawJournal append/readback/terminal/exports, finalized field archive, raw comparison and local outcome",
+    "native_writer_deadline_lease_ordering": "Required external compatible ownership/path exclusion and finite windows enclosing request supply, dispatch and finalization. No outer lease guessed or acquired.",
+    "cancellation": "Stop rechecked before source EOF and dispatch; sticky observed cancellation frozen once before local finalization; normalize only feed/budget pause, preserve actual numerical terminal priority; active termination/cleanup remain native.",
+    "failure": "Single-use; propagate provider/control/I/O exceptions without further finalization; retain partials and returned in-memory state; no automatic retry.",
+    "continuation": "Actual paused export/history plus separately admitted original continuation only; no local restore, restart or cap refund.",
+    "native_or_production_runtime_verified": false,
+    "bounded_metadata_storage_test_cases_passed": 21,
+    "test_provider_admission_or_cleanup_trusted": false,
+    "numerical_model_or_policy_executed": false,
+    "snapshot_cancel_requested": "None before finalization boundary; bool afterward, shared unchanged with saved and returned outcome; not a live Event or native Stop receipt",
+    "failure_snapshot_host_usage": "Native host retains CampaignProgram before run, snapshot only after return/raise; capture is fallible and follows original fatal-control precedence; never finally-recover or wrap away original failure"
+  },
+  "bounded_tests": {
+    "runner": "stdlib unittest",
+    "third_party_test_dependencies": [],
+    "cases_passed": 273,
+    "exit_code": 0,
+    "scope": "264_PRIOR_CASES_PLUS_8_INERT_WINDOWS_PATH_CASES_AND_1_V41_COVERAGE_CASE_NOT_NATIVE_WIN32_ACCEPTANCE",
+    "native_model_install_or_durability_validation": false,
+    "paths": [
+      "tests/test_campaign.py",
+      "tests/test_canonical_frame.py",
+      "tests/test_fsg_cancellation.py",
+      "tests/test_fsg_checkpoint.py",
+      "tests/test_fsg_clearance.py",
+      "tests/test_fsg_event.py",
+      "tests/test_fsg_phase.py",
+      "tests/test_fsg_reference.py",
+      "tests/test_fsg_smoothing.py",
+      "tests/test_fsg_source.py",
+      "tests/test_fsg_source_arcs.py",
+      "tests/test_policy_dynamics.py",
+      "tests/test_profile_projection.py",
+      "tests/test_release_binding.py",
+      "tests/test_tournament_cli.py",
+      "tests/test_windows_paths.py",
+      "tests/test_worker_inputs.py"
+    ],
+    "fixture_paths": [
+      "tests/data/fsg_periodic_bspline64_unqualified.json",
+      "tests/data/fsg_smoothed_phase_unqualified.json"
+    ]
+  },
+  "fixed_worker_bridge_construction": {
+    "function": "construct_worker_bridge(request_raw, checkpoint_raw, *, expected_request_sha256, baseline_raw, source_bundle_raw, cones_raw, line_artifact_raw, expected_cones_raw_sha256, producer_audit_sha256, reviewed_promotion_sha256, reviewed_source_manifest_sha256, bindings, resolved_manifest_raw=None, reviewed_resolved_manifest_raw_sha256=None)",
+    "result": "Exact lapsim_light_campaign.numerical_bridge.NumericalBridge",
+    "constructors": [
+      "lapsim_light_course.course.construct_fsi_course_from_reference",
+      "lapsim_light_campaign.numerical_inputs.raw_reference_inputs",
+      "lapsim_light_campaign.fixture.construct_standing_fixture",
+      "lapsim_light_campaign.numerical_bridge.NumericalBridge"
+    ],
+    "input_checks": "Bounded immutable raw bytes; request/course/line/cones/baseline/source-manifest/external-binding and parent producer/promotion pins match before construction",
+    "native_lifetime": "Inside original already-admitted finite owned worker, before ChunkWorkerProgram.execute(bridge=constructed_bridge); never in post-cleanup receipt authentication callback",
+    "mandatory_native_objects": "Real NumericalBindings SourceObserver and original residual rule, with independently reviewed exact adapter pins",
+    "does_not_supply": [
+      "producer_or_line_authentication",
+      "complete_source_environment_observation",
+      "OS_bootstrap_or_process_registry",
+      "guard_or_lease",
+      "fresh_allocation",
+      "signer_or_cleanup_receipts",
+      "numerical_stepping"
+    ],
+    "tests": "12 preflight/wiring cases including actual partial typed fixture with untrusted course/reference/bridge doubles; separate real bridge initialization and negative profile-resume tests use synthetic reference and binding doubles",
+    "exact_package_install_command_or_installed_identity_verified": false,
+    "optional_partial_fixture_constructor": "lapsim_light_campaign.fixture.construct_partial_profile_fixture",
+    "exact_package_install_command_or_installed_identity_scope": "NATIVE_FIXED_WORKER_COMPOSITION_AND_FULL_ENVIRONMENT_IDENTITY_NOT_PORTABLE_DISTRIBUTION_INSTALLATION"
+  },
+  "canonical_frame_source_repair": {
+    "review": "CANONICAL_FRAME_REVIEW.md",
+    "constructor": "construct_fsi_course_from_reference(bundle_raw, cones_raw, line_artifact_raw, *, expected_line_artifact_sha256)",
+    "full_original_frame_values_and_digest_retained": true,
+    "raw_artifact_binding": "SourceCourse.canonical_frame_artifact_sha256 checked by raw_reference_inputs",
+    "unchanged_local_source_grid_screens_run": true,
+    "local_reconstruction_diagnostics_are_canonical_identity": false,
+    "saved_diagnostics_are_current_observations": false,
+    "additional_frame_comparison_tolerance": null,
+    "authentication_or_execution_authority_supplied": false,
+    "original_artifact_or_actual_cross_platform_native_validation": false,
+    "source_and_environment_continuation_identity_requirements_unchanged": true,
+    "canonical_frame_test_cases_passed": 16
+  },
+  "partial_profile_integration": {
+    "review": "PROFILE_PROJECTION_REVIEW.md",
+    "validator": "profile_projection.resolve_partial_profile",
+    "constructor": "fixture.construct_partial_profile_fixture",
+    "worker_optional_inputs": [
+      "resolved_manifest_raw",
+      "reviewed_resolved_manifest_raw_sha256"
+    ],
+    "manifest_contract": "COMPLETE_ORDINARY_RESOLVED_MANIFEST_V1_15_KNOWN_FIELDS_WITH_EXPLICIT_ORIGINS_UNITS_MODEL_USE_AND_MODEL_CONFIG",
+    "projected_inputs": [
+      "mass_kg",
+      "chassis.wheelbase_m",
+      "chassis.static_front_weight_fraction",
+      "chassis.front_track_width_m",
+      "chassis.rear_track_width_m",
+      "chassis.cg_height_m",
+      "air_density_kgpm3"
+    ],
+    "fixture_family": "lapsim.portable-light-partial-profile-standing-fixture.v1",
+    "profile_raw_bytes_maximum": 65536,
+    "fixture_bytes_maximum": 98304,
+    "context_bytes_maximum": 131072,
+    "raw_manifest_provenance_and_accounting_bound_in_configuration_and_context": true,
+    "all_unmapped_parameters_retain_explicit_synthetic_assumptions": true,
+    "automatic_profile_selection_or_error_fallback": false,
+    "native_authentication_calibration_line_or_execution_authority_supplied": false,
+    "original_trev5_artifact_compatibility_verified": false,
+    "complete_current_car_model": false,
+    "baseline_path_numerical_bytes_unchanged_for_fixed_test_inputs": true,
+    "profile_unit_tests_passed": 20,
+    "actual_public_export_compatibility_cases_passed": 2,
+    "actual_policy_allocation_evaluations": 7,
+    "allocation_observation_scope": "SYNTHETIC_TYPED_STATE_AND_STATIC_LOAD_OBSERVATION_DOUBLE_NO_FORCES_OR_STEPS",
+    "actual_negative_resume_scope": "SYNTHETIC_REFERENCE_AND_BINDING_DOUBLES_STATE_INITIALIZATION_ONLY",
+    "policy_native_qualification_or_campaign_eligibility_promoted": false,
+    "new_source_config_model_checkpoint_and_input_admission_required": true,
+    "other_eight_courses_or_active_GUI_integrated": false
+  },
+  "bounded_public_export_compatibility": {
+    "cases_passed": 2,
+    "initial_32KiB_limit_failed_actual_public_baseline_export": true,
+    "repaired_profile_limit_bytes": 65536,
+    "baseline_export_bytes": 39760,
+    "prius_export_bytes": 39468,
+    "baseline_mass_kg": 285.7631931,
+    "baseline_all_15_fields_inherited": true,
+    "prius_geometry_rejected": true,
+    "private_intake_discovery_disabled_by_explicit_empty_directory": true,
+    "rollout_or_native_admission_performed": false
+  },
+  "release_acceptance": {
+    "review": "BUILD_INSTALL_REVIEW.md",
+    "evidence": "EXTERNAL_JSON_BOUND_TO_FINAL_SOURCE_COMMIT_MANIFEST_ARTIFACTS_AND_INSTALLATION",
+    "source_contract_alone_proves_build_or_installation": false,
+    "native_execution_authority": false
+  },
+  "policy_dynamics_integration": {
+    "review": "POLICY_DYNAMICS_REVIEW.md",
+    "tests": "tests/test_policy_dynamics.py",
+    "guards": [
+      "NO_SIMULTANEOUS_POSITIVE_DRIVE_AND_BRAKE",
+      "ACTIVE_ECO_SURROGATE_REQUIRES_NONNEGATIVE_WHEEL_SPEEDS"
+    ],
+    "defect_scope": "DIRECT_API_BOUNDARIES_EXISTING_INITIALIZER_AND_DRIVER_ALREADY_PROTECT_CURRENT_BRIDGE",
+    "real_fixed_probe_scope": "EXACT_SYNTHETIC_BASELINE_REAL_LOADS_ALLOCATOR_ACTUATION_AND_PLANT_NO_COURSE_NO_GUARD_DOUBLES",
+    "twenty_tick_policies": 7,
+    "allocator_update_ticks": [
+      0,
+      10
+    ],
+    "launch_probe_policies": 7,
+    "committed_plant_intervals_per_complete_new_test_run": 149,
+    "per_call_work_cap": 100,
+    "reference_length_and_zero_hash_marker": "PARAMETER_CONSTRUCTION_ONLY_NOT_ORIGINAL_REFERENCE_OR_AUTHENTICATION",
+    "stress_pack_power_limit_w": 5.0,
+    "stress_configuration_is_car_calibration": false,
+    "registry_native_qualification_promoted": false,
+    "campaign_eligibility_promoted": false,
+    "heldout_results_loaded": false,
+    "qualified_course_or_native_execution": false,
+    "requires_new_reviewed_source_pins_before_native_integration": true,
+    "installed_release_acceptance": "EXTERNAL_RECORD_BOUND_TO_FINAL_COMMIT_MANIFEST_AND_ARTIFACT_BYTES"
+  },
+  "fsg_source_preparation": {
+    "review": "FSG_SOURCE_REVIEW.md",
+    "constructor": "lapsim_light_course.course.construct_fsg_course(bundle_raw, cones_raw)",
+    "result_type": "lapsim_light_course.course.FsgSourceCourse",
+    "distinct_from_exact_native_SourceCourse_type": true,
+    "contract": "lapsim.light-fsg-source-course.v1",
+    "local_frame_schema": "ev.fsg-cone-frame.v1",
+    "course_id": "amz_fssim_fsg_approx",
+    "source_cells": 724,
+    "source_length_m": 306.45041872992834,
+    "geometry_sha256": "0863d0fe882a9e7d756e35b211ee510e829f1dde3384ec85d26d4737e748c0ee",
+    "only_reviewed_LF_encodings": true,
+    "original_source_arrays_retained": true,
+    "full_grid_xy_station_error_limit_m": 1e-07,
+    "full_grid_curvature_error_limit_per_m": 1e-09,
+    "source_cell_count_caps_generated_allocation": true,
+    "cone_vertex_limit": 128,
+    "source_preparation_tests_passed": 15,
+    "same_platform_FSI_LF_CRLF_complete_outputs_unchanged": true,
+    "driving_reference_created": false,
+    "canonical_producer_frame_supplied": false,
+    "native_reference_worker_plan_or_registry_acceptance_widened": false,
+    "original_guards_or_qualification_supplied": false,
+    "heldout_results_used": false,
+    "qualification_or_execution_authority": false
+  },
+  "fsg_source_chord_reference": {
+    "review": "FSG_REFERENCE_REVIEW.md",
+    "module": "lapsim_light_course.fsg_reference",
+    "constructor": "construct_fsg_source_chord_reference(bundle_raw, cones_raw, *, maximum_step_m=0.1)",
+    "reader": "verify_fsg_source_chord_reference(raw, bundle_raw, cones_raw)",
+    "result_type": "FsgSourceChordReference",
+    "schema": "lapsim.fsg-source-chord-reference-candidate.v1",
+    "status": "SOURCE_CHORD_DIAGNOSTIC_UNQUALIFIED",
+    "upstream_gate_field": "tk_device",
+    "upstream_gate_endpoints_xy_m": [
+      [
+        6.0,
+        3.0
+      ],
+      [
+        6.0,
+        -3.0
+      ]
+    ],
+    "gate_semantics_and_vehicle_start_verified": false,
+    "orientation": "ORDERED_SOURCE_CHORD_NOT_FRONT_WING_YAW",
+    "source_arc_gate_phase_exact": false,
+    "source_arc_station_error_bound_supplied": false,
+    "maximum_sample_cells": 5000,
+    "maximum_coarse_pairs": 300000,
+    "default_diagnostic_cells": 3339,
+    "default_chord_length_m": 306.4346565146983,
+    "source_arc_to_saved_chord_spatial_estimate_m": 0.007759823450670832,
+    "densification_improves_source_arc_accuracy": false,
+    "test_cases_passed": 17,
+    "DTO_transport_scope_is_source_authentication": false,
+    "readback_is_local_source_consistency_only": true,
+    "continuous_vehicle_clearance_or_optimization_or_steering_qualified": false,
+    "canonical_original_producer_artifact": false,
+    "native_consumer_or_gate_ledger_compatible": false,
+    "qualification_or_execution_authority": false,
+    "new_heldout_results_used": false
+  },
+  "fsg_approximate_clearance_diagnostic": {
+    "review": "FSG_CLEARANCE_REVIEW.md",
+    "module": "lapsim_light_course.fsg_clearance",
+    "entrypoint": "screen_fsg_source_chord_reference(reference_raw, bundle_raw, cones_raw, *, front_m, rear_m, width_m, safety_margin_m, map_uncertainty_m, tracking_allowance_m, maximum_pairs=300000, maximum_rotation_intervals=8192)",
+    "schema": "lapsim.approximate-cone-route-clearance-diagnostic.v1",
+    "scope": "APPROXIMATE_CONE_POLYLINE_CHORD_ROUTE_DIAGNOSTIC_ONLY",
+    "source_and_reference_exact_local_recipe_verification_required": true,
+    "measured_car_dimensions_or_source_survey_verified": false,
+    "parent_chords": 725,
+    "verified_sample_cells": 3339,
+    "cone_boundary_edges": 182,
+    "route_boundary_pairs_checked": 131950,
+    "maximum_route_boundary_pairs": 300000,
+    "maximum_tangent_translation_checks": 1000,
+    "maximum_rotation_intervals": 8192,
+    "maximum_rotation_depth": 10,
+    "sample_to_parent_chord_residual_m": 7.068483901492293e-15,
+    "parent_headings_not_floating_subdivision_headings": true,
+    "synthetic_body_and_margins": {
+      "front_m": 1.0,
+      "rear_m": 1.0,
+      "width_m": 1.4,
+      "safety_margin_m": 0.2,
+      "map_uncertainty_m": 0.1,
+      "tracking_allowance_m": 0.1
+    },
+    "source_arc_allowance_is_estimate_not_proof": true,
+    "minimum_route_boundary_distance_m": 1.3143018429459727,
+    "disk_envelope_slack_m": -0.31411354307806844,
+    "all_heading_disk_envelope_clear": false,
+    "minimum_tangent_translation_slack_m": 0.20654201849530202,
+    "specified_static_yaw_families_checked": 725,
+    "rotation_intervals_checked": 725,
+    "minimum_static_yaw_interval_slack_bound_m": 0.16723594090121338,
+    "static_yaw_family_is_drivable_trajectory": false,
+    "geometry_reference_or_native_admission_modified": false,
+    "source_arc_or_steering_dynamics_qualified": false,
+    "rigorous_roundoff_proof": false,
+    "authentication_supplied": false,
+    "qualification_or_execution_authority": false,
+    "heldout_results_used": false,
+    "new_bounded_test_cases_passed": 17
+  },
+  "fsg_source_arc_pose_diagnostic": {
+    "review": "FSG_SOURCE_ARC_REVIEW.md",
+    "module": "lapsim_light_course.fsg_source_arcs",
+    "entrypoint": "screen_fsg_source_arcs(bundle_raw, cones_raw, *, front_m, rear_m, width_m, safety_margin_m, map_uncertainty_m, tracking_allowance_m, wheelbase_m, maximum_steering_rad, curvature_limit_fraction, maximum_pairs=300000, maximum_rotation_intervals=8192)",
+    "schema": "lapsim.fsg-source-arc-pose-proxy-diagnostic.v1",
+    "status": "SOURCE_ARC_DIAGNOSTIC_UNQUALIFIED_STEERING_PROXY_FAILED",
+    "source_arc_cells": 724,
+    "maximum_cells": 1000,
+    "source_parent_boundary_pairs": 131768,
+    "source_grid_position_tolerance_m": 1e-07,
+    "maximum_observed_grid_position_error_m": 5.145708854543081e-12,
+    "global_pose_reanchored_or_seam_snapped": false,
+    "exact_periodic_closure_proven": false,
+    "unsnapped_closure_position_gap_m": 2.0782604026318883e-12,
+    "integrated_signed_turn_rad": -6.283185307179537,
+    "maximum_pose_transfer_bound_m": 0.0871846434113781,
+    "minimum_arc_pose_clearance_lower_bound_m": 0.11935737508392391,
+    "old_source_arc_spatial_padding_retained_in_addition_to_transfer_bound": true,
+    "synthetic_steering_inputs": {
+      "wheelbase_m": 1.6,
+      "maximum_steering_rad": 0.4,
+      "curvature_limit_fraction": 0.95
+    },
+    "margin_curvature_limit_per_m": 0.25103347362578354,
+    "maximum_abs_source_curvature_per_m": 0.2728963069136036,
+    "margin_failure_cells": [
+      442,
+      443,
+      444,
+      445,
+      447,
+      448,
+      449,
+      450,
+      451
+    ],
+    "hard_proxy_failure_cells": [
+      442,
+      443,
+      444,
+      445
+    ],
+    "margin_failure_arc_length_m": 4.138154033063898,
+    "source_curvature_jumps_retained": 192,
+    "steering_model_scope": "SINGLE_TRACK_GEOMETRIC_PROXY_NOT_ACTUAL_PARALLEL_FRONT_CG_OR_REAR_AXLE_STEERING",
+    "actual_car_calibration_or_steering_rate_qualified": false,
+    "current_guidance_arc_following_verified": false,
+    "arc_gate_phase_or_mission_provider_supplied": false,
+    "heldout_results_used": false,
+    "qualification_or_execution_authority": false,
+    "new_test_cases_passed": 12,
+    "derived_nonfinite_or_underflowed_curvature_limits_rejected": true
+  },
+  "fsg_smoothed_reference_candidate": {
+    "review": "FSG_SMOOTHING_REVIEW.md",
+    "module": "lapsim_light_course.fsg_smoothing",
+    "producer": "produce_fsg_smoothed_candidate(bundle_raw, cones_raw, *, work_wall_s=40.0)",
+    "proposal_reader": "screen_fsg_spline_proposal(proposal_raw, bundle_raw, cones_raw, *, work_wall_s=40.0)",
+    "candidate_reader": "verify_fsg_smoothed_candidate(raw, bundle_raw, cones_raw, *, work_wall_s=40.0)",
+    "type": "FsgSmoothedCandidate",
+    "evaluation": "candidate.evaluate(parameter, derivative=0)",
+    "schema": "lapsim.fsg-fixed-periodic-bspline-candidate.v1",
+    "proposal_schema": "lapsim.fsg-fixed-periodic-bspline-proposal.v1",
+    "method": "FIXED_64_SOURCE_STATION_SHARED_PERIODIC_CUBIC_BSPLINE_NOT_OPTIMIZATION",
+    "defining_geometry": "64_SHARED_CYCLIC_CONTROLS_UNIFORM_CUBIC_BSPLINE_NOT_INDEPENDENT_POWER_PIECES",
+    "producer_and_reader_third_party_dependencies": [],
+    "parameter_units": "SOURCE_SAMPLE_INDEX_0_TO_64_NOT_METRES_TIME_OR_NEW_CURVE_ARCLENGTH",
+    "source_fit_length_m": 306.45041872992834,
+    "sampled_view_chord_length_m": 306.2542287824437,
+    "fixture_path": "tests/data/fsg_periodic_bspline64_unqualified.json",
+    "fixture_bytes": 414997,
+    "fixture_sha256": "d6cf0b81bd04edcb41f4cedc6c73720f6709e58dd81a06d8d5b245859470cdc8",
+    "geometry_sha256": "bcdb58a27bea433e3f43bfad7b327c495516eff6e774a6ccbb10c0db7639b8c9",
+    "curvature_intervals": 140,
+    "maximum_curvature_floating_bound_per_m": 0.25083687223656603,
+    "synthetic_curvature_limit_per_m": 0.25103347362578354,
+    "clearance_intervals": 604,
+    "minimum_padded_clearance_floating_bound_m": 0.0001945933265842248,
+    "total_declared_clearance_padding_m": 0.401000001,
+    "sample_cells": 4096,
+    "maximum_sampled_view_error_bound_m": 0.00015625413379316926,
+    "nonadjacent_pairs_checked": 11253,
+    "topology_pair_visits": 15413,
+    "interior_proxy_angle_gradient_bound_rad_per_new_curve_m": 1.4113916211194508,
+    "original_source_failures_preserved": {
+      "margin_cells": 9,
+      "hard_proxy_cells": 4,
+      "curvature_jumps": 192
+    },
+    "source_or_prior_reference_bytes_modified": false,
+    "independent_power_piece_prototypes_supported": false,
+    "exact_fixed_projections_use_canonical_bytes": true,
+    "one_absolute_cooperative_budget_with_postfinalization_fence": true,
+    "maximum_work_wall_s": 40,
+    "new_test_cases_passed": 20,
+    "rigorous_roundoff_or_machine_periodicity_proven": false,
+    "actual_car_or_driver_or_time_rate_qualified": false,
+    "timing_gate_phase_or_mission_supplied": false,
+    "original_producer_environment_or_native_admission_supplied": false,
+    "heldout_results_used": false,
+    "qualification_or_execution_authority": false
+  },
+  "fsg_gate_phase_view": {
+    "review": "FSG_PHASE_REVIEW.md",
+    "module": "lapsim_light_course.fsg_phase",
+    "constructor": "construct_fsg_gate_phase(reference_raw, bundle_raw, cones_raw, *, work_wall_s=40.0)",
+    "reader": "verify_fsg_gate_phase(raw, reference_raw, bundle_raw, cones_raw, *, work_wall_s=40.0)",
+    "type": "FsgSmoothedPhaseView",
+    "evaluation": "view.evaluate(progress_index, derivative=0)",
+    "geometric_crossing": "view.finite_segment_crossing(before_xy, after_xy)",
+    "schema": "lapsim.fsg-smoothed-reference-gate-phase.v1",
+    "status": "GEOMETRIC_GATE_PHASE_DEVELOPMENT_ONLY",
+    "base_reference_sha256": "d6cf0b81bd04edcb41f4cedc6c73720f6709e58dd81a06d8d5b245859470cdc8",
+    "fixture_path": "tests/data/fsg_smoothed_phase_unqualified.json",
+    "fixture_bytes": 17644,
+    "fixture_sha256": "20c2f7d5102fd0bcd34058fc449f2b85679eda745a71c7f97d88c73d444294ab",
+    "source_device": "tk_device",
+    "upstream_endpoints_xy_m": [
+      [
+        6.0,
+        3.0
+      ],
+      [
+        6.0,
+        -3.0
+      ]
+    ],
+    "digital_predicates": "EXACT_RATIONAL_SHARED_BEZIER_CONTROLS_AND_STORED_GATE_ENDPOINTS",
+    "all_cells_resolved": 64,
+    "root_nodes": 101,
+    "maximum_root_nodes": 8192,
+    "maximum_root_depth": 48,
+    "representative_phase_index": 1.2500662333404762,
+    "parameter_radius_index": 7.275957614183426e-12,
+    "phase_units": "TRANSLATED_SOURCE_SAMPLE_INDEX0_TO64_NOT_METRES_TIME_OR_LAPS",
+    "outward_radius_includes_float_representative_error": true,
+    "root_midpoint_is_exact_machine_gate_pose": false,
+    "progress_endpoints_use_same_offset": true,
+    "source_or_base_curve_or_caps_modified": false,
+    "coarse_curvature_upper_per_m": 0.25083687223656603,
+    "refined_curvature_upper_per_m": 0.24284144974995692,
+    "unchanged_synthetic_limit_per_m": 0.25103347362578354,
+    "guarded_refined_margin_per_m": 0.008192023874826626,
+    "curvature_cover_nodes": 216,
+    "curvature_cover_leaves": 140,
+    "maximum_margin_nodes": 8192,
+    "maximum_margin_depth": 20,
+    "margin_gap_target_per_m": 0.0001,
+    "margin_is_actual_car_or_rigorous_roundoff_qualification": false,
+    "maximum_work_wall_s": 40,
+    "allstages_share_absolute_budget": true,
+    "geometric_intersection_is_lap_time_energy_or_admission": false,
+    "old_fsi_gate_ledger_or_worker_compatible": false,
+    "future_campaign_must_pin_both_reference_and_phase": true,
+    "new_test_cases_passed": 23,
+    "source_transform_or_survey_or_official_timing_verified": false,
+    "heldout_results_used": false,
+    "qualification_or_execution_authority": false
+  },
+  "fsg_development_numerical_consumer": {
+    "family": "lapsim.fsg-development-numerical-consumer.v1",
+    "module": "lapsim_light_campaign.fsg_event",
+    "metric_course_constructor": "FsgNumericalCourse(phase_raw, reference_raw, bundle_raw, cones_raw, *, work_wall_s=40.0)",
+    "numerical_constructor": "FsgDevelopmentConsumer(course, *, policy_id, residual_regen_rule, residual_regen_rule_sha256, maximum_ticks, maximum_work)",
+    "advance": "consumer.advance(*, ticks, work_wall_s, maximum_new_work=50000) -> raw interval bytes",
+    "snapshot": "consumer.snapshot() -> raw bytes only; no restore or FSI checkpoint compatibility",
+    "cancel": "consumer.request_cancel(); cooperative tick boundary, in-flight tick may commit",
+    "snapshot_schema": "lapsim.fsg-development-numerical-snapshot.raw.v1",
+    "interval_schema": "lapsim.fsg-development-numerical-interval.raw.v1",
+    "base_reference_sha256": "d6cf0b81bd04edcb41f4cedc6c73720f6709e58dd81a06d8d5b245859470cdc8",
+    "phase_sha256": "20c2f7d5102fd0bcd34058fc449f2b85679eda745a71c7f97d88c73d444294ab",
+    "unchanged_sampled_metric_cells": 4096,
+    "new_geometry_resampling_or_refit": false,
+    "progress": "absolute unwrapped reference/source metre stations and separate projected start offsets; relative winding subtracts each offset",
+    "initial_pose": "synthetic CG at analytic phase representative and tangent, not source front-wing pose",
+    "guidance_absolute_target": "reference start offset plus reference length; not a finish test",
+    "plant_tick_s": 0.001,
+    "driver_interval_ticks": 50,
+    "allocator_interval_ticks": 10,
+    "maximum_ticks_per_call": 1000,
+    "maximum_new_work_per_call": 50000,
+    "maximum_cooperative_wall_s_per_call": 10,
+    "global_tick_and_work_caps_required": true,
+    "deadline_fences": "before new plant work, before atomic accepted-boundary publication, after final serialization; late output quarantined, not returned as success",
+    "accepted_boundary": "one immutable record publication; interrupted publication restores previous complete record",
+    "unknown_unreturned_plant_work": "retained attempted numerical work explicitly marked lower bound; terminal failure, no retry",
+    "finish": "prior accepted arming, both current net windings and finite forward actual CG crossing; time/pack use same accepted-interval fraction, full physical state retained",
+    "required_original_residual_predicate_supplied_by_package": false,
+    "predicate_pin_is_authentication": false,
+    "positive_test_dependency": "explicit UNTRUSTED residual-predicate double; all driver/policy/plant components real",
+    "retained_matched_real_plant_probes": {
+      "policies": 7,
+      "ticks_each": 20,
+      "seconds_each": 0.02,
+      "role": "development component probes not completed course laps"
+    },
+    "fabricated_gate_and_terminal_fixtures_used_in_unit_tests": true,
+    "source_environment_line_or_native_authentication_supplied": false,
+    "native_worker_or_Start_registered": false,
+    "checkpoint_restore_or_admitted_continuation_supported": false,
+    "full_fsg_numerical_lap_executed": false,
+    "actual_car_or_heldout_or_native_qualification": false,
+    "qualification_or_execution_authority": false,
+    "review": "FSG_EVENT_REVIEW.md",
+    "literal_endpoint_method": "advance_with_snapshots(*, ticks, work_wall_s, maximum_new_work=50000) -> FsgRawInterval(before_raw, interval_raw, after_raw) under same lock/deadline",
+    "quarantined_endpoint_record": "FsgDevelopmentDeadlineExceeded.raw_record; data only, never eligible/admitted output"
+  },
+  "fsg_development_replay_worker": {
+    "family": "lapsim.fsg-development-replay-worker.v1",
+    "checkpoint_module": "lapsim_light_campaign.fsg_checkpoint",
+    "worker_module": "lapsim_light_campaign.fsg_worker",
+    "checkpoint_schema": "lapsim.fsg-development-replay-checkpoint.v1",
+    "request_schema": "lapsim.fsg-development-replay-request.v1",
+    "identity": "declared source manifest/environment/residual-rule pins plus actual metric-course record hash; declarations are not observations",
+    "checkpoint_api": [
+      "identity_for",
+      "origin_checkpoint",
+      "extend_checkpoint",
+      "validate_checkpoint"
+    ],
+    "worker_api": [
+      "prepare_request",
+      "FsgReplayWorker(request_raw, checkpoint_raw, *, expected_request_raw_sha256)",
+      "program.execute(*, course, residual_regen_rule)",
+      "program.snapshot()",
+      "program.request_cancel() -> True before terminal seal, False afterward without result mutation"
+    ],
+    "result_type": "RawFsgWorkerResult, not OwnedChunkResult; no live consumer escapes",
+    "maximum_segments": 16,
+    "maximum_total_ticks": 1000,
+    "maximum_encoded_checkpoint_bytes": 4194304,
+    "maximum_worker_wall_s": 40,
+    "maximum_aggregate_worker_plant_work": 800000,
+    "profile_scope": "SHORT_DEVELOPMENT_REPLAY_HISTORY_NOT_COMPLETE_FSG_EVENT_OR_NATIVE_CONTINUATION_ABI",
+    "restore_model": "fresh actual consumer from exact computed origin; replay original call partition/caps and compare all literal bytes, never import stored state/flags",
+    "eligibility": "clean complete-accounting running prefixes only; no pending cancellation, rejection, violation, finish or quarantine",
+    "lineage": "canonical immediate parent-prefix raw SHA256 and exact prior-after to next-before bytes",
+    "accounting": "replay consumes actual worker budget; separate replay work and extension work, only extension earns new logical progress; mission caps do not reset",
+    "failure": "one attempt sealed; retain first generated record before validation, quarantine failed child publication, guard recovery serialization and error formatting, mark unknown work lower bound",
+    "source_or_environment_or_predicate_authentication_supplied": false,
+    "native_Start_OS_worker_or_continuation_registered": false,
+    "full_fsg_lap_verified": false,
+    "tests": "18 new bounded cases; positive actual replay/extension uses explicitly UNTRUSTED predicate fixtures and one synthetic OFF policy",
+    "actual_car_or_windows_or_heldout_qualification": false,
+    "qualification_or_execution_authority": false,
+    "review": "FSG_REPLAY_REVIEW.md",
+    "worker_cooperative_cancellation_forwarding_supplied": true,
+    "native_or_production_Stop_supplied": false,
+    "cooperative_cancellation_review": "FSG_CANCELLATION_REVIEW.md",
+    "cancellation_ordering": "Separate lifecycle lock shared by acceptance and successful sealing; no execution-lock wait; pending construction requests forwarded; late request False/no-op",
+    "cancellation_failure_priority": "Thrown failures and returned invalid numerical intervals retain failed classification, raw evidence and charged/unknown work; invalid raises FsgReplayRejected before cancellation classification",
+    "cancellation_retention": "Literal output and actual work retained before cooperative cancellation; no eligible child for cancelled attempt; no live consumer returned"
+  },
+  "native_source_assessment_status": {
+    "inventory": "ORIGINAL_OWNER_SOURCE_INVENTORY.json",
+    "date": "2026-11-08",
+    "evidence": "Parent reports read-only main-PC original/adapter hash verification and matching seven-file manifest",
+    "adapter_sha256": "570438d155f28edd1eefdcc165cfd4b9ca4e516d5cd18a942dc12d7a5e1a987c",
+    "original_demo_sha256": "b7ee2a2c822c646203af4b471d8c851685c575fa2477a982d4f0519fc409b171",
+    "private_source_bytes_received_or_imported_here": false,
+    "executing_closure_or_environment_authenticated": false,
+    "new_manifest_SHA_or_file_list_inferred": false,
+    "current_native_admission_granted": false
+  },
+  "evidence_cli_output_integrity": {
+    "path": "src/lapsim_light_campaign/tournament_cli.py",
+    "short_write_is_error": true,
+    "partial_output_retained": true,
+    "automatic_retry_or_overwrite": false,
+    "success_digest_only_after_complete_write_flush_and_sync": true,
+    "tested_cli_cases": 9,
+    "native_or_execution_authority": false
+  },
+  "source_wheel_release_binding": {
+    "module": "lapsim_light_campaign.release_binding",
+    "function": "verify_source_wheel_binding(source_manifest_raw, install_contract_raw, wheel_raw, *, expected_source_manifest_sha256, expected_wheel_sha256)",
+    "cli": "verify-release --source-manifest PATH --manifest-sha256 SHA256 --install-contract PATH --wheel PATH --wheel-sha256 SHA256 [--output NEW_WORK_FILE]",
+    "supported_source_manifest_schemas": [
+      "lapsim.light-tournament-source-integration.v39",
+      "lapsim.light-tournament-source-integration.v40",
+      "lapsim.light-tournament-source-integration.v41"
+    ],
+    "supported_profile": "Core metadata2.4; purelib py3-none-any; exact declared src payload, optional verifier/entrypoint declarations and both original license copies; no project-wide grant",
+    "checker_independently_trusted_before_import_required": true,
+    "reads_actual_source_files_or_reproduces_pyproject_build_configuration": false,
+    "file_or_installation_observation_or_wheel_extraction_or_payload_import": false,
+    "source_wheel_installed_record_identities_are_distinct": true,
+    "installed_record_or_loaded_code_or_environment_authenticated": false,
+    "original_admission_or_native_start_authority": false,
+    "failure": "Bounded validation errors refuse association; unknown owner controls and MemoryError propagate; CLI exact known errors2, exact KeyboardInterrupt130, unknown subclasses propagate",
+    "procedure": "NATIVE_INSTALL_ACCEPTANCE.md",
+    "direct_new_case_count": 20,
+    "qualification_or_execution_authority": false
+  },
+  "preserved_dev37_offline_installation_recipe": {
+    "revision": "dev37-install-r02",
+    "binary_distribution_version": "0.0.0.dev37",
+    "frozen_binary_source_commit": "0ba674bc9960335cd3d96a01c533d9ca9eb7d12b",
+    "wheel_sha256": "13655550284cd2abbfda591d20bbbc93b0bc4dd46a8ccd060b00d764c77218aa",
+    "runtime_python_or_data_or_unit_tests_changed": false,
+    "installer_pip_version": "26.2.2",
+    "target_environment": "NEW_ISOLATED_VENV_WITHOUT_PIP",
+    "command_from_artifacts_directory": "REVIEWED_INSTALLER_VENV_PYTHON -I -B -m pip --python ABSOLUTE_RUNTIME_VENV_PYTHON install --no-cache-dir --no-index --no-deps --no-compile --require-hashes -r install-wheel-relative.lock",
+    "child_pip_options": "Remove inherited PIP_*; set child PIP_CONFIG_FILE=os.devnull and disable version check; preserve OS/proxy/CA settings; do not edit persistent configuration",
+    "target_pip_ensurepip_or_path_fallback": false,
+    "standalone_validation_source": "research/light/pip-free-install-acceptance-20261108/validate_install.py",
+    "standalone_validation_is_installed_runtime_or_native_launcher": false,
+    "validation_scope": "KNOWN_LOCAL_FROZEN_WHEEL_AND_FRESH_TEMP_RUNTIME_ONLY; NOT_NATIVE_ADMISSION_OR_COMPLETE_ENVIRONMENT_OBSERVATION",
+    "original_native_controls_unchanged": true,
+    "new_binary_build_or_numerical_suite_execution": false,
+    "windows_execution_verified": false,
+    "qualification_or_execution_authority": false
+  },
+  "offline_installation_recipe": {
+    "revision": "dev38-source-release",
+    "binary_distribution_version": "0.0.0.dev38",
+    "runtime_python_or_data_or_unit_tests_changed": true,
+    "installer_pip_version": "26.2.2",
+    "target_environment": "NEW_ISOLATED_VENV_WITHOUT_PIP",
+    "command_from_artifacts_directory": "REVIEWED_INSTALLER_VENV_PYTHON -I -B -m pip --python ABSOLUTE_RUNTIME_VENV_PYTHON install --no-cache-dir --no-index --no-deps --no-compile --require-hashes -r install-wheel-relative.lock",
+    "child_pip_options": "Remove inherited PIP_*; set child PIP_CONFIG_FILE=os.devnull and disable version check; preserve OS/proxy/CA settings; do not edit persistent configuration",
+    "target_pip_ensurepip_or_path_fallback": false,
+    "standalone_validation_is_installed_runtime_or_native_launcher": false,
+    "validation_scope": "KNOWN_LOCAL_FROZEN_WHEEL_AND_FRESH_TEMP_RUNTIME_ONLY; NOT_NATIVE_ADMISSION_OR_COMPLETE_ENVIRONMENT_OBSERVATION",
+    "original_native_controls_unchanged": true,
+    "new_binary_build_or_numerical_suite_execution": true,
+    "windows_execution_verified": false,
+    "qualification_or_execution_authority": false,
+    "binary_wheel_pin": "EXTERNAL_FINAL_COMMIT_RELEASE_ARTIFACT_IDENTITY",
+    "historical_pip_free_validation": "preserved_dev37_offline_installation_recipe"
+  },
+  "windows_output_component_spelling": {
+    "module": "lapsim_light_campaign.raw_journal",
+    "function": "_check_windows_component_spelling(path) before every _no_alias lstat",
+    "applies_to": "PureWindowsPath including actual WindowsPath; non-anchor components only",
+    "refuses": [
+      "LEADING_ASCII_SPACE",
+      "TRAILING_ASCII_SPACE",
+      "TRAILING_PERIOD"
+    ],
+    "rewrites_or_normalizes_paths": false,
+    "posix_spelling_changed": false,
+    "original_symlink_reparse_checks_removed": false,
+    "anchors_parent_semantics_or_other_alias_forms_qualified": false,
+    "native_owner_writer_admission_and_cleanup_still_required": true,
+    "inert_new_cases": 8,
+    "actual_win32_api_tested": false,
+    "review": "FIELD_ARCHIVE_REVIEW.md",
+    "qualification_or_execution_authority": false
+  }
+}

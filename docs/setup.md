@@ -1,5 +1,10 @@
 # Source setup and installed packages
 
+For the **light tournament**, use the separate [preparation/startup contract](light_tournament_startup.md).
+The command below opens the ordinary desktop and executes checks. It does not
+install or start the light tournament. Its missing original runtime integration
+and source-access gates remain open.
+
 With 64-bit Python 3.11+ and Tk, run this from the repository root:
 
 ```text
