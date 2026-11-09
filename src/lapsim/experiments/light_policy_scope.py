@@ -2,8 +2,8 @@
 from copy import deepcopy
 from types import MappingProxyType
 
-PORTABLE_COMMIT = "0d4b19290931e100819169930079427e95e100a5"
-PORTABLE_MANIFEST = "b10149e88c0c73fb5c21518d24313745e23c839a6bcb6d7803a6c8bf65d32f2d"
+PORTABLE_COMMIT = "a84990be7bf121707abbd27eb4f06cf2b442131b"
+PORTABLE_MANIFEST = "bb73c5513265748713e49bfabbc82466d9eb65d9513956b9cef120a3143ef847"
 SOURCE_PINS = MappingProxyType({
     "src/lapsim_light_policies/core_registry.py": "7b869fce5775fa6875246bd22f4ce81eaf1936c545bd52fae99b64035020bc3a",
     "src/lapsim_light_policies/policy_layers.py": "4af256dcae65e6a85680b4c9f22a9e33a2447fad3a35ce9ac77b76f103c1b47a",
@@ -16,7 +16,11 @@ SOURCE_PINS = MappingProxyType({
     "src/lapsim_light_course/data/FSG.yaml": "7b3351cd9db27912131b9f5de427861061e2144ed6795498fe980adcd905c30d",
     "src/lapsim_light_course/data/amz_fssim_fsg_approx.json": "c6e4c47a3a4e5aa6efd3c1e4b93d332dc9cd1796f8ae88d02d4a970f6e6525af",
     "src/lapsim_light_course/fsg_reference.py": "9b004f5b120aa95d1c201a881e2a110c9eaf0ac27d7ab043e29c3f20340db639",
+    "src/lapsim_light_campaign/fsg_event.py": "08e0368fad4787c10e2ba73bb6b693fe5e619f1484d60e7dedc8377290662b55",
+    "src/lapsim_light_campaign/fsg_checkpoint.py": "7a58a5e59b356bbb9701b64e7e53bb11b7840489ca23d02c2139ab49691b93c5",
+    "src/lapsim_light_campaign/fsg_worker.py": "d64429a460b79514a5a5caaa2cd724caad7a2ea63a8570fafa1829273efb137b",
 })
+
 _POLICIES = (
     ("awd7-equal-off-v4", "Matched baseline trajectory, limits and accounting"),
     ("awd7-load-off-v4", "Nonuniform/dynamic load activation and zero-load rejection"),
@@ -26,6 +30,47 @@ _POLICIES = (
     ("awd7-yaw-slip-off-v4", "Simultaneous yaw/slip activation and conservative integral freeze"),
     ("awd7-eco-neutral-off-v4", "Feasibility/failure cases and actual surrogate intervention; no measured loss-map optimum"),
 )
+
+
+_CURRENT_COMPONENT_EVIDENCE = {'source_and_installed_cases': 273,
+ 'evidence_origin_commit': '6db5c9df28166bb45350be687858e35be0f7f0fd',
+ 'scope': 'RETAINED_LINUX_NUMERICAL_AND_METADATA_TESTS_WITH_UNTRUSTED_BINDINGS_NOT_NATIVE_QUALIFICATION',
+ 'runtime_and_test_bytes_unchanged_from_evidence': True,
+ 'public_metadata_identity_is_distinct': True,
+ 'tests_rerun_for_this_descriptor_change': False,
+ 'new_native_execution_performed': False,
+ 'course_or_native_qualification': False,
+ 'campaign_eligibility_promoted': False}
+
+_HISTORICAL_DEV28_COMPONENT_EVIDENCE = {'source_and_installed_cases': 110,
+ 'new_component_and_boundary_cases': 16,
+ 'rolling_policy_count': 7,
+ 'rolling_intervals_each': 20,
+ 'standing_one_tick_probes': 7,
+ 'work_counter_parity_intervals': 2,
+ 'scope': 'SYNTHETIC_FIXED_CONTROLS_NOT_COURSE_OR_NATIVE_QUALIFICATION',
+ 'course_or_native_qualification': False,
+ 'campaign_eligibility_promoted': False,
+ 'evidence_origin_distribution': '0.0.0.dev28'}
+
+_HISTORICAL_DEV28_PREPARATION = {'prepared_inputs': ['amz_fssim_fsi_approx', 'amz_fssim_fsg_approx'],
+ 'fsg_source_test_cases': 15,
+ 'fsg_local_source_frame_constructed': True,
+ 'fsg_canonical_producer_frame_available': False,
+ 'fsg_admissible_driving_reference_available': False,
+ 'fsg_numerical_path_enabled': False,
+ 'fsg_source_chord_reference_candidate_available': True,
+ 'fsg_source_tk_device_gate_candidate_available': True,
+ 'fsg_reference_candidate_test_cases': 17,
+ 'fsg_gate_semantics_or_exact_arc_phase_qualified': False,
+ 'source_preparation_is_campaign_eligibility': False,
+ 'evidence_origin_distribution': '0.0.0.dev28',
+ 'scope': 'HISTORICAL_DEV28_SOURCE_PREPARATION_NOT_CURRENT_AVAILABILITY'}
+
+_CURRENT_SOURCE_COMPONENTS = {'fsg_development_consumer': True,
+ 'fsg_checkpoint_and_short_replay_worker': True,
+ 'native_worker_or_Start_registered': False,
+ 'full_event_continuation_qualified': False}
 
 
 def portable_policy_scope():
@@ -41,25 +86,11 @@ def portable_policy_scope():
         "source_commit": PORTABLE_COMMIT, "source_manifest_sha256": PORTABLE_MANIFEST,
         "source_pins": dict(SOURCE_PINS),
         "runtime_availability": "UNVERIFIED_BY_THIS_ORDINARY_SUITE",
-        "distribution_version": "0.0.0.dev28",
-        "bounded_component_tests": {
-            "source_and_installed_cases": 110, "new_component_and_boundary_cases": 16,
-            "rolling_policy_count": 7, "rolling_intervals_each": 20,
-            "standing_one_tick_probes": 7, "work_counter_parity_intervals": 2,
-            "scope": "SYNTHETIC_FIXED_CONTROLS_NOT_COURSE_OR_NATIVE_QUALIFICATION",
-            "course_or_native_qualification": False, "campaign_eligibility_promoted": False,
-        },
-        "source_course_preparation": {
-            "prepared_inputs": ["amz_fssim_fsi_approx", "amz_fssim_fsg_approx"],
-            "fsg_source_test_cases": 15, "fsg_local_source_frame_constructed": True,
-            "fsg_canonical_producer_frame_available": False,
-            "fsg_admissible_driving_reference_available": False, "fsg_numerical_path_enabled": False,
-            "fsg_source_chord_reference_candidate_available": True,
-            "fsg_source_tk_device_gate_candidate_available": True,
-            "fsg_reference_candidate_test_cases": 17,
-            "fsg_gate_semantics_or_exact_arc_phase_qualified": False,
-            "source_preparation_is_campaign_eligibility": False,
-        },
+        "distribution_version": "0.0.0.dev38",
+        "bounded_component_tests": _CURRENT_COMPONENT_EVIDENCE,
+        "historical_dev28_component_evidence": _HISTORICAL_DEV28_COMPONENT_EVIDENCE,
+        "current_source_components": _CURRENT_SOURCE_COMPONENTS,
+        "source_course_preparation": _HISTORICAL_DEV28_PREPARATION,
         "required_original_guard_methods": ["execute_owned_request", "require_authenticated_owned_execution_and_cleanup"],
         "domain": {"topology": "synthetic_independent_four_awd_v1", "all_four_available": True,
                    "regen_enabled": False, "course": "amz_fssim_fsi_approx",

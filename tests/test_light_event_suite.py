@@ -102,11 +102,11 @@ def test_pinned_seven_policy_snapshot_is_data_only_and_cannot_be_promoted():
     assert len({p['id'] for p in a['policies']})==7
     assert all(not p['source_declared_campaign_eligible'] for p in a['policies'])
     assert a['schema']=='lapsim.portable-policy-source-audit.v2'
-    assert a['distribution_version']=='0.0.0.dev28'
+    assert a['distribution_version']=='0.0.0.dev38'
     assert a['runtime_availability']=='UNVERIFIED_BY_THIS_ORDINARY_SUITE'
     assert all(p['implemented_in_this_suite'] is False and
                p['source_declared_native_qualification']=='UNRUN' for p in a['policies'])
-    assert a['bounded_component_tests']['source_and_installed_cases']==110
+    assert a['bounded_component_tests']['source_and_installed_cases']==273
     assert a['bounded_component_tests']['course_or_native_qualification'] is False
     assert a['bounded_component_tests']['campaign_eligibility_promoted'] is False
     assert a['source_course_preparation']['fsg_local_source_frame_constructed'] is True
@@ -133,8 +133,8 @@ def test_pinned_portable_snapshot_manifest_version_and_module_bytes():
     manifest=json.loads(raw)
     files={row['path']:row['sha256'] for row in manifest['files']}
     assert json.loads((root/'INSTALL_CONTRACT.json').read_bytes())['project']['version']==a['distribution_version']
-    assert a['source_commit']=='0d4b19290931e100819169930079427e95e100a5'
-    assert len(SOURCE_PINS)==11
+    assert a['source_commit']=='a84990be7bf121707abbd27eb4f06cf2b442131b'
+    assert len(SOURCE_PINS)==14
     assert all(files[name]==digest for name,digest in SOURCE_PINS.items())
     for name,digest in SOURCE_PINS.items():assert sha256((root/name).read_bytes()).hexdigest()==digest
 

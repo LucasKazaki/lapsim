@@ -89,9 +89,21 @@ circuit call also stops the suite while retaining any returned raw record.
 
 ## Seven portable policy eligibility gaps
 
-The `.9` index includes a data-only audit of frozen portable dev28, commit
-`0d4b19290931e100819169930079427e95e100a5`, manifest SHA256
-`b10149e88c0c73fb5c21518d24313745e23c839a6bcb6d7803a6c8bf65d32f2d`.
+The ordinary index now pins public portable dev38, commit
+`a84990be7bf121707abbd27eb4f06cf2b442131b`, manifest SHA256
+`bb73c5513265748713e49bfabbc82466d9eb65d9513956b9cef120a3143ef847`.
+All 14 declared source pins match the manifest and current checkout. Retained
+273-case source and installed Linux evidence belongs to frozen dev38, whose
+runtime/test bytes are unchanged; public metadata has a distinct identity.
+It is not newly run native acceptance. The earlier 110-case component breakdown
+and FSG preparation flags are explicitly historical dev28 data. Current source
+availability separately includes the unqualified FSG development consumer,
+checkpoint and short replay worker. Native registration and full-event
+continuation qualification remain false.
+
+This corrects the stale ordinary-descriptor finding in the portable README's
+initial public-snapshot report. That pinned portable subtree remains unchanged;
+the historical report is not a current ordinary-runtime admission result.
 The ordinary command does not import that stack or offer a portable dispatch
 route. Its recorded declarations are not a live capability/admission check;
 runtime availability is explicitly unverified. Earlier `.8` indexes retain
