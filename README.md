@@ -2,6 +2,7 @@
 
 ## Start here
 
+- [Windows clone, lite status and overnight-run guide](docs/windows_lite_overnight.md) — Copyable setup commands, a source-only readiness report, saved-file locations and the remaining launch gates.
 - [Web simulator](https://lapsim-team-lab.kazagpt.chatgpt.site/) — Earlier browser-compute build; run a prescribed-path lap on your own device.
 - [Interactive physics flowchart](https://lapsim-team-lab.kazagpt.chatgpt.site/map/index.html) — Expand the hosted simulator's architecture, equations, and declared source variables.
 - [Interactive tournament review](https://lucaskazaki.github.io/lapsim/tournament/) — Compare bundled prior R11 controller results and ghost replays; the new six-course campaign is not included.
@@ -23,6 +24,64 @@ are stable seams for higher-fidelity models.
 organized by the `electrical`, `aero`, `powertrain`, and `mech` subteam
 packages, while the root `vehicle_model` package continues to re-export the
 main classes for concise imports.
+
+## Clone on a Windows PC, then check lite readiness
+
+**The current public lite simulator is an archive, not a runnable tournament.**
+Cloning or launching the ordinary desktop does not qualify the newer seven-policy,
+standing-start AWD lite candidate. There is currently **no supported unattended
+lite tournament command** in this repository. [PR #166](https://github.com/LucasKazaki/lapsim/pull/166)
+adds a separate source package candidate; it does not add a runner. The original
+execution-review restriction and runtime qualification remain unresolved.
+
+With Git and 64-bit Python 3.11+ installed, open **PowerShell** and use a new
+directory. Keep the existing EV owner's checkout and running work separate:
+
+```powershell
+git --version
+py -3 --version
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Documents\Code" | Out-Null
+Set-Location "$env:USERPROFILE\Documents\Code"
+if (Test-Path -LiteralPath .\lapsim) { throw "lapsim already exists; preserve it and choose a new directory." }
+git clone --branch main --single-branch https://github.com/LucasKazaki/lapsim.git lapsim
+if ($LASTEXITCODE -ne 0) { throw "Clone failed." }
+Set-Location .\lapsim
+git remote -v
+git rev-parse HEAD
+```
+
+Run this **source-file check before attempting lite setup**. It needs only the
+Python standard library, imports no simulator modules, observes no running
+processes/resources, takes no lease and starts no simulation:
+
+```powershell
+$auditReport = "work\lite-source-$(Get-Date -Format 'yyyyMMdd-HHmmss-fff').json"
+py -3 -I -B scripts\check_lite_readiness.py --output $auditReport
+$auditExit = $LASTEXITCODE
+if ($auditExit -eq 1) { throw "Source audit failed; review the error." }
+if ($auditExit -ne 2) { throw "Unexpected source-audit status; stop and review." }
+Get-Content -LiteralPath $auditReport -Raw
+```
+
+Expected today: **exit 2, `status: blocked`, 16/16 archive hashes matched**.
+Exit 2 is an intentional blocked-launch result. Hash agreement only establishes
+archive byte integrity; it grants no execution authority. The report is saved
+in the checkout's ignored `work` directory and never overwrites an existing file.
+Windows checkout attributes preserve the archive's exact line endings.
+
+The existing **ordinary desktop** has a separate source-backed launch route:
+
+```powershell
+py -3 scripts\bootstrap.py --launch
+```
+
+That command installs declared dependencies into `.venv`, performs its ordinary
+synthetic checks and opens the desktop. It executes software; it is **not** the
+source-only check above and is not a way around the retained EV execution hold.
+Do not run it in conflict with the current owner or its resource allocation.
+For repeat setup checks, saved-run instructions and the precise overnight
+readiness/stop/resume contract, read the [Windows guide](docs/windows_lite_overnight.md).
+This documentation update does not establish fresh desktop or lite runtime acceptance.
 
 ## Browser simulator and shareable physics map
 
