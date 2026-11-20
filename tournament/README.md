@@ -102,3 +102,12 @@ For an independently reviewed Pages update, copy this directory to a new
 must use `../` rather than the source tree's `../../`. Preserve all existing
 map files and publish through a normal PR. Do not copy another branch's source
 tree over the Pages root or change Pages settings.
+
+## Pages publication notice
+
+AMZ Racing FSSIM source layouts used by repository course inputs are pinned at
+[cf652d8d3f1e13031dad3fb75eb3d4e6fbaaeff4](https://github.com/AMZ-Racing/fssim/tree/cf652d8d3f1e13031dad3fb75eb3d4e6fbaaeff4).
+Their [upstream MIT notice](AMZ-FSSIM-LICENSE.md) is retained unchanged. Processed
+approximate maps and synthetic replay are not validation of this car. Individual
+course provenance remains in the bundled review JSON. This notice applies to AMZ
+material and supplies no new license for other project code or data.

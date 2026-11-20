@@ -1,0 +1,32 @@
+{
+  "schema": "lapsim.public-navigation-publication.v1",
+  "updatedUtcDate": "2026-11-20",
+  "publicationKind": "static_landing_and_map_navigation_with_historical_R11_presentation",
+  "referencedPublicSourceCommit": "6d6f355221c66047a83003ff6ccc8ccc63467c75",
+  "retainedMapAndReplayBaseCommit": "d521dd5282c20c31a6a964ea4d88e4b34a004974",
+  "scope": [
+    "index.html",
+    "docs/simulator_flowchart/index.html",
+    "public-site.json",
+    "tournament/"
+  ],
+  "historicalReplay": {
+    "label": "R11",
+    "date": "2026-10-26",
+    "path": "tournament/",
+    "video": "tournament/video.html",
+    "assetsChangedByNavigationRefresh": false,
+    "presentationChanged": true,
+    "presentationSourceCommit": "6d6f355221c66047a83003ff6ccc8ccc63467c75",
+    "reviewedSourceHead": "a9b03ed787aaae91c71371d0bccf9cc5170907c8",
+    "scoringVersion": "lapsim.fsae-inspired-equal-lap.v1.2",
+    "mediaChanged": false,
+    "newNumericalResultsIncluded": false,
+    "preservationChecks": "scripts/check_r11_publication.cjs and frozen canonical display-integrity fixtures; CI is a separate receipt"
+  },
+  "mapPhysicsAndDataChanged": false,
+  "newSimulationResultsIncluded": false,
+  "runtimeQualificationClaimed": false,
+  "scopeIsNotAVerificationCertificate": true,
+  "retainedMapAndReplayBaseCommitScope": "Retained map and original R11 origin; current R11 presentation source is identified separately."
+}
