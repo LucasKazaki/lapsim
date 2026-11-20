@@ -1,0 +1,40 @@
+{
+  "schema": "lapsim.public-synthetic-source-validation.v1",
+  "date_utc": "2026-11-19",
+  "python": "3.12 -I -S -B; separate interpreter per family",
+  "native_launches": 0,
+  "physics_ticks": 0,
+  "scope": "exact source imports, zero-clock standing constructor, fixed-state actuator evaluation and keyboard-control routing; not runtime driving, numerical replay or calibration",
+  "families": {
+    "manual": {
+      "gear_efficiency": 0.96,
+      "keyboard_tests_passed": 6,
+      "source_imports_verified": 32,
+      "model_sha256": "62acb9a5260c5f345ac3f5f42bd257e7b628c894d262854f9b9d47e2aa2872ef",
+      "powered_initial_sha256": "fd85d0a03fe8b6aa4a940f280397a02285c4db3d47ffed78915642eb3f5540c6",
+      "low_pack_W": 33155.17881864665,
+      "high_pack_W": 80000.0,
+      "high_total_wheel_torque_Nm": 715.976980661589
+    },
+    "drag96": {
+      "gear_efficiency": 0.96,
+      "source_imports_verified": 32,
+      "model_sha256": "62acb9a5260c5f345ac3f5f42bd257e7b628c894d262854f9b9d47e2aa2872ef",
+      "powered_initial_sha256": "fd85d0a03fe8b6aa4a940f280397a02285c4db3d47ffed78915642eb3f5540c6",
+      "low_pack_W": 33155.17881864665,
+      "high_pack_W": 80000.0,
+      "high_total_wheel_torque_Nm": 715.976980661589
+    },
+    "drag91": {
+      "gear_efficiency": 0.91,
+      "source_imports_verified": 32,
+      "model_sha256": "f33119c39a7efbda7e662cfd6510fad53bd344f7f24a3ab239204b82d0a76660",
+      "powered_initial_sha256": "fd85d0a03fe8b6aa4a940f280397a02285c4db3d47ffed78915642eb3f5540c6",
+      "low_pack_W": 34992.16903206109,
+      "high_pack_W": 79999.99999999999,
+      "high_total_wheel_torque_Nm": 678.6865129187979
+    }
+  },
+  "native_source_owner_registered": false,
+  "github_published": false
+}
