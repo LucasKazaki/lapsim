@@ -12,6 +12,8 @@ on:
       - "scripts/check_flowchart_site.py"
       - "scripts/check_public_landing.cjs"
       - "public-site.json"
+      - "tournament/**"
+      - "scripts/check_r11_publication.cjs"
   pull_request:
     paths:
       - ".github/workflows/flowchart-web.yml"
@@ -22,6 +24,8 @@ on:
       - "scripts/check_flowchart_site.py"
       - "scripts/check_public_landing.cjs"
       - "public-site.json"
+      - "tournament/**"
+      - "scripts/check_r11_publication.cjs"
   workflow_dispatch:
 
 permissions:
@@ -48,6 +52,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+
+      - name: Check out the reviewed public R11 source
+        uses: actions/checkout@v4
+        with:
+          ref: 6d6f355221c66047a83003ff6ccc8ccc63467c75
+          path: .r11-reviewed-source
+          persist-credentials: false
+          sparse-checkout: |
+            web/tournament-review
+            scripts/test_tournament_review.cjs
+            scripts/test_tournament_scoring.cjs
+            configs/courses/upstream/amz-fssim/LICENSE.md
+          sparse-checkout-cone-mode: false
+
+      - name: Verify R11 projection and canonical saved-data contracts
+        run: |
+          node scripts/check_r11_publication.cjs source
+          node .r11-reviewed-source/scripts/test_tournament_review.cjs
+          node .r11-reviewed-source/scripts/test_tournament_scoring.cjs
+          node tournament/test-bundled.cjs
+          for file in tournament/*.js scripts/check_r11_publication.cjs; do node --check "$file"; done
 
       - name: Validate static site files
         run: python scripts/check_flowchart_site.py
@@ -126,6 +151,17 @@ jobs:
             sleep 0.2
           done
           node scripts/check_public_landing.cjs
+          node scripts/check_r11_publication.cjs browser
+
+      - name: Upload public R11 verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r11-publication-evidence
+          path: |
+            audit/r11-publication-*.json
+            /tmp/lapsim-r11-publication-*.png
+          if-no-files-found: ignore
 
       - name: Upload browser diagnostics on failure
         if: failure()
