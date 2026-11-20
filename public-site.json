@@ -1,0 +1,23 @@
+{
+  "schema": "lapsim.public-navigation-publication.v1",
+  "updatedUtcDate": "2026-11-20",
+  "publicationKind": "static_landing_and_map_navigation_refresh",
+  "referencedPublicSourceCommit": "6d6f355221c66047a83003ff6ccc8ccc63467c75",
+  "retainedMapAndReplayBaseCommit": "d521dd5282c20c31a6a964ea4d88e4b34a004974",
+  "scope": [
+    "index.html",
+    "docs/simulator_flowchart/index.html",
+    "public-site.json"
+  ],
+  "historicalReplay": {
+    "label": "R11",
+    "date": "2026-10-26",
+    "path": "tournament/",
+    "video": "tournament/video.html",
+    "assetsChanged": false
+  },
+  "mapPhysicsAndDataChanged": false,
+  "newSimulationResultsIncluded": false,
+  "runtimeQualificationClaimed": false,
+  "scopeIsNotAVerificationCertificate": true
+}
