@@ -1,14 +1,15 @@
 {
   "schema": "lapsim.public-navigation-publication.v1",
   "updatedUtcDate": "2026-11-20",
-  "publicationKind": "static_landing_and_map_navigation_with_historical_R11_presentation",
+  "publicationKind": "static_current_source_map_and_historical_R11_presentation",
   "referencedPublicSourceCommit": "6d6f355221c66047a83003ff6ccc8ccc63467c75",
   "retainedMapAndReplayBaseCommit": "d521dd5282c20c31a6a964ea4d88e4b34a004974",
   "scope": [
     "index.html",
-    "docs/simulator_flowchart/index.html",
+    "docs/simulator_flowchart/ (26 explicitly allowlisted runtime assets)",
+    "map-publication.json",
     "public-site.json",
-    "tournament/"
+    "tournament/ (preserved from R11 integration)"
   ],
   "historicalReplay": {
     "label": "R11",
@@ -24,9 +25,19 @@
     "newNumericalResultsIncluded": false,
     "preservationChecks": "scripts/check_r11_publication.cjs and frozen canonical display-integrity fixtures; CI is a separate receipt"
   },
-  "mapPhysicsAndDataChanged": false,
   "newSimulationResultsIncluded": false,
   "runtimeQualificationClaimed": false,
   "scopeIsNotAVerificationCertificate": true,
-  "retainedMapAndReplayBaseCommitScope": "Retained map and original R11 origin; current R11 presentation source is identified separately."
+  "retainedMapAndReplayBaseCommitScope": "Original R11 archive origin; current map and R11 presentation source identities are specified separately.",
+  "previousNavigationRefreshChangedMapPhysicsAndData": false,
+  "currentMap": {
+    "sourceCommit": "6d6f355221c66047a83003ff6ccc8ccc63467c75",
+    "runtimeAssetCount": 26,
+    "manifest": "map-publication.json",
+    "inventoryGitBlob": "11ab6ad104dc4d9fbfecad2f3b6fc2c4ff076288",
+    "inventoryIsUnmodified": true,
+    "sourceLinks": "immutable GitHub commit; file/line and directory links",
+    "staticOnly": true,
+    "newSimulationResultsIncluded": false
+  }
 }

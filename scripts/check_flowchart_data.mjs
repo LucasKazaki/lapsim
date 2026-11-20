@@ -9,6 +9,9 @@ import { fileURLToPath } from "node:url";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
+const evidenceRoot = path.join(repositoryRoot, ".r11-reviewed-source");
+const sourceCommit = "6d6f355221c66047a83003ff6ccc8ccc63467c75";
+const lineCounts = new Map();
 const siteRoot = path.join(repositoryRoot, "docs", "simulator_flowchart");
 const dataScripts = [
   "data/core.js",
@@ -21,6 +24,8 @@ const dataScripts = [
   "data/07-planar-model.js",
   "data/08-results.js",
   "data/09-verification.js",
+  "data/equation-variables.js",
+  "data/source-inventory.js",
   "data.js",
 ];
 
@@ -40,8 +45,11 @@ const data = sandbox.window.LAPSIM_FLOWCHART_DATA;
 assert(data && data.root && data.meta, "Data scripts did not assemble LAPSIM_FLOWCHART_DATA.");
 assert(data.root.id === "lapsim", `Unexpected root id: ${data.root.id}`);
 assert(data.meta.repository === "LucasKazaki/lapsim", "Repository metadata is incorrect.");
+assert(data.meta.publicationSourceCommit === sourceCommit, "Missing immutable publication source identity.");
 assert(Array.isArray(data.root.children), "The root must contain top-level branches.");
-assert(data.root.children.length === 9, `Expected 9 top-level branches, found ${data.root.children.length}.`);
+assert(data.root.children.length === 11, `Expected 11 top-level branches, found ${data.root.children.length}.`);
+assert(data.root.children.some(branch => branch.id === "native-suspension"), "The optional native suspension study must be a distinct model branch.");
+assert(data.meta.sourceCatalog?.modules >= 79, "Full source catalog is missing.");
 
 const validStatuses = new Set([
   "implemented",
@@ -97,8 +105,19 @@ function visit(node, depth) {
     for (const source of node.sources) {
       assert(source && typeof source.path === "string" && source.path.trim(), `${node.id} has an invalid source entry.`);
       assert(!path.isAbsolute(source.path) && !source.path.includes(".."), `${node.id} source escapes the repository: ${source.path}`);
-      const sourcePath = path.join(repositoryRoot, source.path);
+      const sourcePath = path.join(evidenceRoot, source.path);
       if (!fs.existsSync(sourcePath)) recordMissingSource(node.id, source.path);
+      else {
+        const isDirectory = fs.statSync(sourcePath).isDirectory();
+        const kind = isDirectory ? "tree" : "blob";
+        const suffix = !isDirectory && Number.isInteger(source.line) && source.line > 0 ? "#L" + source.line : "";
+        const expectedHref = "https://github.com/LucasKazaki/lapsim/" + kind + "/" + sourceCommit + "/" + source.path.replace(/\/+$/, "").split("/").map(encodeURIComponent).join("/") + suffix;
+        assert(source.publicationHref === expectedHref, node.id + " has a stale/incorrect publication source link: " + source.path);
+        if (suffix) {
+          if (!lineCounts.has(sourcePath)) lineCounts.set(sourcePath, fs.readFileSync(sourcePath, "utf8").split("\n").length);
+          assert(source.line <= lineCounts.get(sourcePath), node.id + " source line exceeds pinned file: " + source.path + ":" + source.line);
+        }
+      }
       if (source.symbol !== undefined) {
         assert(typeof source.symbol === "string" && source.symbol.trim(), `${node.id} has an invalid source symbol.`);
       }
@@ -113,6 +132,9 @@ function visit(node, depth) {
 }
 
 visit(data.root, 0);
+for (const required of ["desktop-component-study", "component-study-cli", "component-study", "component-study-cards", "component-study-equations", "component-study-domain", "component-study-record", "component-study-fe"]) {
+  assert(ids.has(required), `The semantic component-study path is missing ${required}.`);
+}
 const unresolvedRelated = relatedReferences.filter(([, targetId]) => !ids.has(targetId));
 assert(
   unresolvedRelated.length === 0,
@@ -130,7 +152,7 @@ assert(
       .join("; "),
 );
 
-assert(nodeCount >= 50, `The map unexpectedly shrank to ${nodeCount} nodes.`);
+assert(nodeCount >= 13000, `The map unexpectedly shrank to ${nodeCount} nodes.`);
 assert(equationCount >= 25, `The map unexpectedly shrank to ${equationCount} equation/logic entries.`);
 assert(sourceCount >= 40, `The map unexpectedly shrank to ${sourceCount} source references.`);
 assert(deepestLevel >= 4, `The map no longer reaches equation-level depth (depth=${deepestLevel}).`);

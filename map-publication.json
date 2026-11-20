@@ -1,0 +1,212 @@
+{
+  "schema": "lapsim.static-map-publication.v1",
+  "sourceCommit": "6d6f355221c66047a83003ff6ccc8ccc63467c75",
+  "integrationBase": "0b301109921857bbbffbf23411831bfd634415b8",
+  "runtime": [
+    {
+      "path": "index.html",
+      "sourceGitBlob": "6f322f8957513f49ba1229702f72237add9bf575",
+      "sourceBytes": 14149,
+      "publishedGitBlob": "0098e42220904dfdcdff3385d47dddc2f9dc7d12",
+      "publishedBytes": 15002
+    },
+    {
+      "path": "styles.css",
+      "sourceGitBlob": "ed13c3db9e31dba23eb32d76b8fc1da89ae05a4f",
+      "sourceBytes": 18048,
+      "publishedGitBlob": "ed13c3db9e31dba23eb32d76b8fc1da89ae05a4f",
+      "publishedBytes": 18048
+    },
+    {
+      "path": "anatomy-foundation.css",
+      "sourceGitBlob": "4f73fb4fc7c5e8fc22da95f8dfd84bceda5571ea",
+      "sourceBytes": 10873,
+      "publishedGitBlob": "4f73fb4fc7c5e8fc22da95f8dfd84bceda5571ea",
+      "publishedBytes": 10873
+    },
+    {
+      "path": "anatomy-cards.css",
+      "sourceGitBlob": "9c00c6d1cbcb5d5be5966b6fde3d434e3ab43849",
+      "sourceBytes": 7886,
+      "publishedGitBlob": "9c00c6d1cbcb5d5be5966b6fde3d434e3ab43849",
+      "publishedBytes": 7886
+    },
+    {
+      "path": "anatomy-figure.css",
+      "sourceGitBlob": "8b8649fa75d87aa19b403471a8df6c997819bfb0",
+      "sourceBytes": 10201,
+      "publishedGitBlob": "8b8649fa75d87aa19b403471a8df6c997819bfb0",
+      "publishedBytes": 10201
+    },
+    {
+      "path": "app.js",
+      "sourceGitBlob": "250cb9151e61f2eaf424d77194f43cc98850beb1",
+      "sourceBytes": 41185,
+      "publishedGitBlob": "610b02210d9146b3425a8a7a022a1495785f112a",
+      "publishedBytes": 41132
+    },
+    {
+      "path": "data.js",
+      "sourceGitBlob": "d5cd0efb97cbd09a472e9901327c349a02e4381c",
+      "sourceBytes": 1701,
+      "publishedGitBlob": "22fb383689e9b58e25a106306af06174bd7f95c5",
+      "publishedBytes": 7876
+    },
+    {
+      "path": "panels.js",
+      "sourceGitBlob": "e52b0dc1115ecf53e6c7ce5f51178863706a5ca4",
+      "sourceBytes": 4403,
+      "publishedGitBlob": "e52b0dc1115ecf53e6c7ce5f51178863706a5ca4",
+      "publishedBytes": 4403
+    },
+    {
+      "path": "anatomy-lap-data.js",
+      "sourceGitBlob": "8264fb9da6b278404a8313ebbefd477e629e8a59",
+      "sourceBytes": 8606,
+      "publishedGitBlob": "8264fb9da6b278404a8313ebbefd477e629e8a59",
+      "publishedBytes": 8606
+    },
+    {
+      "path": "anatomy-car-data.js",
+      "sourceGitBlob": "29d615f457268b98dc61421873fa4f4ed6e87f75",
+      "sourceBytes": 10531,
+      "publishedGitBlob": "29d615f457268b98dc61421873fa4f4ed6e87f75",
+      "publishedBytes": 10531
+    },
+    {
+      "path": "anatomy-core.js",
+      "sourceGitBlob": "85e6e49498ef58528a1146efd128878641c588ac",
+      "sourceBytes": 799,
+      "publishedGitBlob": "85e6e49498ef58528a1146efd128878641c588ac",
+      "publishedBytes": 799
+    },
+    {
+      "path": "anatomy-lap-figure.js",
+      "sourceGitBlob": "6c81b7d44a47e252ae74a93b6a418b683a1fd884",
+      "sourceBytes": 16521,
+      "publishedGitBlob": "6c81b7d44a47e252ae74a93b6a418b683a1fd884",
+      "publishedBytes": 16521
+    },
+    {
+      "path": "anatomy-car-figure.js",
+      "sourceGitBlob": "1ca7450244e71bc8ebf5dc777a9c5e7267bf3541",
+      "sourceBytes": 16188,
+      "publishedGitBlob": "1ca7450244e71bc8ebf5dc777a9c5e7267bf3541",
+      "publishedBytes": 16188
+    },
+    {
+      "path": "anatomy-app.js",
+      "sourceGitBlob": "3c3a82631feb433437e20352487ba5da788ff056",
+      "sourceBytes": 11671,
+      "publishedGitBlob": "aac30c0b0bb8653ff1ffe3158e0c00cc1cdb585a",
+      "publishedBytes": 12122
+    },
+    {
+      "path": "data/core.js",
+      "sourceGitBlob": "27f1b6624fdf1bfe08e66fb13f2b00ce32c100a4",
+      "sourceBytes": 1945,
+      "publishedGitBlob": "27f1b6624fdf1bfe08e66fb13f2b00ce32c100a4",
+      "publishedBytes": 1945
+    },
+    {
+      "path": "data/01-entrypoints.js",
+      "sourceGitBlob": "9266d87069a7e8847455995d3ba960f23708e593",
+      "sourceBytes": 9943,
+      "publishedGitBlob": "9266d87069a7e8847455995d3ba960f23708e593",
+      "publishedBytes": 9943
+    },
+    {
+      "path": "data/02-inputs.js",
+      "sourceGitBlob": "6a3b77ca67abc51db09b4260a94d6158dfa7ccb6",
+      "sourceBytes": 5914,
+      "publishedGitBlob": "6a3b77ca67abc51db09b4260a94d6158dfa7ccb6",
+      "publishedBytes": 5914
+    },
+    {
+      "path": "data/03-distance-pipeline.js",
+      "sourceGitBlob": "498ef332eeb6f800dec473c5dd1a1272f11b37c5",
+      "sourceBytes": 7772,
+      "publishedGitBlob": "498ef332eeb6f800dec473c5dd1a1272f11b37c5",
+      "publishedBytes": 7772
+    },
+    {
+      "path": "data/04-vehicle-cell.js",
+      "sourceGitBlob": "cd9656d47582c307fac2942d8f379d9f6912d05d",
+      "sourceBytes": 5427,
+      "publishedGitBlob": "cd9656d47582c307fac2942d8f379d9f6912d05d",
+      "publishedBytes": 5427
+    },
+    {
+      "path": "data/05-component-physics.js",
+      "sourceGitBlob": "06f54647c9535170b3e631d06df037de43d77e97",
+      "sourceBytes": 14774,
+      "publishedGitBlob": "06f54647c9535170b3e631d06df037de43d77e97",
+      "publishedBytes": 14774
+    },
+    {
+      "path": "data/06-racing-line.js",
+      "sourceGitBlob": "627d5e93cb0e85a80c0d89348fe091c96ed9e583",
+      "sourceBytes": 5936,
+      "publishedGitBlob": "627d5e93cb0e85a80c0d89348fe091c96ed9e583",
+      "publishedBytes": 5936
+    },
+    {
+      "path": "data/07-planar-model.js",
+      "sourceGitBlob": "7f5c9c46f7283a879a47bc580f24f737fef7dbb7",
+      "sourceBytes": 8393,
+      "publishedGitBlob": "7f5c9c46f7283a879a47bc580f24f737fef7dbb7",
+      "publishedBytes": 8393
+    },
+    {
+      "path": "data/08-results.js",
+      "sourceGitBlob": "5f3ba5984d5eff26a787e6adb870d394b15839dd",
+      "sourceBytes": 4138,
+      "publishedGitBlob": "5f3ba5984d5eff26a787e6adb870d394b15839dd",
+      "publishedBytes": 4138
+    },
+    {
+      "path": "data/09-verification.js",
+      "sourceGitBlob": "0ffb43e725a9efb073a94b18c555edfe3beb57cd",
+      "sourceBytes": 3245,
+      "publishedGitBlob": "0ffb43e725a9efb073a94b18c555edfe3beb57cd",
+      "publishedBytes": 3245
+    },
+    {
+      "path": "data/equation-variables.js",
+      "sourceGitBlob": "9a43ede127581a2b7b6f2aee1ae176125678357d",
+      "sourceBytes": 16659,
+      "publishedGitBlob": "9a43ede127581a2b7b6f2aee1ae176125678357d",
+      "publishedBytes": 16659
+    },
+    {
+      "path": "data/source-inventory.js",
+      "sourceGitBlob": "11ab6ad104dc4d9fbfecad2f3b6fc2c4ff076288",
+      "sourceBytes": 11673649,
+      "publishedGitBlob": "11ab6ad104dc4d9fbfecad2f3b6fc2c4ff076288",
+      "publishedBytes": 11673649
+    }
+  ],
+  "projectionChangedRuntime": [
+    "index.html",
+    "app.js",
+    "data.js",
+    "anatomy-app.js"
+  ],
+  "auxiliaryChangedPaths": [
+    ".github/workflows/flowchart-web.yml",
+    "index.html",
+    "map-publication.json",
+    "public-site.json",
+    "scripts/check_flowchart_data.mjs",
+    "scripts/check_flowchart_site.py",
+    "scripts/check_map_browser.cjs",
+    "scripts/check_map_publication.cjs",
+    "scripts/check_public_landing.cjs"
+  ],
+  "projectionNotes": [
+    "26 runtime assets only; no new model results or simulator execution.",
+    "22 source assets byte-identical, including generated inventory; four publication projections pin source/document URLs and add scope/navigation labels.",
+    "Generated catalog source paths/expressions preserved. Source links target immutable public GitHub files/lines or directories.",
+    "All tournament/** bytes preserved from independently reviewed #173 integration; R11 publication remains separate."
+  ]
+}

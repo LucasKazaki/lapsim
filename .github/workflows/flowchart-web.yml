@@ -2,7 +2,7 @@ name: Flowchart web checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, gh-pages]
     paths:
       - ".github/workflows/flowchart-web.yml"
       - ".nojekyll"
@@ -14,6 +14,9 @@ on:
       - "public-site.json"
       - "tournament/**"
       - "scripts/check_r11_publication.cjs"
+      - "scripts/check_map_publication.cjs"
+      - "scripts/check_map_browser.cjs"
+      - "map-publication.json"
   pull_request:
     paths:
       - ".github/workflows/flowchart-web.yml"
@@ -26,6 +29,9 @@ on:
       - "public-site.json"
       - "tournament/**"
       - "scripts/check_r11_publication.cjs"
+      - "scripts/check_map_publication.cjs"
+      - "scripts/check_map_browser.cjs"
+      - "map-publication.json"
   workflow_dispatch:
 
 permissions:
@@ -42,6 +48,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -53,18 +61,12 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Check out the reviewed public R11 source
+      - name: Check out the pinned public source for map and R11 verification
         uses: actions/checkout@v4
         with:
           ref: 6d6f355221c66047a83003ff6ccc8ccc63467c75
           path: .r11-reviewed-source
           persist-credentials: false
-          sparse-checkout: |
-            web/tournament-review
-            scripts/test_tournament_review.cjs
-            scripts/test_tournament_scoring.cjs
-            configs/courses/upstream/amz-fssim/LICENSE.md
-          sparse-checkout-cone-mode: false
 
       - name: Verify R11 projection and canonical saved-data contracts
         run: |
@@ -73,6 +75,13 @@ jobs:
           node .r11-reviewed-source/scripts/test_tournament_scoring.cjs
           node tournament/test-bundled.cjs
           for file in tournament/*.js scripts/check_r11_publication.cjs; do node --check "$file"; done
+
+      - name: Verify unchanged source inventory and stage exact map allowlist
+        run: |
+          python .r11-reviewed-source/docs/simulator_flowchart/generate_inventory.py --check
+          node scripts/check_map_publication.cjs
+          node --check scripts/check_map_publication.cjs
+          node --check scripts/check_map_browser.cjs
 
       - name: Validate static site files
         run: python scripts/check_flowchart_site.py
@@ -118,7 +127,7 @@ jobs:
             --disable-dev-shm-usage \
             --virtual-time-budget=5000 \
             --dump-dom \
-            "http://127.0.0.1:4173/#lapsim" \
+            "http://127.0.0.1:4173/audit/map-runtime/#lapsim" \
             >/tmp/lapsim-flowchart-dom.html
 
           grep --fixed-strings 'data-node-id="lapsim"' /tmp/lapsim-flowchart-dom.html >/dev/null
@@ -138,7 +147,6 @@ jobs:
             echo "An installed Chromium browser is required for the layout regression." >&2
             exit 1
           fi
-          node docs/simulator_flowchart/browser_layout_check.cjs
 
           python -m http.server 4174 --bind 127.0.0.1 --directory . >/tmp/lapsim-public-landing-server.log 2>&1 &
           landing_server_pid=$!
@@ -150,8 +158,23 @@ jobs:
             fi
             sleep 0.2
           done
+          export LAPSIM_MAP_URL="${LAPSIM_PUBLIC_URL}audit/map-runtime/#lapsim"
+          node .r11-reviewed-source/docs/simulator_flowchart/browser_layout_check.cjs
+          node scripts/check_map_browser.cjs
           node scripts/check_public_landing.cjs
           node scripts/check_r11_publication.cjs browser
+
+      - name: Upload exact staged map runtime and verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-source-map-evidence
+          path: |
+            audit/map-runtime/
+            audit/map-publication-*.json
+            map-publication.json
+            /tmp/lapsim-map-staged-*.png
+          if-no-files-found: ignore
 
       - name: Upload public R11 verification evidence
         if: always()

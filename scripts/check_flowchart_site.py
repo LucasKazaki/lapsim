@@ -14,6 +14,13 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 
+EXPECTED_STYLESHEETS = [
+    "styles.css",
+    "anatomy-foundation.css",
+    "anatomy-cards.css",
+    "anatomy-figure.css",
+]
+
 EXPECTED_SCRIPTS = [
     "data/core.js",
     "data/01-entrypoints.js",
@@ -25,9 +32,17 @@ EXPECTED_SCRIPTS = [
     "data/07-planar-model.js",
     "data/08-results.js",
     "data/09-verification.js",
+    "data/equation-variables.js",
+    "data/source-inventory.js",
     "data.js",
     "app.js",
     "panels.js",
+    "anatomy-lap-data.js",
+    "anatomy-car-data.js",
+    "anatomy-core.js",
+    "anatomy-lap-figure.js",
+    "anatomy-car-figure.js",
+    "anatomy-app.js",
 ]
 
 
@@ -73,8 +88,8 @@ def validate_html(repo_root: Path, site_root: Path) -> dict[str, int]:
             "Flowchart script order changed. Expected "
             f"{EXPECTED_SCRIPTS!r}, found {parser.scripts!r}."
         )
-    if parser.stylesheets != ["styles.css"]:
-        fail(f"Expected only styles.css, found {parser.stylesheets!r}.")
+    if parser.stylesheets != EXPECTED_STYLESHEETS:
+        fail(f"Unexpected stylesheet order: {parser.stylesheets!r}.")
 
     for reference in [*parser.scripts, *parser.stylesheets]:
         path = local_path(site_root, reference)
@@ -85,9 +100,8 @@ def validate_html(repo_root: Path, site_root: Path) -> dict[str, int]:
         if not path.is_file():
             fail(f"Missing runtime asset: {reference}")
 
-    repository_link = local_path(site_root, "../../README.md")
-    if repository_link != repo_root / "README.md" or not repository_link.is_file():
-        fail("The local Repository README link does not resolve to README.md.")
+    if "https://github.com/LucasKazaki/lapsim/blob/6d6f355221c66047a83003ff6ccc8ccc63467c75/README.md" not in parser.links:
+        fail("The Repository README must link to the immutable public source revision.")
 
     root_index = repo_root / "index.html"
     root_text = root_index.read_text(encoding="utf-8")
@@ -118,11 +132,8 @@ def validate_required_files(repo_root: Path, site_root: Path) -> None:
         repo_root / "index.html",
         repo_root / ".nojekyll",
         site_root / "index.html",
-        site_root / "styles.css",
-        site_root / "app.js",
-        site_root / "data.js",
         site_root / "README.md",
-        *(site_root / script for script in EXPECTED_SCRIPTS[:-2]),
+        *(site_root / asset for asset in [*EXPECTED_STYLESHEETS, *EXPECTED_SCRIPTS]),
     }
     missing = sorted(str(path.relative_to(repo_root)) for path in required if not path.is_file())
     if missing:
