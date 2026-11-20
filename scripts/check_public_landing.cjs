@@ -32,6 +32,9 @@ if (!base || !/^http:\/\/127\.0\.0\.1:\d+\/$/.test(base)) throw Error("A fixed r
     assert.equal(manifest.referencedPublicSourceCommit,"6d6f355221c66047a83003ff6ccc8ccc63467c75");
     assert.equal(manifest.retainedMapAndReplayBaseCommit,"d521dd5282c20c31a6a964ea4d88e4b34a004974");
     assert.equal(manifest.newSimulationResultsIncluded,false);
+    assert.equal(manifest.currentMap.sourceCommit,manifest.referencedPublicSourceCommit);
+    assert.equal(manifest.currentMap.runtimeAssetCount,26);
+    assert.equal(manifest.currentMap.staticOnly,true);
     await page.goto(base+"?review=public#lapsim");
     await page.waitForFunction(() => window.LAPSIM_FLOWCHART?.totalNodeCount > 0);
     assert.equal(new URL(page.url()).pathname,"/docs/simulator_flowchart/");
