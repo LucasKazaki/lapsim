@@ -91,10 +91,18 @@ def validate_html(repo_root: Path, site_root: Path) -> dict[str, int]:
 
     root_index = repo_root / "index.html"
     root_text = root_index.read_text(encoding="utf-8")
-    if "docs/simulator_flowchart/" not in root_text:
-        fail("Root index.html does not redirect to the flowchart.")
-    if "https://lucaskazaki.github.io/lapsim/docs/simulator_flowchart/" not in root_text:
-        fail("Root index.html is missing the canonical public URL.")
+    root_parser = AssetParser()
+    root_parser.feed(root_text)
+    for reference in ("docs/simulator_flowchart/", "tournament/", "tournament/video.html", "public-site.json"):
+        if reference not in root_parser.links:
+            fail(f"Public overview is missing its scoped navigation: {reference}")
+        target = local_path(repo_root, reference)
+        if target is None or not target.exists():
+            fail(f"Public overview target does not exist: {reference}")
+    if '<link rel="canonical" href="https://lucaskazaki.github.io/lapsim/">' not in root_text:
+        fail("Public overview is missing its canonical root URL.")
+    if "Historical R11" not in root_text or "Source only" not in root_text:
+        fail("Public overview must distinguish archival replay from source-only work.")
     if not (repo_root / ".nojekyll").is_file():
         fail("The Pages source is missing .nojekyll.")
 

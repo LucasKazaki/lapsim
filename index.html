@@ -3,13 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Interactive, expandable architecture and equation map for the LapSim Formula SAE simulator.">
+  <meta name="description" content="LapSim source map, public Light research source, and clearly dated historical R11 simulation replays.">
   <meta name="robots" content="index,follow">
-  <meta http-equiv="refresh" content="0; url=docs/simulator_flowchart/">
-  <link rel="canonical" href="https://lucaskazaki.github.io/lapsim/docs/simulator_flowchart/">
-  <title>LapSim interactive simulator flowchart</title>
+  <link rel="canonical" href="https://lucaskazaki.github.io/lapsim/">
+  <title>LapSim | Source, map and replay archive</title>
   <script>
+    // Preserve existing root-fragment map bookmarks; the ordinary root is the overview.
     (() => {
+      if (!window.location.hash || window.location.hash === "#overview") return;
       const target = new URL("docs/simulator_flowchart/", window.location.href);
       target.search = window.location.search;
       target.hash = window.location.hash;
@@ -17,16 +18,56 @@
     })();
   </script>
   <style>
-    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
-    body { display: grid; min-height: 100vh; margin: 0; place-items: center; }
-    main { max-width: 42rem; padding: 2rem; text-align: center; }
-    a { font-weight: 700; }
+    :root{color-scheme:light dark;--bg:#f5f7fa;--panel:#fff;--fg:#142538;--muted:#485c70;--line:#ccd7e2;--link:#075c87;--tag:#e4f5fb}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+    main,footer{max-width:1080px;margin:auto;padding:28px 24px}header{padding:36px 0 24px}.eyebrow{font-size:.8rem;letter-spacing:.12em;font-weight:750;color:var(--link);text-transform:uppercase}
+    h1{font-size:clamp(2.6rem,7vw,4.8rem);line-height:1.05;letter-spacing:-.045em;margin:.3em 0}h2{font-size:1.35rem;line-height:1.3}p{margin:.7em 0}.lede{max-width:760px;font-size:1.12rem;color:var(--muted)}
+    a{color:var(--link);text-underline-offset:4px;overflow-wrap:anywhere}a:focus-visible{outline:3px solid var(--link);outline-offset:5px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px}
+    article,.notice{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}article p{color:var(--muted)}.tag{display:inline-block;border-radius:5px;background:var(--tag);color:var(--link);font-size:.78rem;font-weight:750;padding:3px 8px}
+    .notice{margin:24px 0}.source{font-size:.85rem;color:var(--muted)}code{font:inherit;overflow-wrap:anywhere}footer{border-top:1px solid var(--line);font-size:.9rem;color:var(--muted)}.skip{position:absolute;left:16px;top:-80px;background:var(--panel);padding:10px}.skip:focus{top:8px}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1420;--panel:#142131;--fg:#edf3f9;--muted:#b4c5d7;--line:#354a61;--link:#7cddf3;--tag:#173d4b}}
+    @media(max-width:480px){main,footer{padding:22px 18px}article,.notice{padding:20px}header{padding-top:24px}}
   </style>
 </head>
 <body>
-  <main>
-    <h1>Opening the LapSim interactive flowchart…</h1>
-    <p><a href="docs/simulator_flowchart/">Open the flowchart</a> if the redirect does not start automatically.</p>
+  <a class="skip" href="#overview">Skip to overview</a>
+  <main id="overview">
+    <header>
+      <p class="eyebrow">Formula SAE event simulator · Public project</p>
+      <h1>LapSim</h1>
+      <p class="lede">Explore the implementation, inspect public research source, or replay a dated simulation archive. Each has its own evidence boundary.</p>
+    </header>
+    <section class="grid" aria-label="Explore LapSim">
+      <article>
+        <span class="tag">Interactive source map</span>
+        <h2>Understand the simulator</h2>
+        <p>Browse the existing architecture, equations and subsystem links. This navigation refresh retains the map snapshot; it does not update the physics or certify vehicle accuracy.</p>
+        <p><a href="docs/simulator_flowchart/">Open the interactive map</a></p>
+        <p><a href="https://github.com/LucasKazaki/lapsim/tree/6d6f355221c66047a83003ff6ccc8ccc63467c75">Inspect the referenced public source revision</a></p>
+      </article>
+      <article>
+        <span class="tag">Source only</span>
+        <h2>Light research source</h2>
+        <p>The AWD torque-control archive and separate WASD/gearbox-efficiency experiment have different topology and evidence scopes. They are source for review, not a browser-ready release or a new tournament result.</p>
+        <p><a href="https://github.com/LucasKazaki/lapsim/blob/6d6f355221c66047a83003ff6ccc8ccc63467c75/research/light/README.md">AWD source archive and limits</a></p>
+        <p><a href="https://github.com/LucasKazaki/lapsim/blob/6d6f355221c66047a83003ff6ccc8ccc63467c75/research/light/public-light-wasd-gear-ab-20261119/README.md">WASD and gearbox experiment source</a></p>
+      </article>
+      <article>
+        <span class="tag">Historical R11 · 26 October 2026</span>
+        <h2>Replay the archive</h2>
+        <p>Inspect bundled prior R11 simulated strategies and their recorded time/energy tradeoffs. These are historical results, separate from subsequent AWD standing-start work.</p>
+        <p><a href="tournament/">Open historical R11 replay</a></p>
+        <p><a href="tournament/video.html">Watch historical R11 ghost video</a></p>
+      </article>
+    </section>
+    <section class="notice" aria-label="Evidence and publication scope">
+      <h2>What this website establishes</h2>
+      <p>The map explains source, the Light links expose source archives, and the replay shows bundled saved simulations. This page supplies no new laps, current native-run status, calibrated-car prediction, official points or universal winner.</p>
+      <p>The historical video highlights fastest only. Read each archive's own assumptions and coverage before comparing it with another model or drivetrain.</p>
+      <p><a href="https://github.com/LucasKazaki/lapsim/blob/6d6f355221c66047a83003ff6ccc8ccc63467c75/README.md">Project guide at the referenced source revision</a> · <a href="public-site.json">Publication scope and source identities</a></p>
+      <p class="source">Navigation refresh: 20 November 2026. Referenced public source <code>6d6f355221c66047a83003ff6ccc8ccc63467c75</code>. Retained map and R11 asset base <code>d521dd5282c20c31a6a964ea4d88e4b34a004974</code>.</p>
+    </section>
   </main>
+  <footer>Public navigation and archival replay · No simulator computation is started by this overview.</footer>
 </body>
 </html>

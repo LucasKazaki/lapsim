@@ -10,6 +10,8 @@ on:
       - "docs/simulator_flowchart/**"
       - "scripts/check_flowchart_data.mjs"
       - "scripts/check_flowchart_site.py"
+      - "scripts/check_public_landing.cjs"
+      - "public-site.json"
   pull_request:
     paths:
       - ".github/workflows/flowchart-web.yml"
@@ -18,6 +20,8 @@ on:
       - "docs/simulator_flowchart/**"
       - "scripts/check_flowchart_data.mjs"
       - "scripts/check_flowchart_site.py"
+      - "scripts/check_public_landing.cjs"
+      - "public-site.json"
   workflow_dispatch:
 
 permissions:
@@ -111,6 +115,18 @@ jobs:
           fi
           node docs/simulator_flowchart/browser_layout_check.cjs
 
+          python -m http.server 4174 --bind 127.0.0.1 --directory . >/tmp/lapsim-public-landing-server.log 2>&1 &
+          landing_server_pid=$!
+          trap 'kill "$landing_server_pid" 2>/dev/null || true' EXIT
+          export LAPSIM_PUBLIC_URL="http://127.0.0.1:4174/"
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error "$LAPSIM_PUBLIC_URL" >/dev/null; then
+              break
+            fi
+            sleep 0.2
+          done
+          node scripts/check_public_landing.cjs
+
       - name: Upload browser diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -120,4 +136,6 @@ jobs:
             /tmp/lapsim-flowchart-server.log
             /tmp/lapsim-flowchart-dom.html
             /tmp/lapsim-root.html
+            /tmp/lapsim-public-landing-server.log
+            /tmp/lapsim-public-landing-*.png
           if-no-files-found: ignore
