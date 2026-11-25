@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, replace
 from hashlib import sha256
+from itertools import count
 import json
 from struct import pack as pack_binary
 from math import atan2, cos, hypot, isfinite, pi, remainder, sin, sqrt, tan
@@ -19,7 +20,7 @@ from lapsim.dynamics.actuation import ActuationConfig, ActuationEvaluation, cons
 from .lap_ledger import LapLedger
 from lapsim.dynamics.conditions import PlanarEnvironment, PlanarRoad, RectangularGripPatch
 from lapsim.dynamics.planar import PlanarState, evaluate_planar_dynamics, PlanarControls
-from lapsim.dynamics.powered_planar import PoweredState, advance_powered, energy_residual_j, evaluate_powered
+from lapsim.dynamics.powered_planar import PoweredState, advance_powered, energy_residual_j, evaluate_powered, MAX_ALLOCATED_POWERED_WORK
 from lapsim.experiments.closed_loop import synthetic_car
 from lapsim.optimization.pose_driver import (
     PoseDriverSettings, _controller, _project_local, _reference_start_heading,
@@ -30,6 +31,11 @@ ZERO = (0.0, 0.0, 0.0, 0.0)
 AVAILABLE = (False, False, True, True)
 PHILOSOPHIES = ("fixed", "traction", "yaw_pi", "tire_reserve")
 CONFIGURED_REFERENCE = 'configured_equal_split_reference_v1'
+# The finite-finish opt-in keeps the existing per-allocation plant bound and
+# the same cumulative envelope as the configured ten-lap allocation.
+# Neither physical state, controller state, nor energy is restarted.
+FINITE_TOTAL_WORK = 10 * MAX_ALLOCATED_POWERED_WORK
+FINITE_BATCH_ROLLOVER = MAX_ALLOCATED_POWERED_WORK // 2
 PROFILES = ("synthetic_rwd", "synthetic_awd", "synthetic_single_motor_rwd", "synthetic_spool_rwd")
 BOUNDS = {"drive_scale": (0.6, 1.0), "slip_target": (0.035, 0.18),
           "yaw_kp": (0.0, 45.0), "yaw_ki": (0.0, 15.0),
@@ -76,7 +82,7 @@ class Case:
     regen_available: bool = True
     friction_fallback: bool = True
     motor_temperature_c: float = 40.0
-    duration_s: float = 30.0
+    duration_s: float | None = 30.0
     reverse: bool = False
     mirror: bool = False
     course_bundle: dict | None = None
@@ -84,8 +90,8 @@ class Case:
     long_course: bool = False
 
     def __post_init__(self):
-        if type(self.laps) is not int or self.laps not in (1,10):
-            raise ValueError('Choose a one-lap diagnostic or ten-lap competition')
+        if type(self.laps) is not int or self.laps not in (1,2,10) or (self.laps==2 and self.duration_s is not None):
+            raise ValueError('Choose a one-lap diagnostic, explicit two-lap finite round, or ten-lap competition')
         if self.course not in ("stadium", "reverse_stadium", "autocross", "bundle"):
             raise ValueError("unknown coherent course")
         if self.course == "bundle":
@@ -99,9 +105,14 @@ class Case:
         if type(self.long_course) is not bool or (self.long_course and (self.course!='bundle' or self.laps!=1)):
             raise ValueError('Long-course mode requires one lap of a validated bundle')
         for key, lo, hi in (("grip", .2, 1.3), ("initial_soc", 0, 1),
-                           ("pack_voltage_v", 100, 650), ("initial_offset_m", -1, 1),
-                           ("motor_temperature_c", -20, 150), ("duration_s", .01, 600 if self.laps==10 else 300 if self.long_course else 60)):
+                            ("pack_voltage_v", 100, 650), ("initial_offset_m", -1, 1),
+                            ("motor_temperature_c", -20, 150)):
             number(getattr(self, key), key, lo, hi)
+        if self.duration_s is None:
+            if self.laps not in (1,2):
+                raise ValueError('Finite-finish mode requires one or two laps')
+        else:
+            number(self.duration_s, "duration_s", .01, 600 if self.laps==10 else 300 if self.long_course else 60)
         for key in ("patch", "regen_available", "friction_fallback", "reverse", "mirror"):
             if type(getattr(self, key)) is not bool:
                 raise ValueError(f"{key} must be boolean")
@@ -268,11 +279,47 @@ def allocate(controller, state, evaluation, steering, drive_each, brake_each,
     return requested, tuple(proposed), limited, brakes, integral, shortfall, raw_regen
 
 
-def rollout(controller: Controller, case: Case, *, profile="synthetic_rwd", parameter_overrides=None, configured_profile=None, configured_full_lap=False,progress_callback=None,plant_step=None):
+def physical_finish_contract(case: Case, configured_profile):
+    """Explicit source-bound opt-in contract for the reviewed synthetic stadium.
+
+    Imported, transformed, and measured courses are deliberately not admitted
+    by this first implementation. Missing contracts never select the legacy
+    projected finish. Canonical gate lists come from the configured car and
+    built-in assumed corridor, not a caller's asserted digest or geometry.
+    """
+    from lapsim.torque_configurator import VehicleProfile
+    from .finite_gate_observer import canonical_gate_contract
+    if type(configured_profile) is not VehicleProfile:
+        raise ValueError('A validated configured profile is required')
+    if (case.course != 'stadium' or case.course_bundle is not None or case.reverse or case.mirror
+            or case.long_course or case.initial_offset_m != 0.):
+        raise ValueError('Finite finish is qualified only for the original synthetic stadium and its exact spawn')
+    if case.duration_s is not None or case.laps not in (1,2):
+        raise ValueError('Finite finish requires an explicit one- or two-lap terminal case')
+    car=replace(configured_profile.vehicle,tire_mu=configured_profile.vehicle.tire_mu*case.grip)
+    return canonical_gate_contract(course_for(case),fixture()[2],car)
+
+
+def rollout(controller: Controller, case: Case, *, profile="synthetic_rwd", parameter_overrides=None, configured_profile=None, configured_full_lap=False,progress_callback=None,plant_step=None,physical_finish=False,stop_requested=None,finite_gate_contract=None):
+    """Run the configured or legacy simulation.
+
+    The physical finish path is opt-in, configured-only and synthetic-only.
+    Existing default callers retain their original timed/projected results.
+    """
     if progress_callback is not None and not callable(progress_callback):raise ValueError('Progress callback must be callable')
     if type(configured_full_lap) is not bool:raise ValueError('Configured full-lap mode must be Boolean')
     if plant_step is not None and not callable(plant_step):raise ValueError('Plant step must be callable')
     if plant_step is not None and configured_profile is not None:raise ValueError('Custom plant backend is not accepted for configured export equivalence')
+    if type(physical_finish) is not bool:raise ValueError('Physical finish opt-in must be Boolean')
+    duration_s=case.duration_s
+    until_terminal=duration_s is None
+    if physical_finish != until_terminal:
+        raise ValueError('Uncapped terminal cases require explicit physical_finish opt-in; timed legacy cases do not')
+    if physical_finish and (configured_profile is None or not configured_full_lap or case.laps not in (1,2)
+                            or not callable(stop_requested) or finite_gate_contract is None):
+        raise ValueError('Physical finish requires full configured acceptance, explicit finite gates, and cancellation callback')
+    if not physical_finish and (stop_requested is not None or finite_gate_contract is not None):
+        raise ValueError('Finite gates and cancellation callback belong only to explicit physical finish')
     if configured_profile is None:
         if configured_full_lap:raise ValueError('Full-lap configured acceptance requires its profile')
         if controller.philosophy==CONFIGURED_REFERENCE:raise ValueError('Configured strategy requires its exact vehicle profile')
@@ -280,21 +327,25 @@ def rollout(controller: Controller, case: Case, *, profile="synthetic_rwd", para
     from lapsim.torque_configurator import ControlSession,VehicleProfile
     from lapsim.torque_configurator.profile import require
     require(type(configured_profile) is VehicleProfile,'A validated configured profile is required')
-    require(case.laps in (1,10),'Configured round requires one or ten laps')
+    require(case.laps in (1,10) or (case.laps==2 and until_terminal),'Configured round requires one or ten laps, or explicit two-lap finite mode')
     aliases={'synthetic_independent_rear_rwd_v1':'synthetic_rwd',
              SINGLE_MOTOR_RWD_TOPOLOGY_ID:'synthetic_single_motor_rwd',SPOOL_RWD_TOPOLOGY_ID:'synthetic_spool_rwd',AWD_TOPOLOGY_ID:'synthetic_awd'}
     require(profile==aliases[configured_profile.actuation.topology_id],'Configured profile/tournament topology mismatch')
     require(controller==Controller(CONFIGURED_REFERENCE),'Configured profile supports only its exact equal-split reference strategy; no strategy/tuning substitution')
     require(not parameter_overrides,'Configured profiles cannot have unrecorded physical overrides')
     maximum=600 if case.laps==10 and configured_full_lap else 60 if configured_full_lap else 2
-    require(.1<=case.duration_s<=maximum and abs(case.duration_s*1000-round(case.duration_s*1000))<1e-9
-            and round(case.duration_s*1000)%10==0,'Configured duration exceeds its explicit mode bound or 10 ms clock')
+    if duration_s is not None:
+        require(.1<=duration_s<=maximum and abs(duration_s*1000-round(duration_s*1000))<1e-9
+                and round(duration_s*1000)%10==0,'Configured duration exceeds its explicit mode bound or 10 ms clock')
     require(case.pack_voltage_v==configured_profile.actuation.pack_voltage_v and case.initial_soc==configured_profile.policy['initial_soc'],
             'Case voltage/SOC conflicts with configured profile')
     require(configured_profile.to_dict()['schema']=='lapsim.torque-profile.v2' or (not case.regen_available and case.friction_fallback and case.motor_temperature_c==40.),
             'Configured propulsive baseline requires explicit no-regen/friction scenario; thermal calibration is unavailable')
+    if physical_finish:
+        from .finite_gate_observer import validate_canonical_contract
+        finite_gate_contract=validate_canonical_contract(finite_gate_contract,physical_finish_contract(case,configured_profile))
     session=ControlSession(configured_profile)
-    try:return _rollout(controller,case,profile=profile,configured_profile=configured_profile,session=session,configured_full_lap=configured_full_lap,progress_callback=progress_callback)
+    try:return _rollout(controller,case,profile=profile,configured_profile=configured_profile,session=session,configured_full_lap=configured_full_lap,progress_callback=progress_callback,stop_requested=stop_requested,finite_gate_contract=finite_gate_contract)
     finally:session.close()
 
 
@@ -310,7 +361,7 @@ def _state_digest(value):
     return sha256(json.dumps(value,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
 
 
-def _rollout(controller, case, *, profile, parameter_overrides=None, configured_profile=None, session=None, configured_full_lap=False,progress_callback=None,plant_step=None):
+def _rollout(controller, case, *, profile, parameter_overrides=None, configured_profile=None, session=None, configured_full_lap=False,progress_callback=None,plant_step=None,stop_requested=None,finite_gate_contract=None):
     if profile not in PROFILES:
         raise ValueError("2025-derived AWD baseline is blocked by unknown reviewed 2025 parameters and selected drivetrain specifications")
     car, pack, driver = fixture()
@@ -337,6 +388,29 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
     available = (True,True,True,True) if profile == "synthetic_awd" else AVAILABLE
     pack = replace(pack, pack_voltage_v=case.pack_voltage_v)
     track = course_for(case)
+    duration_s=case.duration_s
+    timed_ticks=round(duration_s/.01) if duration_s is not None else None
+    until_terminal=duration_s is None
+    finite_owner=None
+    finite_cycle=None
+    first_projected_boundary=None
+    if duration_s is None:
+        from .finite_gate_observer import FiniteGateObserver, canonical_gate_contract, validate_canonical_contract
+        from .finite_cycle_ledger import CyclicGateLedger
+        if (configured_profile is None or not configured_full_lap or session is None or
+                not callable(stop_requested)):
+            raise ValueError('Finite finish requires the configured runner')
+        # Bind the supplied contract again at the actual source/vehicle
+        # boundary. No caller-provided width or gate order overrides it.
+        approved=physical_finish_contract(case,configured_profile)
+        canonical=canonical_gate_contract(track,driver,replace(car,tire_mu=car.tire_mu*case.grip))
+        if canonical!=approved:raise ValueError('Actual source differs from the admitted physical-finish contract')
+        finite_gate_contract=validate_canonical_contract(finite_gate_contract,canonical)
+        if case.laps==1:
+            finite_owner=FiniteGateObserver(finite_gate_contract)
+        else:
+            finite_cycle=CyclicGateLedger(finite_gate_contract)
+            finite_owner=finite_cycle
     road = PlanarRoad(patches=(RectangularGripPatch(4, 14, -2, 2, .65, "synthetic_patch"),) if case.patch else ())
     env = PlanarEnvironment(road=road, drag_area_m2=overrides.get("drag_area_m2", .5))
     car = replace(car, tire_mu=car.tire_mu * case.grip)
@@ -359,10 +433,19 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
     state = initial
     integral = 0.0
     initial_round_state=_round_state(state,integral,session)
-    ledger=LapLedger(track.length_m,pack.pack_capacity_j,case.laps,initial.pack_energy_j)
+    # The fixed timed/ten-lap owner remains unchanged. In the new scope the
+    # finite ledger alone owns lap count; it receives actual accepted poses.
+    finite_round=finite_cycle is not None
+    ledger=None if finite_round else LapLedger(track.length_m,pack.pack_capacity_j,case.laps,initial.pack_energy_j)
+    seam_states=[]
     completed_work={'integration_substeps':0,'integration_trials':0,'wheel_stop_events':0}
+    accepted_ticks=0
+    last_checked=None
+    stationary_anchor=None
+    work_rollovers=[]
+    terminal_detail=None
     logging_stride=50 if case.laps==10 else 5
-    status = "time_limit"
+    status = "running" if until_terminal else "time_limit"
     records, violations = [], []
     max_slip = max_yaw = max_beta = max_util = max_cross = shortfall_impulse = rejected_regen = 0.0
     limited_ticks = 0
@@ -381,13 +464,24 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
     if configured_full_lap:
         from lapsim.torque_configurator.acceptance import BoundaryAudit,work_plan
         audit=BoundaryAudit(configured_profile)
-        compute_limits=work_plan(configured_profile,round(case.duration_s*1000),ten_lap=case.laps==10)
-    for tick in range(round(case.duration_s / .01) + 1):
+        if duration_s is None:
+            compute_limits={'maximum_duration_s':None,'maximum_controller_observations':None,
+                'per_allocation_trials_and_stop_events':MAX_ALLOCATED_POWERED_WORK,
+                'rollover_at_trials_and_stop_events':FINITE_BATCH_ROLLOVER,
+                'maximum_cumulative_trials_and_stop_events':FINITE_TOTAL_WORK,
+                'scope':'Explicit finite-finish allocation; continuous accepted state, original per-allocation plant checks, external cancellation'}
+        else:
+            compute_limits=work_plan(configured_profile,round(duration_s*1000),ten_lap=case.laps==10)
+    for tick in (count() if timed_ticks is None else range(timed_ticks+1)):
         time_s = tick / 100
         p = state.plant
+        current_budget=None
         try:
             projection = _project_local(track, p.x_m, p.y_m, previous_progress, 12.0)
-            crossed=ledger.observe(time_s,projection.station_m,state.pack_energy_j) if case.laps==10 else []
+            crossed=[]
+            if case.laps==10:
+                if ledger is None:raise ValueError('Missing legacy timed-round ledger')
+                crossed=ledger.observe(time_s,projection.station_m,state.pack_energy_j)
             if crossed:
                 carried=_round_state(state,integral,session)
                 crossed[-1]['post_crossing_state']=carried
@@ -398,9 +492,16 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
                 if _round_state(state,integral,session)!=carried:raise ValueError('lap state reset changed physical/controller state')
                 if progress_callback is not None:
                     progress_callback(json.loads(json.dumps(crossed[-1],allow_nan=False)))
-            if case.laps==10 and len(ledger.rows)<10 and time_s-ledger.boundary_time>=60:
-                violations.append('lap_time_limit')
+            if case.laps==10:
+                if ledger is None:raise ValueError('Missing legacy timed-round ledger')
+                if len(ledger.rows)<10 and time_s-ledger.boundary_time>=60:
+                    violations.append('lap_time_limit')
             slack = _assumed_footprint_slack(track, car, driver, p, projection.station_m)
+            if until_terminal:
+                if tick != accepted_ticks:
+                    raise ValueError('Accepted control clock differs from the terminal-run clock')
+                last_checked={'tick':tick,'t_s':time_s,'progress_m':projection.station_m,'slack_m':slack,
+                              'x_m':p.x_m,'y_m':p.y_m}
             if tick % 5 == 0:
                 command, _ = _controller(track, driver_car, PlanarEnvironment(), driver,
                                           p, projection, slack)
@@ -472,8 +573,65 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
                                 ("brake_shortfall", shortfall > 1e-6)):
                 if bad and reason not in violations:
                     violations.append(reason)
-            terminal = bool(violations) or projection.station_m >= case.laps*track.length_m or tick == round(case.duration_s / .01)
-            if tick % logging_stride == 0 or crossed or terminal:
+            stalled=external_stop=resource_exhausted=False
+            stock_violation=bool(violations)
+            projected_finish=projection.station_m >= case.laps*track.length_m
+            finish_now=projected_finish
+            if until_terminal:
+                assert finite_owner is not None
+                # Only accepted physical boundaries enter the observer. Do
+                # not change the driver, projection, command, or RK step; a
+                # projected seam by itself merely records a diagnostic.
+                if finite_cycle is not None:
+                    count_before=finite_cycle.completed_count
+                    before_carry=_round_state(state,integral,session)
+                    finish_now=finite_cycle.observe(tick,(p.x_m,p.y_m),state.pack_energy_j,projection.station_m,
+                                                    boundary_ok=not stock_violation)
+                    if finite_cycle.completed_count != count_before:
+                        carried=_round_state(state,integral,session)
+                        if carried!=before_carry:
+                            raise ValueError('Finite lap ledger changed physical/controller state')
+                        crossed=finite_cycle.rows[-1:]
+                        seam_states.append({'lap':finite_cycle.completed_count,'accepted_tick':tick,
+                            'accepted_state':carried,'carry_state_sha256':_state_digest(carried),
+                            'before_ledger_sha256':_state_digest(before_carry),
+                            'accepted_work':{key:completed_work[key]+getattr(state,key) for key in completed_work},
+                            'accepted_frame':frame,'accepted_output_sha256':_state_digest(output),
+                            'following_interval_integrated':False})
+                else:
+                    finish_now=finite_owner.observe(tick,(p.x_m,p.y_m),state.pack_energy_j,projection.station_m,
+                                                    boundary_ok=not stock_violation)
+                failure=finite_owner.failure
+                if failure is not None and failure['reason']!='stock_boundary_rejected':
+                    violations.append('finite_gate:'+failure['reason'])
+                if projected_finish and first_projected_boundary is None:
+                    if last_checked is None:raise ValueError('Missing accepted projection observation')
+                    before=last or (0.,0.)
+                    fraction=(case.laps*track.length_m-before[1])/max(1e-12,projection.station_m-before[1])
+                    first_projected_boundary={**last_checked,'legacy_projected_finish_s':before[0]+.01*fraction,
+                        'confirmed_gate_count':finite_cycle.confirmed_gate_count if finite_cycle is not None else len(finite_owner.events),'signed_finish_m':finite_owner.receipt()['last_signed_finish_m'],
+                        'accepted_state':_round_state(state,integral,session),
+                        'accepted_work':{key:completed_work[key]+getattr(state,key) for key in completed_work}}
+                # Genuine stationary loss of progress, not elapsed race time:
+                # five consecutive simulated seconds at near-zero body speed
+                # and yaw, with <=0.25 m motion and <=0.25 m station change.
+                if hypot(p.u_mps,p.v_mps)<=.05 and abs(p.yaw_rate_rad_s)<=.05:
+                    if (stationary_anchor is None or
+                            hypot(p.x_m-stationary_anchor[1],p.y_m-stationary_anchor[2])>.25 or
+                            abs(projection.station_m-stationary_anchor[3])>.25):
+                        stationary_anchor=(tick,p.x_m,p.y_m,projection.station_m)
+                    stalled=tick-stationary_anchor[0]>=500
+                else:
+                    stationary_anchor=None
+                if stop_requested is None:raise ValueError('Missing finite-finish cancellation callback')
+                external_stop=stop_requested()
+                if type(external_stop) is not bool:raise ValueError('Cancellation callback must return a Boolean')
+                resource_exhausted=(completed_work['integration_trials']+completed_work['wheel_stop_events']+
+                    state.integration_trials+state.wheel_stop_events)>=FINITE_TOTAL_WORK
+            terminal = (bool(violations) or finish_now or
+                        (timed_ticks is not None and tick == timed_ticks) or
+                        stalled or external_stop or resource_exhausted)
+            if tick % logging_stride == 0 or crossed or terminal or (until_terminal and first_projected_boundary is not None):
                 records.append({"t_s": time_s, "x_m": p.x_m, "y_m": p.y_m,
                     "heading_rad": p.heading_rad, "u_mps": p.u_mps, "v_mps": p.v_mps,
                     "yaw_rad_s": p.yaw_rate_rad_s, "progress_m": projection.station_m,
@@ -491,42 +649,110 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
                     records[-1].update(policy_mode_code=output['controller']['mode_code'],brake_pedal_fraction=frame['brake_fraction'],regen_request_nm=raw_regen,pack_soc_ratio=state.pack_energy_j/pack.pack_capacity_j)
                 if profile=='synthetic_spool_rwd':
                     records[-1]['axle_reaction_nm']=list(achieved_physical.axle_constraint_reactions_nm)
+            if until_terminal and progress_callback is not None and (tick%500==0 or terminal or (finite_round and crossed)):
+                report={'accepted_tick':tick,'t_s':time_s,'progress_m':projection.station_m,
+                    'course_length_m':track.length_m,'slack_m':slack,
+                    'accepted_substeps':completed_work['integration_substeps']+state.integration_substeps,
+                    'integration_trials':completed_work['integration_trials']+state.integration_trials,
+                    'external_stop_requested':external_stop,'terminal_observed':terminal}
+                if finite_cycle is not None:
+                    report.update(finite_completed_laps=finite_cycle.completed_count,
+                                  finite_confirmed_gates=finite_cycle.confirmed_gate_count)
+                progress_callback(report)
             if violations:
                 status = "invalid"
+                # An actual stock fault (including brake shortfall) takes
+                # precedence over the observer's "stock_boundary_rejected"
+                # marker. Preserve independent finite failures in the audit.
+                terminal_detail='Existing stock rollout violation' if stock_violation else 'Ordered finite gate violation'
                 break
-            if projection.station_m >= case.laps*track.length_m:
+            if finish_now:
                 status = "completed"
-                before = last or (0.0, 0.0)
-                fraction = (case.laps*track.length_m - before[1]) / max(1e-12, projection.station_m - before[1])
-                finish_time = before[0] + .01 * fraction
+                if until_terminal:
+                    assert finite_owner is not None and finite_owner.done
+                    finish_event=finite_owner.finish
+                    if finish_event is None:raise ValueError('Missing confirmed finite finish event')
+                    finish_time=finish_event['time_s']
+                    terminal_detail='Accepted ordered finite gate crossing'
+                else:
+                    before = last or (0.0, 0.0)
+                    fraction = (case.laps*track.length_m - before[1]) / max(1e-12, projection.station_m - before[1])
+                    finish_time = before[0] + .01 * fraction
+                    terminal_detail='Existing stock projected seam crossing'
                 break
             if terminal:
+                if until_terminal:
+                    if external_stop:
+                        status="external_stop"
+                        terminal_detail='Host cancellation requested at an accepted control boundary'
+                    elif resource_exhausted:
+                        status="external_resource_limit"
+                        terminal_detail='Separate cumulative numerical work allocation exhausted'
+                    elif stalled:
+                        status="no_progress"
+                        terminal_detail='Genuine stationary accepted-state window'
                 break
             limited_ticks += bool(limited.constraints)
             shortfall_impulse += shortfall * .01
             rejected_regen += max(0, raw_regen - sum(max(0, -t) for t in limited.wheel_torques_nm)) * .01
             last = (time_s, projection.station_m)
             previous_progress = projection.station_m
-            options={'maximum_work':200000} if case.laps==10 or case.long_course else {'maximum_work':compute_limits['maximum_cumulative_trials_and_stop_events']} if configured_full_lap else {}
+            if until_terminal:
+                # Existing round-state pattern: at an accepted 10 ms boundary,
+                # preserve exact physical/controller state, account the old
+                # numerical allocation, and start another bounded allocation.
+                if state.integration_trials+state.wheel_stop_events>=FINITE_BATCH_ROLLOVER:
+                    carried=_round_state(state,integral,session)
+                    counts={key:getattr(state,key) for key in completed_work}
+                    for key in completed_work:completed_work[key]+=counts[key]
+                    state=replace(state,integration_substeps=0,integration_trials=0,wheel_stop_events=0)
+                    if _round_state(state,integral,session)!=carried:
+                        raise ValueError('Finite-finish work rollover changed physical/controller state')
+                    work_rollovers.append({'accepted_tick':tick,'t_s':time_s,'prior_allocation':counts,
+                        'cumulative_accounted':dict(completed_work),'carry_state_sha256':_state_digest(carried)})
+                remaining=FINITE_TOTAL_WORK-completed_work['integration_trials']-completed_work['wheel_stop_events']
+                current_budget=min(MAX_ALLOCATED_POWERED_WORK,remaining)
+                options={'maximum_work':current_budget}
+            else:
+                options={'maximum_work':200000} if case.laps==10 or case.long_course else {'maximum_work':compute_limits['maximum_cumulative_trials_and_stop_events']} if configured_full_lap else {}
             before_pack_j=state.pack_energy_j
             stepper=advance_powered if plant_step is None else plant_step
             state = stepper(car, pack, state, limited.wheel_torques_nm,
                 command.steering_angles_rad, brakes, available, .01, env,wheel_radii_m=radii,**options)
+            accepted_ticks+=1
+            if finite_round and crossed:
+                seam_states[-1]['following_interval_integrated']=True
+                following=_round_state(state,integral,session)
+                seam_states[-1]['following_accepted_tick']=accepted_ticks
+                seam_states[-1]['following_accepted_state']=following
+                seam_states[-1]['following_accepted_state_sha256']=_state_digest(following)
+                seam_states[-1]['following_accepted_work']={key:completed_work[key]+getattr(state,key) for key in completed_work}
             delta_pack_j=before_pack_j-state.pack_energy_j
             gross_pack_draw_j+=max(0.,delta_pack_j)
             recovered_pack_j+=max(0.,-delta_pack_j)
         except (ValueError, ArithmeticError) as error:
-            status = "model_error"
-            violations.append(str(error))
+            if (until_terminal and current_budget is not None and current_budget<MAX_ALLOCATED_POWERED_WORK
+                    and str(error)=="powered integration exceeds the actual work budget"):
+                status="external_resource_limit"
+                terminal_detail=str(error)+' (remaining cumulative finite-finish allocation)'
+            else:
+                status = "model_error"
+                violations.append(str(error))
+                terminal_detail=str(error)
             break
     residual = energy_residual_j(car, initial, state)
     if abs(residual) > .5:
+        if until_terminal and status == "completed":
+            terminal_detail='Existing stock rollout violation'
         violations.append("energy_residual")
         status = "invalid"
     eligible = status == "completed" and not violations
+    if until_terminal and not eligible:
+        finish_time=None
     draw_kwh = (initial.pack_energy_j - state.pack_energy_j) / 3_600_000
     post_tick_draw_kwh=draw_kwh
     if case.laps==10 and eligible:
+        if ledger is None:raise ValueError('Missing legacy timed-round ledger')
         draw_kwh=(initial.pack_energy_j-ledger.boundary_energy)/3_600_000
     # Explicit engineering proxy, not official competition points. Fixed
     # reference opposition/rule edition is needed before FSAE scoring is enabled.
@@ -562,6 +788,51 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
             "plant_max_internal_s": min(replace(car,wheel_radius_m=max(radii)).integration_step_limit_s,pack.actuator_time_constant_s/4)},
         "work": {"integration_substeps": completed_work['integration_substeps']+state.integration_substeps,
                  "integration_trials": completed_work['integration_trials']+state.integration_trials}}
+    if until_terminal:
+        result['metrics']['elapsed_s']=accepted_ticks/100
+        assert finite_owner is not None
+        accepted_completion=bool(eligible and finite_owner.done)
+        count_gates=finite_cycle.confirmed_gate_count if finite_cycle is not None else len(finite_owner.events)
+        result['metrics']['completion_fraction']=1.0 if accepted_completion else min(count_gates,finite_owner.n-1)/finite_owner.n
+        result['work']['wheel_stop_events']=completed_work['wheel_stop_events']+state.wheel_stop_events
+        finite_receipt=finite_owner.receipt()
+        finish_event=finite_owner.finish if accepted_completion else None
+        if accepted_completion and finish_event is None:raise ValueError('Missing confirmed finite finish event')
+        # A physical event observed on a rejected whole round is not an
+        # accepted terminal time. Leave the raw event audit for diagnosis.
+        if not accepted_completion:
+            finite_receipt['finish_event']=None
+        result['finite_terminal']={'schema':'lapsim.configured-finite-terminal.v1','maximum_simulated_time_s':None,
+            'status':status,'detail':terminal_detail,'accepted_ticks':accepted_ticks,
+            'accepted_sim_time_s':accepted_ticks/100,'last_checked_projection':last_checked,
+            'accepted_state':_round_state(state,integral,session),'work_rollovers':work_rollovers,
+            'current_allocation':{key:getattr(state,key) for key in completed_work},
+            'cumulative_accounted_before_current':dict(completed_work),
+            'cumulative_work_limit':FINITE_TOTAL_WORK,'per_allocation_limit':MAX_ALLOCATED_POWERED_WORK,
+            'finish_scope':'Ordered finite CG intersections on accepted 10ms chords of the fixed assumed corridor; separate body and actuator checks still required',
+            'completion_owner':'ordered_finite_round_v1' if finite_round else 'ordered_finite_gate_v1',
+            'finite_completion':{**finite_receipt,'accepted_completion':accepted_completion,
+                'first_legacy_projection_boundary':first_projected_boundary,
+                'extra_accepted_intervals_after_projection':accepted_ticks-first_projected_boundary['tick'] if first_projected_boundary is not None else 0,
+                'old_projected_fraction':min(1,last_checked['progress_m']/(track.length_m*case.laps)) if last_checked is not None else 0.,
+                'finite_crossing_net_energy_kwh':(initial.pack_energy_j-finish_event['interpolated_pack_energy_j'])/3_600_000 if finish_event is not None else None}}
+        if finite_cycle is not None:
+            result['metrics']['round_time_s']=finish_time
+            result['metrics']['mean_lap_time_s']=finish_time/case.laps if finish_time is not None else None
+            result['metrics']['time_scope']='lap_time_s is a legacy field alias for total two-lap finite round time'
+            result['round']={'schema':'lapsim.finite-round.v1','target_laps':case.laps,
+                'completed_laps':finite_cycle.completed_count,'lap_rows':finite_cycle.rows,
+                'incomplete_lap':None if finite_cycle.done else finite_cycle.completed_count+1,
+                'seam_states':seam_states,'initial_state':initial_round_state,
+                'initial_state_sha256':_state_digest(initial_round_state),
+                'final_state_sha256':_state_digest(_round_state(state,integral,session)),
+                'final_state':_round_state(state,integral,session),
+                'post_tick_net_energy_kwh':post_tick_draw_kwh,
+                'finite_crossing_net_energy_kwh':result['finite_terminal']['finite_completion']['finite_crossing_net_energy_kwh'],
+                'state_carry':'One continuous plant, pack, actuator memory, controller session, global clocks; finite observer alone renews its expected gate list. No per-lap physical or numerical reset.',
+                'energy_reporting':'Each lap uses consecutive interpolated physical crossing energies. Existing net_energy_kwh remains actual accepted-boundary pack delta.',
+                'penalties':[] if accepted_completion else [{'kind':'unfinished_or_invalid_round',
+                    'unfinished_laps':case.laps-finite_cycle.completed_count,'reasons':violations or [status]}]}
     if profile=='synthetic_spool_rwd' or mismatch:
         result['contact_radii_m']=radii
         result['radius_model']='Declared plant contact radii; controller keeps nominal radius. Locked axle starts at one shared angular velocity, not four no-slip speeds.'
@@ -572,6 +843,7 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
             'command_digest_scope':'All evaluated 100 Hz boundaries; steering rounded only for diagnostic digest to 1e-10 rad, limited torque/friction to 1e-8 Nm; executed values unrounded',
             'generating_boundary_ticks':generating_ticks,'scope':'Evaluated 10 ms controller boundaries, including terminal boundary; actual mode/intervention observations, not proof every gene activated'}
     if case.laps==10:
+        if ledger is None:raise ValueError('Missing legacy timed-round ledger')
         result['round']={**ledger.summary(ledger.previous[0],ledger.previous[1],state.pack_energy_j),
             'initial_state_sha256':_state_digest(initial_round_state),'final_state_sha256':_state_digest(_round_state(state,integral,session)),
             'initial_state':initial_round_state,'final_state':_round_state(state,integral,session),
@@ -606,8 +878,16 @@ def _rollout(controller, case, *, profile, parameter_overrides=None, configured_
         result['eligible']=False
         if configured_full_lap:
             assert audit is not None
-            result['configuration']['mode']='ten_lap_acceptance_v1' if case.laps==10 else 'full_lap_acceptance_v1'
-            result['configuration']['scope']='Synthetic configured acceptance; one lap/60 s or ten continuous laps/600 s, no calibrated hardware or official-points claim'
+            result['configuration']['mode']='finite_finish_acceptance_v1' if until_terminal else 'ten_lap_acceptance_v1' if case.laps==10 else 'full_lap_acceptance_v1'
+            result['configuration']['scope']='Explicit synthetic finite finish; stock controller-boundary audit, no surveyed geometry or calibrated hardware' if until_terminal else 'Synthetic configured acceptance; one lap/60 s or ten continuous laps/600 s, no calibrated hardware or official-points claim'
+            if until_terminal:result['configuration']['completion_owner']='ordered_finite_round_v1' if finite_round else 'ordered_finite_gate_v1'
             result['configuration']['compute_limits']=compute_limits
             result['configuration']['acceptance']=audit.finish(result)
+            if finite_cycle is not None:
+                acc=result['configuration']['acceptance']
+                checks=acc['checks']
+                checks.update(two_ordered_finite_laps=bool(eligible and finite_cycle.done and finite_cycle.completed_count==2 and finite_cycle.confirmed_gate_count==2*finite_cycle.gates_per_lap),
+                    continuous_seam_carry=len(seam_states)==2 and all(z['carry_state_sha256']==z['before_ledger_sha256'] for z in seam_states)
+                    and seam_states[0]['following_interval_integrated'] and not seam_states[-1]['following_interval_integrated'])
+                acc['passed']=all(checks.values())
     return result
