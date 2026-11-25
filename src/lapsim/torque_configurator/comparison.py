@@ -64,6 +64,9 @@ def compare(profiles,*,duration_ms=1000,course='stadium',course_bundle=None,full
 
 def assemble(profiles,case,records,source,*,full_lap):
     """Presentation assembly only; execution and selected reproduction stay separate."""
+    duration_s=case.duration_s
+    if duration_s is None:
+        raise ValueError('Explicit finite-finish records are not accepted by the legacy comparison')
     runs={};candidates={};baselines=[]
     for profile,record in zip(profiles,records):
         run_id=digest(record)[:20];candidate=profile.sha256[:20]
@@ -73,7 +76,7 @@ def assemble(profiles,case,records,source,*,full_lap):
                        'failures':int(not record['configuration']['acceptance']['passed']) if full_lap else (0 if record['status']=='time_limit' else 1)}}
         baselines.append(candidate)
     specification={'seed':0,'profile':'configured_profiles','upstream':UPSTREAM,'profiles':[p.to_dict() for p in profiles],
-        'training':[asdict(case)],'duration_ms':round(case.duration_s*1000),'strategy':CONFIGURED_REFERENCE,
+        'training':[asdict(case)],'duration_ms':round(duration_s*1000),'strategy':CONFIGURED_REFERENCE,
         'objective':{'name':'engineering_proxy','expression':'lap_time_s + 120 * net_energy_kwh','lower_is_better':True,
                      'fsae_points_enabled':False,'ranking_enabled':False,'reason':'Bounded course diagnostic; compare elapsed time, energy and slip; no lap ranking'},
         'resources':{'workers':1,'maximum_runs':2,'gpu_physics':False},
@@ -115,9 +118,12 @@ def compare_saved_baselines(paths):
     for key in ('case','course','driver','clocks','environment'):
         require(records[0][key]==records[1][key],'Saved baselines must share '+key)
     case=Case(**records[0]['case'])
+    duration_s=case.duration_s
+    if duration_s is None:
+        raise ValueError('Unsupported saved baseline scenario')
     require(case.course in ('stadium','autocross','bundle') and (all(p.to_dict()['schema']=='lapsim.torque-profile.v2' for p in profiles) or not case.regen_available) and case.friction_fallback
-            and case.motor_temperature_c==40. and .1<=case.duration_s<=(600 if case.laps==10 else 60)
-            and abs(case.duration_s*100-round(case.duration_s*100))<1e-9,'Unsupported saved baseline scenario')
+            and case.motor_temperature_c==40. and .1<=duration_s<=(600 if case.laps==10 else 60)
+            and abs(duration_s*100-round(duration_s*100))<1e-9,'Unsupported saved baseline scenario')
     require(case.initial_soc==starts[0][0] and case.pack_voltage_v==starts[0][2],'Saved case/profile inputs differ')
     for profile,record in zip(profiles,records):
         require(record['car']==asdict(replace(profile.vehicle,tire_mu=profile.vehicle.tire_mu*case.grip)),
